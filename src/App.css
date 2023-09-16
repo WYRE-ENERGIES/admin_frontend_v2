@@ -1,0 +1,224 @@
+.App {
+  font-family: 'Montserrat';
+  font-style: normal;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  overflow-y: scroll;
+  /* overflow-y: hidden; */
+  /* overflow-x: hidden;  */
+  /* background-color: #5C12A7; */
+}
+
+.App::-webkit-scrollbar {
+  display: none;
+}
+
+.AppHeader {
+  font-family: 'Montserrat';
+    font-style: normal;
+  height: 50px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 20px 4px 12px;
+  margin-left: 15px;
+  /* border-bottom: 1px solid rgba(0, 0, 0, 0.15); */
+}
+
+.SidemenuAndPagecontent {
+  display: flex;
+  flex: 1;
+  justify-content: flex-start;
+  align-items: flex-start;
+  /* background-color: rgba(0, 0, 0, 0.05); */
+  background-color: #5C12A7;
+}
+
+.SideMenu{
+  height: 100%;
+  /* margin-top: 35px; */
+  background-color: #5C12A7;
+  /* position: sticky; */
+  /* top: 0px; */
+}
+.SideMenuVertical{
+  height: 100%;
+  margin-top: 35px;
+  background-color: #5C12A7;
+  color: white;
+  /* position: sticky; */
+  /* top: 0px; */
+}
+.PageContent {
+  padding-left: 12px;
+  padding-right: 90px;
+  margin: 35px 15px 35px 190px;
+  /* background-color: red; */
+  background-color: #F2F2F8;
+  border-radius: 40px;
+  width: 1100px;
+  height: 1739px;
+  overflow-y: hidden;
+  overflow-x: hidden; 
+}
+
+/* .admin-energy-top {
+  box-sizing: border-box;
+  padding: 25px 10px 25px 10px;
+  color: white;
+} */
+.admin-energy-top {
+  /* padding: 1.5rem 2rem; */
+  background: #FFFFFF;
+  border-radius: 15px;
+  filter: drop-shadow(0px 0px 6px rgba(0, 0, 0, 0.15));
+  text-align: center;
+  margin-bottom: 1rem;
+  margin-left: 15px;
+  /* min-width: none; */
+  height: 60px;
+  width: 198px;
+  margin-top: 20px;
+}
+
+.wyre-logo {
+  margin-bottom: 15px;
+  margin-left: 17px;
+  margin-top: 55px;
+  /* color: red; */
+}
+
+.Client-User-Page{
+  margin-left: 15px;
+}
+
+/* AUTH Stuffs start */
+.auth-page-container {
+  padding-bottom: 120px;
+
+  @include media('>medium') {
+    padding-bottom: 190px;
+  }
+}
+
+.signup-login-contact-form {
+  /* padding: 70px $small-gutter; */
+  /* padding-bottom: 0px; */
+  /* text-align: center; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  @include media('>medium') {
+    padding-top: 111px;
+  }
+}
+
+.first-heading--auth {
+  color: darkblue;
+  font-size: 1.9rem;
+  font-weight: regular;
+  margin-bottom: 28px;
+
+  @include media('>medium') {
+    font-size: 2.4rem;
+  }
+}
+
+.reset-password-note {
+  font-weight: light;
+  line-height: 32px;
+  margin: auto;
+  margin-bottom: 46px;
+  max-width: 500px;
+
+  @include media('>medium') {
+    max-width: 815px;
+  }
+}
+
+.outlined-input-container {
+  margin: 14px 0;
+}
+
+.contact-textarea {
+  border: 1px solid border-grey3;
+  border-radius: 6px;
+  color: text blue;
+  font-size: 1.4rem;
+  height: 145px;
+  margin-bottom: 10px;
+  max-width: 350px;
+  padding: 15px 5.9%;
+  resize: vertical;
+  width: 100%;
+
+  @include media('>medium') {
+    font-size: 1.6rem;
+    max-width: 408px;
+    padding: 15px 24px;
+  }
+
+  &::placeholder {
+    color: text blue;
+    opacity: 1;
+  }
+}
+
+.signup-login-contact-error-message {
+  font-size: 1.4rem;
+  color: red;
+}
+
+.forgot-password-wrapper {
+  margin: 16px auto 40px;
+}
+
+.forgot-password {
+  color: lightblue;
+  font-family: auth-font;
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-decoration: underline;
+
+  &:hover {
+    color: light-blue;
+  }
+}
+
+.signup-login-contact-button {
+  background: purple;
+  border: 0;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-size: 1.4rem;
+  font-weight: bold;
+  height: 45px;
+  max-width: 350px;
+  text-align: center;
+  width: 100%;
+
+  @include media('>medium') {
+    font-size: 1.6rem;
+    height: 60px;
+    max-width: 408px;
+    padding: 0 24px;
+  }
+}
+
+.social-cluster-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.social-cluster-item {
+  margin-right: 10px;
+
+  &.no-right-margin {
+    margin-right: 0;
+  }
+}
