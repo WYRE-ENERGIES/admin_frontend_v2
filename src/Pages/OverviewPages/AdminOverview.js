@@ -1,4 +1,4 @@
-import { Button, Space, Typography } from "antd";
+import { Button, Image, Space, Typography } from "antd";
 import { 
   MailOutlined,
   BulbTwoTone,
@@ -13,6 +13,7 @@ import { useSearchParams } from "react-router-dom";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
 
+
 function AdminOverview(props) {
   const [clientId, setClientId] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams()
@@ -21,21 +22,29 @@ function AdminOverview(props) {
   const headers = useSelector((state) => state.headers);
 
   useEffect(() => {
-    const defaultDataValue =  moment(headers, 'DD-MM-YYYY');
-    const startDate = defaultDataValue.startOf('month').format('DD-MM-YYYY HH:mm');
-    const endDate = defaultDataValue.endOf('month').format('DD-MM-YYYY HH:mm');
+    // const defaultDataValue =  moment(headers.selectedDate, 'DD-MM-YYYY');
+    // const startDate = defaultDataValue.startOf('month').format('DD-MM-YYYY HH:mm');
+    // const endDate = defaultDataValue.endOf('month').format('DD-MM-YYYY HH:mm');
+    // console.log("Something is expected here!>>>>>>>>>>>>>>>>");
+    // props.getTotalEnergyTopCard(client_id, startDate, endDate)
+
+    // const defaultDataValue =  moment(headers.selectedDate, 'DD-MM-YYYY');
+    // moment().format('MMMM Do YYYY, h:mm:ss a');
+    // date.format('dddd, MMMM D, YYYY, hh:mm:a')
+    const startDate = moment().format('DD-MM-YYYY HH:mm');
+    const endDate = moment().format('DD-MM-YYYY HH:mm');
     console.log("Something is expected here!>>>>>>>>>>>>>>>>");
     props.getTotalEnergyTopCard(client_id, startDate, endDate)
 
-    if(dateChange !== headers){
-      setDateChange(headers);
-      getTotalEnergyTopCard(client_id, startDate, endDate)
-    }
+    // if(dateChange !== headers.selectedDate){
+    //   setDateChange(headers);
+    //   getTotalEnergyTopCard(client_id, startDate, endDate)
+    // }
 
-  }, [headers]);
+  }, []);
 
   const client_id = searchParams.get("client_id") || props.auth.userData.client_id;
-  console.log("Checking for Overview page details=========", props.overviewPage?.fetchedTotalEnergyTopCard);
+  console.log("Checking for Overview page details=========", props.overviewPage?.fetchedTotalEnergyTopCard.total_energy);
   console.log("Checking for Client-Id=========", client_id);
   
     return (
@@ -62,14 +71,18 @@ function AdminOverview(props) {
             <Space>
               <div className="admin-energy-top">
                 <Space>
-                  <BulbTwoTone />
-                  <p>0000kWh</p>
+                  <Image style={{marginLeft:'0px'}} src='/Images/energy-consumption.png'/>
+                  {/* <p>0000kWh</p> */}
                   <p>Total Energy</p>
+                  <p>{props.overviewPage?.fetchedTotalEnergyTopCard.total_energy}</p>
                 </Space>
               </div>
               <div className="admin-energy-top">
-                <p>0000tons</p>
-                <p>Carbon Emission</p>
+                <Space>
+                  <Image style={{marginLeft:'5px'}} src='/Images/co2-emmission.png'/>
+                  <p>{props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission}</p>
+                  <p>Carbon Emission</p>                 
+                </Space>
               </div>
             </Space>
           </section>

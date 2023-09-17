@@ -6,7 +6,8 @@ export const getTotalEnergyTopCard = (clientId, startDate, endDate) => async (di
 
     dispatch(getTotalEnergyTopCardLoading(true));
   
-    const requestUrl = `/15/01-08-2023%2000:00/02-08-2023%2000:00`;
+    // const requestUrl = `/15/01-08-2023%2000:00/02-08-2023%2000:00`;
+    const requestUrl = `/api/v1/${clientId}/${startDate}/${endDate}`;
     try {
       const response = await APIService.get(requestUrl);
   
