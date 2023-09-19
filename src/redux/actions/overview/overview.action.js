@@ -2,12 +2,10 @@ import { APIService } from "../../../config/Api/apiServices";
 import { getTotalEnergyTopCardLoading, getTotalEnergyTopCardSuccess } from "./overview.creator";
 
 export const getTotalEnergyTopCard = (clientId, startDate, endDate) => async (dispatch) => {
-  console.log('Ccheck the Action call>>>>>>>>>>>');
 
     dispatch(getTotalEnergyTopCardLoading(true));
   
-    // const requestUrl = `/15/01-08-2023%2000:00/02-08-2023%2000:00`;
-    const requestUrl = `/api/v1/${clientId}/${startDate}/${endDate}`;
+    const requestUrl = `/api/v1/client-header-endpoints/${clientId}/${startDate}/${endDate}`;
     try {
       const response = await APIService.get(requestUrl);
   

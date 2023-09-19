@@ -30,15 +30,23 @@ import {
     MessageOutlined,
     MailOutlined,
     CustomerServiceOutlined,
+    MenuFoldOutlined,
+    MenuUnfoldOutlined,
   } from "@ant-design/icons";
-  import { Image, Menu, Space } from "antd";
+  import { Button, Image, Menu, Space, theme } from "antd";
 import Form from "antd/es/form/Form";
+import useToken from "antd/es/theme/useToken";
   import { useEffect, useState } from "react";
   import { useLocation, useNavigate } from "react-router-dom";
   
   function SideMenu() {
     const [selectedLocation, setSelectedLocation] = useState('/')
     const location = useLocation()
+
+    const [collapsed, setCollapsed] = useState(false);
+    const {
+      token: { colorBgContainer },
+    } = theme.useToken();
   
     useEffect( () => {
       const pathName = location.pathname
@@ -57,16 +65,24 @@ import Form from "antd/es/form/Form";
           top: 0,
           bottom: 0,
         }}
+        trigger={null} collapsible collapsed={collapsed}
       >
-        {/* <header>header</header> */}
         <div className="wyre-logo">
           <Space>
             <Image
               width={80}
-              // src="https://yt3.ggpht.com/yti/AHXOFjVZypuO-Nf2XxSIHpDVbNDOGH9beztDzVFDlg=s108-c-k-c0x00ffffff-no-rj"
               src="/Images/Wyre white-08 1.png"
             ></Image>
-            <MenuOutlined style={{ marginLeft: "40px", color: 'white' }} />
+            <Button
+            type="text"
+            icon={collapsed ? <MenuUnfoldOutlined style={{ marginLeft: "40px", color: 'white' }} /> : <MenuFoldOutlined style={{ marginLeft: "40px", color: 'white' }} />}
+            onClick={() => setCollapsed(!collapsed)}
+            style={{
+              fontSize: '16px',
+              width: 64,
+              height: 64,
+            }}
+          />
           </Space>
         </div>
         <Menu
@@ -78,21 +94,6 @@ import Form from "antd/es/form/Form";
           }}
           selectedLocation={[selectedLocation]}
           items={[
-            // {
-            //   key: "#",
-            //   icon: (
-            //     <div className="wyre-logo" style={{ marginBottom: "100px" }}>
-            //       <Space>
-            //         <Image
-            //           width={80}
-            //           // src="https://yt3.ggpht.com/yti/AHXOFjVZypuO-Nf2XxSIHpDVbNDOGH9beztDzVFDlg=s108-c-k-c0x00ffffff-no-rj"
-            //           src="/Images/Wyre white-08 1.png"
-            //         ></Image>
-            //         <MenuOutlined style={{ marginLeft: "50px" }} />
-            //       </Space>
-            //     </div>
-            //   ),
-            // },
             {
               label: "Admin Overview",
               key: "/",
@@ -146,7 +147,6 @@ import Form from "antd/es/form/Form";
                   width={80}
                   height={50}
                   // preview={null}
-                  // src="https://yt3.ggpht.com/yti/AHXOFjVZypuO-Nf2XxSIHpDVbNDOGH9beztDzVFDlg=s108-c-k-c0x00ffffff-no-rj"
                   src="/Images/Group 1688.png"
                 ></Image>
               ),

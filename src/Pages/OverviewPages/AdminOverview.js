@@ -1,107 +1,100 @@
 import { Button, Image, Space, Typography } from "antd";
-import { 
-  MailOutlined,
-  BulbTwoTone,
-  DollarCircleOutlined,
-  DownloadOutlined,
-  CloudDownloadOutlined,
-  PlusOutlined
-} from "@ant-design/icons";
+import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
 
-
 function AdminOverview(props) {
-  const [clientId, setClientId] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [dateChange, setDateChange] = useState(false);
-
-  const headers = useSelector((state) => state.headers);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const client_id =
+    searchParams.get("client_id") || props.auth.userData.client_id;
 
   useEffect(() => {
-    // const defaultDataValue =  moment(headers.selectedDate, 'DD-MM-YYYY');
-    // const startDate = defaultDataValue.startOf('month').format('DD-MM-YYYY HH:mm');
-    // const endDate = defaultDataValue.endOf('month').format('DD-MM-YYYY HH:mm');
-    // console.log("Something is expected here!>>>>>>>>>>>>>>>>");
-    // props.getTotalEnergyTopCard(client_id, startDate, endDate)
-
-    // const defaultDataValue =  moment(headers.selectedDate, 'DD-MM-YYYY');
-    // moment().format('MMMM Do YYYY, h:mm:ss a');
-    // date.format('dddd, MMMM D, YYYY, hh:mm:a')
-    const startDate = moment().format('DD-MM-YYYY HH:mm');
-    const endDate = moment().format('DD-MM-YYYY HH:mm');
-    console.log("Something is expected here!>>>>>>>>>>>>>>>>");
-    props.getTotalEnergyTopCard(client_id, startDate, endDate)
-
-    // if(dateChange !== headers.selectedDate){
-    //   setDateChange(headers);
-    //   getTotalEnergyTopCard(client_id, startDate, endDate)
-    // }
-
+    const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
+    const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
+    props.getTotalEnergyTopCard(client_id, startDate, endDate);
   }, []);
 
-  const client_id = searchParams.get("client_id") || props.auth.userData.client_id;
-  console.log("Checking for Overview page details=========", props.overviewPage?.fetchedTotalEnergyTopCard.total_energy);
-  console.log("Checking for Client-Id=========", client_id);
-  
-    return (
-      <>
-        <div className="AppHeader">
-          <Typography.Title>Admin Overview</Typography.Title>
+  return (
+    <>
+      <div className="AppHeader">
+        <Typography.Title>Admin Overview</Typography.Title>
+        <Space>
+          <div>
+            <Button>
+              <DownloadOutlined />
+              Download Report
+            </Button>
+          </div>
+          <div>
+            <Button style={{ backgroundColor: "#5C12A7", color: "white" }}>
+              <PlusOutlined />
+              Add User
+            </Button>
+          </div>
+        </Space>
+      </div>
+      <div className="##########">
+        <section className="co2 & total-energy-card">
           <Space>
-            <div>
-              <Button>
-                <DownloadOutlined />
-                Download Report
-              </Button>
+            <div className="top-card">
+              <Space>
+                <div className="card-content">
+                  <Image
+                    style={{ marginLeft: "0px" }}
+                    src="/Images/energy-consumption.png"
+                  />
+                </div>
+                <div className="card-content">
+                  <header style={{ fontWeight: "bold" }}>
+                    {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toFixed(
+                      2
+                    )}
+                    kWh
+                  </header>
+                  <header>Total Energy</header>
+                </div>
+              </Space>
             </div>
-            <div>
-              <Button style={{backgroundColor:'#5C12A7', color:'white'}}>
-                <PlusOutlined />
-                Add User
-              </Button>
+            <div className="top-card">
+              <Space>
+                <div className="card-content">
+                  <Image
+                    style={{ marginLeft: "0px" }}
+                    src="/Images/co2-emmission.png"
+                  />
+                </div>
+                <div className="card-content">
+                  <header style={{ fontWeight: "bold" }}>
+                    {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toFixed(
+                      2
+                    )}
+                    tons
+                  </header>
+                  <header>Co2 Emission</header>
+                </div>
+              </Space>
             </div>
           </Space>
-        </div>
-        <div className="table-with-header-container h-no-mt">
-          <section className="">
-            <Space>
-              <div className="admin-energy-top">
-                <Space>
-                  <Image style={{marginLeft:'0px'}} src='/Images/energy-consumption.png'/>
-                  {/* <p>0000kWh</p> */}
-                  <p>Total Energy</p>
-                  <p>{props.overviewPage?.fetchedTotalEnergyTopCard.total_energy}</p>
-                </Space>
-              </div>
-              <div className="admin-energy-top">
-                <Space>
-                  <Image style={{marginLeft:'5px'}} src='/Images/co2-emmission.png'/>
-                  <p>{props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission}</p>
-                  <p>Carbon Emission</p>                 
-                </Space>
-              </div>
-            </Space>
-          </section>
+        </section>
 
-          <section className="total-energy-page">
-            <table />
-          </section>
-        </div>
-      </>
-    );
-  }
+        <section className="total-energy-bar-chart">
+          <table />
+        </section>
+      </div>
+    </>
+  );
+}
 
-  const mapDispatchToProps = {
-    getTotalEnergyTopCard,
-  }
+const mapDispatchToProps = {
+  getTotalEnergyTopCard,
+};
 
-  const mapStateToProps = (state) => ({
-    overviewPage: state.overviewPage,
-    auth: state.auth
-  })
+const mapStateToProps = (state) => ({
+  overviewPage: state.overviewPage,
+  auth: state.auth,
+});
 
-  export default connect(mapStateToProps, mapDispatchToProps)(AdminOverview);
+export default connect(mapStateToProps, mapDispatchToProps)(AdminOverview);

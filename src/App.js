@@ -6,9 +6,15 @@ import PageView from './components/pageContent/PageViews/PageView';
 import SideMenu from './components/sideBar/SideMenu';
 import Login from './Pages/AuthPages/Login';
 import authHelper from './helpers/authHelper';
+import { theme } from 'antd';
+import { useState } from 'react';
 
 function App() {
   const decodedUser = authHelper()
+  const [collapsed, setCollapsed] = useState(false);
+  const {
+    token: { colorBgContainer },
+  } = theme.useToken();
   return (
     <div className="App">
       <BrowserRouter>
@@ -17,7 +23,7 @@ function App() {
         <div>
           {/* <AppHeader /> */}
           <div className="SidemenuAndPagecontent">
-            <SideMenu />
+            <SideMenu trigger={null} collapsible collapsed={collapsed} setCollapsed={setCollapsed} />
             <PageView />
           </div>
           {/* <AppFooter /> */}
