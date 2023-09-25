@@ -15,6 +15,10 @@ function App() {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
+
+  const doColapse = () => {
+    setCollapsed(collapsed)
+  }
   return (
     <div className="App">
       <BrowserRouter>
@@ -23,7 +27,7 @@ function App() {
         <div>
           {/* <AppHeader /> */}
           <div className="SidemenuAndPagecontent">
-            <SideMenu trigger={null} collapsible collapsed={collapsed} setCollapsed={setCollapsed} />
+            <SideMenu trigger={null} collapsible collapsed={collapsed} doColapse={doColapse}  />
             <PageView />
           </div>
           {/* <AppFooter /> */}

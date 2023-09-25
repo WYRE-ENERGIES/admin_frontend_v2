@@ -1,21 +1,114 @@
-import { Button, Image, Space, Typography } from "antd";
+import { Button, Card, Image, Space, Typography } from "antd";
 import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
+import { getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from "react-chartjs-2";
+// import { Bar } from 'react-chartjs';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
 
 function AdminOverview(props) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const client_id =
-    searchParams.get("client_id") || props.auth.userData.client_id;
+  const clientId = searchParams.get("client_id") || props.auth.userData.client_id;
+  const [energyChartData, setEnergyChartData] = useState({
+    labels: [],
+    datasets: []
+  })
+
+  const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
+  const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
+
+  const showTotalEnergyBarchart = () => {
+    const clientId = props.auth.userData.client_id
+    props.getTotalEnergyBarChartData(startDate, endDate, clientId)
+  }
 
   useEffect(() => {
-    const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
-    const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
+    const client_id = clientId
     props.getTotalEnergyTopCard(client_id, startDate, endDate);
   }, []);
+
+  useEffect(() => {
+    showTotalEnergyBarchart() 
+    console.log("chart details>>>>>", props.overviewPage?.fetchedTotalEnergyBarChart);
+
+    // getRevenue().then(res => {
+    //   const labels = res.carts.map(cart => {
+    //     return `User-${cart.userId}`
+    //   })
+    //   const data = res.carts.map(cart => {
+    //     return cart.discountedTotal
+    //   })
+
+    //   const dataSource = {
+    //     labels,
+    //     datasets: [
+    //       {
+    //         label: "Revenue",
+    //         data: data,
+    //         backgroundColor: "rgba(255, 99, 132, 0.5)",
+    //       },  
+    //     ],
+    //   };
+
+    //   setRevenueData(dataSource)
+    // })
+
+    const labels = props.overviewPage?.fetchedTotalEnergyBarChart.map(chart => {
+      // return chart.utility_energy
+      return chart.generators_energy
+    })
+    const data = props.overviewPage?.fetchedTotalEnergyBarChart.map(chart => {
+      // return chart.generators_energy
+      return chart.utility_energy
+    })
+
+    const dataSource = {
+      labels,
+      datasets: [
+        {
+          label: "Total Energy BarChart",
+          data: data,
+          backgroundColor: "#43D540",
+        },  
+      ],
+    };
+
+    setEnergyChartData(dataSource)
+  }, []);
+
+  const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'bottom',
+      },
+      title: {
+        display: true,
+        text: 'Total Energy',
+      },
+    },
+  };
 
   return (
     <>
@@ -51,8 +144,7 @@ function AdminOverview(props) {
                   <header style={{ fontWeight: "bold" }}>
                     {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toFixed(
                       2
-                    )}
-                    kWh
+                    )} kWh
                   </header>
                   <header>Total Energy</header>
                 </div>
@@ -70,8 +162,7 @@ function AdminOverview(props) {
                   <header style={{ fontWeight: "bold" }}>
                     {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toFixed(
                       2
-                    )}
-                    tons
+                    )} tons
                   </header>
                   <header>Co2 Emission</header>
                 </div>
@@ -81,7 +172,9 @@ function AdminOverview(props) {
         </section>
 
         <section className="total-energy-bar-chart">
-          <table />
+          <Card style={{ width: 1000, height: 500 }}>
+            <Bar options={options} data={energyChartData} />
+          </Card>
         </section>
       </div>
     </>
@@ -90,6 +183,7 @@ function AdminOverview(props) {
 
 const mapDispatchToProps = {
   getTotalEnergyTopCard,
+  getTotalEnergyBarChartData
 };
 
 const mapStateToProps = (state) => ({

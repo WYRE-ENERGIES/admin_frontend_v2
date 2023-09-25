@@ -39,11 +39,15 @@ import useToken from "antd/es/theme/useToken";
   import { useEffect, useState } from "react";
   import { useLocation, useNavigate } from "react-router-dom";
   
-  function SideMenu() {
+  function SideMenu({collapsed, doColapse}) {
     const [selectedLocation, setSelectedLocation] = useState('/')
+    const [handleCollapse, setHandleCollapse] = useState()
     const location = useLocation()
+    console.log("Looking for Collapsible in DoCollapse", doColapse);
+    console.log("Looking for Collapsible>>>>>>>>>>", collapsed);
+    console.log("Search for the Collapse = ", !collapsed);
 
-    const [collapsed, setCollapsed] = useState(false);
+    // const [collapsed, setCollapsed] = useState(false);
     const {
       token: { colorBgContainer },
     } = theme.useToken();
@@ -65,24 +69,38 @@ import useToken from "antd/es/theme/useToken";
           top: 0,
           bottom: 0,
         }}
-        trigger={null} collapsible collapsed={collapsed}
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
       >
         <div className="wyre-logo">
           <Space>
-            <Image
-              width={80}
-              src="/Images/Wyre white-08 1.png"
-            ></Image>
+            <Image width={80} src="/Images/Wyre white-08 1.png"></Image>
             <Button
-            type="text"
-            icon={collapsed ? <MenuUnfoldOutlined style={{ marginLeft: "40px", color: 'white' }} /> : <MenuFoldOutlined style={{ marginLeft: "40px", color: 'white' }} />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: 64,
-              height: 64,
-            }}
-          />
+              type="text"
+              icon={
+                collapsed ? (
+                  <MenuUnfoldOutlined
+                    style={{ marginLeft: "40px", color: "white" }}
+                  />
+                ) : (
+                  <MenuFoldOutlined
+                    style={{ marginLeft: "40px", color: "white" }}
+                  />
+                )
+              }
+              onClick={() => {
+                // setCollapsed(!collapsed)
+                setHandleCollapse(!collapsed);
+                console.log("Am now clicked");
+                console.log("Now Checking Collapsible", !collapsed);
+              }}
+              style={{
+                fontSize: "16px",
+                width: 64,
+                height: 64,
+              }}
+            />
           </Space>
         </div>
         <Menu

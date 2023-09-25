@@ -3,8 +3,8 @@ import overviewTypes from "./overview.type";
 const initialState = {
     fetchTotalEnergyTopCardLoading: false,
     fetchedTotalEnergyTopCard: false,
-    fetchCarbonEmissionTopCardLoading: false,
-    fetchedCarbonEmissionTopCard: false
+    fetchTotalEnergyBarChartLoading: false,
+    fetchedTotalEnergyBarChart: false
 }
 
 const overviewReducers = (state = initialState, action) => {
@@ -20,15 +20,15 @@ const overviewReducers = (state = initialState, action) => {
                 fetchedTotalEnergyTopCard: action.payload
             }
 
-        case overviewTypes.GET_CARBON_EMISSION_TOP_CARD_LOADING:
+        case overviewTypes.GET_TOTAL_ENERGY_BARCHART_LOADING:
             return {
                 ...state,
-                fetchCarbonEmissionTopCardLoading: action.payload
+                fetchTotalEnergyBarChartLoading: action.payload
             }
-        case overviewTypes.GET_CARBON_EMISSION_TOP_CARD_SUCCESS:
+        case overviewTypes.GET_TOTAL_ENERGY_BARCHART_SUCCESS:
             return {
                 ...state,
-                fetchedCarbonEmissionTopCard: action.payload
+                fetchedTotalEnergyBarChart: action.payload
             }
     
         default: return state;

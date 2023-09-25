@@ -9,11 +9,11 @@ export const getTotalEnergyTopCardSuccess = (payload = true) => ({
     payload,
 });
 
-export const getCarbonEmissionTopCard = (payload = true) => ({
-    type: overviewTypes.GET_CARBON_EMISSION_TOP_CARD_LOADING,
+export const getTotalEnergyBarChartLoading = (payload = true) => ({
+    type: overviewTypes.GET_TOTAL_ENERGY_BARCHART_LOADING,
     payload,
 });
-export const getCarbonEmmissionTopCard = (payload = true) => ({
-    type: overviewTypes.GET_CARBON_EMISSION_TOP_CARD_SUCCESS,
+export const gettTotalEnergyBarChartSuccess = (payload = true) => ({
+    type: overviewTypes.GET_TOTAL_ENERGY_BARCHART_SUCCESS,
     payload,
 });
