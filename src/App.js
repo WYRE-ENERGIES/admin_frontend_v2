@@ -17,8 +17,8 @@ function App() {
   } = theme.useToken();
 
   const doColapse = () => {
-    setCollapsed(collapsed)
   }
+  // setCollapsed(collapsed)
   return (
     <div className="App">
       <BrowserRouter>
@@ -27,7 +27,7 @@ function App() {
         <div>
           {/* <AppHeader /> */}
           <div className="SidemenuAndPagecontent">
-            <SideMenu trigger={null} collapsible collapsed={collapsed} doColapse={doColapse}  />
+            <SideMenu trigger={null} collapsible collapsed={collapsed} doColapse={doColapse} setCollapsed={setCollapsed}  />
             <PageView />
           </div>
           {/* <AppFooter /> */}

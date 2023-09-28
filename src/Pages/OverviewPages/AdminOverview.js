@@ -15,7 +15,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from "react-chartjs-2";
-// import { Bar } from 'react-chartjs';
+import Pagination from "../../components/Pagination";
 
 ChartJS.register(
   CategoryScale,
@@ -34,14 +34,25 @@ function AdminOverview(props) {
     labels: [],
     datasets: []
   })
+  // const [chartPages, setChartPages] = useState(showTotalEnergyBarchart.slice(0, 30))
+  // const [chartPages, setChartPages] = useState([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [postsPerPage, setPostsPerPage] = useState(5)
 
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
+  const chartPages = props.overviewPage.fetchedTotalEnergyBarChart
 
   const showTotalEnergyBarchart = () => {
     const clientId = props.auth.userData.client_id
     props.getTotalEnergyBarChartData(startDate, endDate, clientId)
   }
+
+  const lastPostIndex = currentPage * postsPerPage
+  const firstPostIndex = lastPostIndex - postsPerPage
+  const currentPosts = chartPages.slice(firstPostIndex, lastPostIndex)
+  console.log("CHART-PAGES>>>>>>>>>", chartPages);
+  console.log("Current_Posts>>>>>>>>>", currentPosts);
 
   useEffect(() => {
     const client_id = clientId
@@ -49,47 +60,31 @@ function AdminOverview(props) {
   }, []);
 
   useEffect(() => {
-    showTotalEnergyBarchart() 
-    console.log("chart details>>>>>", props.overviewPage?.fetchedTotalEnergyBarChart);
-
-    // getRevenue().then(res => {
-    //   const labels = res.carts.map(cart => {
-    //     return `User-${cart.userId}`
-    //   })
-    //   const data = res.carts.map(cart => {
-    //     return cart.discountedTotal
-    //   })
-
-    //   const dataSource = {
-    //     labels,
-    //     datasets: [
-    //       {
-    //         label: "Revenue",
-    //         data: data,
-    //         backgroundColor: "rgba(255, 99, 132, 0.5)",
-    //       },  
-    //     ],
-    //   };
-
-    //   setRevenueData(dataSource)
-    // })
+    showTotalEnergyBarchart()
 
     const labels = props.overviewPage?.fetchedTotalEnergyBarChart.map(chart => {
-      // return chart.utility_energy
-      return chart.generators_energy
+      return chart.name
     })
-    const data = props.overviewPage?.fetchedTotalEnergyBarChart.map(chart => {
-      // return chart.generators_energy
+    const data1 = props.overviewPage?.fetchedTotalEnergyBarChart.map(chart => {
       return chart.utility_energy
+    })
+
+    const data2 = props.overviewPage?.fetchedTotalEnergyBarChart.map(chart => {
+      return chart.generators_energy
     })
 
     const dataSource = {
       labels,
       datasets: [
         {
-          label: "Total Energy BarChart",
-          data: data,
+          label: "Utility Energy",
+          data: data1,
           backgroundColor: "#43D540",
+        },  
+        {
+          label: "Generator Energy",
+          data: data2,
+          backgroundColor: "#094D92",
         },  
       ],
     };
@@ -101,13 +96,24 @@ function AdminOverview(props) {
     responsive: true,
     plugins: {
       legend: {
-        position: 'bottom',
+        position: 'top',
       },
       title: {
         display: true,
         text: 'Total Energy',
       },
     },
+
+    scales: {
+            x: {
+                stacked: true
+            },
+            y: {
+                stacked: true
+            }
+    },
+
+    
   };
 
   return (
@@ -174,6 +180,23 @@ function AdminOverview(props) {
         <section className="total-energy-bar-chart">
           <Card style={{ width: 1000, height: 500 }}>
             <Bar options={options} data={energyChartData} />
+            {/* <Pagination
+              totalPosts = {chartPages.lenght} 
+              postsPerPage = {postsPerPage}
+              setCurrentPage={setCurrentPage}
+            /> */}
+
+            {/* <ReactPaginate 
+              previousLabel={'Previous'}
+              nextLabel={'Next'}
+              pageCount={pageCount}
+              onPageChange={handlePageChange}
+              containerClassName={"paginationBttns"}
+              previousLinkClassName={"previousBttn"}
+              nextLinkClassName={"nextBtnn"}
+              disabledClassName="paginationDisable"
+              activeClassName={"paginationActive"}
+            /> */}
           </Card>
         </section>
       </div>

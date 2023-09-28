@@ -39,11 +39,11 @@ import useToken from "antd/es/theme/useToken";
   import { useEffect, useState } from "react";
   import { useLocation, useNavigate } from "react-router-dom";
   
-  function SideMenu({collapsed, doColapse}) {
+  function SideMenu({collapsed, doColapse, setCollapsed}) {
     const [selectedLocation, setSelectedLocation] = useState('/')
     const [handleCollapse, setHandleCollapse] = useState()
     const location = useLocation()
-    console.log("Looking for Collapsible in DoCollapse", doColapse);
+    // console.log("Looking for Collapsible in DoCollapse", doColapse);
     console.log("Looking for Collapsible>>>>>>>>>>", collapsed);
     console.log("Search for the Collapse = ", !collapsed);
 
@@ -81,17 +81,17 @@ import useToken from "antd/es/theme/useToken";
               icon={
                 collapsed ? (
                   <MenuUnfoldOutlined
-                    style={{ marginLeft: "40px", color: "white" }}
+                    style={{  color: "white" }}
                   />
                 ) : (
                   <MenuFoldOutlined
-                    style={{ marginLeft: "40px", color: "white" }}
+                    style={{  color: "white" }}
                   />
                 )
               }
               onClick={() => {
-                // setCollapsed(!collapsed)
-                setHandleCollapse(!collapsed);
+                setCollapsed(!collapsed)
+                // setHandleCollapse(!collapsed);
                 console.log("Am now clicked");
                 console.log("Now Checking Collapsible", !collapsed);
               }}
