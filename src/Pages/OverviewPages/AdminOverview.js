@@ -34,25 +34,18 @@ function AdminOverview(props) {
     labels: [],
     datasets: []
   })
+  const [paginationData, setPaginationData] = useState({})
   // const [chartPages, setChartPages] = useState(showTotalEnergyBarchart.slice(0, 30))
   // const [chartPages, setChartPages] = useState([])
-  const [currentPage, setCurrentPage] = useState(1)
-  const [postsPerPage, setPostsPerPage] = useState(5)
 
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
-  const chartPages = props.overviewPage.fetchedTotalEnergyBarChart
+  // const chartPages = props.overviewPage.fetchedTotalEnergyBarChart
 
   const showTotalEnergyBarchart = () => {
     const clientId = props.auth.userData.client_id
     props.getTotalEnergyBarChartData(startDate, endDate, clientId)
   }
-
-  const lastPostIndex = currentPage * postsPerPage
-  const firstPostIndex = lastPostIndex - postsPerPage
-  const currentPosts = chartPages.slice(firstPostIndex, lastPostIndex)
-  console.log("CHART-PAGES>>>>>>>>>", chartPages);
-  console.log("Current_Posts>>>>>>>>>", currentPosts);
 
   useEffect(() => {
     const client_id = clientId
@@ -62,35 +55,66 @@ function AdminOverview(props) {
   useEffect(() => {
     showTotalEnergyBarchart()
 
-    const labels = props.overviewPage?.fetchedTotalEnergyBarChart.map(chart => {
-      return chart.name
-    })
-    const data1 = props.overviewPage?.fetchedTotalEnergyBarChart.map(chart => {
-      return chart.utility_energy
-    })
-
-    const data2 = props.overviewPage?.fetchedTotalEnergyBarChart.map(chart => {
-      return chart.generators_energy
-    })
-
-    const dataSource = {
-      labels,
-      datasets: [
-        {
-          label: "Utility Energy",
-          data: data1,
-          backgroundColor: "#43D540",
-        },  
-        {
-          label: "Generator Energy",
-          data: data2,
-          backgroundColor: "#094D92",
-        },  
-      ],
-    };
-
-    setEnergyChartData(dataSource)
   }, []);
+
+  const fetchNextPaginatedTotalEnergy = () => {
+    const clientId = props.auth.userData.client_id;
+    const currentPage = Number(paginationData.current_page) || 0;
+    const itemsPerPage = Number(paginationData.items_per_page) || 10;
+    const totalPages = Number( paginationData.total_pages) || 0
+    if (!currentPage || (totalPages - currentPage) > 0) {
+      const paginationQuery = `&current_page=${currentPage+1}&items_per_page=${itemsPerPage}`;
+      props.getTotalEnergyBarChartData(startDate, endDate, clientId, paginationQuery);
+    }
+
+  };
+
+  const fetchPrevPaginatedTotalEnergy = () => {
+    const clientId = props.auth.userData.client_id;
+    const currentPage = Number(paginationData.current_page) || 0;
+    const itemsPerPage = Number(paginationData.items_per_page) || 10;
+    if (currentPage && currentPage > 1) {
+      const paginationQuery = `&current_page=${currentPage-1}&items_per_page=${itemsPerPage}`;
+      props.getTotalEnergyBarChartData(startDate, endDate, clientId, paginationQuery);
+    }
+  };
+
+  useEffect(() => {
+
+    if (props.overviewPage.fetchedTotalEnergyBarChart) {
+      console.log('this is props over view', props.overviewPage)
+      const labels = props.overviewPage.fetchedTotalEnergyBarChart.chart?.map(chart => {
+        return chart.name
+      })
+      const data1 = props.overviewPage.fetchedTotalEnergyBarChart?.chart.map(chart => {
+        return chart.utility_energy
+      })
+
+      const data2 = props.overviewPage.fetchedTotalEnergyBarChart?.chart.map(chart => {
+        return chart.generators_energy
+      })
+      setPaginationData(props.overviewPage.fetchedTotalEnergyBarChart.pagination)
+
+      const dataSource = {
+        labels,
+        datasets: [
+          {
+            label: "Utility Energy",
+            data: data1,
+            backgroundColor: "#43D540",
+          },
+          {
+            label: "Generator Energy",
+            data: data2,
+            backgroundColor: "#094D92",
+          },
+        ],
+      };
+
+      setEnergyChartData(dataSource)
+    }
+
+  }, [props.overviewPage]);
 
   const options = {
     responsive: true,
@@ -105,15 +129,15 @@ function AdminOverview(props) {
     },
 
     scales: {
-            x: {
-                stacked: true
-            },
-            y: {
-                stacked: true
-            }
+      x: {
+        stacked: true
+      },
+      y: {
+        stacked: true
+      }
     },
 
-    
+
   };
 
   return (
@@ -178,7 +202,7 @@ function AdminOverview(props) {
         </section>
 
         <section className="total-energy-bar-chart">
-          <Card style={{ width: 1000, height: 500 }}>
+          <Card style={{ width: 1400, height: 600 }}>
             <Bar options={options} data={energyChartData} />
             {/* <Pagination
               totalPosts = {chartPages.lenght} 
@@ -197,6 +221,8 @@ function AdminOverview(props) {
               disabledClassName="paginationDisable"
               activeClassName={"paginationActive"}
             /> */}
+            <button onClick={fetchNextPaginatedTotalEnergy} >Next</button>
+            <button onClick={fetchPrevPaginatedTotalEnergy}>Previous</button>
           </Card>
         </section>
       </div>
