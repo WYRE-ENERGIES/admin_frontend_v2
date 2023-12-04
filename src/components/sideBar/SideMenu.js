@@ -9,37 +9,37 @@
 //   export default SideMenu;
 
 
-import { 
-    UserOutlined, 
-    ShopOutlined, 
-    ShoppingCartOutlined, 
-    AppstoreOutlined,
-    AppstoreFilled,
-    AppstoreAddOutlined,
-    AppstoreTwoTone,
-    AppleOutlined,
-    HomeOutlined,
-    MenuOutlined,
-    FormOutlined,
-    HeatMapOutlined,
-    CompassOutlined,
-    SettingFilled,
-    SettingOutlined,
-    LogoutOutlined,
-    SendOutlined,
-    MessageOutlined,
-    MailOutlined,
-    CustomerServiceOutlined,
-    MenuFoldOutlined,
-    MenuUnfoldOutlined,
-  } from "@ant-design/icons";
-  import { Button, Image, Menu, Space, theme } from "antd";
+import {
+  UserOutlined,
+  ShopOutlined,
+  ShoppingCartOutlined,
+  AppstoreOutlined,
+  AppstoreFilled,
+  AppstoreAddOutlined,
+  AppstoreTwoTone,
+  AppleOutlined,
+  HomeOutlined,
+  MenuOutlined,
+  FormOutlined,
+  HeatMapOutlined,
+  CompassOutlined,
+  SettingFilled,
+  SettingOutlined,
+  LogoutOutlined,
+  SendOutlined,
+  MessageOutlined,
+  MailOutlined,
+  CustomerServiceOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+} from "@ant-design/icons";
+import { Button, Image, Menu, Space, theme } from "antd";
 import Form from "antd/es/form/Form";
 import useToken from "antd/es/theme/useToken";
-  import { useEffect, useState } from "react";
-  import { useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
   
-  function SideMenu({collapsed, doColapse, setCollapsed}) {
+function SideMenu({collapsed, doColapse, setCollapsed}) {
     const [selectedLocation, setSelectedLocation] = useState('/')
     const [handleCollapse, setHandleCollapse] = useState()
     const location = useLocation()
@@ -96,9 +96,9 @@ import useToken from "antd/es/theme/useToken";
                 console.log("Now Checking Collapsible", !collapsed);
               }}
               style={{
-                fontSize: "16px",
-                width: 64,
-                height: 64,
+                // fontSize: "16px",
+                width: 77,
+                // height: 64,
               }}
             />
           </Space>
@@ -143,7 +143,7 @@ import useToken from "antd/es/theme/useToken";
               icon: <LogoutOutlined />,
             },
             {
-              label: <hr />,
+              // label: <hr />,
             },
             {
               label: "Supports",
@@ -156,14 +156,16 @@ import useToken from "antd/es/theme/useToken";
               icon: <SettingFilled />,
             },
             {
-              label: <hr />,
+              // label: <hr />,
             },
             {
+              label: 'Polaris Bank',
               key: "#",
               icon: (
                 <Image
-                  width={80}
-                  height={50}
+                  width={40}
+                  height={35}
+                  style={{paddingRight: '10px', paddingTop: '15px'}}
                   // preview={null}
                   src="/Images/Group 1688.png"
                 ></Image>

@@ -1,4 +1,6 @@
-import { Button, Card, Image, Space, Typography } from "antd";
+import { Button, Card, DatePicker, Image, Input, Space, Typography } from "antd";
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
@@ -29,18 +31,22 @@ ChartJS.register(
 
 function AdminOverview(props) {
   const [searchParams, setSearchParams] = useSearchParams();
-  const clientId = searchParams.get("client_id") || props.auth.userData.client_id;
+  const [paginationData, setPaginationData] = useState({})
   const [energyChartData, setEnergyChartData] = useState({
     labels: [],
     datasets: []
   })
-  const [paginationData, setPaginationData] = useState({})
-  // const [chartPages, setChartPages] = useState(showTotalEnergyBarchart.slice(0, 30))
-  // const [chartPages, setChartPages] = useState([])
 
+  const { Search } = Input;
+  const onSearch = (value, _e, info) => console.log(info?.source, value);
+  
+  dayjs.extend(customParseFormat);
+  const dateFormat = 'YYYY/MM/DD';
+  const { RangePicker } = DatePicker;
+
+  const clientId = searchParams.get("client_id") || props.auth.userData.client_id;
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
-  // const chartPages = props.overviewPage.fetchedTotalEnergyBarChart
 
   const showTotalEnergyBarchart = () => {
     const clientId = props.auth.userData.client_id
@@ -122,10 +128,10 @@ function AdminOverview(props) {
       legend: {
         position: 'top',
       },
-      title: {
-        display: true,
-        text: 'Total Energy',
-      },
+      // title: {
+      //   display: true,
+      //   text: 'Total Energy',
+      // },
     },
 
     scales: {
@@ -174,7 +180,8 @@ function AdminOverview(props) {
                   <header style={{ fontWeight: "bold" }}>
                     {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toFixed(
                       2
-                    )} kWh
+                    )}{" "}
+                    kWh
                   </header>
                   <header>Total Energy</header>
                 </div>
@@ -192,7 +199,8 @@ function AdminOverview(props) {
                   <header style={{ fontWeight: "bold" }}>
                     {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toFixed(
                       2
-                    )} tons
+                    )}{" "}
+                    tons
                   </header>
                   <header>Co2 Emission</header>
                 </div>
@@ -202,7 +210,33 @@ function AdminOverview(props) {
         </section>
 
         <section className="total-energy-bar-chart">
-          <Card style={{ width: 1400, height: 600 }}>
+          <Card
+            style={{
+              // width: 1070,
+              // height: 650,
+              borderRadius: 22,
+            }}
+          >
+            <Space>
+              <h1
+                style={{marginRight: '570px', fontSize: '17Px'}}
+              >Total Energy</h1>
+              <Search
+                placeholder="Search by name"
+                onSearch={onSearch}
+                style={{
+                  width: 170,
+                }}
+              />
+              <RangePicker
+                style={{width:210}}
+                defaultValue={[
+                  dayjs("2023/10/01", dateFormat),
+                  dayjs("2023/10/13", dateFormat),
+                ]}
+                format={dateFormat}
+              />
+            </Space>
             <Bar options={options} data={energyChartData} />
             {/* <Pagination
               totalPosts = {chartPages.lenght} 
@@ -221,8 +255,18 @@ function AdminOverview(props) {
               disabledClassName="paginationDisable"
               activeClassName={"paginationActive"}
             /> */}
-            <button onClick={fetchNextPaginatedTotalEnergy} >Next</button>
-            <button onClick={fetchPrevPaginatedTotalEnergy}>Previous</button>
+            {/* <button onClick={fetchNextPaginatedTotalEnergy} >Next</button>
+            <button onClick={fetchPrevPaginatedTotalEnergy}>Previous</button> */}
+            <div className="pagination">
+              <div>
+                <Button onClick={fetchPrevPaginatedTotalEnergy}>
+                  Previous
+                </Button>
+              </div>
+              <div>
+                <Button onClick={fetchNextPaginatedTotalEnergy}>Next</Button>
+              </div>
+            </div>
           </Card>
         </section>
       </div>
