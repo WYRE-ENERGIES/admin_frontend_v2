@@ -1,5 +1,5 @@
 import { APIService } from "../../../config/Api/apiServices";
-import { getTotalEnergyBarChartLoading, getTotalEnergyTopCardLoading, getTotalEnergyTopCardSuccess, gettTotalEnergyBarChartSuccess } from "./overview.creator";
+import { getKeyMetricsLoading, getKeyMetricsSuccess, getTotalCostBarChartLoading, getTotalCostBarChartSuccess, getTotalEnergyBarChartLoading, getTotalEnergyTopCardLoading, getTotalEnergyTopCardSuccess, gettTotalEnergyBarChartSuccess } from "./overview.creator";
 
 export const getTotalEnergyTopCard = (clientId, startDate, endDate) => async (dispatch) => {
 
@@ -17,15 +17,13 @@ export const getTotalEnergyTopCard = (clientId, startDate, endDate) => async (di
       dispatch(getTotalEnergyTopCardLoading(false));
       return { fulfilled: false, message: error.response.data.detail }
     }
-  };
+};
   
 export const getTotalEnergyBarChartData = (startDate, endDate, clientId, paginationQuery=null) => async (dispatch) => {
 
     dispatch(getTotalEnergyBarChartLoading(true));
   
     const requestUrl = `/api/v2/client-branches-energy/${startDate}/${endDate}/?client_id=${clientId}${paginationQuery? paginationQuery: ''}`;
-    // const requestUrl = `/api/v2/client-branches-energy/01-09-2023%2000:00/30-09-2023%2000:00/?client_id=15&current_page=4&items_per_page=5`;
-    // const requestUrl = `/api/v2/client-branches-energy/01-08-2023%2000:00/05-08-2023%2000:00/?client_id=15`;
     try {
       const response = await APIService.get(requestUrl);
   
@@ -37,4 +35,41 @@ export const getTotalEnergyBarChartData = (startDate, endDate, clientId, paginat
       dispatch(getTotalEnergyBarChartLoading(false));
       return { fulfilled: false, message: error.response.data.detail }
     }
-  };
+};
+
+export const getTotalCostBarChartData = (clientId) => async (dispatch) => {
+
+    dispatch(getTotalCostBarChartLoading(true));
+  
+    const requestUrl = `/api/v2/client-energy-cost/?client_id=${clientId}`;
+    try {
+      const response = await APIService.get(requestUrl);
+  
+      dispatch(getTotalCostBarChartSuccess(response.data));
+  
+      dispatch(getTotalCostBarChartLoading(false))
+      return { fulfilled: true, message: 'successful' }
+    } catch (error) {
+      dispatch(getTotalCostBarChartLoading(false));
+      return { fulfilled: false, message: error.response.data.detail }
+    }
+};
+
+export const getKeyMetricsData = (clientId, paginationQuery=1) => async (dispatch) => {
+
+  dispatch(getKeyMetricsLoading(true));
+
+  // const requestUrl = `/api/v2/key-metrics/${clientId}/?page=${paginationQuery}?search=${branchName}`;
+  const requestUrl = `/api/v2/key-metrics/${clientId}/?page=${paginationQuery}`;
+  try {
+    const response = await APIService.get(requestUrl);
+
+    dispatch(getKeyMetricsSuccess(response.data));
+
+    dispatch(getKeyMetricsLoading(false))
+    return { fulfilled: true, message: 'successful' }
+  } catch (error) {
+    dispatch(getKeyMetricsLoading(false));
+    return { fulfilled: false, message: error.response.data.detail }
+  }
+};

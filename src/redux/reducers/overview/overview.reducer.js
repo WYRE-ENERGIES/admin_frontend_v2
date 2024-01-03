@@ -4,7 +4,11 @@ const initialState = {
     fetchTotalEnergyTopCardLoading: false,
     fetchedTotalEnergyTopCard: false,
     fetchTotalEnergyBarChartLoading: false,
-    fetchedTotalEnergyBarChart: false
+    fetchedTotalEnergyBarChart: false,
+    fetchTotalCostBarChartLoading: false,
+    fetchedTotalCostBarChart: false,
+    fetchKeyMetricsLoading: false,
+    fetchedKeyMetrics: false
 }
 
 const overviewReducers = (state = initialState, action) => {
@@ -29,6 +33,28 @@ const overviewReducers = (state = initialState, action) => {
             return {
                 ...state,
                 fetchedTotalEnergyBarChart: action.payload
+            }
+
+        case overviewTypes.GET_TOTAL_COST_BARCHART_LOADING:
+            return {
+                ...state,
+                fetchTotalCostBarChartLoading: action.payload
+            }
+        case overviewTypes.GET_TOTAL_COST_BARCHART_SUCCESS:
+            return {
+                ...state,
+                fetchedTotalCostBarChart: action.payload
+            }
+            
+        case overviewTypes.GET_KEY_METRICS_LOADING:
+            return {
+                ...state,
+                fetchKeyMetricsLoading: action.payload
+            }
+        case overviewTypes.GET_KEY_METRICS_SUCCESS:
+            return {
+                ...state,
+                fetchedKeyMetrics: action.payload
             }
     
         default: return state;
