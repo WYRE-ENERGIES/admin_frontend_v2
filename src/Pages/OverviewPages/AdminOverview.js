@@ -208,6 +208,7 @@ function AdminOverview(props) {
     scales: {
       x: {
         stacked: true,
+        // barPercentage: 0.4,
         grid: {
           drawOnChartArea: false
         }
@@ -439,7 +440,7 @@ function AdminOverview(props) {
           >
             <Space>
               <h1
-                style={{marginRight: '570px', fontSize: '17Px'}}
+                style={{marginRight: '500px', marginLeft: '10px', fontSize: '17Px'}}
               >Total Energy</h1>
               <Search
                 placeholder="Search by name"
@@ -451,8 +452,8 @@ function AdminOverview(props) {
               <RangePicker
                 style={{width:210}}
                 defaultValue={[
-                  dayjs("01/12/2023", dateFormat),
-                  dayjs("27/12/2023", dateFormat),
+                  dayjs("01/01/2024", dateFormat),
+                  dayjs("31/01/2024", dateFormat),
                 ]}
                 format={dateFormat}
                 onChange={hanleSelectDate}
@@ -510,8 +511,8 @@ function AdminOverview(props) {
               <RangePicker
                 style={{width:210}}
                 defaultValue={[
-                  dayjs("01/12/2023", dateFormat),
-                  dayjs("27/12/2023", dateFormat),
+                  dayjs("01/01/2024", dateFormat),
+                  dayjs("31/01/2024", dateFormat),
                 ]}
                 format={dateFormat}
               />
@@ -520,14 +521,9 @@ function AdminOverview(props) {
           </Card>
         </section>
         <section className="total-energy-bar-chart">
-          <Card
-            style={{
-              borderRadius: 22,
-            }}
-          >
             <Space>
               <h1
-                style={{marginRight: '570px', fontSize: '17Px'}}
+                style={{marginRight: '500px', marginLeft: '10px', fontSize: '17Px'}}
               >Key Metrics</h1>
               <Search
                 placeholder="Search by name"
@@ -539,8 +535,8 @@ function AdminOverview(props) {
               <RangePicker
                 style={{width:210}}
                 defaultValue={[
-                  dayjs("01/12/2023", dateFormat),
-                  dayjs("27/12/2023", dateFormat),
+                  dayjs("01/01/2024", dateFormat),
+                  dayjs("31/01/2024", dateFormat),
                 ]}
                 format={dateFormat}
               />
@@ -562,7 +558,6 @@ function AdminOverview(props) {
                 <Button onClick={fetchNextPaginatedKeyMetric}>Next</Button>
               </div>
             </div>
-          </Card>
         </section>
       </div>
     </>

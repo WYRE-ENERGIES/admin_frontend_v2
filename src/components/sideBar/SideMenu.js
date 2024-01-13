@@ -35,6 +35,7 @@ import {
 } from "@ant-design/icons";
 import { Button, Image, Menu, Space, theme } from "antd";
 import Form from "antd/es/form/Form";
+import Sider from "antd/es/layout/Sider";
 import useToken from "antd/es/theme/useToken";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -51,6 +52,63 @@ function SideMenu({collapsed, doColapse, setCollapsed}) {
     const {
       token: { colorBgContainer },
     } = theme.useToken();
+    
+    const items = [
+      {
+        label: "Admin Overview",
+        key: "/",
+        icon: <HomeOutlined />,
+      },
+      {
+        label: "Client Users",
+        key: "/client-user",
+        icon: <UserOutlined />,
+      },
+      {
+        label: "View Location",
+        key: "/location",
+        icon: <CompassOutlined />,
+      },
+      {
+        label: "Set Target",
+        key: "/set-target",
+        icon: <SettingOutlined />,
+      },
+      {
+        label: "Send Energy Data",
+        key: "/energy-Data",
+        icon: <SendOutlined />,
+      },
+      {
+        label: "Log out",
+        key: "/logout",
+        icon: <LogoutOutlined />,
+      },
+      {
+        label: "Supports",
+        key: "/support",
+        icon: <MailOutlined />,
+      },
+      {
+        label: "Settings",
+        key: "/setting",
+        icon: <SettingFilled />,
+      },
+      {
+        label: 'Polaris Bank',
+        key: "#",
+        icon: (
+          <Image
+            width={73}
+            height={38}
+            style={{paddingRight: '35px', paddingTop: '5px'}}
+            // preview={null}
+            // src="/Images/Group 1688.png"
+            src={require('../../Logos/polaris-logo/polarisSvg.svg').default} alt='Logo'
+          />
+        ),
+      },
+    ]
   
     useEffect( () => {
       const pathName = location.pathname
@@ -59,45 +117,63 @@ function SideMenu({collapsed, doColapse, setCollapsed}) {
   
     const navigate = useNavigate()
     return (
-      <div
-        className="SideMenu"
+      <Sider
+        // className="SideMenu"
         style={{
           // overflow: 'auto',
           height: "100vh",
-          position: "fixed",
+          // position: "fixed",
+          position: "sticky",
           left: 0,
           top: 0,
           bottom: 0,
         }}
-        trigger={null}
         collapsible
         collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
       >
         <div className="wyre-logo">
           <Space>
-            <Image width={80} src="/Images/Wyre white-08 1.png"></Image>
+            {/* <Image width={80} src="/Images/Wyre white-08 1.png"></Image> */}
             <Button
               type="text"
               icon={
                 collapsed ? (
-                  <MenuUnfoldOutlined
-                    style={{  color: "white" }}
-                  />
+                  <MenuUnfoldOutlined style={{ color: "white" }} />
                 ) : (
-                  <MenuFoldOutlined
-                    style={{  color: "white" }}
-                  />
+                  // <MenuFoldOutlined style={{ color: "white" }} />
+                  <>
+                    <Image width={80} src="/Images/Wyre white-08 1.png"></Image>
+                    <Button
+                      type="text"
+                      icon={
+                        collapsed ? (
+                          <MenuUnfoldOutlined style={{ color: "white" }} />
+                        ) : (
+                          <MenuFoldOutlined style={{ color: "white" }} />
+                        )
+                      }
+                      onClick={() => {
+                        setCollapsed(!collapsed);
+                      }}
+                      style={{
+                        // fontSize: "16px",
+                        width: 195,
+                        // height: 64,
+                      }}
+                    />
+                  </>
                 )
               }
               onClick={() => {
-                setCollapsed(!collapsed)
+                setCollapsed(!collapsed);
                 // setHandleCollapse(!collapsed);
                 console.log("Am now clicked");
                 console.log("Now Checking Collapsible", !collapsed);
               }}
               style={{
                 // fontSize: "16px",
-                width: 77,
+                width: 60,
                 // height: 64,
               }}
             />
@@ -105,75 +181,16 @@ function SideMenu({collapsed, doColapse, setCollapsed}) {
         </div>
         <Menu
           className="SideMenuVertical"
-          mode="vertical"
+          // theme="dark"
+          defaultSelectedKeys={["1"]}
           onClick={(Item) => {
-            // Item.key
             navigate(Item.key);
+            console.log("Checking this out");
           }}
-          selectedLocation={[selectedLocation]}
-          items={[
-            {
-              label: "Admin Overview",
-              key: "/",
-              icon: <HomeOutlined />,
-            },
-            {
-              label: "Client Users",
-              key: "/client-user",
-              icon: <UserOutlined />,
-            },
-            {
-              label: "View Location",
-              key: "/location",
-              icon: <CompassOutlined />,
-            },
-            {
-              label: "Set Target",
-              key: "/set-target",
-              icon: <SettingOutlined />,
-            },
-            {
-              label: "Send Energy Data",
-              key: "/energy-Data",
-              icon: <SendOutlined />,
-            },
-            {
-              label: "Log out",
-              key: "/logout",
-              icon: <LogoutOutlined />,
-            },
-            {
-              // label: <hr />,
-            },
-            {
-              label: "Supports",
-              key: "/support",
-              icon: <MailOutlined />,
-            },
-            {
-              label: "Settings",
-              key: "/setting",
-              icon: <SettingFilled />,
-            },
-            {
-              // label: <hr />,
-            },
-            {
-              label: 'Polaris Bank',
-              key: "#",
-              icon: (
-                <Image
-                  width={40}
-                  height={35}
-                  style={{paddingRight: '10px', paddingTop: '15px'}}
-                  // preview={null}
-                  src="/Images/Group 1688.png"
-                ></Image>
-              ),
-            },
-          ]}
-        ></Menu>
-      </div>
+          mode="vertical"
+          items={items}
+        />
+      </Sider>
     );
   }
   
