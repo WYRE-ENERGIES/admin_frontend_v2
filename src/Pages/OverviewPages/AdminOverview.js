@@ -45,7 +45,6 @@ function AdminOverview(props) {
 
   const { Search } = Input;
   const handleDateSearch = (e) => setDateSearch(e.target.value)
-  const onSearch = (value, _e, info) => console.log(info?.source, value);
   
   dayjs.extend(customParseFormat);
   const dateFormat = 'DD/MM/YYYY';
@@ -57,7 +56,7 @@ function AdminOverview(props) {
 
   const showTotalEnergyBarchart = () => {
     const clientId = props.auth.userData.client_id
-    props.getTotalEnergyBarChartData(startDate, endDate, clientId)
+    props.getTotalEnergyBarChartData(clientId, startDate, endDate)
   }
   const showEnergyCostBarchart = () => {
     const clientId = props.auth.userData.client_id
@@ -65,14 +64,19 @@ function AdminOverview(props) {
   }
   const showKeyMetricsTable = () => {
     const clientId = props.auth.userData.client_id
-    props.getKeyMetricsData(clientId);
+    props.getKeyMetricsData(clientId, startDate, endDate);
   }
 
-  const hanleSelectDate = (date) => {
+  const onSelectDateTotalEnergy = (date) => {
     const date1 = dayjs(date[0]).format("DD-MM-YYYY HH:mm");
     const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
-    props.getTotalEnergyBarChartData(date1, date2, clientId)
-    console.log("Date-string>>>>>", date1, date2);
+    props.getTotalEnergyBarChartData(clientId, date1, date2)
+  }
+
+  const onSelectDateKeyMetrics = (date) => {
+    const date1 = dayjs(date[0]).format("DD-MM-YYYY HH:mm");
+    const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
+    props.getKeyMetricsData(clientId, date1, date2)
   }
 
   useEffect(() => {
@@ -82,7 +86,6 @@ function AdminOverview(props) {
   
   useEffect(() => {
     showEnergyCostBarchart()
-    console.log('Reducers in Total-Cost-Data', props.overviewPage.fetchedTotalCostBarChart)
   }, []);
 
   useEffect(() => {
@@ -91,45 +94,45 @@ function AdminOverview(props) {
 
   useEffect(() => {
     showKeyMetricsTable()
-    console.log('Reducer for table data == ', props.overviewPage.fetchedKeyMetrics.results);
   }, [])
 
   const fetchNextPaginatedTotalEnergy = () => {
     const clientId = props.auth.userData.client_id;
-    const currentPage = Number(paginationData.current_page) || 0;
+    const currentPage = Number(paginationData.page) || 0;
     const itemsPerPage = Number(paginationData.items_per_page) || 10;
     const totalPages = Number( paginationData.total_pages) || 0
     if (!currentPage || (totalPages - currentPage) > 0) {
-      const paginationQuery = `&current_page=${currentPage+1}&items_per_page=${itemsPerPage}`;
-      props.getTotalEnergyBarChartData(startDate, endDate, clientId, paginationQuery);
+      // const paginationQuery = `&current_page=${currentPage+1}&items_per_page=${itemsPerPage}`;
+      const paginationQuery = `&page=${currentPage+1}`
+      props.getTotalEnergyBarChartData(clientId, startDate, endDate, paginationQuery);
     }
   };
 
   const fetchPrevPaginatedTotalEnergy = () => {
     const clientId = props.auth.userData.client_id;
-    const currentPage = Number(paginationData.current_page) || 0;
+    const currentPage = Number(paginationData.page) || 0;
     const itemsPerPage = Number(paginationData.items_per_page) || 10;
     if (currentPage && currentPage > 1) {
-      const paginationQuery = `&current_page=${currentPage-1}&items_per_page=${itemsPerPage}`;
-      props.getTotalEnergyBarChartData(startDate, endDate, clientId, paginationQuery);
+      // const paginationQuery = `&current_page=${currentPage-1}&items_per_page=${itemsPerPage}`;
+      const paginationQuery = `&page=${currentPage-1}`
+      props.getTotalEnergyBarChartData(clientId, startDate, endDate, paginationQuery);
     }
   };
 
   useEffect(() => {
 
     if (props.overviewPage.fetchedTotalEnergyBarChart) {
-      console.log('this is props over view', props.overviewPage)
-      const labels = props.overviewPage.fetchedTotalEnergyBarChart.chart?.map(chart => {
+      const labels = props.overviewPage.fetchedTotalEnergyBarChart.results?.map(chart => {
         return chart.name
       })
-      const data1 = props.overviewPage.fetchedTotalEnergyBarChart?.chart.map(chart => {
+      const data1 = props.overviewPage.fetchedTotalEnergyBarChart?.results.map(chart => {
         return chart.utility_energy
       })
 
-      const data2 = props.overviewPage.fetchedTotalEnergyBarChart?.chart.map(chart => {
+      const data2 = props.overviewPage.fetchedTotalEnergyBarChart?.results.map(chart => {
         return chart.generators_energy
       })
-      setPaginationData(props.overviewPage.fetchedTotalEnergyBarChart.pagination)
+      setPaginationData(props.overviewPage.fetchedTotalEnergyBarChart)
 
       const energyDataSource = {
         labels,
@@ -161,8 +164,8 @@ function AdminOverview(props) {
       const clientCost = costReducerStates.map((reducer) => {
         return reducer.client_cost;
       });
-      const wyreCost = costReducerStates.map((reducer) => {
-        return reducer.wyre_cost;
+      const energy = costReducerStates.map((reducer) => {
+        return reducer.energy;
       });
       const costDiffernce = costReducerStates.map((reducer) => {
         return reducer.cost_difference;
@@ -172,7 +175,7 @@ function AdminOverview(props) {
         labels,
         datasets: [
           {
-            label: "Client Cost",
+            label: "Cost",
             data: clientCost,
             backgroundColor: "#43D540",
             type: "line",
@@ -182,8 +185,8 @@ function AdminOverview(props) {
             // xAxisID: "axis-bar",
           },
           {
-            label: "Wyre Cost",
-            data: wyreCost,
+            label: "Energy",
+            data: energy,
             backgroundColor: "#F9CF40",
           },
         ],
@@ -272,7 +275,7 @@ function AdminOverview(props) {
     const totalPages = Number( keyMetricsPaginate.total_pages) || 0
     if (!currentPage || (totalPages - currentPage) > 0) {
       const paginationQuery = `&page=${currentPage+1}`;
-      props.getKeyMetricsData(clientId, paginationQuery);
+      props.getKeyMetricsData(clientId, startDate, endDate, paginationQuery);
     }
   };
 
@@ -282,9 +285,18 @@ function AdminOverview(props) {
     const itemsPerPage = Number(keyMetricsPaginate.count) || 10;
     if (currentPage && currentPage > 1) {
       const paginationQuery = `&page=${currentPage-1}`;
-      props.getKeyMetricsData(clientId, paginationQuery);
+      props.getKeyMetricsData(clientId, startDate, endDate, paginationQuery);
     }
   };
+  
+  const onSearchTotalEnergy = (e) => {
+    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, e.target.value)
+  }
+
+  const onSearchKeyMetrics = (e) => {
+    props.getKeyMetricsData(clientId, startDate, endDate, 1, e.target.value)
+    console.log("onSearch clicked->>>>>>>>>>>", e.target.value );
+  }
   
   const columns = [
     {
@@ -444,7 +456,7 @@ function AdminOverview(props) {
               >Total Energy</h1>
               <Search
                 placeholder="Search by name"
-                onSearch={onSearch}
+                onChange={onSearchTotalEnergy}
                 style={{
                   width: 170,
                 }}
@@ -456,10 +468,13 @@ function AdminOverview(props) {
                   dayjs("31/01/2024", dateFormat),
                 ]}
                 format={dateFormat}
-                onChange={hanleSelectDate}
+                onChange={onSelectDateTotalEnergy}
               />
             </Space>
-            <Bar options={options} data={energyChartData} />
+            <Bar 
+              // loading={props.overviewPage.fetchTotalEnergyBarChartLoading}
+              options={options} 
+              data={energyChartData} />
             {/* <Pagination
               totalPosts = {chartPages.lenght} 
               postsPerPage = {postsPerPage}
@@ -503,7 +518,6 @@ function AdminOverview(props) {
               >History</h1>
               <Search
                 placeholder="Search by name"
-                onSearch={onSearch}
                 style={{
                   width: 170,
                 }}
@@ -527,7 +541,8 @@ function AdminOverview(props) {
               >Key Metrics</h1>
               <Search
                 placeholder="Search by name"
-                onSearch={onSearch}
+                // onSearch={onSearch}
+                onChange={onSearchKeyMetrics}
                 style={{
                   width: 170,
                 }}
@@ -539,6 +554,7 @@ function AdminOverview(props) {
                   dayjs("31/01/2024", dateFormat),
                 ]}
                 format={dateFormat}
+                onChange={onSelectDateKeyMetrics}
               />
             </Space>
             <Table

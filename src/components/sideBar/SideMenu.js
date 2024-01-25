@@ -40,15 +40,9 @@ import useToken from "antd/es/theme/useToken";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
   
-function SideMenu({collapsed, doColapse, setCollapsed}) {
+function SideMenu({collapsed, setCollapsed}) {
     const [selectedLocation, setSelectedLocation] = useState('/')
-    const [handleCollapse, setHandleCollapse] = useState()
     const location = useLocation()
-    // console.log("Looking for Collapsible in DoCollapse", doColapse);
-    console.log("Looking for Collapsible>>>>>>>>>>", collapsed);
-    console.log("Search for the Collapse = ", !collapsed);
-
-    // const [collapsed, setCollapsed] = useState(false);
     const {
       token: { colorBgContainer },
     } = theme.useToken();
@@ -65,10 +59,20 @@ function SideMenu({collapsed, doColapse, setCollapsed}) {
         icon: <UserOutlined />,
       },
       {
+        label: "Regions Activities",
+        key: "/regions-activities",
+        icon: <CompassOutlined />,
+      },
+      {
         label: "View Location",
         key: "/location",
         icon: <CompassOutlined />,
       },
+      // {
+      //   label: "Desiel overview",
+      //   key: "/diesel-overview",
+      //   icon: <CompassOutlined />,
+      // },
       {
         label: "Set Target",
         key: "/set-target",
@@ -167,9 +171,6 @@ function SideMenu({collapsed, doColapse, setCollapsed}) {
               }
               onClick={() => {
                 setCollapsed(!collapsed);
-                // setHandleCollapse(!collapsed);
-                console.log("Am now clicked");
-                console.log("Now Checking Collapsible", !collapsed);
               }}
               style={{
                 // fontSize: "16px",
@@ -185,7 +186,6 @@ function SideMenu({collapsed, doColapse, setCollapsed}) {
           defaultSelectedKeys={["1"]}
           onClick={(Item) => {
             navigate(Item.key);
-            console.log("Checking this out");
           }}
           mode="vertical"
           items={items}

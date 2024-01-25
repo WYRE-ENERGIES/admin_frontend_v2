@@ -110,8 +110,35 @@
   /* color: red; */
 }
 
-.Client-User-Page{
-  margin-left: 15px;
+.client-page-flex-display {
+  display: flex;
+  justify-content: space-between;
+}
+
+.client-user-table{
+  width: 70%;
+}
+
+.sidePage-add-user-container {
+  width: 25%;
+  background: #FFFFFF;
+  /* padding: 15px; */
+}
+
+.sidePage-add-user input {
+  background: #F2F2F8;
+}
+
+.user-center-image {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 15px;
+  width: 25%;
+}
+
+.sidePage-add-user {
+  padding: 15px;
 }
 
 

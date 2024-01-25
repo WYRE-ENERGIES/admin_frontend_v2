@@ -19,13 +19,16 @@ export const getTotalEnergyTopCard = (clientId, startDate, endDate) => async (di
     }
 };
   
-export const getTotalEnergyBarChartData = (startDate, endDate, clientId, paginationQuery=null) => async (dispatch) => {
+export const getTotalEnergyBarChartData = (clientId, startDate, endDate, paginationQuery=1, branchName=null) => async (dispatch) => {
 
     dispatch(getTotalEnergyBarChartLoading(true));
   
-    const requestUrl = `/api/v2/client-branches-energy/${startDate}/${endDate}/?client_id=${clientId}${paginationQuery? paginationQuery: ''}`;
+    // const requestUrl = `/api/v2/client-branches-energy/${startDate}/${endDate}/?client_id=${clientId}${paginationQuery? paginationQuery: ''}`;
+    // const requestUrl = `/api/v2/client-branches-energy/${clientId}/${startDate}/${endDate}/?page=${paginationQuery}`;
+    const initUrl = `/api/v2/client-branches-energy/${clientId}/${startDate}/${endDate}/?page=${paginationQuery}`
+    const reqUrl = branchName ? initUrl + `&search=${branchName}` : initUrl
     try {
-      const response = await APIService.get(requestUrl);
+      const response = await APIService.get(reqUrl);
   
       dispatch(gettTotalEnergyBarChartSuccess(response.data));
   
@@ -55,14 +58,14 @@ export const getTotalCostBarChartData = (clientId) => async (dispatch) => {
     }
 };
 
-export const getKeyMetricsData = (clientId, paginationQuery=1) => async (dispatch) => {
+export const getKeyMetricsData = (clientId, startDate, endDate, paginationQuery=1, branchName=null) => async (dispatch) => {
 
   dispatch(getKeyMetricsLoading(true));
 
-  // const requestUrl = `/api/v2/key-metrics/${clientId}/?page=${paginationQuery}?search=${branchName}`;
-  const requestUrl = `/api/v2/key-metrics/${clientId}/?page=${paginationQuery}`;
+  const initUrl = `/api/v2/key-metrics/${clientId}/${startDate}/${endDate}/?page=${paginationQuery}`
+  const reqUrl = branchName ? initUrl + `&search=${branchName}` : initUrl
   try {
-    const response = await APIService.get(requestUrl);
+    const response = await APIService.get(reqUrl);
 
     dispatch(getKeyMetricsSuccess(response.data));
 
