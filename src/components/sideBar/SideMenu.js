@@ -10,22 +10,15 @@
 
 
 import {
+  EnvironmentOutlined,
   UserOutlined,
-  ShopOutlined,
-  ShoppingCartOutlined,
-  AppstoreOutlined,
-  AppstoreFilled,
-  AppstoreAddOutlined,
-  AppstoreTwoTone,
-  AppleOutlined,
-  HomeOutlined,
+  ProjectOutlined,
   MenuOutlined,
-  FormOutlined,
-  HeatMapOutlined,
   CompassOutlined,
-  SettingFilled,
-  SettingOutlined,
-  LogoutOutlined,
+  DashboardOutlined,
+  AimOutlined,
+  HeatMapOutlined,
+  LoginOutlined,
   SendOutlined,
   MessageOutlined,
   MailOutlined,
@@ -51,7 +44,7 @@ function SideMenu({collapsed, setCollapsed}) {
       {
         label: "Admin Overview",
         key: "/",
-        icon: <HomeOutlined />,
+        icon: <ProjectOutlined />,
       },
       {
         label: "Client Users",
@@ -59,57 +52,60 @@ function SideMenu({collapsed, setCollapsed}) {
         icon: <UserOutlined />,
       },
       {
+        label: "View Location",
+        key: "/location",
+        icon: <EnvironmentOutlined />,
+      },
+      {
+        label: "Set Target",
+        key: "/set-target",
+        icon: <AimOutlined />,
+      },
+      {
+        label: "Diesel Overview",
+        key: "/diesel",
+        icon: <HeatMapOutlined />,
+      },
+      {
         label: "Regions Activities",
         key: "/regions-activities",
         icon: <CompassOutlined />,
       },
       {
-        label: "View Location",
-        key: "/location",
-        icon: <CompassOutlined />,
-      },
-      // {
-      //   label: "Desiel overview",
-      //   key: "/diesel-overview",
-      //   icon: <CompassOutlined />,
-      // },
-      {
-        label: "Set Target",
-        key: "/set-target",
-        icon: <SettingOutlined />,
-      },
-      {
-        label: "Send Energy Data",
-        key: "/energy-Data",
+        label: "Top Management Report",
+        key: "/top-mngt",
         icon: <SendOutlined />,
       },
       {
         label: "Log out",
         key: "/logout",
-        icon: <LogoutOutlined />,
+        icon: <LoginOutlined />,
       },
       {
-        label: "Supports",
+        label: "Support",
         key: "/support",
         icon: <MailOutlined />,
-      },
-      {
-        label: "Settings",
-        key: "/setting",
-        icon: <SettingFilled />,
       },
       {
         label: 'Polaris Bank',
         key: "#",
         icon: (
-          <Image
+          <div style={{
+            // marginRight: '5px'
+          }}>
+            <Image
             width={73}
             height={38}
-            style={{paddingRight: '35px', paddingTop: '5px'}}
+            style={{
+              paddingRight: '36px',
+              // paddingTop: '5px'
+              // marginRight: '95px'
+            }}
             // preview={null}
             // src="/Images/Group 1688.png"
             src={require('../../Logos/polaris-logo/polarisSvg.svg').default} alt='Logo'
           />
+          </div>
         ),
       },
     ]
@@ -131,6 +127,8 @@ function SideMenu({collapsed, setCollapsed}) {
           left: 0,
           top: 0,
           bottom: 0,
+          // paddingLeft: 25,
+          marginLeft: 15
         }}
         collapsible
         collapsed={collapsed}
@@ -143,7 +141,7 @@ function SideMenu({collapsed, setCollapsed}) {
               type="text"
               icon={
                 collapsed ? (
-                  <MenuUnfoldOutlined style={{ color: "white" }} />
+                  <MenuOutlined style={{ color: "white" }} />
                 ) : (
                   // <MenuFoldOutlined style={{ color: "white" }} />
                   <>
@@ -152,9 +150,9 @@ function SideMenu({collapsed, setCollapsed}) {
                       type="text"
                       icon={
                         collapsed ? (
-                          <MenuUnfoldOutlined style={{ color: "white" }} />
+                          <MenuOutlined style={{ color: "white" }} />
                         ) : (
-                          <MenuFoldOutlined style={{ color: "white" }} />
+                          <MenuOutlined style={{ color: "white" }} />
                         )
                       }
                       onClick={() => {

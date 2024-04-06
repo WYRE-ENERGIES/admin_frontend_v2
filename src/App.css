@@ -17,7 +17,7 @@
 
 .AppHeader {
   font-family: 'Montserrat';
-    font-style: normal;
+  font-style: normal;
   height: 50px;
   display: flex;
   justify-content: space-between;
@@ -47,21 +47,20 @@
   /* top: 0px; */
 }
 .SideMenuVertical{
-  height: 100%;
   margin-top: 35px;
   background-color: #5C12A7;
   color: white;
   /* position: sticky; */
-  /* top: 0px; */
 }
 .PageContent {
-  /* padding-left: 12px; */
-  /* padding-right: 90px; */
-  margin: 35px 25px 35px 5px;
+  margin: 35px 25px 35px 18px;
   background-color: #F2F2F8;
   border-radius: 40px;
-  width: 1250px;
-  height: 2439px;
+  width: 100%;
+  /* min-height: 100vh; */
+  min-height: 1173px;
+  /* width: 1100px; */
+  /* height: 2500px; */
   overflow-y: hidden;
   overflow-x: hidden; 
 }
@@ -85,12 +84,23 @@
   margin-top: 20px;
 }
 
-.top-card {
+.top-card-1 {
   background: #FFFFFF;
   border-radius: 15px;
   text-align: center;
   /* margin-bottom: 1rem; */
   margin-left: 30px;
+  /* min-width: none; */
+  height: 60px;
+  width: 198px;
+  /* margin-top: 20px; */
+}
+.top-card-2 {
+  background: #FFFFFF;
+  border-radius: 15px;
+  text-align: center;
+  /* margin-bottom: 1rem; */
+  margin-left: 10px;
   /* min-width: none; */
   height: 60px;
   width: 198px;
@@ -105,9 +115,8 @@
 
 .wyre-logo {
   margin-bottom: 15px;
-  margin-left: 9px;
-  margin-top: 82px;
-  /* color: red; */
+  margin-left: 14px;
+  margin-top: 72px;
 }
 
 .client-page-flex-display {
@@ -116,13 +125,23 @@
 }
 
 .client-user-table{
-  width: 70%;
+  width: 71%;
 }
 
 .sidePage-add-user-container {
-  width: 25%;
+  width: 26%;
+  height: 10%;
   background: #FFFFFF;
   /* padding: 15px; */
+}
+.set_target_psge {
+  /* width: 25%; */
+  /* height: 10%; */
+  /* background: #FFFFFF; */
+  /* padding: 15px; */
+}
+.form_demacation {
+  /* display: inline; */
 }
 
 .sidePage-add-user input {
@@ -309,9 +328,57 @@
   margin: 30px;
 }
 
+.set_target_page {
+  font-family: 'Montserrat';
+  font-size: medium;
+  font-weight: 600;
+  margin: 30px;
+}
+
 .pagination {
   display:  flex;
+  margin-top: 15px;
   /* padding: 10px; */
   justify-content: space-between;
   /* margin-top: 15px; */
 }
+
+.modal_pagination {
+  display:  flex;
+  margin-top: 15px;
+  /* padding: 10px; */
+  justify-content: space-between;
+  /* margin-top: 15px; */
+}
+
+.custom-row-hover {
+  /* color: blue */
+}
+/* .custom-row-hover td:first-child {
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+ }
+ 
+ .custom-row-hover td:last-child {
+   border-top-right-radius: 20px;
+   border-bottom-right-radius: 20px;
+  } */
+
+.custom-row-hover tr:hover >td  {
+  border-bottom: 4px solid rgba(0, 0, 0, 0.15);
+  filter: drop-shadow( rgba(0, 0, 0, 0.15) );
+  /* background: unset !important; */
+  opacity: 2;
+  color: black;
+}
+
+.chart_buttons {
+  background-color: #F2F2F8;
+  width: 20%;
+  height: 45px;
+}
+
+.chart_buttons:focus {
+  background-color: #F1E4FF;
+  color: #5C12A7;
+} 

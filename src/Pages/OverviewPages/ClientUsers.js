@@ -1,46 +1,18 @@
-import { Button, Form, Image, Input, Space, Table, Typography } from "antd";
+import { Button, Dropdown, Form, Image, Input, Modal, Space, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-// import { EditOutlined } from "@ant-design/icons";
 import { connect, useSelector } from "react-redux";
-import { getClientUsersData } from "../../redux/actions/clientUser/clientUser.action";
+import { addClientUsersData, getClientUsersData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
+import EditClientUserForm from "./EditClientUserForm";
+import AddClientUserForm from "./AddClientUserForm";
 
-const SubmitButton = ({ form }) => {
-  const [submittable, setSubmittable] = useState(false);
-
-  // Watch all values
-  const values = Form.useWatch([], form);
-  useEffect(() => {
-    form
-      .validateFields({
-        validateOnly: true,
-      })
-      .then(
-        () => {
-          setSubmittable(true);
-        },
-        () => {
-          setSubmittable(false);
-        },
-      );
-  }, [values]);
-  return (
-    <Button
-      style={{ backgroundColor: "#5C12A7", color: "white", width: "100%" }}
-      type="primary"
-      htmlType="submit"
-      disabled={!submittable}
-    >
-      {/* Submit */}
-      Save
-    </Button>
-  );
-};
 
 function ClientUsers(props) {
-  const [form] = Form.useForm();
+  const [showEditForm, setShowEditForm] = useState(false)
+  const [showAddButton, setShowAddButton] = useState(false)
+  const [ClientUserTableData, setClientUserTableData] = useState({})
 
   const { Search } = Input;
   
@@ -55,6 +27,59 @@ function ClientUsers(props) {
   }, [])
 
   const data = props.clientUsersPage.fetchedClientUser.results
+
+  const clientUersListPaginate = props.clientUsersPage.fetchedClientUser
+  const fetchNextPaginatedUsersList = () => {
+    const clientId = props.auth.userData.client_id;
+    const currentPage = Number(clientUersListPaginate.page) || 0;
+    const itemsPerPage = Number(clientUersListPaginate.count) || 10;
+    const totalPages = Number( clientUersListPaginate.total_pages) || 0
+    if (!currentPage || (totalPages - currentPage) > 0) {
+      const paginationQuery = `&page=${currentPage+1}`;
+      props.getClientUsersData(clientId, paginationQuery);
+    }
+  };
+
+  const fetchPrevPaginatedUsersList = () => {
+    const clientId = props.auth.userData.client_id;
+    const currentPage = Number(clientUersListPaginate.page) || 0;
+    const itemsPerPage = Number(clientUersListPaginate.count) || 10;
+    if (currentPage && currentPage > 1) {
+      const paginationQuery = `&page=${currentPage-1}`;
+      props.getClientUsersData(clientId, paginationQuery);
+    }
+  };
+
+  const optionsColumn = () => ({
+    key: 'operation',
+    title: 'Operation',
+    width: '10%',
+    dataIndex: 'operation',
+    render: (_, record) => {
+        return (
+          <a
+            target="_blank"
+            onClick={(e) => {
+              e.preventDefault();
+              console.log("On-click");
+              setShowEditForm(true);
+              setClientUserTableData(record);
+            }}
+            rel="noopener noreferrer"
+          >
+            <Button
+             style={{
+              color:'#5C12A7',
+              // background:'#5C12A7'
+             }}
+            >
+              Edit
+            </Button>
+            
+          </a>
+        );
+    }
+  });
   
   const columns = [
     {
@@ -72,17 +97,7 @@ function ClientUsers(props) {
       dataIndex: "phone_number",
       key: "phone_number",
     },
-    {
-      title: 'Operation',
-      dataIndex: 'operation',
-      render: () => {
-        return (
-          <Typography.Link disabled={''} onClick={() => ''}>
-            Edit
-          </Typography.Link>
-        );
-      },
-    }
+    optionsColumn()
   ];
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -92,18 +107,29 @@ function ClientUsers(props) {
   return (
     <>
       <div className="AppHeader">
-        <Typography.Title>Client Users</Typography.Title>
+        <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
+          Client Users
+        </Typography.Title>
       </div>
       <div className="AppHeader">
         <Search
           placeholder="Search by name"
           style={{
-            width: 170,
+            width: '349.68px',
+            height:'49.69px'
           }}
         />
         <Space>
           <div>
-            <Button style={{ backgroundColor: "#5C12A7", color: "white" }}>
+            <Button 
+              style={{ backgroundColor: "#5C12A7", color: "white" }}
+              onClick={(e) => {
+                e.preventDefault()
+                setShowAddButton(true)
+                setShowEditForm(false)
+                console.log('This button is expecting Actions');
+              }}
+            >
               <PlusOutlined />
               Add User
             </Button>
@@ -115,75 +141,32 @@ function ClientUsers(props) {
           <div className="client-page-flex-display">
             <div className="client-user-table">
               <Table
+                className="custom-row-hover"
                 loading={props.clientUsersPage.fetchClientUserLoading}
                 dataSource={data}
                 columns={columns}
                 onChange={onChange}
                 pagination={false}
               />
-            </div>
-            <div className="sidePage-add-user-container">
-              <div className="sidePage-add-user">
-                <h3>Edit User</h3>
-                <div className="user-center-image">
-                  <Image src="/Images/Group 1688.png"></Image>
-                </div>
-                <Form
-                  form={form}
-                  name="validateOnly"
-                  layout="vertical"
-                  autoComplete="off"
-                >
-                  <Form.Item
-                    name="name"
-                    label="Name"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                  <Form.Item
-                    name="email"
-                    label="Email"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                  <Form.Item
-                    name="phone number"
-                    label="Phone Number"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                  <Form.Item
-                    name="assign location"
-                    label="Assign Location"
-                    rules={[
-                      {
-                        required: true,
-                      },
-                    ]}
-                  >
-                    <Input />
-                  </Form.Item>
-                  <Form.Item>
-                      <SubmitButton form={form} />
-                  </Form.Item>
-                </Form>
+              <div className="pagination">
+              <div>
+                <Button onClick={fetchPrevPaginatedUsersList}>
+                  Previous
+                </Button>
+              </div>
+              <div>
+                <Button onClick={fetchNextPaginatedUsersList}>Next</Button>
               </div>
             </div>
+            </div>
+            { ClientUserTableData ? (
+              <EditClientUserForm
+                ClientUserTableData={ClientUserTableData}
+                showEditForm={showEditForm}
+              />
+            ) : (
+              <AddClientUserForm />
+            )} 
           </div>
         </section>
       </div>
@@ -192,7 +175,10 @@ function ClientUsers(props) {
 }
 
 const mapDispatchToProps = {
+  addClientUsersData,
   getClientUsersData,
+  updateClientUsersData,
+  removeClientUsersData,
 };
 
 const mapStateToProps = (state) => ({

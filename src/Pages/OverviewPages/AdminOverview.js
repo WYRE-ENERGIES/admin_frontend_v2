@@ -1,7 +1,7 @@
-import { Button, Card, DatePicker, Image, Input, Space, Table, Typography } from "antd";
+import { Button, Card, DatePicker, Image, Input, Space, Table, Tag, Typography } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
+import { DownloadOutlined, PlusOutlined, ContainerOutlined, ExpandAltOutlined, FundOutlined, DeleteOutlined, EllipsisOutlined, ProjectOutlined, FundProjectionScreenOutlined, BarsOutlined, ThunderboltOutlined  } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { getKeyMetricsData, getTotalCostBarChartData, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
@@ -19,6 +19,13 @@ import {
 import 'chart.js/auto'
 import { Bar } from "react-chartjs-2";
 import Pagination from "../../components/Pagination";
+import ColumnGroup from "antd/es/table/ColumnGroup";
+import Column from "antd/es/table/Column";
+import UtilityCostChart from "./UtilityCostChart";
+import TotalEnergyChart from "./TotalEnergyChart";
+import UtilityEnergyChart from "./UtilityEnergyChart";
+import DieselCostChart from "./DieselCostChart";
+import DieselLitreChart from "./DieselLitreChart";
 
 ChartJS.register(
   CategoryScale,
@@ -33,15 +40,12 @@ ChartJS.register(
 function AdminOverview(props) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [dateSearch, setDateSearch] = useState('')
+  const [showTotalEnergyPage, setShowTotalEnergyPage] = useState(true)
+  const [showUtilityCostPage, setShowUtilityCostPage] = useState(false)
+  const [showUtilityEnergyPage, setShowUtilityEnergyPage] = useState(false)
+  const [showDieselCostPage, setShowDieselCostPage] = useState(false)
+  const [showDieselLitrePage, setShowDieselLitrePage] = useState(false)
   const [paginationData, setPaginationData] = useState({})
-  const [energyChartData, setEnergyChartData] = useState({
-    labels: [],
-    datasets: []
-  })
-  const [costChartData, setCostChartData] = useState({
-    labels: [],
-    datasets: []
-  })
 
   const { Search } = Input;
   const handleDateSearch = (e) => setDateSearch(e.target.value)
@@ -54,23 +58,9 @@ function AdminOverview(props) {
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
 
-  const showTotalEnergyBarchart = () => {
-    const clientId = props.auth.userData.client_id
-    props.getTotalEnergyBarChartData(clientId, startDate, endDate)
-  }
-  const showEnergyCostBarchart = () => {
-    const clientId = props.auth.userData.client_id
-    props.getTotalCostBarChartData(clientId);
-  }
   const showKeyMetricsTable = () => {
     const clientId = props.auth.userData.client_id
     props.getKeyMetricsData(clientId, startDate, endDate);
-  }
-
-  const onSelectDateTotalEnergy = (date) => {
-    const date1 = dayjs(date[0]).format("DD-MM-YYYY HH:mm");
-    const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
-    props.getTotalEnergyBarChartData(clientId, date1, date2)
   }
 
   const onSelectDateKeyMetrics = (date) => {
@@ -83,189 +73,13 @@ function AdminOverview(props) {
     const client_id = clientId
     props.getTotalEnergyTopCard(client_id, startDate, endDate);
   }, []);
-  
-  useEffect(() => {
-    showEnergyCostBarchart()
-  }, []);
-
-  useEffect(() => {
-    showTotalEnergyBarchart()
-  }, []);
 
   useEffect(() => {
     showKeyMetricsTable()
   }, [])
 
-  const fetchNextPaginatedTotalEnergy = () => {
-    const clientId = props.auth.userData.client_id;
-    const currentPage = Number(paginationData.page) || 0;
-    const itemsPerPage = Number(paginationData.items_per_page) || 10;
-    const totalPages = Number( paginationData.total_pages) || 0
-    if (!currentPage || (totalPages - currentPage) > 0) {
-      // const paginationQuery = `&current_page=${currentPage+1}&items_per_page=${itemsPerPage}`;
-      const paginationQuery = `&page=${currentPage+1}`
-      props.getTotalEnergyBarChartData(clientId, startDate, endDate, paginationQuery);
-    }
-  };
-
-  const fetchPrevPaginatedTotalEnergy = () => {
-    const clientId = props.auth.userData.client_id;
-    const currentPage = Number(paginationData.page) || 0;
-    const itemsPerPage = Number(paginationData.items_per_page) || 10;
-    if (currentPage && currentPage > 1) {
-      // const paginationQuery = `&current_page=${currentPage-1}&items_per_page=${itemsPerPage}`;
-      const paginationQuery = `&page=${currentPage-1}`
-      props.getTotalEnergyBarChartData(clientId, startDate, endDate, paginationQuery);
-    }
-  };
-
-  useEffect(() => {
-
-    if (props.overviewPage.fetchedTotalEnergyBarChart) {
-      const labels = props.overviewPage.fetchedTotalEnergyBarChart.results?.map(chart => {
-        return chart.name
-      })
-      const data1 = props.overviewPage.fetchedTotalEnergyBarChart?.results.map(chart => {
-        return chart.utility_energy
-      })
-
-      const data2 = props.overviewPage.fetchedTotalEnergyBarChart?.results.map(chart => {
-        return chart.generators_energy
-      })
-      setPaginationData(props.overviewPage.fetchedTotalEnergyBarChart)
-
-      const energyDataSource = {
-        labels,
-        datasets: [
-          {
-            label: "Utility Energy",
-            data: data1,
-            backgroundColor: "#43D540",
-          },
-          {
-            label: "Generator Energy",
-            data: data2,
-            backgroundColor: "#094D92",
-          },
-        ],
-      };
-
-      setEnergyChartData(energyDataSource)
-    }
-
-  }, [props.overviewPage]);
-  
-  const costReducerStates = props.overviewPage.fetchedTotalCostBarChart
-  useEffect(() => {
-    if (costReducerStates) {
-      const labels = costReducerStates.map((reducer) => {
-        return reducer.month;
-      });
-      const clientCost = costReducerStates.map((reducer) => {
-        return reducer.client_cost;
-      });
-      const energy = costReducerStates.map((reducer) => {
-        return reducer.energy;
-      });
-      const costDiffernce = costReducerStates.map((reducer) => {
-        return reducer.cost_difference;
-      });
-
-      const costDataSource = {
-        labels,
-        datasets: [
-          {
-            label: "Cost",
-            data: clientCost,
-            backgroundColor: "#43D540",
-            type: "line",
-            borderColor: "#0000FF",
-            borderWidth: 1,
-            fill: false,
-            // xAxisID: "axis-bar",
-          },
-          {
-            label: "Energy",
-            data: energy,
-            backgroundColor: "#F9CF40",
-          },
-        ],
-      };
-      setCostChartData(costDataSource);
-      console.log("Date Value ===== ", dateSearch);
-    }
-  }, [costReducerStates]);
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      // title: {
-      //   display: true,
-      //   text: 'Total Energy',
-      // },
-    },
-
-    scales: {
-      x: {
-        stacked: true,
-        // barPercentage: 0.4,
-        grid: {
-          drawOnChartArea: false
-        }
-      },
-      y: {
-        stacked: true,
-        grid: {
-          drawOnChartArea: false
-        }
-      }
-    },
-
-
-  };
-
-  const options2 = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-      // title: {
-      //   display: true,
-      //   text: 'History',
-      // },
-    },
-
-    scales: {
-      // xAxis: [
-      //   {
-      //     type: "category",
-      //     id: "axis-bar",
-      //   },
-      
-      //   // {
-      //   //   type: "time",
-      //   //   id: "axis-time",
-      //   //   display: true,
-      //   // },
-      // ],
-      y: {
-        grid: {
-          drawOnChartArea: false
-        }
-      },
-      x: {
-        grid: {
-          drawOnChartArea: false
-        }
-      }
-    },
-  };
-
   const data = props.overviewPage.fetchedKeyMetrics.results
+  const checkData = props.overviewPage?.fetchedKeyMetrics?.results?.[0]
 
   const keyMetricsPaginate = props.overviewPage.fetchedKeyMetrics
   const fetchNextPaginatedKeyMetric = () => {
@@ -288,10 +102,6 @@ function AdminOverview(props) {
       props.getKeyMetricsData(clientId, startDate, endDate, paginationQuery);
     }
   };
-  
-  const onSearchTotalEnergy = (e) => {
-    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, e.target.value)
-  }
 
   const onSearchKeyMetrics = (e) => {
     props.getKeyMetricsData(clientId, startDate, endDate, 1, e.target.value)
@@ -302,76 +112,91 @@ function AdminOverview(props) {
     {
       title: "Branch Name",
       dataIndex: "name",
+      width: "200px",
+      render: (text) => {
+        return (
+          <span
+            style={{
+              fontWeight: 'bold',
+            }}
+          >
+            {text}
+          </span>
+        )
+      },
       key: "name",
-      filters: [
-        {
-          text: 'Ad',
-          value: 'Ad',
-        },
-        {
-          text: 'Polaris',
-          value: 'Polaris',
-        },
-      ],
-      onFilter: (value, record) => record.name.indexOf(value) === 0,
       sorter: (a, b) => a.name.length - b.name.length,
-      sortDirections: ["descend"],
+      // sortDirections: ["descend"],
     },
     {
       title: "Baseline Energy (kWh)",
       dataIndex: "baseline_energy",
       key: "baseline_energy",
-      defaultSortOrder: "descend",
-      sorter: (a, b) => a.age - b.age,
+      // defaultSortOrder: "descend",
+      sorter: (a, b) => a.baseline_energy - b.baseline_energy,
     },
     {
       title: "Blended Cost of Energy",
       dataIndex: "blended_cost_of_energy",
       key: "blended_cost_of_energy",
-      defaultSortOrder: "descend",
-      sorter: (a, b) => a.age - b.age,
+      // defaultSortOrder: "descend",
+      sorter: (a, b) => a.blended_cost_of_energy - b.blended_cost_of_energy,
     },
     {
       title: "Usage Accuracy Diesel",
       dataIndex: "diesel_usage_accuracy",
       key: "diesel_usage_accuracy",
-      defaultSortOrder: "descend",
-      sorter: (a, b) => a.age - b.age,
+      // defaultSortOrder: "descend",
+      sorter: (a, b) => a.diesel_usage_accuracy - b.diesel_usage_accuracy,
     },
     {
       title: "Usage Accuracy Utility",
       dataIndex: "utility_usage_accuracy",
       key: "utility_usage_accuracy",
-      defaultSortOrder: "descend",
-      sorter: (a, b) => a.age - b.age,
+      // defaultSortOrder: "descend",
+      sorter: (a, b) => a.utility_usage_accuracy - b.utility_usage_accuracy,
     },
     {
       title: "Deviation Hours",
       dataIndex: "deviation_hours",
       key: "deviation_hours",
-      defaultSortOrder: "descend",
-      sorter: (a, b) => a.age - b.age,
+      // defaultSortOrder: "descend",
+      sorter: (a, b) => a.deviation_hours - b.deviation_hours,
     },
     {
       title: "PAPR",
       dataIndex: "papr",
       key: "papr",
-      defaultSortOrder: "descend",
-      sorter: (a, b) => a.age - b.age,
+      // defaultSortOrder: "descend",
+      sorter: (a, b) => a.papr - b.papr,
     },
     {
       title: "Fuel Efficiency",
       dataIndex: "fuel_efficiency",
       key: "fuel_efficiency",
-      defaultSortOrder: "descend",
-      sorter: (a, b) => a.age - b.age,
+      // defaultSortOrder: "descend",
+      sorter: (a, b) => a.fuel_efficiency - b.fuel_efficiency,
     },
     {
       title: "Generator Efficiency",
-      dataIndex: "generator_efficiency",
-      key: "generator_efficiency",
-      defaultSortOrder: "descend",
-      sorter: (a, b) => a.age - b.age,
+      dataIndex: "generator_size_efficiency_1",
+      key: "generator_size_efficiency_1",
+      // defaultSortOrder: "descend",
+      // sorter: (a, b) => a.generator_size_efficiency_1 - b.generator_size_efficiency_1,
+    },
+    {
+      // title: "Generator Efficiency",
+      dataIndex: "generator_size_efficiency_2",
+      key: "generator_size_efficiency_2",
+      // defaultSortOrder: "descend",
+      // sorter: (a, b) => a.generator_size_efficiency_2 - b.generator_size_efficiency_2,
+    },
+    {
+      // title: "Generator Efficiency",
+      dataIndex: "generator_size_efficiency_3",
+      key: "generator_size_efficiency_3",
+      // defaultSortOrder: "descend",
+      // sorter: (a, b) => a.generator_size_efficiency_3 - b.generator_size_efficiency_3,
     },
   ];
 
@@ -382,16 +207,36 @@ function AdminOverview(props) {
   return (
     <>
       <div className="AppHeader">
-        <Typography.Title>Admin Overview</Typography.Title>
+        <Typography.Title style={{ fontSize: "30px", fontWeight: "bold" }}>
+          Admin Overview
+        </Typography.Title>
         <Space>
           <div>
-            <Button>
+            <Button
+              style={{
+                width: "227.5px",
+                height: "42.32px",
+                fontWeight: "bold",
+                fontSize: "15px",
+                borderRadius: "11px",
+              }}
+            >
               <DownloadOutlined />
               Download Report
             </Button>
           </div>
           <div>
-            <Button style={{ backgroundColor: "#5C12A7", color: "white" }}>
+            <Button
+              style={{
+                backgroundColor: "#5C12A7",
+                color: "white",
+                width: "167.78px",
+                height: "42.32px",
+                fontSize: "15px",
+                borderRadius: "11px",
+                fontWeight: "bold",
+              }}
+            >
               <PlusOutlined />
               Add User
             </Button>
@@ -401,7 +246,7 @@ function AdminOverview(props) {
       <div className="##########">
         <section className="co2 & total-energy-card">
           <Space>
-            <div className="top-card">
+            <div className="top-card-1">
               <Space>
                 <div className="card-content">
                   <Image
@@ -420,7 +265,7 @@ function AdminOverview(props) {
                 </div>
               </Space>
             </div>
-            <div className="top-card">
+            <div className="top-card-2">
               <Space>
                 <div className="card-content">
                   <Image
@@ -443,137 +288,189 @@ function AdminOverview(props) {
         </section>
 
         <section className="total-energy-bar-chart">
-          <Card
+          <Typography.Title style={{ fontSize: "20px" }}>
+            Chart Metrics
+          </Typography.Title>
+          <div
+            className=""
             style={{
-              // width: 1070,
-              // height: 650,
-              borderRadius: 22,
+              // backgroundColor: "#F2F2F8",
+              width: "100%",
             }}
           >
-            <Space>
-              <h1
-                style={{marginRight: '500px', marginLeft: '10px', fontSize: '17Px'}}
-              >Total Energy</h1>
-              <Search
-                placeholder="Search by name"
-                onChange={onSearchTotalEnergy}
-                style={{
-                  width: 170,
-                }}
-              />
-              <RangePicker
-                style={{width:210}}
-                defaultValue={[
-                  dayjs("01/01/2024", dateFormat),
-                  dayjs("31/01/2024", dateFormat),
-                ]}
-                format={dateFormat}
-                onChange={onSelectDateTotalEnergy}
-              />
-            </Space>
-            <Bar 
-              // loading={props.overviewPage.fetchTotalEnergyBarChartLoading}
-              options={options} 
-              data={energyChartData} />
-            {/* <Pagination
-              totalPosts = {chartPages.lenght} 
-              postsPerPage = {postsPerPage}
-              setCurrentPage={setCurrentPage}
-            /> */}
+            <Button className="chart_buttons"
+              onClick={() => {
+                setShowTotalEnergyPage(true);
+                console.log("AWAITING ACTIONS FOR Total ENERGY");
+              }}
+            >
+              <ThunderboltOutlined />
+              Total Energy
+            </Button>
+            <Button className="chart_buttons"
+              onClick={() => {
+                setShowUtilityCostPage(true);
+                console.log("AWAITING ACTIONS FOR UTILITY COST");
+              }}
+            >
+              <FundOutlined />
+              Utility Cost
+            </Button>
+            <Button className="chart_buttons"
+              onClick={() => {
+                setShowUtilityEnergyPage(true);
+                console.log("AWAITING ACTIONS FOR utility energy");
+              }}
+            >
+              <ExpandAltOutlined />
+              Utility Energy
+            </Button>
+            <Button className="chart_buttons"
+              onClick={() => {
+                setShowDieselCostPage(true);
+                console.log("AWAITING ACTIONS FOR Diesel COST");
+              }}
+            >
+              <FundOutlined />
+              Diesel Cost
+            </Button>
+            <Button className="chart_buttons"
+              onClick={() => {
+                setShowDieselLitrePage(true);
+                console.log("AWAITING ACTIONS FOR diesel Litres");
+              }}
+            >
+              <DeleteOutlined />
+              Diesel Liters
+            </Button>
+          </div>
+        </section>
 
-            {/* <ReactPaginate 
-              previousLabel={'Previous'}
-              nextLabel={'Next'}
-              pageCount={pageCount}
-              onPageChange={handlePageChange}
-              containerClassName={"paginationBttns"}
-              previousLinkClassName={"previousBttn"}
-              nextLinkClassName={"nextBtnn"}
-              disabledClassName="paginationDisable"
-              activeClassName={"paginationActive"}
-            /> */}
-            {/* <button onClick={fetchNextPaginatedTotalEnergy} >Next</button>
-            <button onClick={fetchPrevPaginatedTotalEnergy}>Previous</button> */}
-            <div className="pagination">
-              <div>
-                <Button onClick={fetchPrevPaginatedTotalEnergy}>
-                  Previous
-                </Button>
-              </div>
-              <div>
-                <Button onClick={fetchNextPaginatedTotalEnergy}>Next</Button>
-              </div>
-            </div>
-          </Card>
-        </section>
+        {showDieselLitrePage ? (
+          <DieselLitreChart
+            ShowUtilityCostPage={showUtilityCostPage}
+            setShowUtilityCostPage={setShowUtilityCostPage}
+          />
+        ) : showUtilityEnergyPage ? (
+          <UtilityEnergyChart
+            showUtilityEnergyPage={showUtilityEnergyPage}
+            setShowUtilityEnergyPage={setShowUtilityEnergyPage}
+          />
+        ) : showDieselCostPage ? (
+          <DieselCostChart
+            showDieselCostPage={showDieselCostPage}
+            setShowDieselCostPage={setShowDieselCostPage}
+          />
+        ) : showUtilityCostPage ? (
+          <UtilityCostChart
+            showDieselLitrePage={showDieselLitrePage}
+            setShowDieselLitrePage={setShowDieselLitrePage}
+          />
+        ) : (
+          <TotalEnergyChart showTotalEnergyPage={showTotalEnergyPage} />
+        )}
+
         <section className="total-energy-bar-chart">
-          <Card
-            style={{
-              borderRadius: 22,
-            }}
-          >
-            <Space>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <div>
               <h1
-                style={{marginRight: '570px', fontSize: '17Px'}}
-              >History</h1>
-              <Search
-                placeholder="Search by name"
                 style={{
-                  width: 170,
+                  fontSize: "17Px",
                 }}
-              />
-              <RangePicker
-                style={{width:210}}
-                defaultValue={[
-                  dayjs("01/01/2024", dateFormat),
-                  dayjs("31/01/2024", dateFormat),
-                ]}
-                format={dateFormat}
-              />
-            </Space>
-            <Bar options={options2} data={costChartData} />
-          </Card>
-        </section>
-        <section className="total-energy-bar-chart">
-            <Space>
-              <h1
-                style={{marginRight: '500px', marginLeft: '10px', fontSize: '17Px'}}
-              >Key Metrics</h1>
+              >
+                Key Metrics
+              </h1>
+            </div>
+            <div>
               <Search
                 placeholder="Search by name"
-                // onSearch={onSearch}
                 onChange={onSearchKeyMetrics}
                 style={{
-                  width: 170,
+                  width: 285.57,
+                  marginRight: 15,
+                  // height: 43
                 }}
               />
               <RangePicker
-                style={{width:210}}
+                style={{
+                  width: 224.81,
+                  // height: 43
+                }}
                 defaultValue={[
-                  dayjs("01/01/2024", dateFormat),
-                  dayjs("31/01/2024", dateFormat),
+                  dayjs("01/04/2024", dateFormat),
+                  dayjs("30/04/2024", dateFormat),
                 ]}
                 format={dateFormat}
                 onChange={onSelectDateKeyMetrics}
               />
-            </Space>
-            <Table
-              loading={props.overviewPage.fetchKeyMetricsLoading}
-              dataSource={data} 
-              columns={columns} 
-              onChange={onChange}
-              pagination={false}
-            />
-            <div className="pagination">
-              <div>
-                <Button onClick={fetchPrevPaginatedKeyMetric}>
-                  Previous
-                </Button>
-              </div>
-              <div>
-                <Button onClick={fetchNextPaginatedKeyMetric}>Next</Button>
-              </div>
             </div>
+          </div>
+          <Table
+            className="custom-row-hover"
+            onRow={(record, index) => ({
+              style: {
+                color: record === checkData ? "#5C12A7" : "",
+                backgroundColor: record === checkData ? "#F2F2F8" : "",
+              },
+            })}
+            loading={props.overviewPage.fetchKeyMetricsLoading}
+            dataSource={data}
+            // columns={columns}
+            onChange={onChange}
+            pagination={false}
+          >
+            <Column 
+              title="Branch Name" 
+              dataIndex="name" 
+              key="name" 
+              width= "200px"
+              // render= {
+              //   (text) => {
+              //     return (
+              //       <span
+              //         style={{
+              //           fontWeight: 'bold',
+              //         }}
+              //       >
+              //         {text}
+              //       </span>
+              //     )
+              //   },
+              // }
+            />
+            <Column title="Baseline Energy (kWh)" dataIndex="baseline_energy" key="baseline_energy" />
+            <Column title="Blended Cost of Energy" dataIndex="blended_cost_of_energy" key="blended_cost_of_energy" />
+            <Column title="Usage Accuracy Diesel" dataIndex="diesel_usage_accuracy" key="diesel_usage_accuracy" />
+            <Column title="Usage Accuracy Utility" dataIndex="utility_usage_accuracy" key="utility_usage_accuracy" />
+            <Column title="Deviation Hours" dataIndex="deviation_hours" key="deviation_hours" />
+            <Column title="PAPR" dataIndex="papr" key="papr" />
+            <Column title="Fuel Efficiency" dataIndex="fuel_efficiency" key="fuel_efficiency" />
+            <ColumnGroup title="Generator Efficiency">
+            <Column
+              // title="Gen1"
+              dataIndex="generator_size_efficiency_1"
+              key="generator_size_efficiency_1"
+            />
+            <Column
+              // title="Gen2"
+              dataIndex="generator_size_efficiency_2"
+              key="generator_size_efficiency_2"
+            />
+            <Column
+              // title="Gen3"
+              dataIndex="generator_size_efficiency_3"
+              key="generator_size_efficiency_3"
+            />
+          </ColumnGroup>
+          </Table>
+          <div className="pagination">
+            <div>
+              <Button onClick={fetchPrevPaginatedKeyMetric}>Previous</Button>
+            </div>
+            <div>
+              <Button onClick={fetchNextPaginatedKeyMetric}>Next</Button>
+            </div>
+          </div>
         </section>
       </div>
     </>
@@ -583,7 +480,6 @@ function AdminOverview(props) {
 const mapDispatchToProps = {
   getTotalEnergyTopCard,
   getTotalEnergyBarChartData,
-  getTotalCostBarChartData,
   getKeyMetricsData,
 };
 
