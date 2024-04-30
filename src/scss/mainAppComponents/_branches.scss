@@ -1,0 +1,99 @@
+
+/*--------------------------------------------------------------
+# Branches
+--------------------------------------------------------------*/
+/* branches stylings */
+.branches-total_costs {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    padding: 16px;
+    // text-align: center;
+    min-width: none;
+  }
+
+  .view_branch_top_left {
+    margin-left: 30px;
+  }
+
+  .view_branch-text {
+    font-size: 20px;
+    // margin: auto;
+    margin-left: 50px;
+  }
+
+
+.branches-total_costs-card {
+    padding: 1.5rem 2rem;
+    background: #FFFFFF;
+    border-radius: 5px;
+    filter: drop-shadow(0px 0px 6px rgba(0, 0, 0, 0.15));
+    text-align: center;
+    margin-bottom: 1rem;
+    min-width: none;
+  }
+  
+  .branches-total_costs-title {
+    font-family: 'Montserrat';
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 22px;
+    color: #000000;
+    margin-bottom: 1rem;
+    min-width: none;
+  }
+  
+  .branches-total_costs-text {
+    font-family: 'Montserrat';
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    color: #000000;
+    margin-bottom: 0;
+    min-width: none;
+  }
+
+
+.branches-total_costs-title {
+    font-family: 'Montserrat';
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 22px;
+    color: #000000;
+    margin-bottom: 1rem;
+    width: auto;
+  }
+  
+  .branches-total_costs-text {
+    font-family: 'Montserrat';
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 20px;
+    color: #000000;
+    margin-bottom: 0;
+  }
+
+  @media only screen and (min-width: 280px) and (max-width: 767px) {
+    .branches-total_costs-card {
+      padding: 1.5rem;
+    }
+  
+    .branches-total_costs-title {
+      font-size: 14px;
+      line-height: 15px;
+    }
+  
+    .branches-total_costs-text {
+      font-size: 13px;
+      line-height: 15px;
+    }
+  
+    .view_branch_top div {
+      padding-right: 0;
+      margin: 100px;
+    }
+  
+    .view_branch-text {
+      font-size: 20px;
+    }
+  }

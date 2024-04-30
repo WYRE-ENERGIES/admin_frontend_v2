@@ -174,6 +174,7 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
               style={{
                 borderRadius: 22,
               }}
+              loading={props.overviewPage.fetchTotalCostBarChartLoading}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>

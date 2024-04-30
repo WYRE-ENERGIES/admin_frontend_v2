@@ -175,6 +175,7 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
               style={{
                 borderRadius: 22,
               }}
+              loading={props.overviewPage.fetchDieselCostBarChartLoading}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>

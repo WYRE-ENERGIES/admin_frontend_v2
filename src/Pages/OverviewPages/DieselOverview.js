@@ -13,7 +13,7 @@ import { getDieselData } from "../../redux/actions/diesel/diesel.action";
 function DieselOverview(props) {
   const [showprocurementsModal, setShowprocurementsModal] = useState(false)
   const [showConsumptionsModal, setShowConsumptionsModal] = useState(false)
-  const [ClientUserTableData, setDieselDataTable] = useState({})
+  const [dieselDataTable, setDieselDataTable] = useState({})
 
   const { Search } = Input;
   
@@ -32,33 +32,33 @@ function DieselOverview(props) {
 
   const data = props.dieselPage.fetchedDiesel.results
 
-  const clientUersListPaginate = props.dieselPage.fetchedDiesel.results
+  const dieselOverviewPaginate = props.dieselPage.fetchedDiesel
   const fetchNextPaginatedUsersList = () => {
     const clientId = props.auth.userData.client_id;
-    const currentPage = Number(clientUersListPaginate.page) || 0;
-    const itemsPerPage = Number(clientUersListPaginate.count) || 10;
-    const totalPages = Number( clientUersListPaginate.total_pages) || 0
+    const currentPage = Number(dieselOverviewPaginate.page) || 0;
+    const itemsPerPage = Number(dieselOverviewPaginate.count) || 10;
+    const totalPages = Number( dieselOverviewPaginate.total_pages) || 0
     if (!currentPage || (totalPages - currentPage) > 0) {
       const paginationQuery = `&page=${currentPage+1}`;
-      props.getClientUsersData(clientId, paginationQuery);
+      props.getDieselData(clientId, paginationQuery);
     }
   };
 
   const fetchPrevPaginatedUsersList = () => {
     const clientId = props.auth.userData.client_id;
-    const currentPage = Number(clientUersListPaginate.page) || 0;
-    const itemsPerPage = Number(clientUersListPaginate.count) || 10;
+    const currentPage = Number(dieselOverviewPaginate.page) || 0;
+    const itemsPerPage = Number(dieselOverviewPaginate.count) || 10;
     if (currentPage && currentPage > 1) {
       const paginationQuery = `&page=${currentPage-1}`;
-      props.getClientUsersData(clientId, paginationQuery);
+      props.getDieselData(clientId, paginationQuery);
     }
   };
 
   const consumptionsColumn = () => ({
-    key: 'consumptions',
+    key: 'consumption',
     title: 'Consumptions',
     width: '10%',
-    dataIndex: 'consumptions',
+    dataIndex: 'consumption',
     render: (_, record) => {
         return (
           <a
@@ -166,40 +166,42 @@ function DieselOverview(props) {
   const procurementModal = [
     {
       title: "Date",
-      // dataIndex: "name",
-      // key: "name",
+      dataIndex: "date",
+      key: "date",
     },
     {
       title: "Price",
-      // dataIndex: "current_month_consumption_in_litres",
+      dataIndex: "price_per_litre",
       // render: (value) => <>{value + 'L'}</>,
-      // key: "current_month_consumption_in_litres",
+      key: "price_per_litre",
     },
     {
       title: "Liters",
-      // dataIndex: "previous_day_consumption_in_litres",
-      // render: (value) => <>{value + 'L'}</>,
-      // key: "previous_day_consumption_in_litres",
+      dataIndex: "quantity",
+      render: (value) => <>{value + 'L'}</>,
+      key: "quantity",
     },
   ];
+
+  console.log("DIESEL OVERVIEW DATA = ", data);
 
   const consumptionModal = [
     {
       title: "Date",
-      // dataIndex: "name",
-      // key: "name",
+      dataIndex: "date",
+      key: "date",
     },
     {
       title: "Consumed",
-      // dataIndex: "previous_day_consumption_in_litres",
-      // render: (value) => <>{value + 'L'}</>,
-      // key: "previous_day_consumption_in_litres",
+      dataIndex: "consumption",
+      render: (value) => <>{value + 'L'}</>,
+      key: "consumption",
     },
     {
       title: "Fuel efficiency ratio(%)",
-      // dataIndex: "previous_day_consumption_in_litres",
+      dataIndex: "fuel_efficincy_ratio",
       // render: (value) => <>{value + 'L'}</>,
-      // key: "previous_day_consumption_in_litres",
+      key: "fuel_efficincy_ratio",
     },
   ];
 
@@ -250,7 +252,7 @@ function DieselOverview(props) {
             height={594}
           >
             <Table
-              // dataSource={}
+              dataSource={dieselDataTable.procurements}
               // loading={}
               columns={procurementModal}
               pagination={false}
@@ -273,7 +275,7 @@ function DieselOverview(props) {
             height={594}
           >
             <Table
-              // dataSource={}
+              dataSource={dieselDataTable.consumption}
               // loading={}
               columns={consumptionModal}
               pagination={false}

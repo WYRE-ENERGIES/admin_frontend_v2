@@ -32,6 +32,9 @@ import Sider from "antd/es/layout/Sider";
 import useToken from "antd/es/theme/useToken";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { logUserOut } from "../../redux/actions/auth/auth.action";
+import { useDispatch } from "react-redux";
+import { logoutUser } from "../../redux/actions/auth/auth.creator";
   
 function SideMenu({collapsed, setCollapsed}) {
     const [selectedLocation, setSelectedLocation] = useState('/')
@@ -39,6 +42,21 @@ function SideMenu({collapsed, setCollapsed}) {
     const {
       token: { colorBgContainer },
     } = theme.useToken();
+    const dispatch = useDispatch
+    const onLogout = () => {
+      const navigateTo = '/'
+      dispatch(logoutUser())
+      navigate(navigateTo)
+    }
+    const logOut = () => {
+      console.log('Loging-out in first line ========' );
+      dispatch(logoutUser());
+      console.log('Loging-out in dispatch ========' );
+      window.localStorage.removeItem('loggedWyreUserAdmin');
+      console.log('Loging-out 333 ========' );
+      window.location.href = '/';
+      console.log('Loging-out 4444 ========' );
+    };
     
     const items = [
       {
@@ -78,7 +96,9 @@ function SideMenu({collapsed, setCollapsed}) {
       },
       {
         label: "Log out",
-        key: "/logout",
+        key: '/log-out',
+        // key: {onclick:() => logOut()},
+        onclick:{logOut},
         icon: <LoginOutlined />,
       },
       {

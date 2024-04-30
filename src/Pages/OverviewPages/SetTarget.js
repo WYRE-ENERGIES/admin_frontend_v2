@@ -119,7 +119,7 @@ function SetTarget(props) {
           Set Target
         </Typography.Title>
       </div>
-      { switchTarget ? (<EditTarget  />) :
+      { props.targetPage.fetchedTarget ? (<EditTarget  />) :
       <div className="set_target_page">
         <Form
           form={form}

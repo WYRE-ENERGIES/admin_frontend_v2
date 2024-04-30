@@ -1,11 +1,11 @@
 import { APIService } from "../../../config/Api/apiServices";
 import { getDieselLoading, getDieselSuccess } from "./diesel.creator";
 
-export const getDieselData = (clientId) => async (dispatch) => {
+export const getDieselData = (clientId, paginationQuery=1) => async (dispatch) => {
 
     dispatch(getDieselLoading(true));
   
-    const requestUrl = `/api/v2/client-diesel-overview/${clientId}/`;
+    const requestUrl = `/api/v2/client-diesel-overview/${clientId}/?page=${paginationQuery}`;
     try {
       const response = await APIService.get(requestUrl);
   

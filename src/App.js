@@ -1,13 +1,12 @@
 import { BrowserRouter } from 'react-router-dom';
 import './App.css';
-import AppFooter from './components/footer/AppFooter';
-import AppHeader from './components/header/AppHeader';
 import PageView from './components/pageContent/PageViews/PageView';
 import SideMenu from './components/sideBar/SideMenu';
 import Login from './Pages/AuthPages/Login';
 import authHelper from './helpers/authHelper';
 import { theme } from 'antd';
 import { useState } from 'react';
+import AuthRoute from './components/routes/AuthRoute';
 
 function App() {
   const decodedUser = authHelper()
@@ -19,6 +18,7 @@ function App() {
   const doColapse = () => {
   }
   // setCollapsed(collapsed)
+  console.log('DECODE-USER', decodedUser);
   return (
     <div className="App">
       <BrowserRouter>
@@ -32,7 +32,7 @@ function App() {
           </div>
           {/* <AppFooter /> */}
         </div> :
-        <Login />
+        <AuthRoute />
       }
       </BrowserRouter>
     </div>

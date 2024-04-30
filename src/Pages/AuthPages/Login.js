@@ -30,7 +30,7 @@ function Login(props) {
 
   return (
     <div className='auth-page-container'>
-      {/* <Spin spinning={props.auth.loginUserLoading} > */}
+      <Spin spinning={props.auth.loginUserLoading} >
         <div
           className='signup-login-contact-form'
         >
@@ -86,8 +86,9 @@ function Login(props) {
         </div>
 
         {/* <SocialCluster /> */}
-      {/* </Spin> */}
+      </Spin>
     </div>
+    // @media screen and (max-width: 991px) {
   );
 }
 

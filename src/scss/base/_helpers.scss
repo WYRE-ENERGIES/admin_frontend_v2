@@ -1,0 +1,167 @@
+/* Text meant only for screen readers. */
+.h-screen-reader-text {
+  border: 0;
+  clip: rect(1px, 1px, 1px, 1px);
+  clip-path: inset(50%);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  word-wrap: normal !important;
+
+  &:focus {
+    background-color: white;
+    clip: auto !important;
+    clip-path: none;
+    color: $dark;
+    display: block;
+    height: auto;
+    left: 5px;
+    line-height: normal;
+    padding: 15px 23px 14px;
+    text-decoration: none;
+    top: 5px;
+    width: auto;
+    z-index: 100000;
+    font-size: 1.8rem;
+  }
+}
+
+.h-list-reset {
+  list-style: none;
+  padding: 0;
+}
+
+.h-text-left {
+  text-align: left;
+}
+
+.h-text-center {
+  text-align: center;
+}
+
+.h-text-right {
+  text-align: right;
+}
+
+.h-show {
+  display: block;
+}
+
+.h-hide {
+  display: none;
+}
+
+.h-not-visible {
+  visibility: hidden;
+}
+
+.h-flex {
+  display: flex;
+}
+
+.h-block {
+  display: block;
+}
+
+.h-hidden-small-up {
+  @include media('>=small') {
+    display: none;
+  }
+}
+
+.h-hidden-medium-up {
+  @include media('>=medium') {
+    display: none;
+  }
+}
+
+.h-hidden-1296-up {
+  @include media('>=desktop-header-break') {
+    display: none;
+  }
+}
+
+.h-hidden-small-down {
+  @include media('<small') {
+    display: none;
+  }
+}
+
+.h-hidden-medium-down {
+  @include media('<medium') {
+    display: none;
+  }
+}
+
+.h-hidden-1296-down {
+  @include media('<desktop-header-break') {
+    display: none;
+  }
+}
+
+.h-mr-16 {
+  margin-right: 16px;
+}
+
+.h-mt-16 {
+  margin-top: 16px;
+}
+
+.h-mt-24 {
+  margin-top: 24px;
+}
+
+.h-ml-20 {
+  margin-left: 20px;
+}
+
+.h-no-margin {
+  margin: 0;
+}
+
+.h-white-fill-medium-up {
+  @include media('>=medium') {
+    fill: $white;
+  }
+
+  path {
+    @include media('>=medium') {
+      fill: $white;
+    }
+  }
+}
+
+.h-purple-stroke-medium-up {
+  @include media('>=medium') {
+    stroke: $purple;
+  }
+
+  path {
+    @include media('>=medium') {
+      stroke: $purple;
+    }
+  }
+}
+
+.h-red-text {
+  color: $red;
+}
+
+.h-green-text {
+  color: $green;
+}
+
+.h-caption-up {
+  caption-side: top;
+}
+
+.h-overflow-auto {
+  overflow: auto;
+}
+
+.h-title-case {
+  text-transform: capitalize;
+}

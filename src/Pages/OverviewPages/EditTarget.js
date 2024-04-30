@@ -45,12 +45,12 @@ const SubmitButton = ({ form }) => {
   }, [values]);
   return (
     <Button
-      style={{ backgroundColor: "#5C12A7", color: "white", width: "40%" }}
+      style={{ backgroundColor: "#5C12A7", color: "white", width: "404px", height: "52px" }}
       type="primary"
       htmlType="submit"
       disabled={!submittable}
     >
-      Save Changes
+      Update Changes
     </Button>
   );
 };
@@ -89,10 +89,6 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
   };
 
   useEffect(() => {
-    showTargetInfo()
-  }, [])
-
-  useEffect(() => {
     // if (switchTarget) {
     // }
     form.setFieldsValue({
@@ -110,8 +106,6 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
 
   return (
     <>
-    {/* {switchTarget ? 
-    }   */}
       <div className="set_target_page">
         <Form
           form={form}
@@ -242,7 +236,7 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
             <SubmitButton form={form} />
           </Form.Item>
         </Form>
-      </div> : 'NOTING'
+      </div>
     </>
   );
 }

@@ -164,6 +164,7 @@ function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) 
               style={{
                 borderRadius: 22,
               }}
+              loading={props.overviewPage.fetchUtilityEnergyBarChartLoading}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>

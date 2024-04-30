@@ -1,0 +1,127 @@
+.auth-page-container {
+  padding-bottom: 120px;
+
+  @include media('>medium') {
+    padding-bottom: 190px;
+  }
+}
+
+.signup-login-contact-form {
+  // padding: 70px $small-gutter;
+  // padding-bottom: 0px;
+  // text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  @include media('>medium') {
+    padding-top: 111px;
+  }
+}
+
+.first-heading--auth {
+  color: $dark-blue;
+  font-size: 1.9rem;
+  font-weight: $regular;
+  margin-bottom: 28px;
+
+  @include media('>medium') {
+    font-size: 2.4rem;
+  }
+}
+
+.reset-password-note {
+  font-weight: $light;
+  line-height: 32px;
+  margin: auto;
+  margin-bottom: 46px;
+  max-width: 500px;
+
+  @include media('>medium') {
+    max-width: 815px;
+  }
+}
+
+.outlined-input-container {
+  margin: 14px 0;
+}
+
+.contact-textarea {
+  border: 1px solid $border-grey3;
+  border-radius: 6px;
+  color: $text-blue;
+  font-size: 1.4rem;
+  height: 145px;
+  margin-bottom: 10px;
+  max-width: 350px;
+  padding: 15px 5.9%;
+  resize: vertical;
+  width: 100%;
+
+  @include media('>medium') {
+    font-size: 1.6rem;
+    max-width: 408px;
+    padding: 15px 24px;
+  }
+
+  &::placeholder {
+    color: $text-blue;
+    opacity: 1;
+  }
+}
+
+.signup-login-contact-error-message {
+  font-size: 1.4rem;
+  color: $red;
+}
+
+.forgot-password-wrapper {
+  margin: 16px auto 40px;
+}
+
+.forgot-password {
+  color: $light-blue;
+  font-family: $auth-font;
+  font-size: 1.4rem;
+  font-weight: $bold;
+  text-decoration: underline;
+
+  &:hover {
+    color: $light-blue;
+  }
+}
+
+.signup-login-contact-button {
+  background: $purple;
+  border: 0;
+  border-radius: 6px;
+  color: $white;
+  cursor: pointer;
+  font-size: 1.4rem;
+  font-weight: $bold;
+  height: 45px;
+  max-width: 350px;
+  text-align: center;
+  width: 100%;
+
+  @include media('>medium') {
+    font-size: 1.6rem;
+    height: 60px;
+    max-width: 408px;
+    padding: 0 24px;
+  }
+}
+
+.social-cluster-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.social-cluster-item {
+  margin-right: 10px;
+
+  &.no-right-margin {
+    margin-right: 0;
+  }
+}

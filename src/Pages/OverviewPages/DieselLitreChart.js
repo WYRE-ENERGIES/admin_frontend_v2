@@ -36,6 +36,7 @@ ChartJS.register(
 
 function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const [dateSearch, setDateSearch] = useState('')
+  const [loading, setLoading] = useState('')
   const [costChartData, setCostChartData] = useState({
     labels: [],
     datasets: []
@@ -61,7 +62,8 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const utilityEnergyReducerStates = props.overviewPage.fetchedDieselLitresBarChart
   const reducerStates = props.overviewPage
   console.log('Reducer states->>>>>>>>>>>>', reducerStates);
-  console.log('Utility-Energy>>>>>>>>>>>>', utilityEnergyReducerStates);
+  console.log('Diesel-Liters reducer>>>>>>>>>>>>', utilityEnergyReducerStates);
+  console.log('Loader>>>>>>>>>>>>', props.overviewPage.fetchDieselLitresBarChartLoading);
   useEffect(() => {
     if (utilityEnergyReducerStates) {
       const labels = utilityEnergyReducerStates.cost_overview.map((reducer) => {
@@ -99,6 +101,7 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
         ],
       };
       setCostChartData(costDataSource);
+      setLoading(props.overviewPage.fetchDieselLitresBarChartLoading)
       console.log("Date Value ===== ", dateSearch);
     }
   }, [utilityEnergyReducerStates]);
@@ -173,6 +176,7 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
               style={{
                 borderRadius: 22,
               }}
+              loading={props.overviewPage.fetchDieselLitresBarChartLoading}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>
@@ -196,7 +200,10 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                   />
                 </div>
               </div>
-              <Bar options={options} data={costChartData} />
+              <Bar 
+                options={options} 
+                data={costChartData} 
+              />
             </Card>
           </section>
         

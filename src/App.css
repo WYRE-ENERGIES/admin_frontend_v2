@@ -162,12 +162,127 @@
 
 
 /* AUTH Stuffs start */
+/* Auth Header */
+.header--auth {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 16px;
+  padding-top: 16px;
+
+  /* @include media('>=medium') { */
+    align-items: center;
+    box-shadow: 'grey-box-shadow';
+    flex-direction: row;
+    justify-content: space-between;
+    padding-left: 20px;
+    padding-right: 20px;
+  /* } */
+}
+
+.header-logo-and-hamburger--auth {
+  display: flex;
+  justify-content: space-between;
+}
+
+.header-logo-image--auth {
+  height: 40px;
+  width: 100px;
+
+  /* @include media('>=medium') { */
+    height: 50px;
+    width: 122px;
+  /* } */
+}
+
+.header-logo-latest-image--auth {
+  height: 40px;
+  width: 100px;
+
+  /* @include media('>=medium') { */
+    height: 100px;
+    /* width: 220px; */
+  /* } */
+}
+
+.hamburger-button--auth {
+  border: 0;
+  padding: 4px 10px;
+}
+
+.hamburger-button--auth {
+  padding: 4px 0px 4px 20px;
+}
+
+.hamburger-button__image--auth {
+  height: 24px;
+  stroke: dark;
+}
+
+.header-nav--auth {
+  padding: 20px 0;
+
+  /* @include media('>=medium') { */
+    /* padding: 0; */
+  /* } */
+}
+
+.header-links-list--auth {
+  /* @include media('>=medium') { */
+    align-items: center;
+    display: flex;
+    padding-left: 'large-gutter';
+    list-style-type: none;
+  /* } */
+}
+
+.header-nav-list__item--auth {
+  border-top: 'border-grey2' 1px solid;
+  font-size: 1.4rem;
+  padding: 15px 0;
+  padding-left: 7px;
+
+  /* @include media('>=medium') { */
+    border-top: 0;
+    margin-right: 0;
+    padding: 10px 0;
+    padding-right: 30px;
+  /* } */
+
+  /* &:last-of-type { */
+    /* border-bottom: 'border-grey2' 1px solid;
+    padding: 0; */
+  /* } */
+}
+
+.header-short-button--auth {
+  background-color: darkblue;
+  border: 0;
+  border-radius: 8px;
+  color: white;
+  display: block;
+  font-weight: bold;
+  padding: 13px 0;
+  text-align: center;
+  text-decoration: none;
+  width: 75%;
+
+  &:hover {
+    color: white;
+  }
+
+  /* @include media('>=medium') { */
+    padding: 13px 26px;
+  /* } */
+}
+
+/* Auth Form */
 .auth-page-container {
+  box-shadow: 4px 0px 8px rgba(0, 0, 0, 0.15);
   padding-bottom: 120px;
 
-  @include media('>medium') {
+  /* @include media('>medium') { */
     padding-bottom: 190px;
-  }
+  /* } */
 }
 
 .signup-login-contact-form {
@@ -178,20 +293,20 @@
   justify-content: center;
   align-items: center;
 
-  @include media('>medium') {
+  /* @include media('>medium') { */
     padding-top: 111px;
-  }
+  /* } */
 }
 
 .first-heading--auth {
-  color: darkblue;
-  font-size: 1.9rem;
-  font-weight: regular;
+  /* color: darkblue; */
+  /* font-size: 1.9rem; */
+  font-weight: 'regular';
   margin-bottom: 28px;
 
-  @include media('>medium') {
-    font-size: 2.4rem;
-  }
+  /* @include media('>medium') { */
+    /* font-size: 2.4rem; */
+  /* } */
 }
 
 .reset-password-note {
@@ -201,17 +316,21 @@
   margin-bottom: 46px;
   max-width: 500px;
 
-  @include media('>medium') {
+  /* @include media('>medium') { */
     max-width: 815px;
-  }
+  /* } */
+}
+
+.signup-login-contact-input {
+  width: 150%;
 }
 
 .outlined-input-container {
-  margin: 14px 0;
+  margin: 214px 0;
 }
 
 .contact-textarea {
-  border: 1px solid border-grey3;
+  border: 1px solid 'border-grey3';
   border-radius: 6px;
   color: text blue;
   font-size: 1.4rem;
@@ -222,11 +341,11 @@
   resize: vertical;
   width: 100%;
 
-  @include media('>medium') {
+  /* @include media('>medium') { */
     font-size: 1.6rem;
     max-width: 408px;
     padding: 15px 24px;
-  }
+  /* } */
 
   &::placeholder {
     color: text blue;
@@ -245,18 +364,18 @@
 
 .forgot-password {
   color: lightblue;
-  font-family: auth-font;
+  font-family: 'auth-font';
   font-size: 1.4rem;
   font-weight: bold;
   text-decoration: underline;
 
   &:hover {
-    color: light-blue;
+    color: 'light-blue';
   }
 }
 
 .signup-login-contact-button {
-  background: purple;
+  background: darkblue;
   border: 0;
   border-radius: 6px;
   color: white;
@@ -266,14 +385,14 @@
   height: 45px;
   max-width: 350px;
   text-align: center;
-  width: 100%;
+  width: 150%;
 
-  @include media('>medium') {
+  /* @include media('>medium') { */
     font-size: 1.6rem;
     height: 60px;
     max-width: 408px;
     padding: 0 24px;
-  }
+  /* } */
 }
 
 .social-cluster-container {
@@ -289,6 +408,138 @@
     margin-right: 0;
   }
 }
+
+/* Auth Footer */
+.footer {
+  box-shadow: 4px 0px 8px rgba(0, 0, 0, 0.15);
+}
+
+.footer-top {
+  padding: 70px ;
+
+  /* @include media('>medium') { */
+    align-items: flex-start;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 82px 'large-gutter';
+  /* } */
+}
+
+.footer-logo-container {
+  margin-bottom: 70px;
+  display: block;
+
+  /* @include media('>=medium', '<1001px') { */
+    /* margin-right: 10%; */
+  /* } */
+
+  /* @include media('>=1001px', '<1133px') { */
+    /* margin-right: 20%; */
+  /* } */
+
+  /* @include media('>=1133px') { */
+    margin-right: 30%;
+  /* } */
+}
+
+.footer-logo-image {
+  height: 40px;
+  width: 100px;
+
+  /* @include media('>=medium') { */
+    height: 50px;
+    width: 122px;
+  /* } */
+}
+
+.all-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.footer-links-container.first {
+  /* &.first { */
+    width: 11ch;
+
+    /* @include media('>medium') { */
+      width: 17ch;
+    /* } */
+  /* } */
+}
+.footer-links-container.second {
+  /* &.second { */
+    width: 16ch;
+
+    /* @include media('>medium') { */
+      width: 23ch;
+    /* } */
+  /* } */
+}
+.footer-links-container.third {
+  /* &.third { */
+    width: 18ch;
+  /* } */
+}
+/* } */
+
+.footer-heading {
+  color: darkblue;
+  font-weight: 'regular';
+  font-family: 'roboto';
+  margin: 20px 0;
+  text-align: center;
+
+  /* @include media('>medium') { */
+    margin-top: 0;
+    font-size: 1.7rem;
+  /* } */
+}
+
+.footer-links-list {
+  margin: 15px 0;
+}
+
+.footer-links-list-item,
+.footer-link {
+  color: black;
+  font-style: normal;
+  line-height: 144%;
+  font-family: 'auth-font';
+  list-style-type: none;
+
+  /* @include media('>medium') { */
+    font-size: 1.2rem;
+    text-align: left;
+  /* } */
+}
+
+.footer-links-list-item {
+  margin-top: 12px;
+}
+
+.footer-link {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.footest {
+  font-family: 'roboto';
+  margin-top: 70px;
+  padding: 22px 'small-gutter';
+  background-color: rgba(color= #6a8ba3, alpha= 0.04);
+
+  /* @include media('>medium') { */
+    padding: 27px 'large-gutter';
+    padding-left: 15%;
+  /* } */
+}
+
+.footest-text {
+  color: purple;
+}
+
+/* ......AUTH PAGE END.... */
 
 
 /* React-Paginate */

@@ -1,0 +1,16 @@
+.main-container {
+  @include media('>=medium') {
+    width: calc(100% - 250.45px);
+
+    &.h-full-width {
+      width: 100%;
+    }
+  }
+}
+
+.page-content {
+  background-color: $bluegrey;
+  @extend %gutters;
+  padding-bottom: 30px;
+  min-height: 100vh;
+}

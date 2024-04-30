@@ -1,4 +1,4 @@
-import OtherRoute from "../../routes/OtherRoute";
+import AuthRoute from "../../routes/AuthRoute";
 import OverviewRoute from "../../routes/OverviewRoute";
 
 function PageView() {

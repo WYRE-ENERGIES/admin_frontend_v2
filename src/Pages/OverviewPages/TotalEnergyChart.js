@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { getKeyMetricsData, getTotalCostBarChartData, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
+import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
@@ -33,10 +33,8 @@ ChartJS.register(
 );
 
 
-function TotalEnergyChart(props, showTotalEnergyPage) {
+function TotalEnergyChart(props) {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [dateSearch, setDateSearch] = useState('')
-  const [showUtilityCostPage, setShowUtilityCostPage] = useState(false)
   const [paginationData, setPaginationData] = useState({})
   const [energyChartData, setEnergyChartData] = useState({
     labels: [],
@@ -44,7 +42,6 @@ function TotalEnergyChart(props, showTotalEnergyPage) {
   })
 
   const { Search } = Input;
-  const handleDateSearch = (e) => setDateSearch(e.target.value)
   
   dayjs.extend(customParseFormat);
   const dateFormat = 'DD/MM/YYYY';
@@ -209,6 +206,7 @@ function TotalEnergyChart(props, showTotalEnergyPage) {
                 // height: 650,
                 borderRadius: 22,
               }}
+              loading={props.overviewPage.fetchTotalEnergyBarChartLoading}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>
@@ -246,7 +244,6 @@ function TotalEnergyChart(props, showTotalEnergyPage) {
                 </div>
               </div>
               <Bar
-                // loading={props.overviewPage.fetchTotalEnergyBarChartLoading}
                 options={options}
                 data={energyChartData}
               />
@@ -290,7 +287,6 @@ function TotalEnergyChart(props, showTotalEnergyPage) {
 const mapDispatchToProps = {
   getTotalEnergyTopCard,
   getTotalEnergyBarChartData,
-  getTotalCostBarChartData,
   getKeyMetricsData,
 };
 

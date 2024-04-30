@@ -26,6 +26,11 @@ import TotalEnergyChart from "./TotalEnergyChart";
 import UtilityEnergyChart from "./UtilityEnergyChart";
 import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
+import ChartGroupButtons from "./ChartGroupButtons";
+import { BsFillBucketFill, BsProjectorFill, BsThunderboltFill } from "react-icons/bs";
+import { PiProjectorScreen } from "react-icons/pi";
+import { CiMoneyBill } from "react-icons/ci";
+import { BiMoney } from "react-icons/bi";
 
 ChartJS.register(
   CategoryScale,
@@ -36,6 +41,50 @@ ChartJS.register(
   Legend
 );
 
+const buttons = [
+  {
+    label: "Total Energy",
+    // key: "/",
+    icon: <ThunderboltOutlined />,
+  },
+  {
+    label: "Utility Cost",
+    // key: "/",
+    icon: <FundOutlined />,
+  },
+  {
+    label: "Utility Energy",
+    // key: "/",
+    icon: <ExpandAltOutlined />,
+  },
+  {
+    label: "Diesel Cost",
+    // key: "/",
+    icon: <FundOutlined />,
+  },
+  {
+    label: "Diesel Liters",
+    // key: "/",
+    icon: <DeleteOutlined />,
+  },
+]
+
+const RendeChartsComponents = ({index}) => {
+  switch (index) {
+    case 0: return <TotalEnergyChart />
+     break;
+    case 1: return <UtilityCostChart /> 
+     break;
+    case 2: return <UtilityEnergyChart /> 
+     break;
+    case 3: return <DieselCostChart /> 
+     break;
+    case 4: return <DieselLitreChart /> 
+     break;
+    default:
+      break;
+  }
+}
 
 function AdminOverview(props) {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -45,6 +94,7 @@ function AdminOverview(props) {
   const [showUtilityEnergyPage, setShowUtilityEnergyPage] = useState(false)
   const [showDieselCostPage, setShowDieselCostPage] = useState(false)
   const [showDieselLitrePage, setShowDieselLitrePage] = useState(false)
+  const [isSelectChart, setIsSelectChart] = useState(0)
   const [paginationData, setPaginationData] = useState({})
 
   const { Search } = Input;
@@ -185,14 +235,14 @@ function AdminOverview(props) {
       // sorter: (a, b) => a.generator_size_efficiency_1 - b.generator_size_efficiency_1,
     },
     {
-      // title: "Generator Efficiency",
+      title: "Generator Efficiency",
       dataIndex: "generator_size_efficiency_2",
       key: "generator_size_efficiency_2",
       // defaultSortOrder: "descend",
       // sorter: (a, b) => a.generator_size_efficiency_2 - b.generator_size_efficiency_2,
     },
     {
-      // title: "Generator Efficiency",
+      title: "Generator Efficiency",
       dataIndex: "generator_size_efficiency_3",
       key: "generator_size_efficiency_3",
       // defaultSortOrder: "descend",
@@ -286,7 +336,6 @@ function AdminOverview(props) {
             </div>
           </Space>
         </section>
-
         <section className="total-energy-bar-chart">
           <Typography.Title style={{ fontSize: "20px" }}>
             Chart Metrics
@@ -298,78 +347,10 @@ function AdminOverview(props) {
               width: "100%",
             }}
           >
-            <Button className="chart_buttons"
-              onClick={() => {
-                setShowTotalEnergyPage(true);
-                console.log("AWAITING ACTIONS FOR Total ENERGY");
-              }}
-            >
-              <ThunderboltOutlined />
-              Total Energy
-            </Button>
-            <Button className="chart_buttons"
-              onClick={() => {
-                setShowUtilityCostPage(true);
-                console.log("AWAITING ACTIONS FOR UTILITY COST");
-              }}
-            >
-              <FundOutlined />
-              Utility Cost
-            </Button>
-            <Button className="chart_buttons"
-              onClick={() => {
-                setShowUtilityEnergyPage(true);
-                console.log("AWAITING ACTIONS FOR utility energy");
-              }}
-            >
-              <ExpandAltOutlined />
-              Utility Energy
-            </Button>
-            <Button className="chart_buttons"
-              onClick={() => {
-                setShowDieselCostPage(true);
-                console.log("AWAITING ACTIONS FOR Diesel COST");
-              }}
-            >
-              <FundOutlined />
-              Diesel Cost
-            </Button>
-            <Button className="chart_buttons"
-              onClick={() => {
-                setShowDieselLitrePage(true);
-                console.log("AWAITING ACTIONS FOR diesel Litres");
-              }}
-            >
-              <DeleteOutlined />
-              Diesel Liters
-            </Button>
+            <ChartGroupButtons buttons={buttons} isSelectChart={isSelectChart} setIsSelectChart={setIsSelectChart} />
           </div>
         </section>
-
-        {showDieselLitrePage ? (
-          <DieselLitreChart
-            ShowUtilityCostPage={showUtilityCostPage}
-            setShowUtilityCostPage={setShowUtilityCostPage}
-          />
-        ) : showUtilityEnergyPage ? (
-          <UtilityEnergyChart
-            showUtilityEnergyPage={showUtilityEnergyPage}
-            setShowUtilityEnergyPage={setShowUtilityEnergyPage}
-          />
-        ) : showDieselCostPage ? (
-          <DieselCostChart
-            showDieselCostPage={showDieselCostPage}
-            setShowDieselCostPage={setShowDieselCostPage}
-          />
-        ) : showUtilityCostPage ? (
-          <UtilityCostChart
-            showDieselLitrePage={showDieselLitrePage}
-            setShowDieselLitrePage={setShowDieselLitrePage}
-          />
-        ) : (
-          <TotalEnergyChart showTotalEnergyPage={showTotalEnergyPage} />
-        )}
-
+        <RendeChartsComponents index={isSelectChart} />
         <section className="total-energy-bar-chart">
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <div>
