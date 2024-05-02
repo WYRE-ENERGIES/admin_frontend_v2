@@ -1,13 +1,3 @@
-// import { createStore } from "redux";
-// import thunk from "redux-thunk";
-// import rootReducers from "../reducers";
-
-// const store = createStore()
-
-// export default store
-
-
-
 import { createStore, applyMiddleware, compose } from 'redux';
 import thunk from 'redux-thunk';
 import { persistStore, persistReducer, createMigrate } from 'redux-persist';

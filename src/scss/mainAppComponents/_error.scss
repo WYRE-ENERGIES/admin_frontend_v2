@@ -1,0 +1,72 @@
+.error-page {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+  padding-bottom: 120px;
+  padding-top: 70px;
+
+  @include media('>medium') {
+    padding-bottom: 190px;
+    padding-top: 111px;
+  }
+}
+
+.error-card {
+  max-width: 500px;
+  padding: 0 30px;
+}
+
+.error-heading,
+.error-paragraph,
+.error-list {
+  color: $dark-blue;
+}
+
+.error-heading {
+  font-weight: $medium;
+  font-size: 2.6rem;
+
+  @include media('>medium') {
+    font-size: 3.2rem;
+  }
+}
+
+.error-paragraph {
+  margin-top: 20px;
+  line-height: 1.6;
+}
+
+.error-list {
+  margin-top: 20px;
+}
+
+.error-list-item {
+  padding: 10px;
+  list-style-position: inside;
+  font-weight: $bold;
+  line-height: 1.6;
+}
+
+.error-cta {
+  background: $purple;
+  border: 0;
+  border-radius: 6px;
+  color: $white;
+  cursor: pointer;
+  display: block;
+  font-size: 1.4rem;
+  font-weight: $bold;
+  text-align: center;
+  padding: 13px 0;
+  max-width: 350px;
+  margin: 40px auto 0;
+
+  &:hover {
+    color: white;
+  }
+
+  @include media('>medium') {
+    font-size: 1.6rem;
+    padding: 17px 0;
+  }
+}

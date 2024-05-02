@@ -1,0 +1,52 @@
+.outlined-input {
+  border: 1px solid $border-grey3;
+  border-radius: 6px;
+  color: $text-blue;
+  font-size: 1.5rem;
+  height: 45px;
+  margin-bottom: 10px;
+  max-width: 350px;
+  min-width: 350px !important;
+  padding: 0 24px;
+  width: 100%;
+  font-family: $auth-font;
+
+  @include media('>medium') {
+    font-size: 1.7rem;
+    height: 56px;
+    max-width: 408px;
+    padding: 0 24px;
+  }
+
+  &::placeholder {
+    color: $text-blue;
+    opacity: 1;
+  }
+}
+
+
+.outlined-input_second {
+  border: 1px solid $border-grey3;
+  border-radius: 6px;
+  color: $text-blue;
+  font-size: 1.5rem;
+  height: 45px;
+  margin-bottom: 10px;
+  max-width: 300px;
+  min-width: 300px !important;
+  padding: 0 24px;
+  width: 100%;
+  font-family: $auth-font;
+
+  @include media('>medium') {
+    font-size: 1.7rem;
+    height: 56px;
+    max-width: 408px;
+    padding: 0 24px;
+  }
+
+  &::placeholder {
+    color: $text-blue;
+    opacity: 1;
+  }
+}

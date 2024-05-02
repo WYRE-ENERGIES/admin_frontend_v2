@@ -1,0 +1,180 @@
+/*--------------------------------------------------------------
+# Date Time Picker
+--------------------------------------------------------------*/
+:root {
+    --antd-wave-shadow-color: $purple;
+  }
+  
+  .date-range-picker-containers {
+    width: 100%;
+  
+    @include media('>=medium') {
+      max-width: 289px;
+      padding-left: 2px;
+    }
+  }
+  
+  .date-range-picker {
+    border-radius: 8px;
+    height: 40px;
+    width: 100%;
+  
+    @include media('>=medium') {
+      max-width: 285px;
+      min-width: 180px;
+    }
+  
+    * {
+      font-size: 1.2rem !important;
+    }
+  }
+  
+  .ant-picker-dropdown {
+    * {
+      font-size: 1.2rem !important;
+    }
+  
+    .ant-btn-primary {
+      border-radius: 8px;
+      border: 0;
+    }
+  }
+  
+  .anticon.anticon-calendar {
+    svg {
+      fill: $purple;
+      width: 17px;
+      height: 17px;
+    }
+  }
+  
+  /*--------------------------------------------------------------
+  # Checkbox
+  --------------------------------------------------------------*/
+  .sidebar-checkbox {
+    .ant-checkbox,
+    .ant-checkbox-checked .ant-checkbox-inner,
+    .ant-checkbox-input .ant-checkbox-checked,
+    .ant-checkbox-inner:after,
+    .ant-checkbox-inner,
+    .ant-checkbox-input,
+    .ant-checkbox-input:hover,
+    .ant-checkbox-input:focus + .ant-checkbox-inner {
+      @include media('>=medium') {
+        background-color: $purple !important;
+        border-color: $white !important;
+      }
+    }
+  }
+  
+  .alerts-and-alarms-checkbox {
+    .ant-checkbox,
+    .ant-checkbox-checked .ant-checkbox-inner,
+    .ant-checkbox-inner:after,
+    .ant-checkbox-wrapper:hover .ant-checkbox-inner,
+    .ant-checkbox:hover .ant-checkbox-inner,
+    .ant-checkbox-input:focus + .ant-checkbox-inner {
+      background-color: $white !important;
+      border-color: $purple !important;
+    }
+  }
+  
+  // Fix off-center behavior of tick. Particularly in Chrome
+  .ant-checkbox-checked .ant-checkbox-inner::after {
+    left: 50%;
+    transform: rotate(45deg) scale(1) translate(-100%, -20%);
+  
+    &:hover {
+      border-color: $white !important;
+    }
+  }
+  
+  .ant-checkbox-input:focus + .ant-checkbox-inner {
+    // Emulate Antd Stlyes
+    box-shadow: 0 0 0 2px $light-purple-2 !important;
+    transition: border 0.3s, box-shadow 0.3s !important;
+  }
+  
+  /*--------------------------------------------------------------
+  # Select Box
+  --------------------------------------------------------------*/
+  
+  .ant-select-selector {
+    min-height: 40px;
+    align-items: center;
+  }
+  
+  .h-8-br {
+    .ant-select-selector {
+      border-radius: 8px !important;
+    }
+  }
+  .h-4-br {
+    .ant-select-selector {
+      border-radius: 4px !important;
+    }
+  }
+  
+  /*--------------------------------------------------------------
+  # Table
+  --------------------------------------------------------------*/
+  .ant-table-filter-column-title,
+  .ant-table-thead .ant-table-cell {
+    font-size: 1.4rem;
+    font-weight: $regular;
+  }
+  
+  .ant-table-cell {
+    font-size: 1.3rem;
+    font-weight: $regular;
+  }
+  
+  .table-striped-rows tr:nth-child(2n) {
+    background-color: $purplegrey;
+  
+    &:hover {
+      background-color: $purplegrey;
+    }
+  }
+  
+  thead.ant-table-thead {
+    background-color: $white;
+    border-bottom: 0.5px solid $border-grey1;
+  
+    tr {
+      background-color: $white;
+      border-bottom: 0.5px solid $border-grey1;
+  
+      th {
+        background-color: $white;
+        border-bottom: 0.5px solid $border-grey1;
+      }
+    }
+  }
+  
+  .ant-table-summary {
+    .ant-table-cell {
+      font-weight: $semi-bold;
+      font-size: 1.6rem;
+    }
+  }
+  
+  .ant-table-footer {
+    background-color: transparent;
+  }
+  
+  .ant-pagination.ant-table-pagination {
+    align-items: center;
+  }
+  
+  /*--------------------------------------------------------------
+  # Star Rating
+  --------------------------------------------------------------*/
+  .ant-rate-star-first {
+    color: #ffd400 !important;
+  }
+  
+  .ant-rate-star-second {
+    color: $border-grey1;
+  }
+  

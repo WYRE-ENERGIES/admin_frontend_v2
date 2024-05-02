@@ -1,0 +1,220 @@
+.dashboard-row-1 {
+  width: 100%;
+
+  @include media('>=1200px') {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+.dashboard__banner--small {
+  width: 100%;
+  height: 174px;
+  border-radius: $medium-border;
+  background-color: $white;
+
+  @include media('>=medium') {
+    height: 200px;
+  }
+
+  @include media('>=1200px') {
+    max-width: 31.5%;
+  }
+}
+
+.dashboard__banner--smallb {
+  width: 100%;
+  height: 174px;
+  border-radius: $medium-border;
+
+  @include media('>=medium') {
+    height: 200px;
+  }
+
+  @include media('>=1200px') {
+    flex: 1;
+    min-width: 30.5%;
+    column-gap: 30px;
+  }
+}
+
+
+.dashboard__total-energy {
+  background-color: $purple;
+  color: $white;
+  text-align: center;
+  // display: flex;
+  // flex-direction: column;
+  // justify-content: center;
+  // align-items: center;
+}
+
+.total-energy__heading {
+  color: $white;
+  font-size: 3.3rem;
+  margin-bottom: 0;
+}
+
+.total-energy_value {
+  font-size: 2rem;
+  font-weight: $medium;
+  margin-top: 10px;
+}
+
+.solar-energy_value {
+  color: #FFC205;
+  font-size: 1.8rem !important;
+}
+
+.dashboard__demand-banner,
+.dashboard__cost-emissions-banner {
+  // display: flex;
+  // justify-content: space-around;
+  // text-align: center;
+  // align-items: center;
+  background-color: $white;
+  margin-top: 30px;
+
+  @include media('>=1200px') {
+    margin-top: 0;
+  }
+}
+
+.dashboard__demand-banner--,
+.dashboard__cost-emissions-banner {
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+  align-items: center;
+  background-color: $white;
+  margin-top: 10px;
+
+  @include media('>=1200px') {
+    margin-top: 0;
+  }
+}
+
+/*--------------------------------------------------------------
+# Small Component: Dashboard Small Banner Section
+--------------------------------------------------------------*/
+
+.small-banner-section {
+  padding: 0 5px;
+}
+
+.small-banner-section__heading {
+  font-size: 1.3rem;
+  font-weight: $regular;
+}
+
+.small-banner-section__subheading {
+  display: block;
+  margin-top: 9px;
+  color: $grey1;
+}
+
+.small-banner-section__value {
+  margin-top: 23px;
+
+  .value {
+    font-size: 2rem;
+    font-weight: $medium;
+  }
+
+  .unit {
+    display: block;
+    margin-top: 16px;
+  }
+}
+
+/*--------------------------------------------------------------
+# Small Component: Dashboard Small Banner Section ends
+--------------------------------------------------------------*/
+.dashboard-bar-container,
+.dashboard-pie-container {
+  height: 430px;
+  background-color: $white;
+  margin-top: 30px;
+  border-radius: $medium-border;
+}
+
+.dashboard-bar-container {
+  border-radius: $medium-border;
+
+  @include media('>=medium') {
+    height: 500px;
+  }
+}
+
+.dashboard-row-3 {
+  @include media('>=1200px') {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+}
+
+.dashboard-pie-container,
+.dashboard-today-and-yesterday {
+  @include media('>=1200px') {
+    min-height: 386px;
+  }
+}
+
+.dashboard-pie-container {
+  @include media('>=1200px') {
+    width: 57.25%;
+  }
+}
+
+.dashboard-today-and-yesterday {
+  background-color: $white;
+  margin-top: 30px;
+  border-radius: $medium-border;
+
+  @include media('>=1200px') {
+    width: 40%;
+  }
+}
+
+.today-usage,
+.yesterday-usage {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.today-usage {
+  padding-bottom: 25px;
+}
+
+.yesterday-usage {
+  padding-top: 25px;
+}
+
+.usage-value-and-arrow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.today-usage__heading,
+.yesterday-usage__heading {
+  font-weight: normal;
+  font-size: 1.8rem;
+}
+
+.today-usage__value,
+.yesterday-usage__value {
+  font-size: 4rem;
+  margin: 17px;
+  font-weight: 300;
+
+  @include media('>=1200px') {
+    font-size: 5.4rem;
+  }
+}
+
+
+.power-icon__image {
+  height: 60px;
+}

@@ -1,0 +1,153 @@
+html {
+    box-sizing: border-box;
+  }
+  
+  *,
+  *:before,
+  *:after {
+    /* Inherit box-sizing to make it easier to change the property for components 
+    that leverage other behavior; see http://css-tricks.com/inheriting-box-sizing-probably-slightly-better-best-practice/ */
+    box-sizing: inherit;
+  }
+  
+  body {
+    background: white; /* Fallback for when there is no custom background color defined. */
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  a {
+    color: $dark;
+    text-decoration: none;
+  
+    &:hover {
+      color: $dark;
+    }
+  
+    /* Force tab focus state outlines. Seems Ant Design disables them. */
+    &:focus {
+      border-radius: 4px;
+      outline: 5px auto -webkit-focus-ring-color;
+      outline: 2px auto $light-purple-2;
+    }
+  }
+  
+  hr {
+    border: 0;
+    margin-bottom: 24px;
+    margin-top: 24px;
+  }
+  
+  ul {
+    list-style: none;
+    margin-bottom: 0;
+    margin-top: 0;
+    padding-left: 0;
+  }
+  
+  ol {
+    list-style: none;
+    margin-bottom: 0;
+  }
+  
+  img {
+    height: auto; /* Make sure images are scaled correctly. */
+    max-width: 100%; /* Adhere to container width. */
+    vertical-align: middle;
+  }
+  
+  button {
+    cursor: pointer;
+  }
+  
+  button,
+  input {
+    border-radius: 6px;
+  }
+  
+  input::placeholder {
+    color: #6a737d;
+    opacity: 1;
+  }
+  
+  details summary {
+    cursor: pointer;
+  }
+  details:not([open]) > :not(summary) {
+    display: none !important;
+  }
+  
+  img,
+  article,
+  aside,
+  footer,
+  header,
+  nav,
+  section,
+  main {
+    display: block;
+  }
+  
+  button {
+    background: transparent;
+    border: 0;
+    border: $grey1 solid 1px;
+    cursor: pointer;
+  
+    &:focus,
+    &:focus-visible {
+      border-color: $purple;
+      outline: 5px auto -webkit-focus-ring-color;
+      outline: 2px solid transparent;
+      // Emulate Antd Stlyes
+      box-shadow: 0 0 0 2px $light-purple-2;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+  }
+  
+  /* Remove IOS input style */
+  input[type='email'],
+  input[type='text'],
+  input[type='tel'],
+  input[type='password'],
+  input[type='number'],
+  textarea {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  
+  input,
+  textarea {
+    &:focus {
+      border-color: $purple;
+      outline: 5px auto -webkit-focus-ring-color;
+      outline: 2px solid transparent;
+  
+      // Emulate Antd Stlyes
+      box-shadow: 0 0 0 2px $light-purple-2;
+      transition: border 0.3s, box-shadow 0.3s;
+    }
+  }
+  
+  %gutters {
+    /* Gutters */
+    padding-left: $small-gutter;
+    padding-right: $small-gutter;
+  
+    @include media('>medium') {
+      padding-left: $medium-gutter;
+      padding-right: $medium-gutter;
+    }
+  
+    @include media('>large') {
+      padding-left: $large-gutter;
+      padding-right: $large-gutter;
+    }
+  }
+  
+  header,
+  .h-regular-gutters {
+    @extend %gutters;
+  }
+  

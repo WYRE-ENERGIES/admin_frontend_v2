@@ -1,0 +1,76 @@
+.breadcrumb-and-print-buttons {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+
+  @include media('>=medium') {
+    width: 100%;
+    overflow: auto;
+  }
+}
+
+.breadcrumb {
+  display: flex;
+  padding: 20px 0;
+
+  @include media('<medium') {
+    width: 100%;
+    overflow: auto;
+  }
+
+  @include media('>=medium') {
+    margin-right: 20px;
+  }
+}
+
+.breadcrumb-item {
+  margin-left: 3%;
+
+  &:first-of-type {
+    margin-left: 0;
+  }
+}
+
+.breadcrumb-link {
+  align-items: center;
+
+  color: $grey2;
+  display: flex;
+  font-size: 1.4rem;
+}
+
+.breadcrumb-icon {
+  display: inline-block;
+  margin-right: 10px;
+  width: 18px;
+
+  &:first-of-type {
+    margin-left: 0;
+  }
+}
+
+.breadcrumb-text {
+  white-space: nowrap;
+}
+
+.print-buttons {
+  display: flex;
+
+  &.h-hidden-medium-down {
+    @include media('<medium') {
+      display: none;
+    }
+  }
+}
+
+.print-button-container {
+  margin-right: 20px;
+
+  &:last-of-type {
+    margin-right: 0;
+  }
+}
+
+.print-button {
+  border: 0;
+}

@@ -9,36 +9,126 @@
 //   export default SideMenu;
 
 
-import { 
-    UserOutlined, 
-    ShopOutlined, 
-    ShoppingCartOutlined, 
-    AppstoreOutlined,
-    AppstoreFilled,
-    AppstoreAddOutlined,
-    AppstoreTwoTone,
-    AppleOutlined,
-    HomeOutlined,
-    MenuOutlined,
-    FormOutlined,
-    HeatMapOutlined,
-    CompassOutlined,
-    SettingFilled,
-    SettingOutlined,
-    LogoutOutlined,
-    SendOutlined,
-    MessageOutlined,
-    MailOutlined,
-    CustomerServiceOutlined,
-  } from "@ant-design/icons";
-  import { Image, Menu, Space } from "antd";
+import {
+  EnvironmentOutlined,
+  UserOutlined,
+  ProjectOutlined,
+  MenuOutlined,
+  CompassOutlined,
+  DashboardOutlined,
+  AimOutlined,
+  HeatMapOutlined,
+  LoginOutlined,
+  SendOutlined,
+  MessageOutlined,
+  MailOutlined,
+  CustomerServiceOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+} from "@ant-design/icons";
+import { Button, Image, Menu, Space, theme } from "antd";
 import Form from "antd/es/form/Form";
-  import { useEffect, useState } from "react";
-  import { useLocation, useNavigate } from "react-router-dom";
+import Sider from "antd/es/layout/Sider";
+import useToken from "antd/es/theme/useToken";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { logUserOut } from "../../redux/actions/auth/auth.action";
+import { useDispatch } from "react-redux";
+import { logoutUser } from "../../redux/actions/auth/auth.creator";
   
-  function SideMenu() {
+function SideMenu({collapsed, setCollapsed}) {
     const [selectedLocation, setSelectedLocation] = useState('/')
     const location = useLocation()
+    const {
+      token: { colorBgContainer },
+    } = theme.useToken();
+    const dispatch = useDispatch
+    const onLogout = () => {
+      const navigateTo = '/'
+      dispatch(logoutUser())
+      navigate(navigateTo)
+    }
+    const logOut = () => {
+      console.log('Loging-out in first line ========' );
+      dispatch(logoutUser());
+      console.log('Loging-out in dispatch ========' );
+      window.localStorage.removeItem('loggedWyreUserAdmin');
+      console.log('Loging-out 333 ========' );
+      window.location.href = '/';
+      console.log('Loging-out 4444 ========' );
+    };
+    
+    const items = [
+      {
+        label: "Admin Overview",
+        key: "/",
+        icon: <ProjectOutlined />,
+      },
+      {
+        label: "Client Users",
+        key: "/client-user",
+        icon: <UserOutlined />,
+      },
+      {
+        label: "View Location",
+        key: "/location",
+        icon: <EnvironmentOutlined />,
+      },
+      {
+        label: "Set Target",
+        key: "/set-target",
+        icon: <AimOutlined />,
+      },
+      {
+        label: "Diesel Overview",
+        key: "/diesel",
+        icon: <HeatMapOutlined />,
+      },
+      {
+        label: "Regions Activities",
+        key: "/regions-activities",
+        icon: <CompassOutlined />,
+      },
+      {
+        label: "Top Management Report",
+        key: "/top-mngt",
+        icon: <SendOutlined />,
+      },
+      {
+        label: "Log out",
+        key: '/log-out',
+        // key: {onclick:() => logOut()},
+        onclick:{logOut},
+        icon: <LoginOutlined />,
+      },
+      {
+        label: "Support",
+        key: "/support",
+        icon: <MailOutlined />,
+      },
+      {
+        label: 'Polaris Bank',
+        key: "#",
+        icon: (
+          <div style={{
+            // marginRight: '5px'
+          }}>
+            <Image
+            width={73}
+            height={38}
+            style={{
+              paddingRight: '36px',
+              // paddingTop: '5px'
+              // marginRight: '95px'
+            }}
+            // preview={null}
+            // src="/Images/Group 1688.png"
+            src={require('../../Logos/polaris-logo/polarisSvg.svg').default} alt='Logo'
+          />
+          </div>
+        ),
+      },
+    ]
   
     useEffect( () => {
       const pathName = location.pathname
@@ -47,113 +137,78 @@ import Form from "antd/es/form/Form";
   
     const navigate = useNavigate()
     return (
-      <div
-        className="SideMenu"
+      <Sider
+        // className="SideMenu"
         style={{
           // overflow: 'auto',
           height: "100vh",
-          position: "fixed",
+          // position: "fixed",
+          position: "sticky",
           left: 0,
           top: 0,
           bottom: 0,
+          // paddingLeft: 25,
+          marginLeft: 15
         }}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
       >
-        {/* <header>header</header> */}
         <div className="wyre-logo">
           <Space>
-            <Image
-              width={80}
-              // src="https://yt3.ggpht.com/yti/AHXOFjVZypuO-Nf2XxSIHpDVbNDOGH9beztDzVFDlg=s108-c-k-c0x00ffffff-no-rj"
-              src="/Images/Wyre white-08 1.png"
-            ></Image>
-            <MenuOutlined style={{ marginLeft: "40px", color: 'white' }} />
+            {/* <Image width={80} src="/Images/Wyre white-08 1.png"></Image> */}
+            <Button
+              type="text"
+              icon={
+                collapsed ? (
+                  <MenuOutlined style={{ color: "white" }} />
+                ) : (
+                  // <MenuFoldOutlined style={{ color: "white" }} />
+                  <>
+                    <Image width={80} src="/Images/Wyre white-08 1.png"></Image>
+                    <Button
+                      type="text"
+                      icon={
+                        collapsed ? (
+                          <MenuOutlined style={{ color: "white" }} />
+                        ) : (
+                          <MenuOutlined style={{ color: "white" }} />
+                        )
+                      }
+                      onClick={() => {
+                        setCollapsed(!collapsed);
+                      }}
+                      style={{
+                        // fontSize: "16px",
+                        width: 195,
+                        // height: 64,
+                      }}
+                    />
+                  </>
+                )
+              }
+              onClick={() => {
+                setCollapsed(!collapsed);
+              }}
+              style={{
+                // fontSize: "16px",
+                width: 60,
+                // height: 64,
+              }}
+            />
           </Space>
         </div>
         <Menu
           className="SideMenuVertical"
-          mode="vertical"
+          // theme="dark"
+          defaultSelectedKeys={["1"]}
           onClick={(Item) => {
-            // Item.key
             navigate(Item.key);
           }}
-          selectedLocation={[selectedLocation]}
-          items={[
-            // {
-            //   key: "#",
-            //   icon: (
-            //     <div className="wyre-logo" style={{ marginBottom: "100px" }}>
-            //       <Space>
-            //         <Image
-            //           width={80}
-            //           // src="https://yt3.ggpht.com/yti/AHXOFjVZypuO-Nf2XxSIHpDVbNDOGH9beztDzVFDlg=s108-c-k-c0x00ffffff-no-rj"
-            //           src="/Images/Wyre white-08 1.png"
-            //         ></Image>
-            //         <MenuOutlined style={{ marginLeft: "50px" }} />
-            //       </Space>
-            //     </div>
-            //   ),
-            // },
-            {
-              label: "Admin Overview",
-              key: "/",
-              icon: <HomeOutlined />,
-            },
-            {
-              label: "Client Users",
-              key: "/client-user",
-              icon: <UserOutlined />,
-            },
-            {
-              label: "View Location",
-              key: "/location",
-              icon: <CompassOutlined />,
-            },
-            {
-              label: "Set Target",
-              key: "/set-target",
-              icon: <SettingOutlined />,
-            },
-            {
-              label: "Send Energy Data",
-              key: "/energy-Data",
-              icon: <SendOutlined />,
-            },
-            {
-              label: "Log out",
-              key: "/logout",
-              icon: <LogoutOutlined />,
-            },
-            {
-              label: <hr />,
-            },
-            {
-              label: "Supports",
-              key: "/support",
-              icon: <MailOutlined />,
-            },
-            {
-              label: "Settings",
-              key: "/setting",
-              icon: <SettingFilled />,
-            },
-            {
-              label: <hr />,
-            },
-            {
-              key: "#",
-              icon: (
-                <Image
-                  width={80}
-                  height={50}
-                  // preview={null}
-                  // src="https://yt3.ggpht.com/yti/AHXOFjVZypuO-Nf2XxSIHpDVbNDOGH9beztDzVFDlg=s108-c-k-c0x00ffffff-no-rj"
-                  src="/Images/Group 1688.png"
-                ></Image>
-              ),
-            },
-          ]}
-        ></Menu>
-      </div>
+          mode="vertical"
+          items={items}
+        />
+      </Sider>
     );
   }
   
