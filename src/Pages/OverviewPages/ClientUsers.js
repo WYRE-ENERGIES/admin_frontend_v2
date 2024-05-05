@@ -115,19 +115,19 @@ function ClientUsers(props) {
         <Search
           placeholder="Search by name"
           style={{
-            width: '349.68px',
-            height:'49.69px'
+            width: "349.68px",
+            height: "49.69px",
           }}
         />
         <Space>
           <div>
-            <Button 
+            <Button
               style={{ backgroundColor: "#5C12A7", color: "white" }}
               onClick={(e) => {
-                e.preventDefault()
-                setShowAddButton(true)
-                setShowEditForm(false)
-                console.log('This button is expecting Actions');
+                e.preventDefault();
+                setShowAddButton(true);
+                setShowEditForm(false);
+                console.log("This button is expecting Actions");
               }}
             >
               <PlusOutlined />
@@ -139,34 +139,34 @@ function ClientUsers(props) {
       <div className="##########">
         <section className="total-energy-bar-chart">
           <div className="client-page-flex-display">
-            <div className="client-user-table">
-              <Table
-                className="custom-row-hover"
-                loading={props.clientUsersPage.fetchClientUserLoading}
-                dataSource={data}
-                columns={columns}
-                onChange={onChange}
-                pagination={false}
-              />
-              <div className="pagination">
-              <div>
-                <Button onClick={fetchPrevPaginatedUsersList}>
-                  Previous
-                </Button>
+              <div className="client-user-table">
+                <Table
+                  className="custom-row-hover"
+                  loading={props.clientUsersPage.fetchClientUserLoading}
+                  dataSource={data}
+                  columns={columns}
+                  onChange={onChange}
+                  pagination={false}
+                />
+                <div className="pagination">
+                  <div>
+                    <Button onClick={fetchPrevPaginatedUsersList}>
+                      Previous
+                    </Button>
+                  </div>
+                  <div>
+                    <Button onClick={fetchNextPaginatedUsersList}>Next</Button>
+                  </div>
+                </div>
               </div>
-              <div>
-                <Button onClick={fetchNextPaginatedUsersList}>Next</Button>
-              </div>
-            </div>
-            </div>
-            { ClientUserTableData ? (
+            {ClientUserTableData ? (
               <EditClientUserForm
                 ClientUserTableData={ClientUserTableData}
                 showEditForm={showEditForm}
               />
             ) : (
               <AddClientUserForm />
-            )} 
+            )}
           </div>
         </section>
       </div>

@@ -1,4 +1,4 @@
-import { Button, Card, DatePicker, Image, Input, Space, Table, Tag, Typography } from "antd";
+import { Button, Card, DatePicker, Image, Input, Space, Spin, Table, Tag, Typography } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined, PlusOutlined, ContainerOutlined, ExpandAltOutlined, FundOutlined, DeleteOutlined, EllipsisOutlined, ProjectOutlined, FundProjectionScreenOutlined, BarsOutlined, ThunderboltOutlined  } from "@ant-design/icons";
@@ -305,12 +305,18 @@ function AdminOverview(props) {
                   />
                 </div>
                 <div className="card-content">
-                  <header style={{ fontWeight: "bold" }}>
-                    {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toFixed(
-                      2
-                    )}{" "}
-                    kWh
-                  </header>
+                  <Spin
+                    spinning={
+                      props.overviewPage?.fetchTotalEnergyTopCardLoading
+                    }
+                  >
+                    <header style={{ fontWeight: "bold" }}>
+                      {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toFixed(
+                        2
+                      )}{" "}
+                      kWh
+                    </header>
+                  </Spin>
                   <header>Total Energy</header>
                 </div>
               </Space>
@@ -324,12 +330,18 @@ function AdminOverview(props) {
                   />
                 </div>
                 <div className="card-content">
-                  <header style={{ fontWeight: "bold" }}>
-                    {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toFixed(
-                      2
-                    )}{" "}
-                    tons
-                  </header>
+                  <Spin
+                    spinning={
+                      props.overviewPage?.fetchTotalEnergyTopCardLoading
+                    }
+                  >
+                    <header style={{ fontWeight: "bold" }}>
+                      {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toFixed(
+                        2
+                      )}{" "}
+                      tons
+                    </header>
+                  </Spin>
                   <header>Co2 Emission</header>
                 </div>
               </Space>
@@ -347,7 +359,11 @@ function AdminOverview(props) {
               width: "100%",
             }}
           >
-            <ChartGroupButtons buttons={buttons} isSelectChart={isSelectChart} setIsSelectChart={setIsSelectChart} />
+            <ChartGroupButtons
+              buttons={buttons}
+              isSelectChart={isSelectChart}
+              setIsSelectChart={setIsSelectChart}
+            />
           </div>
         </section>
         <RendeChartsComponents index={isSelectChart} />
@@ -400,11 +416,11 @@ function AdminOverview(props) {
             onChange={onChange}
             pagination={false}
           >
-            <Column 
-              title="Branch Name" 
-              dataIndex="name" 
-              key="name" 
-              width= "200px"
+            <Column
+              title="Branch Name"
+              dataIndex="name"
+              key="name"
+              width="200px"
               // render= {
               //   (text) => {
               //     return (
@@ -419,30 +435,54 @@ function AdminOverview(props) {
               //   },
               // }
             />
-            <Column title="Baseline Energy (kWh)" dataIndex="baseline_energy" key="baseline_energy" />
-            <Column title="Blended Cost of Energy" dataIndex="blended_cost_of_energy" key="blended_cost_of_energy" />
-            <Column title="Usage Accuracy Diesel" dataIndex="diesel_usage_accuracy" key="diesel_usage_accuracy" />
-            <Column title="Usage Accuracy Utility" dataIndex="utility_usage_accuracy" key="utility_usage_accuracy" />
-            <Column title="Deviation Hours" dataIndex="deviation_hours" key="deviation_hours" />
+            <Column
+              title="Baseline Energy (kWh)"
+              dataIndex="baseline_energy"
+              key="baseline_energy"
+            />
+            <Column
+              title="Blended Cost of Energy"
+              dataIndex="blended_cost_of_energy"
+              key="blended_cost_of_energy"
+            />
+            <Column
+              title="Usage Accuracy Diesel"
+              dataIndex="diesel_usage_accuracy"
+              key="diesel_usage_accuracy"
+            />
+            <Column
+              title="Usage Accuracy Utility"
+              dataIndex="utility_usage_accuracy"
+              key="utility_usage_accuracy"
+            />
+            <Column
+              title="Deviation Hours"
+              dataIndex="deviation_hours"
+              key="deviation_hours"
+            />
             <Column title="PAPR" dataIndex="papr" key="papr" />
-            <Column title="Fuel Efficiency" dataIndex="fuel_efficiency" key="fuel_efficiency" />
+            <Column
+              title="Fuel Efficiency"
+              dataIndex="fuel_efficiency"
+              key="fuel_efficiency"
+            />
             <ColumnGroup title="Generator Efficiency">
-            <Column
-              // title="Gen1"
-              dataIndex="generator_size_efficiency_1"
-              key="generator_size_efficiency_1"
-            />
-            <Column
-              // title="Gen2"
-              dataIndex="generator_size_efficiency_2"
-              key="generator_size_efficiency_2"
-            />
-            <Column
-              // title="Gen3"
-              dataIndex="generator_size_efficiency_3"
-              key="generator_size_efficiency_3"
-            />
-          </ColumnGroup>
+              <Column
+                // title="Gen1"
+                dataIndex="generator_size_efficiency_1"
+                key="generator_size_efficiency_1"
+              />
+              <Column
+                // title="Gen2"
+                dataIndex="generator_size_efficiency_2"
+                key="generator_size_efficiency_2"
+              />
+              <Column
+                // title="Gen3"
+                dataIndex="generator_size_efficiency_3"
+                key="generator_size_efficiency_3"
+              />
+            </ColumnGroup>
           </Table>
           <div className="pagination">
             <div>

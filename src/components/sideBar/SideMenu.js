@@ -123,7 +123,7 @@ function SideMenu({collapsed, setCollapsed}) {
             }}
             // preview={null}
             // src="/Images/Group 1688.png"
-            src={require('../../Logos/polaris-logo/polarisSvg.svg').default} alt='Logo'
+            src={require('../../Logos/polaris-logo/polarisSvg.svg').default} alt='Clients Logo'
           />
           </div>
         ),
@@ -147,7 +147,7 @@ function SideMenu({collapsed, setCollapsed}) {
           left: 0,
           top: 0,
           bottom: 0,
-          // paddingLeft: 25,
+          color: "white",
           marginLeft: 15
         }}
         collapsible
@@ -172,7 +172,7 @@ function SideMenu({collapsed, setCollapsed}) {
                         collapsed ? (
                           <MenuOutlined style={{ color: "white" }} />
                         ) : (
-                          <MenuOutlined style={{ color: "white" }} />
+                          <MenuOutlined style={{ marginLeft:220, color: "white" }} />
                         )
                       }
                       onClick={() => {
@@ -180,7 +180,7 @@ function SideMenu({collapsed, setCollapsed}) {
                       }}
                       style={{
                         // fontSize: "16px",
-                        width: 195,
+                        width: '0px',
                         // height: 64,
                       }}
                     />
@@ -192,7 +192,7 @@ function SideMenu({collapsed, setCollapsed}) {
               }}
               style={{
                 // fontSize: "16px",
-                width: 60,
+                width: 52,
                 // height: 64,
               }}
             />
