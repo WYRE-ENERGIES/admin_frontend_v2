@@ -311,9 +311,7 @@ function AdminOverview(props) {
                     }
                   >
                     <header style={{ fontWeight: "bold" }}>
-                      {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toFixed(
-                        2
-                      )}{" "}
+                      {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toLocaleString(undefined, {maximumFractionDigits:2})}{" "}
                       kWh
                     </header>
                   </Spin>
@@ -336,9 +334,7 @@ function AdminOverview(props) {
                     }
                   >
                     <header style={{ fontWeight: "bold" }}>
-                      {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toFixed(
-                        2
-                      )}{" "}
+                      {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toLocaleString(undefined, {maximumFractionDigits:2})}{" "}
                       tons
                     </header>
                   </Spin>
@@ -394,8 +390,10 @@ function AdminOverview(props) {
                   // height: 43
                 }}
                 defaultValue={[
-                  dayjs("01/04/2024", dateFormat),
-                  dayjs("30/04/2024", dateFormat),
+                  // dayjs("01/04/2024", dateFormat),
+                  // dayjs("30/04/2024", dateFormat),
+                  dayjs().startOf('month'),
+                  dayjs()
                 ]}
                 format={dateFormat}
                 onChange={onSelectDateKeyMetrics}
