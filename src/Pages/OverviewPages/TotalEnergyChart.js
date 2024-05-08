@@ -36,6 +36,7 @@ ChartJS.register(
 function TotalEnergyChart(props) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [paginationData, setPaginationData] = useState({})
+  const [initialCalenderValue, setinitialCalenderValue] = useState({})
   const [energyChartData, setEnergyChartData] = useState({
     labels: [],
     datasets: []
@@ -49,7 +50,7 @@ function TotalEnergyChart(props) {
 
   const clientId = searchParams.get("client_id") || props.auth.userData.client_id;
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
-  const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
+  const endDate = moment().endOf("day").format("DD-MM-YYYY HH:mm");
 
   const showTotalEnergyBarchart = () => {
     const clientId = props.auth.userData.client_id
@@ -57,10 +58,13 @@ function TotalEnergyChart(props) {
   }
 
   const onSelectDateTotalEnergy = (date) => {
-    const date1 = dayjs(date[0]).format("DD-MM-YYYY HH:mm");
-    const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
+    // const date1 = dayjs(date[0]).format("DD-MM-YYYY HH:mm");
+    // const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
+    const date1 = date[0].format("DD-MM-YYYY HH:mm");
+    const date2 = date[1].format("DD-MM-YYYY HH:mm");
     props.getTotalEnergyBarChartData(clientId, date1, date2)
   }
+  // setinitialCalenderValue(onSelectDateTotalEnergy)
 
   useEffect(() => {
     showTotalEnergyBarchart()
@@ -235,8 +239,8 @@ function TotalEnergyChart(props) {
                     // height: 43
                   }}
                   defaultValue={[
-                    // dayjs("01/04/2024", dateFormat),
-                    // dayjs("30/04/2024", dateFormat),
+                    // dayjs("01/05/2024", dateFormat),
+                    // dayjs("31/05/2024", dateFormat),
                     dayjs().startOf('month'),
                     dayjs(),
                     // moment().startOf("month"),
