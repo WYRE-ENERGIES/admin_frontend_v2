@@ -199,61 +199,62 @@ function TotalEnergyChart(props) {
         ) : (
           <UtilityCostChart showUtilityCostPage={showUtilityCostPage} />
         )} */}
-          <section className="total-energy-bar-chart">
-            <Card
-              style={{
-                // width: 1070,
-                // height: 650,
-                borderRadius: 22,
-              }}
-              loading={props.overviewPage.fetchTotalEnergyBarChartLoading}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <div>
-                  <h1
-                    style={{
-                      fontSize: "17Px",
-                    }}
-                  >
-                    Total Energy
-                    {/* {moveLegend} */}
-                  </h1>
-                </div>
-                <div>
-                  <Search
-                    placeholder="Search by name"
-                    onChange={onSearchTotalEnergy}
-                    style={{
-                      width: 222,
-                      marginRight: 10
-                      // height: 43
-                    }}
-                  />
-                  <RangePicker
-                    style={{
-                      width: 222,
-                      // height: 43
-                    }}
-                    defaultValue={[
-                      dayjs("01/04/2024", dateFormat),
-                      dayjs("30/04/2024", dateFormat),
-                    ]}
-                    format={dateFormat}
-                    onChange={onSelectDateTotalEnergy}
-                  />
-                </div>
+        <section className="total-energy-bar-chart">
+          <Card
+            style={{
+              // width: 1070,
+              // height: 650,
+              borderRadius: 22,
+            }}
+            loading={props.overviewPage.fetchTotalEnergyBarChartLoading}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div>
+                <h1
+                  style={{
+                    fontSize: "17Px",
+                  }}
+                >
+                  Total Energy
+                  {/* {moveLegend} */}
+                </h1>
               </div>
-              <Bar
-                options={options}
-                data={energyChartData}
-              />
-              {/* <Pagination
+              <div>
+                <Search
+                  placeholder="Search by name"
+                  onChange={onSearchTotalEnergy}
+                  style={{
+                    width: 222,
+                    marginRight: 10,
+                    // height: 43
+                  }}
+                />
+                <RangePicker
+                  style={{
+                    width: 222,
+                    // height: 43
+                  }}
+                  defaultValue={[
+                    // dayjs("01/04/2024", dateFormat),
+                    // dayjs("30/04/2024", dateFormat),
+                    dayjs().startOf('month'),
+                    dayjs(),
+                    // moment().startOf("month"),
+                    // moment().endOf("month"),
+                  ]}
+                  format={dateFormat}
+                  onChange={onSelectDateTotalEnergy}
+                />
+              </div>
+            </div>
+            <Bar options={options} data={energyChartData} />
+            {/* <Pagination
               totalPosts = {chartPages.lenght} 
               postsPerPage = {postsPerPage}
               setCurrentPage={setCurrentPage}
             /> */}
 
-              {/* <ReactPaginate 
+            {/* <ReactPaginate 
               previousLabel={'Previous'}
               nextLabel={'Next'}
               pageCount={pageCount}
@@ -264,21 +265,20 @@ function TotalEnergyChart(props) {
               disabledClassName="paginationDisable"
               activeClassName={"paginationActive"}
             /> */}
-              {/* <button onClick={fetchNextPaginatedTotalEnergy} >Next</button>
+            {/* <button onClick={fetchNextPaginatedTotalEnergy} >Next</button>
             <button onClick={fetchPrevPaginatedTotalEnergy}>Previous</button> */}
-              <div className="pagination">
-                <div>
-                  <Button onClick={fetchPrevPaginatedTotalEnergy}>
-                    Previous
-                  </Button>
-                </div>
-                <div>
-                  <Button onClick={fetchNextPaginatedTotalEnergy}>Next</Button>
-                </div>
+            <div className="pagination">
+              <div>
+                <Button onClick={fetchPrevPaginatedTotalEnergy}>
+                  Previous
+                </Button>
               </div>
-            </Card>
-          </section>
-        
+              <div>
+                <Button onClick={fetchNextPaginatedTotalEnergy}>Next</Button>
+              </div>
+            </div>
+          </Card>
+        </section>
       </div>
     </>
   );

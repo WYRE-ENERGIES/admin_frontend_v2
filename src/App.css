@@ -124,15 +124,26 @@
   justify-content: space-between;
 }
 
-.client-user-table{
+.client_table_percentage_container {
   width: 71%;
 }
 
-.sidePage-add-user-container {
+.percentage_container{
+  background-color: #FFFFFF;
   width: 26%;
   height: 10%;
+}
+
+.client-user-table{
+  /* width: 71%; */
+  width: 740px;
+}
+
+.sidePage-add-user-container {
+  /* width: 26%; */
+  /* width: 409px;
+  height: 10%; */
   background: #FFFFFF;
-  /* padding: 15px; */
 }
 .set_target_psge {
   /* width: 25%; */

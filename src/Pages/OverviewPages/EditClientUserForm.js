@@ -96,77 +96,76 @@ function EditClientUserForm(props) {
 
   return (
     <>
-      {
-        props.showEditForm ? (
-
-      <div className="sidePage-add-user-container">
-        <div className="sidePage-add-user">
-          <h3>Edit User</h3>
-          <div className="user-center-image">
-            <Image src="/Images/Group 1688.png"></Image>
+      {props.showEditForm ? (
+        <div className="percentage_container">
+          <div className="sidePage-add-user-container">
+            <div className="sidePage-add-user">
+              <h3>Edit User</h3>
+              <div className="user-center-image">
+                <Image src="/Images/Group 1688.png"></Image>
+              </div>
+              <Form
+                form={form}
+                // name="validateOnly"
+                name="basic"
+                layout="vertical"
+                autoComplete="off"
+                onFinish={submitUpdateClientUsers}
+              >
+                <Form.Item
+                  name="username"
+                  label="Name"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="phone_number"
+                  label="Phone Number"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  name="assign location"
+                  label="Assign Location"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item>
+                  <SubmitButton form={form} />
+                </Form.Item>
+              </Form>
+            </div>
           </div>
-          <Form
-            form={form}
-            // name="validateOnly"
-            name="basic"
-            layout="vertical"
-            autoComplete="off"
-            onFinish={submitUpdateClientUsers}
-          >
-            <Form.Item
-              name="username"
-              label="Name"
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="phone_number"
-              label="Phone Number"
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="assign location"
-              label="Assign Location"
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item>
-              <SubmitButton form={form} />
-            </Form.Item>
-          </Form>
         </div>
-      </div>
-        ) : (
-          <AddClientUserForm />
-        )
-      }
+      ) : (
+        <AddClientUserForm />
+      )}
     </>
   );
 }
