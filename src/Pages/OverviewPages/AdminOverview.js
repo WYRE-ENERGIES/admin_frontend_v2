@@ -106,7 +106,8 @@ function AdminOverview(props) {
 
   const clientId = searchParams.get("client_id") || props.auth.userData.client_id;
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
-  const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
+  // const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
+  const endDate = moment().format("DD-MM-YYYY HH:mm");
 
   const showKeyMetricsTable = () => {
     const clientId = props.auth.userData.client_id

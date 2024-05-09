@@ -36,6 +36,8 @@ ChartJS.register(
 function TotalEnergyChart(props) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [paginationData, setPaginationData] = useState({})
+  const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
+  dayjs(),])
   const [energyChartData, setEnergyChartData] = useState({
     labels: [],
     datasets: []
@@ -49,7 +51,8 @@ function TotalEnergyChart(props) {
 
   const clientId = searchParams.get("client_id") || props.auth.userData.client_id;
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
-  const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
+  // const endDate = moment().endOf("day").format("DD-MM-YYYY HH:mm");
+  const endDate = moment().format("DD-MM-YYYY HH:mm");
 
   const showTotalEnergyBarchart = () => {
     const clientId = props.auth.userData.client_id
@@ -57,8 +60,11 @@ function TotalEnergyChart(props) {
   }
 
   const onSelectDateTotalEnergy = (date) => {
-    const date1 = dayjs(date[0]).format("DD-MM-YYYY HH:mm");
-    const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
+    // const date1 = dayjs(date[0]).format("DD-MM-YYYY HH:mm");
+    // const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
+    const date1 = dayjs(date[0]).startOf("date").format("DD-MM-YYYY HH:mm");
+    const date2 = dayjs(date[1]).endOf("date").format("DD-MM-YYYY HH:mm");
+    setSelectedDate([dayjs(date[0]), dayjs(date[1])])
     props.getTotalEnergyBarChartData(clientId, date1, date2)
   }
 
@@ -234,14 +240,15 @@ function TotalEnergyChart(props) {
                     width: 222,
                     // height: 43
                   }}
-                  defaultValue={[
-                    // dayjs("01/04/2024", dateFormat),
-                    // dayjs("30/04/2024", dateFormat),
-                    dayjs().startOf('month'),
-                    dayjs(),
-                    // moment().startOf("month"),
-                    // moment().endOf("month"),
-                  ]}
+                  // defaultValue={[
+                  //   // dayjs("01/05/2024", dateFormat),
+                  //   // dayjs("31/05/2024", dateFormat),
+                  //   dayjs().startOf('month'),
+                  //   dayjs(),
+                  //   // moment().startOf("month"),
+                  //   // moment().endOf("month"),
+                  // ]}
+                  defaultValue={selectedDate}
                   format={dateFormat}
                   onChange={onSelectDateTotalEnergy}
                 />
