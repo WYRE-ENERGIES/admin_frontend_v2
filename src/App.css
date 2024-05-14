@@ -638,8 +638,11 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   /* margin-top: 15px; */
 }
 
-.custom-row-hover {
+.keymetrics_custom_row_hover {
   width: 1039px;
+}
+.custom-row-hover {
+  /* width: 1039px; */
 }
 /* .custom-row-hover td:first-child {
   border-top-left-radius: 20px;

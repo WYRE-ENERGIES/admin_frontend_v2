@@ -409,7 +409,7 @@ function AdminOverview(props) {
             </div>
           </div>
           <Table
-            className="custom-row-hover"
+            className="keymetrics_custom_row_hover"
             onRow={(record, index) => ({
               style: {
                 color: record === checkData ? "#5C12A7" : "",
