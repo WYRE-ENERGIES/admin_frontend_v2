@@ -52,6 +52,22 @@
   color: white;
   /* position: sticky; */
 }
+
+/* span.ant-menu-title-content{
+  color: white;
+} */
+/* span.anticon-compass.ant-menu-item-icon {
+  color: white;
+} */
+
+/* span.ant-menu .ant-menu-submenu-title .ant-menu-item-icon {
+  color: white;
+} */
+
+li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
+  background-color: rgba(242, 242, 248, 0.19);
+}
+
 .PageContent {
   margin: 35px 25px 35px 18px;
   background-color: #F2F2F8;
@@ -605,6 +621,15 @@
   /* margin-top: 15px; */
 }
 
+.keymetric_pagination {
+  display:  flex;
+  margin-top: 15px;
+  margin-left: 25px;
+  margin-right: 25px;
+  /* padding: 10px; */
+  justify-content: space-between;
+}
+
 .modal_pagination {
   display:  flex;
   margin-top: 15px;
@@ -614,7 +639,7 @@
 }
 
 .custom-row-hover {
-  /* color: blue */
+  width: 1039px;
 }
 /* .custom-row-hover td:first-child {
   border-top-left-radius: 20px;

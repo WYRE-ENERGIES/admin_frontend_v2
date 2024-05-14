@@ -95,6 +95,9 @@ function SideMenu({collapsed, setCollapsed}) {
         icon: <SendOutlined />,
       },
       {
+        type: 'divider',
+      },
+      {
         label: "Log out",
         key: '/log-out',
         // key: {onclick:() => logOut()},
@@ -105,6 +108,9 @@ function SideMenu({collapsed, setCollapsed}) {
         label: "Support",
         key: "/support",
         icon: <MailOutlined />,
+      },
+      {
+        type: 'divider',
       },
       {
         label: 'Polaris Bank',
@@ -200,7 +206,7 @@ function SideMenu({collapsed, setCollapsed}) {
         </div>
         <Menu
           className="SideMenuVertical"
-          // theme="dark"
+          theme="white"
           defaultSelectedKeys={["1"]}
           onClick={(Item) => {
             navigate(Item.key);

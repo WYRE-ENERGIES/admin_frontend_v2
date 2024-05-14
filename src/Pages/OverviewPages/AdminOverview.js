@@ -365,7 +365,14 @@ function AdminOverview(props) {
         </section>
         <RendeChartsComponents index={isSelectChart} />
         <section className="total-energy-bar-chart">
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div 
+            style={{ 
+              width:1039, 
+              display: "flex", 
+              justifyContent: "space-between" 
+
+            }}
+          >
             <div>
               <h1
                 style={{
@@ -438,21 +445,25 @@ function AdminOverview(props) {
               title="Baseline Energy (kWh)"
               dataIndex="baseline_energy"
               key="baseline_energy"
+              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
             />
             <Column
               title="Blended Cost of Energy"
               dataIndex="blended_cost_of_energy"
               key="blended_cost_of_energy"
+              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
             />
             <Column
               title="Usage Accuracy Diesel"
               dataIndex="diesel_usage_accuracy"
               key="diesel_usage_accuracy"
+              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
             />
             <Column
               title="Usage Accuracy Utility"
               dataIndex="utility_usage_accuracy"
               key="utility_usage_accuracy"
+              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
             />
             <Column
               title="Deviation Hours"
@@ -464,6 +475,7 @@ function AdminOverview(props) {
               title="Fuel Efficiency"
               dataIndex="fuel_efficiency"
               key="fuel_efficiency"
+              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
             />
             <ColumnGroup title="Generator Efficiency">
               <Column
@@ -483,7 +495,7 @@ function AdminOverview(props) {
               />
             </ColumnGroup>
           </Table>
-          <div className="pagination">
+          <div className="keymetric_pagination">
             <div>
               <Button onClick={fetchPrevPaginatedKeyMetric}>Previous</Button>
             </div>

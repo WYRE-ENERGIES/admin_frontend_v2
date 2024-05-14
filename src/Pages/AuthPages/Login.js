@@ -5,6 +5,7 @@ import { Spin, Form, notification } from 'antd';
 import { Input } from 'antd';
 import { loginAUser } from '../../redux/actions/auth/auth.action';
 import { connect } from 'react-redux';
+import SocialCluster from '../smallComponents/SocialCluster.js';
 
 
 
