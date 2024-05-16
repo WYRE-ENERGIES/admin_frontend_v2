@@ -48,26 +48,24 @@ function Login(props) {
             </h1>
             <Form.Item
               name='username'
-              label='Username'
               rules={[
                 { required: true, message: 'Please enter user name' },
                 { max: 40, message: 'username cannot be more than 40 characters' }
               ]}
 
             >
-              <Input className='signup-login-contact-input outlined-input' size='large' />
+              <Input className='signup-login-contact-input outlined-input' placeholder='Username' size='large' />
             </Form.Item>
 
             <Form.Item
               name='password'
-              label='Password'
               validateTrigger={['onChange', 'onBlur']}
               rules={[
                 { required: true, message: 'Please enter password' },
                 { max: 60, message: 'username cannot be more than 60 characters' }
               ]}
             >
-              <Input size='large' className='signup-login-contact-input outlined-input' type='password' />
+              <Input size='large' className='signup-login-contact-input outlined-input' placeholder='Password' type='password' />
             </Form.Item>
 
 
@@ -86,7 +84,7 @@ function Login(props) {
           </Form>
         </div>
 
-        {/* <SocialCluster /> */}
+        <SocialCluster />
       </Spin>
     </div>
     // @media screen and (max-width: 991px) {

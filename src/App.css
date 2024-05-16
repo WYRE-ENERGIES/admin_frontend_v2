@@ -246,7 +246,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 }
 
 .header-nav--auth {
-  padding: 20px 0;
+  /* padding: 20px 0; */
 
   /* @include media('>=medium') { */
     /* padding: 0; */
@@ -257,9 +257,31 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   /* @include media('>=medium') { */
     align-items: center;
     display: flex;
-    padding-left: 'large-gutter';
+    /* padding-left: 'large-gutter'; */
     list-style-type: none;
+    text-decoration: none;
   /* } */
+}
+
+.header-link--auth {
+  text-decoration: none;
+  color: #000;
+  /* height: 24px; */
+  font-size: 16px;
+  text-align: center;
+  display: block;
+}
+
+a.header-short-button--auth {
+  background-color: #5c3592;
+  border: 0;
+  border-radius: 8px;
+  color: #fff;
+  display: block;
+  /* padding: 13px 0; */
+  text-align: center;
+  width: 65.5%;
+  font-size: 16px;
 }
 
 .header-nav-list__item--auth {
@@ -282,7 +304,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 }
 
 .header-short-button--auth {
-  background-color: darkblue;
+  /* background-color: darkblue; */
   border: 0;
   border-radius: 8px;
   color: white;
@@ -304,11 +326,11 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 
 /* Auth Form */
 .auth-page-container {
-  box-shadow: 4px 0px 8px rgba(0, 0, 0, 0.15);
-  padding-bottom: 120px;
+  box-shadow: 0px 0px 8px rgba(0, 0, 0, 0.15);
+  /* padding-bottom: 120px; */
 
   /* @include media('>medium') { */
-    padding-bottom: 190px;
+    /* padding-bottom: 190px; */
   /* } */
 }
 
@@ -326,10 +348,12 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 }
 
 .first-heading--auth {
-  /* color: darkblue; */
-  /* font-size: 1.9rem; */
-  font-weight: 'regular';
+  font-family: "Montserrat";
+  color: #143861;
+  font-size: 1.9rem;
+  font-weight: 400;
   margin-bottom: 28px;
+  text-align: center;
 
   /* @include media('>medium') { */
     /* font-size: 2.4rem; */
@@ -349,7 +373,11 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 }
 
 .signup-login-contact-input {
-  width: 150%;
+  /* width: 180%; */
+  height: 50px;
+  /* margin: 0px 0px 10px; */
+  padding: 10px 24px;
+  margin-right: 100px;
 }
 
 .outlined-input-container {
@@ -402,7 +430,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 }
 
 .signup-login-contact-button {
-  background: darkblue;
+  background: #5c3592;
   border: 0;
   border-radius: 6px;
   color: white;
@@ -412,7 +440,9 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   height: 45px;
   max-width: 350px;
   text-align: center;
-  width: 150%;
+  width: 100%;
+  padding: 10px 24px;
+  margin-right: 100px;
 
   /* @include media('>medium') { */
     font-size: 1.6rem;

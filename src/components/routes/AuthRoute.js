@@ -24,7 +24,7 @@ function AuthRoute() {
         {/* </ScrollToTop> */}
       </main>
 
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
