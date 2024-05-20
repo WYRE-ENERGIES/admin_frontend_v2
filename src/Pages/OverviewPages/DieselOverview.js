@@ -1,19 +1,16 @@
 import { Button, DatePicker, Dropdown, Form, Image, Input, Modal, Space, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { PlusOutlined } from "@ant-design/icons";
 import { BsThreeDots } from 'react-icons/bs'
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
-import { addClientUsersData, getClientUsersData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
-import EditClientUserForm from "./EditClientUserForm";
-import AddClientUserForm from "./AddClientUserForm";
-import { getDieselData } from "../../redux/actions/diesel/diesel.action";
+import { getDieselConsumptionData, getDieselData, getDieselProcurementData } from "../../redux/actions/diesel/diesel.action"; 
 
 function DieselOverview(props) {
   const [showprocurementsModal, setShowprocurementsModal] = useState(false)
   const [showConsumptionsModal, setShowConsumptionsModal] = useState(false)
   const [dieselDataTable, setDieselDataTable] = useState({})
+  const [dieselProcureDataTable, setDieselProcureDataTable] = useState({})
 
   const { Search } = Input;
   
@@ -54,6 +51,50 @@ function DieselOverview(props) {
     }
   };
 
+  const dieselProcurePaginate = props.dieselPage.fetchedDieselProcurement
+  const fetchNextPaginateProcurement = () => {
+    const clientId = props.auth.userData.client_id;
+    const currentPage = Number(dieselProcurePaginate.page) || 0;
+    const itemsPerPage = Number(dieselProcurePaginate.count) || 10;
+    const totalPages = Number( dieselProcurePaginate.total_pages) || 0
+    if (!currentPage || (totalPages - currentPage) > 0) {
+      const paginationQuery = `&page=${currentPage+1}`;
+      props.getDieselProcurementData(branchId, paginationQuery);
+    }
+  };
+
+  const fetchPrevPaginateProcurement = () => {
+    const clientId = props.auth.userData.client_id;
+    const currentPage = Number(dieselProcurePaginate.page) || 0;
+    const itemsPerPage = Number(dieselProcurePaginate.count) || 10;
+    if (currentPage && currentPage > 1) {
+      const paginationQuery = `&page=${currentPage-1}`;
+      props.getDieselProcurementData(branchId, paginationQuery);
+    }
+  };
+
+  const dieselConsumePaginate = props.dieselPage.fetchedDieselProcurement
+  const fetchNextPaginateConsumption = () => {
+    const clientId = props.auth.userData.client_id;
+    const currentPage = Number(dieselConsumePaginate.page) || 0;
+    const itemsPerPage = Number(dieselConsumePaginate.count) || 10;
+    const totalPages = Number( dieselConsumePaginate.total_pages) || 0
+    if (!currentPage || (totalPages - currentPage) > 0) {
+      const paginationQuery = `&page=${currentPage+1}`;
+      props.getDieselConsumptionData(branchId, paginationQuery);
+    }
+  };
+
+  const fetchPrevPaginateConsumption = () => {
+    const clientId = props.auth.userData.client_id;
+    const currentPage = Number(dieselConsumePaginate.page) || 0;
+    const itemsPerPage = Number(dieselConsumePaginate.count) || 10;
+    if (currentPage && currentPage > 1) {
+      const paginationQuery = `&page=${currentPage-1}`;
+      props.getDieselConsumptionData(branchId, paginationQuery);
+    }
+  };
+
   const consumptionsColumn = () => ({
     key: 'consumption',
     title: 'Consumptions',
@@ -65,9 +106,8 @@ function DieselOverview(props) {
             target="_blank"
             onClick={(e) => {
               e.preventDefault();
-              console.log("On-click");
               setShowConsumptionsModal(true);
-              setDieselDataTable(record);
+              setDieselDataTable(record.id);
             }}
             rel="noopener noreferrer"
           >
@@ -98,9 +138,8 @@ function DieselOverview(props) {
             target="_blank"
             onClick={(e) => {
               e.preventDefault();
-              console.log("procurement clicked for ==> ", record);
               setShowprocurementsModal(true);
-              setDieselDataTable(record);
+              setDieselDataTable(record.id);
             }}
             rel="noopener noreferrer"
           >
@@ -163,6 +202,20 @@ function DieselOverview(props) {
     consumptionsColumn(),
   ];
 
+  const branchId = dieselDataTable
+  const showDieselProcurementsTrack = () => {
+    props.getDieselProcurementData(branchId);
+  }
+  const showDieselConsumptionsTrack = () => {
+    props.getDieselConsumptionData(branchId);
+  }
+  useEffect( () => {
+    showDieselProcurementsTrack()
+    showDieselConsumptionsTrack()
+  }, [dieselDataTable])
+
+  const procurementDataSource = props.dieselPage.fetchedDieselProcurement
+  const consumptionDataSource = props.dieselPage.fetchedDieselConsumption
   const procurementModal = [
     {
       title: "Date",
@@ -183,8 +236,6 @@ function DieselOverview(props) {
     },
   ];
 
-  console.log("DIESEL OVERVIEW DATA = ", data);
-
   const consumptionModal = [
     {
       title: "Date",
@@ -199,9 +250,9 @@ function DieselOverview(props) {
     },
     {
       title: "Fuel efficiency ratio(%)",
-      dataIndex: "fuel_efficincy_ratio",
+      dataIndex: "fuel_efficiency_ratio",
       // render: (value) => <>{value + 'L'}</>,
-      key: "fuel_efficincy_ratio",
+      key: "fuel_efficiency_ratio",
     },
   ];
 
@@ -223,8 +274,8 @@ function DieselOverview(props) {
               borderRadius: 11,
             }}
             defaultValue={[
-              dayjs("01/04/2024", dateFormat),
-              dayjs("30/04/2024", dateFormat),
+              dayjs("01/05/2024", dateFormat),
+              dayjs("31/05/2024", dateFormat),
             ]}
             format={dateFormat}
             // onChange={onSelectDateKeyMetrics}
@@ -252,17 +303,17 @@ function DieselOverview(props) {
             height={594}
           >
             <Table
-              dataSource={dieselDataTable.procurements}
-              // loading={}
+              dataSource={procurementDataSource}
+              loading={props.dieselPage.fetchDieselProcurementLoading}
               columns={procurementModal}
               pagination={false}
             />
             <div className="modal_pagination">
               <div>
-                <Button onClick={fetchPrevPaginatedUsersList}>Previous</Button>
+                <Button onClick={fetchPrevPaginateProcurement}>Previous</Button>
               </div>
               <div>
-                <Button onClick={fetchNextPaginatedUsersList}>Next</Button>
+                <Button onClick={fetchNextPaginateProcurement}>Next</Button>
               </div>
             </div>
           </Modal>
@@ -275,17 +326,17 @@ function DieselOverview(props) {
             height={594}
           >
             <Table
-              dataSource={dieselDataTable.consumption}
-              // loading={}
+              dataSource={consumptionDataSource}
+              loading={props.dieselPage.fetchDieselConsumptionLoading}
               columns={consumptionModal}
               pagination={false}
             />
             <div className="modal_pagination">
               <div>
-                <Button onClick={fetchPrevPaginatedUsersList}>Previous</Button>
+                <Button onClick={fetchPrevPaginateConsumption}>Previous</Button>
               </div>
               <div>
-                <Button onClick={fetchNextPaginatedUsersList}>Next</Button>
+                <Button onClick={fetchNextPaginateConsumption}>Next</Button>
               </div>
             </div>
           </Modal>
@@ -304,17 +355,14 @@ function DieselOverview(props) {
 }
 
 const mapDispatchToProps = {
-  addClientUsersData,
-  getClientUsersData,
-  updateClientUsersData,
-  removeClientUsersData,
-  getDieselData
+  getDieselData,
+  getDieselProcurementData,
+  getDieselConsumptionData
 };
 
 const mapStateToProps = (state) => ({
   overviewPage: state.overviewPage,
   auth: state.auth,
-  clientUsersPage: state.clientUsersPage,
   dieselPage: state.dieselPage
 });
 

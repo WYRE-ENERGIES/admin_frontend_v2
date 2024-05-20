@@ -18,7 +18,6 @@ function App() {
   const doColapse = () => {
   }
   // setCollapsed(collapsed)
-  console.log('DECODE-USER', decodedUser);
   return (
     <div className="App">
       <BrowserRouter>
