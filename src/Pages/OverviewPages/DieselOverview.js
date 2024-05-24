@@ -23,6 +23,13 @@ function DieselOverview(props) {
     props.getDieselData(clientId);
   }
 
+  const onSelectDateDieselOverview = (date) => {
+    const clientId = props.auth.userData.client_id
+    const date1 = dayjs(date[0]).format("DD-MM-YYYY HH:mm");
+    const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
+    props.getDieselData(clientId, date1, date2)
+  }
+
   useEffect(() => {
     showDieselList()
   }, [])
@@ -274,11 +281,11 @@ function DieselOverview(props) {
               borderRadius: 11,
             }}
             defaultValue={[
-              dayjs("01/05/2024", dateFormat),
-              dayjs("31/05/2024", dateFormat),
+              dayjs().startOf('month'),
+              dayjs()
             ]}
             format={dateFormat}
-            // onChange={onSelectDateKeyMetrics}
+            onChange={onSelectDateDieselOverview}
           />
         </Space>
       </div>

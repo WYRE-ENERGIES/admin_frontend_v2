@@ -367,7 +367,7 @@ function AdminOverview(props) {
         <section className="total-energy-bar-chart">
           <div 
             style={{ 
-              width:1039, 
+              // width:1039, 
               display: "flex", 
               justifyContent: "space-between" 
 
@@ -389,13 +389,13 @@ function AdminOverview(props) {
                 style={{
                   width: 285.57,
                   marginRight: 15,
-                  // height: 43
+                  // height: 43.5           
                 }}
               />
               <RangePicker
                 style={{
                   width: 224.81,
-                  // height: 43
+                  // height: 43.5
                 }}
                 defaultValue={[
                   // dayjs("01/04/2024", dateFormat),
@@ -409,7 +409,7 @@ function AdminOverview(props) {
             </div>
           </div>
           <Table
-            className="keymetrics_custom_row_hover"
+            className="custom-row-hover"
             onRow={(record, index) => ({
               style: {
                 color: record === checkData ? "#5C12A7" : "",
