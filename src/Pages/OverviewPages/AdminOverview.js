@@ -443,9 +443,9 @@ function AdminOverview(props) {
             />
             <Column
               title="Baseline Energy (kWh)"
-              dataIndex="baseline_energy"
-              key="baseline_energy"
-              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
+              dataIndex="baseline_energy_used"
+              key="baseline_energy_used"
+              render= {(value) => <>{ value? value.toLocaleString(undefined, {maximumFractionDigits:2}) : 0}</>}
             />
             <Column
               title="Blended Cost of Energy"
