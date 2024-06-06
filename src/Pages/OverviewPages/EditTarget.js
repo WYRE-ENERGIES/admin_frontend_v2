@@ -1,12 +1,12 @@
-import { Button, Form, Image, Input, Space, Typography, notification } from "antd";
+import { Button, Form, Image, Input, Popconfirm, Space, Typography, notification } from "antd";
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { PercentageOutlined, ClockCircleOutlined, ProjectOutlined, FundOutlined, FundProjectionScreenOutlined, FieldTimeOutlined, MoneyCollectOutlined, MoneyCollectFilled } from "@ant-design/icons";
-import { getTargetData, updateTargetData } from "../../redux/actions/target/target.action";
+import { getTargetData, resetTargetData, updateTargetData } from "../../redux/actions/target/target.action";
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
-    message: 'Client User Udded',
+    message: 'Target Updated',
     description: `Your update to the ${formName} has been successfully submitted`,
   });
 };
@@ -79,7 +79,24 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
     if (request.fulfilled) {
       successNotificationPopUp('success', 'Target page')
       // form.resetFields();
-      // return showTargetInfo();
+      return showTargetInfo();
+    }
+    return errorNotificationPopUp('error', 'Target page')  
+  };
+
+  const submitRestTargetInfo = async (values ) => {
+    const payloadValues= {
+      ...values,
+      client: clientId
+    }
+    console.log('Payload-Values------------', payloadValues);
+    // setSwitchTarget(false)
+    const request = await props.resetTargetData(clientId, payloadValues);
+
+    if (request.fulfilled) {
+      successNotificationPopUp('success', 'Target page')
+      form.resetFields();
+      return showTargetInfo();
     }
     return errorNotificationPopUp('error', 'Target page')  
   };
@@ -115,15 +132,17 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
           autoComplete="off"
           onFinish={submitEditTargetInfo}
         >
-          <div style={{ width: "842", display: "flex", marginBottom: '24px' }}>
-            <div style={{ width: "405px", height: "82px", marginRight:"16px" }}>
+          <div style={{ width: "842", display: "flex", marginBottom: "24px" }}>
+            <div
+              style={{ width: "405px", height: "82px", marginRight: "16px" }}
+            >
               <Form.Item
                 name="blended_cost_of_energy"
                 label="Blended cost of energy"
               >
                 <Input
-                  style={{height: '52px'}}
-                  height= '52px'
+                  style={{ height: "52px" }}
+                  height="52px"
                   placeholder="enter cost"
                   prefix={<FundOutlined />}
                 />
@@ -135,21 +154,23 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
                 label="Usage accuracy diesel"
               >
                 <Input
-                  style={{height: '52px'}}
+                  style={{ height: "52px" }}
                   placeholder="enter percentage"
                   prefix={<PercentageOutlined />}
                 />
               </Form.Item>
             </div>
           </div>
-          <div style={{ width: "842", display: "flex", marginBottom: '24px' }}>
-            <div style={{ width: "405px", height: "82px", marginRight:"16px" }}>
+          <div style={{ width: "842", display: "flex", marginBottom: "24px" }}>
+            <div
+              style={{ width: "405px", height: "82px", marginRight: "16px" }}
+            >
               <Form.Item
                 name="utility_usage_accuracy"
                 label="Usage accuracy utility"
               >
                 <Input
-                  style={{height: '52px'}}
+                  style={{ height: "52px" }}
                   placeholder="enter percentage"
                   prefix={<PercentageOutlined />}
                 />
@@ -161,33 +182,29 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
                 label="Maximum Deviation hours (Month)"
               >
                 <Input
-                  style={{height: '52px'}}
+                  style={{ height: "52px" }}
                   placeholder="enter time"
                   prefix={<ClockCircleOutlined />}
                 />
               </Form.Item>
             </div>
           </div>
-          <div style={{ width: "842", display: "flex", marginBottom: '24px' }}>
-            <div style={{ width: "405px", height: "82px", marginRight:"16px" }}>
-              <Form.Item
-                name="papr"
-                label="PAPR"
-              >
+          <div style={{ width: "842", display: "flex", marginBottom: "24px" }}>
+            <div
+              style={{ width: "405px", height: "82px", marginRight: "16px" }}
+            >
+              <Form.Item name="papr" label="PAPR">
                 <Input
-                  style={{height: '52px'}}
+                  style={{ height: "52px" }}
                   placeholder="enter PAPR"
                   prefix={<ProjectOutlined />}
                 />
               </Form.Item>
             </div>
             <div style={{ width: "405px", height: "82px", marginLeft: "16px" }}>
-              <Form.Item
-                name="fuel_efficiency"
-                label="Fuel efficiency kWh/L"
-              >
+              <Form.Item name="fuel_efficiency" label="Fuel efficiency kWh/L">
                 <Input
-                  style={{height: '52px'}}
+                  style={{ height: "52px" }}
                   placeholder="enter fuel efficiency"
                   prefix={<ProjectOutlined />}
                 />
@@ -197,36 +214,34 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
           <div>
             <p>Generator Size Efficiency</p>
           </div>
-          <div style={{ width: "842", display: "flex", marginBottom: '40px' }}>
-            <div style={{ width: "270px", height: "82px", marginRight:"8px" }}>
-              <Form.Item
-                name="generator_size_efficiency_1"
-                label="Generator 1"
-              >
+          <div style={{ width: "842", display: "flex", marginBottom: "40px" }}>
+            <div style={{ width: "270px", height: "82px", marginRight: "8px" }}>
+              <Form.Item name="generator_size_efficiency_1" label="Generator 1">
                 <Input
-                  style={{height: '52px'}}
+                  style={{ height: "52px" }}
                   placeholder="Enter efficiency"
                 />
               </Form.Item>
             </div>
-            <div style={{ width: "270px", height: "82px", marginRight: "8px", marginLeft: "8px" }}>
-              <Form.Item
-                name="generator_size_efficiency_2"
-                label="Generator 2"
-              >
+            <div
+              style={{
+                width: "270px",
+                height: "82px",
+                marginRight: "8px",
+                marginLeft: "8px",
+              }}
+            >
+              <Form.Item name="generator_size_efficiency_2" label="Generator 2">
                 <Input
-                  style={{height: '52px'}}
+                  style={{ height: "52px" }}
                   placeholder="Enter efficiency"
                 />
               </Form.Item>
             </div>
             <div style={{ width: "270px", height: "82px", marginLeft: "8px" }}>
-              <Form.Item
-                name="generator_size_efficiency_3"
-                label="Generator 3"
-              >
+              <Form.Item name="generator_size_efficiency_3" label="Generator 3">
                 <Input
-                  style={{height: '52px'}}
+                  style={{ height: "52px" }}
                   placeholder="Enter efficiency"
                 />
               </Form.Item>
@@ -234,6 +249,25 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
           </div>
           <Form.Item>
             <SubmitButton form={form} />
+
+            {/* // disabled={!submittable} */}
+            <Popconfirm
+              title="Are you sure you want to reset your target?"
+              onConfirm={() => submitRestTargetInfo()}
+              htmlType="submit"
+              form={form}
+            >
+              <a
+                style={{
+                  color: "green",
+                  marginLeft:"10px",
+                  paddingRight:"10px",
+                  paddingLeft:"10px",
+                  backgroundColor:"white",
+                  borderRadius:"7px"
+                }}
+              >Reset</a>
+            </Popconfirm>
           </Form.Item>
         </Form>
       </div>
@@ -244,6 +278,7 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
 const mapDispatchToProps = {
   updateTargetData,
   getTargetData,
+  resetTargetData
 };
 
 const mapStateToProps = (state) => ({

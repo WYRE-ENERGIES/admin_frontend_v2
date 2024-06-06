@@ -65,13 +65,13 @@ function SideMenu({collapsed, setCollapsed}) {
         icon: <ProjectOutlined />,
       },
       {
-        label: "Client Users",
+        label: "Users",
         key: "/client-user",
         icon: <UserOutlined />,
       },
       {
         label: "View Location",
-        key: "/location",
+        key: "/locations",
         icon: <EnvironmentOutlined />,
       },
       {
@@ -84,16 +84,16 @@ function SideMenu({collapsed, setCollapsed}) {
         key: "/diesel",
         icon: <HeatMapOutlined />,
       },
-      {
-        label: "Regions Activities",
-        key: "/regions-activities",
-        icon: <CompassOutlined />,
-      },
-      {
-        label: "Top Management Report",
-        key: "/top-mngt",
-        icon: <SendOutlined />,
-      },
+      // {
+      //   label: "Regions Activities",
+      //   key: "/regions-activities",
+      //   icon: <CompassOutlined />,
+      // },
+      // {
+      //   label: "Top Management Report",
+      //   key: "/top-mngt",
+      //   icon: <SendOutlined />,
+      // },
       {
         type: 'divider',
       },

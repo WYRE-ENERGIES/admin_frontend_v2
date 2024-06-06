@@ -4,9 +4,11 @@ const initialState = {
     addTargetLoading: false,
     fetchTargetLoading: false,
     updateTargetLoading: false,
+    resetTargetLoading: false,
     newTarget: false,
     fetchedTarget: false,
     updatedTarget: false,
+    resetTarget: false,
 }
 
 const targetReducers = (state = initialState, action) => {
@@ -42,6 +44,17 @@ const targetReducers = (state = initialState, action) => {
             return {
                 ...state,
                 updatedTarget: action.payload
+            }
+
+        case targetTypes.RESET_TARGET_LOADING:
+            return {
+                ...state,
+                resetTargetLoading: action.payload
+            }
+        case targetTypes.RESET_TARGET_SUCCESS:
+            return {
+                ...state,
+                resetTarget: action.payload
             }
     
         default: return state;
