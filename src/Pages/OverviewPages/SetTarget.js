@@ -7,7 +7,7 @@ import EditTarget from "./EditTarget";
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
-    message: 'Client User Added',
+    message: 'Target Added',
     description: `Your addition to the ${formName} has been successfully created`,
   });
 };
@@ -78,7 +78,7 @@ function SetTarget(props) {
 
     if (request.fulfilled) {
       successNotificationPopUp('success', 'Target page')
-      form.resetFields();
+      // form.resetFields();
       setSwitchTarget(true)
       return showTargetInfo();
     }

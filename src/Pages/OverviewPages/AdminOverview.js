@@ -276,7 +276,7 @@ function AdminOverview(props) {
               Download Report
             </Button>
           </div>
-          <div>
+          {/* <div>
             <Button
               style={{
                 backgroundColor: "#5C12A7",
@@ -291,7 +291,7 @@ function AdminOverview(props) {
               <PlusOutlined />
               Add User
             </Button>
-          </div>
+          </div> */}
         </Space>
       </div>
       <div className="##########">

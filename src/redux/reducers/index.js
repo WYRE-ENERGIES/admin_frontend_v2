@@ -5,6 +5,7 @@ import headersReducers from "./header/headers.reducer";
 import clientUserReducers from "./clientUser/clientUser.reducer";
 import targetReducers from "./target/target.reducer";
 import dieselReducers from "./diesel/diesel.reducer";
+import locationReducers from "./location/location.reducer";
 
 const rootReducers = combineReducers({
     overviewPage: overviewReducers,
@@ -12,7 +13,8 @@ const rootReducers = combineReducers({
     headers: headersReducers,
     clientUsersPage: clientUserReducers,
     targetPage: targetReducers,
-    dieselPage: dieselReducers
+    dieselPage: dieselReducers,
+    locationPage: locationReducers,
 });
 
 export default rootReducers

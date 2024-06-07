@@ -26,3 +26,12 @@ export const editTargetSuccess = (payload = true) => ({
     type: targetTypes.EDIT_TARGET_SUCCESS,
     payload,
 });
+
+export const resetTargetLoading = (payload = true) => ({
+    type: targetTypes.RESET_TARGET_LOADING,
+    payload,
+});  
+export const resetTargetSuccess = (payload = true) => ({
+    type: targetTypes.RESET_TARGET_SUCCESS,
+    payload,
+});

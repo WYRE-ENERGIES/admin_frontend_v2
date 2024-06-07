@@ -1,5 +1,5 @@
 import { APIService } from "../../../config/Api/apiServices";
-import { editTargetLoading, editTargetSuccess, getTargetLoading, getTargetSuccess, setTargetLoading, setTargetSuccess } from "./target.creator";
+import { editTargetLoading, editTargetSuccess, getTargetLoading, getTargetSuccess, resetTargetLoading, resetTargetSuccess, setTargetLoading, setTargetSuccess } from "./target.creator";
 
 export const setTargetData = (clientId, values) => async (dispatch) => {
 
@@ -43,7 +43,7 @@ export const updateTargetData = (clientId, values) => async (dispatch) => {
 
   const requestUrl = `/api/v2/target/${clientId}/`;
   try {
-    const response = await APIService.patch(requestUrl, values);
+    const response = await APIService.put(requestUrl, values);
 
     dispatch(editTargetSuccess(response.data));
 
@@ -51,6 +51,24 @@ export const updateTargetData = (clientId, values) => async (dispatch) => {
     return { fulfilled: true, message: 'successful' }
   } catch (error) {
     dispatch(editTargetLoading(false));
+    return { fulfilled: false, message: error.response.data.detail }
+  }
+};
+
+export const resetTargetData = (clientId, values) => async (dispatch) => {
+
+  dispatch(resetTargetLoading(true));
+
+  const requestUrl = `/api/v2/target/${clientId}/`;
+  try {
+    const response = await APIService.patch(requestUrl, values);
+
+    dispatch(resetTargetSuccess(response.data));
+
+    dispatch(resetTargetLoading(false))
+    return { fulfilled: true, message: 'successful' }
+  } catch (error) {
+    dispatch(resetTargetLoading(false));
     return { fulfilled: false, message: error.response.data.detail }
   }
 };

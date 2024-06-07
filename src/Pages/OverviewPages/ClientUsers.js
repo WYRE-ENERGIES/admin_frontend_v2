@@ -108,7 +108,7 @@ function ClientUsers(props) {
     <>
       <div className="AppHeader">
         <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
-          Client Users
+          Users
         </Typography.Title>
       </div>
       <div className="AppHeader">
