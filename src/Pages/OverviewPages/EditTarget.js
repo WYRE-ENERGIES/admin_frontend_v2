@@ -45,7 +45,12 @@ const SubmitButton = ({ form }) => {
   }, [values]);
   return (
     <Button
-      style={{ backgroundColor: "#5C12A7", color: "white", width: "404px", height: "52px" }}
+      style={{
+        backgroundColor: "#5C12A7",
+        color: "white",
+        width: "370px",
+        height: "52px",
+      }}
       type="primary"
       htmlType="submit"
       disabled={!submittable}
@@ -257,16 +262,23 @@ function EditTarget(props, switchTarget, setSwitchTarget) {
               htmlType="submit"
               form={form}
             >
-              <a
+              <div
                 style={{
-                  color: "green",
-                  marginLeft:"10px",
-                  paddingRight:"10px",
-                  paddingLeft:"10px",
-                  backgroundColor:"white",
-                  borderRadius:"7px"
+                  position:"relative",
+                  top:"-36px",
+                  marginLeft:"390px",
                 }}
-              >Reset</a>
+              >
+              <a
+               style={{
+                padding:"16px 150px 16px 150px",
+                backgroundColor:"#FFFFFF",
+                color: "red",
+                borderRadius:"5px"
+               }}
+              >
+                Reset</a>
+              </div>
             </Popconfirm>
           </Form.Item>
         </Form>
