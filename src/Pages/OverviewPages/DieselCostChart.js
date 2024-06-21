@@ -36,6 +36,7 @@ ChartJS.register(
 
 function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const [dateSearch, setDateSearch] = useState('')
+  const [selectedDate, setSelectedDate] = useState()
   const [costChartData, setCostChartData] = useState({
     labels: [],
     datasets: []
@@ -44,6 +45,7 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   dayjs.extend(customParseFormat);
   const dateFormat = 'YYYY';
   const { RangePicker } = DatePicker;
+  const yearPicker = new Date().getFullYear();
 
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
@@ -156,6 +158,7 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const onDateChange = (date) => {
     const clientId = props.auth.userData.client_id
     const year = new Date(date).getFullYear();
+    setSelectedDate(year)
     props.getClientDieselCostData(clientId, year)
   }
 
@@ -189,10 +192,11 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                 </div>
                 <div>
                   <DatePicker
+                    // defaultValue={selectedDate}
                     defaultValue={
                       dayjs("2024", dateFormat)
                     }
-                    format={dateFormat}
+                    // format={dateFormat}
                     picker="year"
                     style={{ width: 107.65, height: 44 }}
                     onChange={onDateChange}

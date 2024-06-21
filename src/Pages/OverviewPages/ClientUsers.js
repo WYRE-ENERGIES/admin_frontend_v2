@@ -1,7 +1,7 @@
 import { Button, Dropdown, Form, Image, Input, Modal, Space, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { addClientUsersData, getClientUsersData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
@@ -25,6 +25,21 @@ function ClientUsers(props) {
   useEffect(() => {
     showclientUsersList()
   }, [])
+
+  const onSearchClientUser = (e) => {
+    const clientId = props.auth.userData.client_id
+    props.getClientUsersData(clientId, 1, e.target.value)
+  }
+
+  const suffix = (
+    <SearchOutlined
+      onClick={onSearchClientUser}
+      style={{
+        fontSize: 16,
+        color: "white",
+      }}
+    />
+  );
 
   const data = props.clientUsersPage.fetchedClientUser.results
 
@@ -113,6 +128,9 @@ function ClientUsers(props) {
       </div>
       <div className="AppHeader">
         <Search
+          onClick={onSearchClientUser}
+          enterButton={suffix}
+          allowClear
           placeholder="Search by name"
           style={{
             width: "349.68px",

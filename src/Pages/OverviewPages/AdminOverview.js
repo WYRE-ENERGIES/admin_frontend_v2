@@ -1,4 +1,5 @@
 import { Button, Card, DatePicker, Image, Input, Space, Spin, Table, Tag, Typography } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined, PlusOutlined, ContainerOutlined, ExpandAltOutlined, FundOutlined, DeleteOutlined, EllipsisOutlined, ProjectOutlined, FundProjectionScreenOutlined, BarsOutlined, ThunderboltOutlined  } from "@ant-design/icons";
@@ -27,6 +28,7 @@ import UtilityEnergyChart from "./UtilityEnergyChart";
 import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
+import BarLoader from 'react-bar-loader';
 import { BsFillBucketFill, BsProjectorFill, BsThunderboltFill } from "react-icons/bs";
 import { PiProjectorScreen } from "react-icons/pi";
 import { CiMoneyBill } from "react-icons/ci";
@@ -129,6 +131,20 @@ function AdminOverview(props) {
     showKeyMetricsTable()
   }, [])
 
+  const onSearchKeyMetrics = (e) => {
+    props.getKeyMetricsData(clientId, startDate, endDate, 1, e.target.value)
+  }
+
+  const suffix = (
+    <SearchOutlined
+      onClick={onSearchKeyMetrics}
+      style={{
+        fontSize: 16,
+        color: "white",
+      }}
+    />
+  );
+
   const data = props.overviewPage.fetchedKeyMetrics.results
   const checkData = props.overviewPage?.fetchedKeyMetrics?.results?.[0]
 
@@ -153,11 +169,6 @@ function AdminOverview(props) {
       props.getKeyMetricsData(clientId, startDate, endDate, paginationQuery);
     }
   };
-
-  const onSearchKeyMetrics = (e) => {
-    props.getKeyMetricsData(clientId, startDate, endDate, 1, e.target.value)
-    console.log("onSearch clicked->>>>>>>>>>>", e.target.value );
-  }
   
   const columns = [
     {
@@ -385,7 +396,9 @@ function AdminOverview(props) {
             <div>
               <Search
                 placeholder="Search by name"
-                onChange={onSearchKeyMetrics}
+                onClick={onSearchKeyMetrics}
+                enterButton={suffix}
+                allowClear
                 style={{
                   width: 285.57,
                   marginRight: 15,

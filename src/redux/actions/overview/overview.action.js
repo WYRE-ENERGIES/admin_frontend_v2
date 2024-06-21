@@ -40,11 +40,11 @@ export const getTotalEnergyBarChartData = (clientId, startDate, endDate, paginat
     }
 };
 
-export const getClientUtilityCostData = (clientId) => async (dispatch) => {
+export const getClientUtilityCostData = (clientId, year) => async (dispatch) => {
 
     dispatch(getTotalCostBarChartLoading(true));
   
-    const requestUrl = `/api/v2/client-utility-cost/?client_id=${clientId}`;
+    const requestUrl = `/api/v2/client-utility-cost/?client_id=${clientId}&year=${year}`;
     try {
       const response = await APIService.get(requestUrl);
   
