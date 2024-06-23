@@ -18,13 +18,6 @@ import {
 } from 'chart.js';
 import 'chart.js/auto'
 import { Bar } from "react-chartjs-2";
-import BarLoader from 'react-bar-loader'
-
-import Pagination from "../../components/Pagination";
-import ColumnGroup from "antd/es/table/ColumnGroup";
-import Column from "antd/es/table/Column";
-import UtilityCostChart from "./UtilityCostChart";
-import { BiRadio } from "react-icons/bi";
 
 ChartJS.register(
   CategoryScale,
@@ -39,6 +32,7 @@ ChartJS.register(
 function TotalEnergyChart(props) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [paginationData, setPaginationData] = useState({})
+  const [holdSearchData, setHoldSearchData] = useState("")
   const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
   dayjs(),])
   const [energyChartData, setEnergyChartData] = useState({
@@ -105,7 +99,6 @@ function TotalEnergyChart(props) {
         return chart.name
         })
       const breakLabels = labels.map(label => label.split(' '))
-      console.log('Broken-Labels>>>>>>>>>>>', breakLabels);
       const data1 = props.overviewPage.fetchedTotalEnergyBarChart?.results.map(chart => {
         return chart.utility_energy
       })
@@ -193,9 +186,8 @@ function TotalEnergyChart(props) {
     },
   ]
   
-  const onSearchTotalEnergy = (e) => {
-    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, e.target.value)
-    console.log('Search by name == ', e.target.value)
+  const onSearchTotalEnergy = () => {
+    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, holdSearchData)
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -246,13 +238,13 @@ function TotalEnergyChart(props) {
                   <Search
                     placeholder="Search by name"
                     enterButton={suffix}
-                    // suffix={suffix}
-                    onClick={onSearchTotalEnergy}
+                    onChange={(e) => {
+                      setHoldSearchData(e.target.value);
+                    }}
                     allowClear
                     style={{
-                      width: 222,
+                      width: 222, 
                       marginRight: 10,
-                      // height: 43
                     }}
                   />
                   <RangePicker

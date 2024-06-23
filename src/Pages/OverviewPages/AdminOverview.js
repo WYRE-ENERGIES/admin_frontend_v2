@@ -90,12 +90,8 @@ const RendeChartsComponents = ({index}) => {
 
 function AdminOverview(props) {
   const [searchParams, setSearchParams] = useSearchParams()
+  const [holdSearchData, setHoldSearchData] = useState('')
   const [dateSearch, setDateSearch] = useState('')
-  const [showTotalEnergyPage, setShowTotalEnergyPage] = useState(true)
-  const [showUtilityCostPage, setShowUtilityCostPage] = useState(false)
-  const [showUtilityEnergyPage, setShowUtilityEnergyPage] = useState(false)
-  const [showDieselCostPage, setShowDieselCostPage] = useState(false)
-  const [showDieselLitrePage, setShowDieselLitrePage] = useState(false)
   const [isSelectChart, setIsSelectChart] = useState(0)
   const [paginationData, setPaginationData] = useState({})
 
@@ -131,8 +127,8 @@ function AdminOverview(props) {
     showKeyMetricsTable()
   }, [])
 
-  const onSearchKeyMetrics = (e) => {
-    props.getKeyMetricsData(clientId, startDate, endDate, 1, e.target.value)
+  const onSearchKeyMetrics = () => {
+    props.getKeyMetricsData(clientId, startDate, endDate, 1, holdSearchData)
   }
 
   const suffix = (
@@ -396,8 +392,10 @@ function AdminOverview(props) {
             <div>
               <Search
                 placeholder="Search by name"
-                onClick={onSearchKeyMetrics}
                 enterButton={suffix}
+                onChange={(e) => {
+                  setHoldSearchData(e.target.value)
+                }}
                 allowClear
                 style={{
                   width: 285.57,
