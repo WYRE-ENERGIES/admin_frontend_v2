@@ -1,7 +1,7 @@
-import { Button, Card, DatePicker, Image, Input, Space, Table, Typography } from "antd";
+import { Button, Card, DatePicker, Image, Input, Space, Spin, Table, Typography } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
+import { DownloadOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
@@ -18,10 +18,6 @@ import {
 } from 'chart.js';
 import 'chart.js/auto'
 import { Bar } from "react-chartjs-2";
-import Pagination from "../../components/Pagination";
-import ColumnGroup from "antd/es/table/ColumnGroup";
-import Column from "antd/es/table/Column";
-import UtilityCostChart from "./UtilityCostChart";
 
 ChartJS.register(
   CategoryScale,
@@ -36,6 +32,7 @@ ChartJS.register(
 function TotalEnergyChart(props) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [paginationData, setPaginationData] = useState({})
+  const [holdSearchData, setHoldSearchData] = useState("")
   const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
   dayjs(),])
   const [energyChartData, setEnergyChartData] = useState({
@@ -102,7 +99,6 @@ function TotalEnergyChart(props) {
         return chart.name
         })
       const breakLabels = labels.map(label => label.split(' '))
-      console.log('Broken-Labels>>>>>>>>>>>', breakLabels);
       const data1 = props.overviewPage.fetchedTotalEnergyBarChart?.results.map(chart => {
         return chart.utility_energy
       })
@@ -190,13 +186,23 @@ function TotalEnergyChart(props) {
     },
   ]
   
-  const onSearchTotalEnergy = (e) => {
-    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, e.target.value)
+  const onSearchTotalEnergy = () => {
+    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, holdSearchData)
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
     console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
+  const suffix = (
+    <SearchOutlined
+      onClick={onSearchTotalEnergy}
+      style={{
+        fontSize: 16,
+        color: "white",
+      }}
+    />
+  );
+  
 
   return (
     <>
@@ -212,56 +218,66 @@ function TotalEnergyChart(props) {
               // height: 650,
               borderRadius: 22,
             }}
-            loading={props.overviewPage.fetchTotalEnergyBarChartLoading}
+            // loading={props.overviewPage.fetchTotalEnergyBarChartLoading}
           >
-            <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div>
-                <h1
-                  style={{
-                    fontSize: "17Px",
-                  }}
-                >
-                  Total Energy
-                  {/* {moveLegend} */}
-                </h1>
+            <Spin
+              spinning={props.overviewPage.fetchTotalEnergyBarChartLoading}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div>
+                  <h1
+                    style={{
+                      fontSize: "17Px",
+                    }}
+                  >
+                    Total Energy
+                    {/* {moveLegend} */}
+                  </h1>
+                </div>
+                <div>
+                  <Search
+                    placeholder="Search by name"
+                    enterButton={suffix}
+                    onChange={(e) => {
+                      setHoldSearchData(e.target.value);
+                    }}
+                    allowClear
+                    style={{
+                      width: 222, 
+                      marginRight: 10,
+                    }}
+                  />
+                  <RangePicker
+                    style={{
+                      width: 222,
+                      // height: 43
+                    }}
+                    // defaultValue={[
+                    //   // dayjs("01/05/2024", dateFormat),
+                    //   // dayjs("31/05/2024", dateFormat),
+                    //   dayjs().startOf('month'),
+                    //   dayjs(),
+                    //   // moment().startOf("month"),
+                    //   // moment().endOf("month"),
+                    // ]}
+                    defaultValue={selectedDate}
+                    format={dateFormat}
+                    onChange={onSelectDateTotalEnergy}
+                  />
+                </div>
               </div>
-              <div>
-                <Search
-                  placeholder="Search by name"
-                  onChange={onSearchTotalEnergy}
-                  style={{
-                    width: 222,
-                    marginRight: 10,
-                    // height: 43
-                  }}
-                />
-                <RangePicker
-                  style={{
-                    width: 222,
-                    // height: 43
-                  }}
-                  // defaultValue={[
-                  //   // dayjs("01/05/2024", dateFormat),
-                  //   // dayjs("31/05/2024", dateFormat),
-                  //   dayjs().startOf('month'),
-                  //   dayjs(),
-                  //   // moment().startOf("month"),
-                  //   // moment().endOf("month"),
-                  // ]}
-                  defaultValue={selectedDate}
-                  format={dateFormat}
-                  onChange={onSelectDateTotalEnergy}
-                />
-              </div>
-            </div>
-            <Bar options={options} data={energyChartData} />
-            {/* <Pagination
+              <Bar
+                onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
+                options={options}
+                data={energyChartData}
+              />
+              {/* <Pagination
               totalPosts = {chartPages.lenght} 
               postsPerPage = {postsPerPage}
               setCurrentPage={setCurrentPage}
             /> */}
 
-            {/* <ReactPaginate 
+              {/* <ReactPaginate 
               previousLabel={'Previous'}
               nextLabel={'Next'}
               pageCount={pageCount}
@@ -272,18 +288,19 @@ function TotalEnergyChart(props) {
               disabledClassName="paginationDisable"
               activeClassName={"paginationActive"}
             /> */}
-            {/* <button onClick={fetchNextPaginatedTotalEnergy} >Next</button>
+              {/* <button onClick={fetchNextPaginatedTotalEnergy} >Next</button>
             <button onClick={fetchPrevPaginatedTotalEnergy}>Previous</button> */}
-            <div className="pagination">
-              <div>
-                <Button onClick={fetchPrevPaginatedTotalEnergy}>
-                  Previous
-                </Button>
+              <div className="pagination">
+                <div>
+                  <Button onClick={fetchPrevPaginatedTotalEnergy}>
+                    Previous
+                  </Button>
+                </div>
+                <div>
+                  <Button onClick={fetchNextPaginatedTotalEnergy}>Next</Button>
+                </div>
               </div>
-              <div>
-                <Button onClick={fetchNextPaginatedTotalEnergy}>Next</Button>
-              </div>
-            </div>
+            </Spin>
           </Card>
         </section>
       </div>

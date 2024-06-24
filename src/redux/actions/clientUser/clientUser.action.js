@@ -19,13 +19,15 @@ export const addClientUsersData = (clientId, values) => async (dispatch) => {
     }
 };
 
-export const getClientUsersData = (clientId, paginationQuery=1) => async (dispatch) => {
+export const getClientUsersData = (clientId, paginationQuery=1, branchName) => async (dispatch) => {
 
     dispatch(getClientUserLoading(true));
   
     const requestUrl = `/api/v2/clients/${clientId}/users/?page=${paginationQuery}`;
+    const initUrl = `/api/v2/clients/${clientId}/users/?page=${paginationQuery}`
+    const reqUrl = branchName ? initUrl + `&search=${branchName}` : initUrl
     try {
-      const response = await APIService.get(requestUrl);
+      const response = await APIService.get(reqUrl);
   
       dispatch(getClientUserSuccess(response.data));
   

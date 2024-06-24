@@ -187,6 +187,16 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   padding: 15px;
 }
 
+.support_bottomSection {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  padding: 60px 80px;
+  /* background: #f0f7ed; */
+  border-radius: 12px;
+}
+
 
 /* AUTH Stuffs start */
 /* Auth Header */

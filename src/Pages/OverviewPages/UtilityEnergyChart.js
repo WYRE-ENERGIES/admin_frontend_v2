@@ -36,6 +36,8 @@ ChartJS.register(
 
 function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const [dateSearch, setDateSearch] = useState('')
+  const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
+    dayjs(),])
   const [costChartData, setCostChartData] = useState({
     labels: [],
     datasets: []
