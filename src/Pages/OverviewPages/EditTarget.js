@@ -1,4 +1,4 @@
-import { Button, Form, Image, Input, Popconfirm, Space, Spin, Typography, notification } from "antd";
+import { Button, Form, Image, Input, InputNumber, Popconfirm, Space, Spin, Typography, notification } from "antd";
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { PercentageOutlined, ClockCircleOutlined, ProjectOutlined, FundOutlined, FundProjectionScreenOutlined, FieldTimeOutlined, MoneyCollectOutlined, MoneyCollectFilled } from "@ant-design/icons";
@@ -124,12 +124,23 @@ function EditTarget(props) {
     })
   }, [props.targetPage])
 
+  const onChange = (value) => {
+    console.log('changed', value);
+  };
+
+  const maxLengthCheck = (object) => {
+    if (object.target.value.length > object.target.max) {
+      object.target.value = object.target.value.slice(
+        0,
+        object.target.max,
+      )
+    }
+  }
+
   return (
     <>
       <div className="set_target_page">
-        <Spin
-          spinning={props.targetPage.updateTargetLoading}
-        >
+        <Spin spinning={props.targetPage.updateTargetLoading}>
           <Form
             form={form}
             // name="validateOnly"
@@ -209,18 +220,28 @@ function EditTarget(props) {
               <div
                 style={{ width: "405px", height: "82px", marginRight: "16px" }}
               >
-                <Form.Item 
-                  name="papr" 
+                <Form.Item
+                  name="papr"
                   label="PAPR"
-                  rules={[
-                    { 
-                      // pattern: /^[\d]{0, 1}$/, 
-                      message: 'PAPR value can not be more than 1' 
-                    }
-                  ]}
+                  // rules={[
+                  //   {
+                  //     pattern: /^[\d]{0, 1}$/,
+                  //     message: 'PAPR value can not be more than 1'
+                  //   }
+                  // ]}
                 >
-                  <Input
-                    style={{ height: "52px" }}
+                  <InputNumber
+                    style={{ height: "52px", width: "405px" }}
+                    defaultValue="1"
+                    min="0"
+                    max="1"
+                    // maxLength="3"
+                    step="0.01"
+                    onInput={maxLengthCheck}
+                    onKeyDown={(evt) => evt.key === 'e' && evt.preventDefault()}
+                    // oninput="validity.valid||(value='')"
+                    onChange={onChange}
+                    stringMode
                     placeholder="enter PAPR"
                     prefix={<ProjectOutlined />}
                   />
