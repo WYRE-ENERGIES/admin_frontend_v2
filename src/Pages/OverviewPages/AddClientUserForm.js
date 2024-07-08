@@ -1,7 +1,7 @@
-import { Button, Form, Image, Input, notification } from "antd";
+import { Button, Form, Image, Input, Select, notification } from "antd";
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
-import { addClientUsersData, getClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
+import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData } from "../../redux/actions/clientUser/clientUser.action"; 
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
@@ -47,7 +47,7 @@ const SubmitButton = ({ form }) => {
       style={{ backgroundColor: "#5C12A7", color: "white", width: "100%" }}
       type="primary"
       htmlType="submit"
-      disabled={!submittable}
+      // disabled={!submittable}
     >
       Submit
     </Button>
@@ -56,27 +56,94 @@ const SubmitButton = ({ form }) => {
 
 function AddClientUserForm(props) {
   const [form] = Form.useForm();
+  const [holdLocationData, setHoldLocationData] = useState([]);
 
   // const { Search } = Input;
+  const clientId = props.auth.userData.client_id
+  const userId = clientId
+  useEffect(() => {
+    const handleBranch = async () => {
+      // const userId = props.ClientUserTableData.id
+      const requestBranchesData = await props.getUserBranchesData(userId)
+      console.log('from add-page =>>>>> ', requestBranchesData);
+      // return requestBranchesData
+      if (requestBranchesData.fulfilled) {
+        console.log('data =>>>>> ', requestBranchesData.data.data);
+        // return requestBranchesData.data.data
+        setHoldLocationData(requestBranchesData.data.data)
+      }
+    }
+    handleBranch()
+  },[])
+
+  const options = [];
+  if (holdLocationData) {
+    holdLocationData.map((locationData) => {
+      options.push({
+        label: locationData.name,
+        value: locationData.id,
+        key: locationData.id,
+      });
+    })
+  }
+
+  useEffect(() => {
+  },[])
+
+  const assignLocationToUser = async (value) => {
+    const userId = clientId
+    const callSelectionApi = await props.assignLocation(userId,value)
+    return callSelectionApi
+  }
+
+  const handleChange = (value) => {
+    // handleBranch()
+    // props.assignLocation(clientId, `${value}`)
+    // assignLocationToUser()
+  };
+  
+  const SelectBranch = () => {
+    return (
+      <Select
+        mode="multiple"
+        allowClear
+        style={{
+          // width: "100%",
+        }}
+        placeholder="Assign Location"
+        // defaultValue={["AdeolaHopewell", "Agodi"]}
+        onChange={handleChange}
+        options={options}
+      />
+    );
+  }
   
   const showclientUsersList = () => {
     const clientId = props.auth.userData.client_id
     props.getClientUsersData(clientId);
   }
-  const clientId = props.auth.userData.client_id
   const submitNewClientUsers = async (values) => {
-    const request = await props.addClientUsersData(clientId, values);
+    const {location, ...others } = values;
+    const createUserRequest = await props.addClientUsersData(clientId, others);
+    // assignLocationToUser()
 
-    if (request.fulfilled) {
+    if (createUserRequest.fulfilled) {
+
+      // after the request has been created,
+      // call the endpoint to assing user 
+      const assignLocationRequest = await props.assignLocation(createUserRequest.data.id, location)
+      if(assignLocationRequest){
       successNotificationPopUp('success', 'client user page')
       form.resetFields();
       return showclientUsersList();
+      }
+
     }
     return errorNotificationPopUp('error', 'client user page')  
   };
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
+    // console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
 
   return (
@@ -130,15 +197,27 @@ function AddClientUserForm(props) {
               <Input />
             </Form.Item>
             <Form.Item
-              name="assign location"
+              name="location"
               label="Assign Location"
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
+              // rules={[
+              //   {
+              //     required: true,
+              //   },
+              // ]}
             >
-              <Input />
+              {/* <Input /> */}
+              {/* <SelectBranch /> */}
+              <Select
+        mode="multiple"
+        allowClear
+        style={{
+          // width: "100%",
+        }}
+        placeholder="Assign Location"
+        // defaultValue={["AdeolaHopewell", "Agodi"]}
+        onChange={handleChange}
+        options={options}
+      />
             </Form.Item>
             <Form.Item>
               <SubmitButton form={form} />
@@ -154,6 +233,8 @@ function AddClientUserForm(props) {
 const mapDispatchToProps = {
   addClientUsersData,
   getClientUsersData,
+  getUserBranchesData,
+  assignLocation
 };
 
 const mapStateToProps = (state) => ({

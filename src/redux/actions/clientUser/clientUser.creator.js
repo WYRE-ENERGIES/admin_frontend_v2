@@ -9,12 +9,30 @@ export const addClientUserSuccess = (payload = true) => ({
     payload,
 });
 
+export const addUserBranchLoading = (payload = true) => ({
+    type: clientUserTypes.ADD_USER_BRANCH_LOADING,
+    payload,
+});
+export const addUserBranchSuccess = (payload = true) => ({
+    type: clientUserTypes.ADD_USER_BRANCH_SUCCESS,
+    payload,
+});
+
 export const getClientUserLoading = (payload = true) => ({
     type: clientUserTypes.GET_CLIENT_USER_LOADING,
     payload,
 });
 export const getClientUserSuccess = (payload = true) => ({
     type: clientUserTypes.GET_CLIENT_USER_SUCCESS,
+    payload,
+});
+
+export const getUserBranchLoading = (payload = true) => ({
+    type: clientUserTypes.GET_USER_BRANCH_LOADING,
+    payload,
+});
+export const getUserBranchSuccess = (payload = true) => ({
+    type: clientUserTypes.GET_USER_BRANCH_SUCCESS,
     payload,
 });
 

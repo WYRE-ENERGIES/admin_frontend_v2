@@ -280,10 +280,7 @@ function DieselOverview(props) {
               height: 41.19,
               borderRadius: 11,
             }}
-            defaultValue={[
-              dayjs().startOf('month'),
-              dayjs()
-            ]}
+            defaultValue={[dayjs().startOf("month"), dayjs()]}
             format={dateFormat}
             onChange={onSelectDateDieselOverview}
           />

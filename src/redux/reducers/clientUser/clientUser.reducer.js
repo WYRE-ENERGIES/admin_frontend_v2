@@ -5,8 +5,12 @@ import clientUserTypes from "./clientUser.type";
 const initialState = {
     newClientUserLoading: false,
     newClientUser: false,
+    newUserBranchesLoading: false,
+    newUserBranches: false,
     fetchClientUserLoading: false,
     fetchedClientUser: false,
+    fetchUserBranchesLoading: false,
+    fetchedUserBranches: false,
     updateClientUserLoading: false,
     updatedClientUser: false,
     removeClientUserLoading: false,
@@ -25,6 +29,17 @@ const clientUserReducers = (state = initialState, action) => {
                 ...state,
                 newClientUser: action.payload
             }
+            
+        case clientUserTypes.ADD_USER_BRANCH_LOADING:
+            return {
+                ...state,
+                newUserBranchesLoading: action.payload
+            }
+        case clientUserTypes.ADD_USER_BRANCH_SUCCESS:
+            return {
+                ...state,
+                newUserBranches: action.payload
+            }
 
         case clientUserTypes.GET_CLIENT_USER_LOADING:
             return {
@@ -35,6 +50,17 @@ const clientUserReducers = (state = initialState, action) => {
             return {
                 ...state,
                 fetchedClientUser: action.payload
+            }
+
+        case clientUserTypes.GET_USER_BRANCH_LOADING:
+            return {
+                ...state,
+                fetchUserBranchesLoading: action.payload
+            }
+        case clientUserTypes.GET_USER_BRANCH_SUCCESS:
+            return {
+                ...state,
+                fetchedUserBranches: action.payload
             }
 
         case clientUserTypes.EDIT_CLIENT_USER_LOADING:
