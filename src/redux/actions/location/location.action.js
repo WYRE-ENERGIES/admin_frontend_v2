@@ -12,7 +12,7 @@ export const getLocationsData = (clientId, paginationQuery=1) => async (dispatch
       dispatch(getLocationSuccess(response.data));
   
       dispatch(getLocationLoading(false))
-      return { fulfilled: true, message: 'successful' }
+      return { fulfilled: true, message: 'successful', data: response.data }
     } catch (error) {
       dispatch(getLocationLoading(false));
       return { fulfilled: false, message: error.response.data.detail }

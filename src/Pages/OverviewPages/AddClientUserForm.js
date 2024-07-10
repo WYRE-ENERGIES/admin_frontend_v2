@@ -2,6 +2,7 @@ import { Button, Form, Image, Input, Select, notification } from "antd";
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData } from "../../redux/actions/clientUser/clientUser.action"; 
+import { getLocationsData } from "../../redux/actions/location/location.action";
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
@@ -57,20 +58,13 @@ const SubmitButton = ({ form }) => {
 function AddClientUserForm(props) {
   const [form] = Form.useForm();
   const [holdLocationData, setHoldLocationData] = useState([]);
-
-  // const { Search } = Input;
   const clientId = props.auth.userData.client_id
-  const userId = clientId
+
   useEffect(() => {
     const handleBranch = async () => {
-      // const userId = props.ClientUserTableData.id
-      const requestBranchesData = await props.getUserBranchesData(userId)
-      console.log('from add-page =>>>>> ', requestBranchesData);
-      // return requestBranchesData
+      const requestBranchesData = await props.getLocationsData(clientId)
       if (requestBranchesData.fulfilled) {
-        console.log('data =>>>>> ', requestBranchesData.data.data);
-        // return requestBranchesData.data.data
-        setHoldLocationData(requestBranchesData.data.data)
+        setHoldLocationData(requestBranchesData.data.results)
       }
     }
     handleBranch()
@@ -97,26 +91,8 @@ function AddClientUserForm(props) {
   }
 
   const handleChange = (value) => {
-    // handleBranch()
-    // props.assignLocation(clientId, `${value}`)
-    // assignLocationToUser()
   };
   
-  const SelectBranch = () => {
-    return (
-      <Select
-        mode="multiple"
-        allowClear
-        style={{
-          // width: "100%",
-        }}
-        placeholder="Assign Location"
-        // defaultValue={["AdeolaHopewell", "Agodi"]}
-        onChange={handleChange}
-        options={options}
-      />
-    );
-  }
   
   const showclientUsersList = () => {
     const clientId = props.auth.userData.client_id
@@ -125,19 +101,21 @@ function AddClientUserForm(props) {
   const submitNewClientUsers = async (values) => {
     const {location, ...others } = values;
     const createUserRequest = await props.addClientUsersData(clientId, others);
-    // assignLocationToUser()
 
     if (createUserRequest.fulfilled) {
-
       // after the request has been created,
-      // call the endpoint to assing user 
-      const assignLocationRequest = await props.assignLocation(createUserRequest.data.id, location)
-      if(assignLocationRequest){
-      successNotificationPopUp('success', 'client user page')
-      form.resetFields();
-      return showclientUsersList();
+      // call the endpoint to assing user
+      const assignLocationRequest = await props.assignLocation(
+        createUserRequest.data.id,
+        {branches: location}
+      );
+      if (assignLocationRequest.fulfilled) {
+        successNotificationPopUp("success", "client user page");
+        form.resetFields();
+        return showclientUsersList();
       }
 
+      
     }
     return errorNotificationPopUp('error', 'client user page')  
   };
@@ -148,84 +126,86 @@ function AddClientUserForm(props) {
 
   return (
     <>
-    <div className="percentage_container">
-      <div className="sidePage-add-user-container">
-        <div className="sidePage-add-user">
-          <h3>Add User</h3>
-          <div className="user-center-image">
-            <Image src="/Images/Group 1688.png"></Image>
+      <div className="percentage_container">
+        <div className="sidePage-add-user-container">
+          <div className="sidePage-add-user">
+            <h3>Add User</h3>
+            <div className="user-center-image">
+              <Image src="/Images/Group 1688.png"></Image>
+            </div>
+            <Form
+              form={form}
+              // name="validateOnly"
+              name="basic"
+              layout="vertical"
+              autoComplete="off"
+              onFinish={submitNewClientUsers}
+            >
+              <Form.Item
+                name="username"
+                label="Name"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="phone_number"
+                label="Phone Number"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input />
+              </Form.Item>
+              <Form.Item
+                name="location"
+                label="Assign Location"
+                // rules={[
+                //   {
+                //     required: true,
+                //   },
+                // ]}
+              >
+                {/* <Input /> */}
+                {/* <SelectBranch /> */}
+                <Select
+                  mode="multiple"
+                  allowClear
+                  style={
+                    {
+                      // width: "100%",
+                    }
+                  }
+                  placeholder="Assign Location"
+                  // defaultValue={["AdeolaHopewell", "Agodi"]}
+                  onChange={handleChange}
+                  options={options}
+                />
+              </Form.Item>
+              <Form.Item>
+                <SubmitButton form={form} />
+              </Form.Item>
+            </Form>
           </div>
-          <Form
-            form={form}
-            // name="validateOnly"
-            name="basic"
-            layout="vertical"
-            autoComplete="off"
-            onFinish={submitNewClientUsers}
-          >
-            <Form.Item
-              name="username"
-              label="Name"
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="email"
-              label="Email"
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="phone_number"
-              label="Phone Number"
-              rules={[
-                {
-                  required: true,
-                },
-              ]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              name="location"
-              label="Assign Location"
-              // rules={[
-              //   {
-              //     required: true,
-              //   },
-              // ]}
-            >
-              {/* <Input /> */}
-              {/* <SelectBranch /> */}
-              <Select
-        mode="multiple"
-        allowClear
-        style={{
-          // width: "100%",
-        }}
-        placeholder="Assign Location"
-        // defaultValue={["AdeolaHopewell", "Agodi"]}
-        onChange={handleChange}
-        options={options}
-      />
-            </Form.Item>
-            <Form.Item>
-              <SubmitButton form={form} />
-            </Form.Item>
-          </Form>
         </div>
       </div>
-    </div>
     </>
   );
 }
@@ -234,6 +214,7 @@ const mapDispatchToProps = {
   addClientUsersData,
   getClientUsersData,
   getUserBranchesData,
+  getLocationsData,
   assignLocation
 };
 
