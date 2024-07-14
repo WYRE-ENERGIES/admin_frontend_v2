@@ -1,4 +1,4 @@
-import { Button, Dropdown, Form, Image, Input, Modal, Space, Table, Typography, notification } from "antd";
+import { Button, Dropdown, Form, Image, Input, List, Modal, Space, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { PlusOutlined, SearchOutlined, UserOutlined, EditOutlined } from "@ant-design/icons";
@@ -263,13 +263,12 @@ const menuProps = {
                 width={557}
                 height={594}
               >
-                {/* <Table
+                <Table
                   dataSource={modalData}
                   // loading={}
                   columns={modalColumns}
                   pagination={false}
-                /> */}
-                {modalData}
+                />
               </Modal>
             </div>
             {ClientUserTableData ? (

@@ -138,15 +138,21 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 .client-page-flex-display {
   display: flex;
   justify-content: space-between;
-}
 
-.client_table_percentage_container {
-  width: 71%;
+  /* media-query */
+  @media (max-width: 1022px) {
+    display: grid;
+    .client-user-table {
+      width: 114%;
+      margin-bottom: 15px;
+    }
+  }
 }
 
 .percentage_container{
   background-color: #FFFFFF;
-  width: 26%;
+  /* width: 26%; */
+  width: 280px;
   height: 10%;
 }
 
