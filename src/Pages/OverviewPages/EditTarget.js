@@ -129,6 +129,7 @@ function EditTarget(props) {
   };
 
   const maxLengthCheck = (object) => {
+    console.log('inputed object======= ', object);
     if (object > 1) {
       object.target.value = object.target.value.slice(
         0,

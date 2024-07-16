@@ -46,6 +46,18 @@ function ClientUsers(props) {
 
   const data = props.clientUsersPage.fetchedClientUser.results
   const modalData = ClientUserTableData.branches
+  const newModalData = []
+  if (modalData) {
+    modalData.map((newMod) => {
+      newModalData.push(
+        {
+          name : newMod,
+          // id: Math.floor((Math.random() * 10) + 1)
+          
+        }
+      )
+    })
+  }
 
   const clientUersListPaginate = props.clientUsersPage.fetchedClientUser
   const fetchNextPaginatedUsersList = () => {
@@ -170,8 +182,8 @@ const menuProps = {
   const modalColumns = [
     {
       title: "Branches",
-      dataIndex: "branches",
-      key: "branches",
+      dataIndex: "name",
+      key: "name",
     }
   ]
   
@@ -264,7 +276,7 @@ const menuProps = {
                 height={594}
               >
                 <Table
-                  dataSource={modalData}
+                  dataSource={newModalData}
                   // loading={}
                   columns={modalColumns}
                   pagination={false}
