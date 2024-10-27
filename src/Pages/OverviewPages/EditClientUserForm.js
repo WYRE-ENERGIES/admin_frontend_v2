@@ -1,11 +1,11 @@
-import { Button, Form, Image, Input, Space, Table, Typography, notification } from "antd";
+import { Button, Form, Image, Input, Select, Space, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 // import { EditOutlined } from "@ant-design/icons";
 import { connect, useSelector } from "react-redux";
-import { addClientUsersData, getClientUsersData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
+import { addClientUsersData, getClientUsersData, getUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
 import AddClientUserForm from "./AddClientUserForm";
 
 const successNotificationPopUp = (type, formName) => {
@@ -52,7 +52,7 @@ const SubmitButton = ({ form }) => {
       style={{ backgroundColor: "#5C12A7", color: "white", width: "100%" }}
       type="primary"
       htmlType="submit"
-      disabled={!submittable}
+      // disabled={!submittable}
     >
       Save
     </Button>
@@ -61,6 +61,7 @@ const SubmitButton = ({ form }) => {
 
 function EditClientUserForm(props) {
   const [form] = Form.useForm();
+  const [holdLocationData, setHoldLocationData] = useState([])
 
   const { Search } = Input;
 
@@ -69,9 +70,53 @@ function EditClientUserForm(props) {
       username: props.ClientUserTableData.username,
       email: props.ClientUserTableData.email,
       phone_number: props.ClientUserTableData.phone_number,
+      branches: holdLocationData.map(locationData => locationData.name),
     })
   }, [props.ClientUserTableData])
-  console.log("user-Id = ", props.ClientUserTableData.id);
+
+  const options = [];
+  useEffect( () => {
+    const handleBranch = async () => {
+      const userId = props.ClientUserTableData.id
+      const requestBranchesData = await props.getUserBranchesData(userId)
+      // return requestBranchesData
+      if (requestBranchesData.fulfilled) {
+        // return requestBranchesData.data.data
+        setHoldLocationData(requestBranchesData.data.data)
+      }
+    }
+    handleBranch()
+  }, [props.ClientUserTableData.id])
+  const branches = props.ClientUserTableData.branches
+  if (holdLocationData) {
+    // options = branches[eachBranch];
+    holdLocationData.map((location) => {
+      options.push({
+          label: location.name,
+          value: location.name
+        })
+    })
+    
+  }
+
+  const handleChange = (value) => {
+  };
+  
+  const SelectBranch = () => {
+    return (
+      <Select
+        mode="multiple"
+        allowClear
+        style={{
+          // width: "100%",
+        }}
+        placeholder="Change Location"
+        // defaultValue={[]}
+        onChange={handleChange}
+        options={options}
+      />
+    );
+  }
   
   dayjs.extend(customParseFormat);
   const showclientUsersList = () => {
@@ -146,15 +191,15 @@ function EditClientUserForm(props) {
                   <Input />
                 </Form.Item>
                 <Form.Item
-                  name="assign location"
-                  label="Assign Location"
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
+                  name="update location"
+                  label="Update Location"
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //   },
+                  // ]}
                 >
-                  <Input />
+                  <SelectBranch />
                 </Form.Item>
                 <Form.Item>
                   <SubmitButton form={form} />
@@ -172,6 +217,7 @@ function EditClientUserForm(props) {
 
 const mapDispatchToProps = {
   getClientUsersData,
+  getUserBranchesData,
   updateClientUsersData,
 };
 

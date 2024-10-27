@@ -1,4 +1,4 @@
-import { Button, Form, Image, Input, Space, Typography, notification } from "antd";
+import { Button, Form, Image, Input, Space, Spin, Typography, notification } from "antd";
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { PercentageOutlined, ClockCircleOutlined, FundOutlined, MoneyCollectOutlined, ProjectOutlined } from "@ant-design/icons";
@@ -59,9 +59,6 @@ const SubmitButton = ({ form }) => {
 function SetTarget(props) {
   const [form] = Form.useForm();
   const [switchTarget, setSwitchTarget] = useState(false)
-  console.log('Swithing of Target ====== ', switchTarget);
-
-  // const { Search } = Input;
   
   const showTargetInfo = () => {
     const clientId = props.auth.userData.client_id
@@ -85,10 +82,6 @@ function SetTarget(props) {
     return errorNotificationPopUp('error', 'Target page')  
   };
 
-  const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
-  };
-
   useEffect(() => {
     showTargetInfo()
   }, [])
@@ -107,7 +100,6 @@ function SetTarget(props) {
 
   useEffect(() => {
     if (holdFormValues) {
-      console.log('switchTargetttttttttttttttttttttttttttttttttttttt ', switchTarget);
     }
     setSwitchTarget(true)
   }, [props.targetPage])
@@ -119,139 +111,185 @@ function SetTarget(props) {
           Set Target
         </Typography.Title>
       </div>
-      { props.targetPage.fetchedTarget ? (<EditTarget  />) :
-      <div className="set_target_page">
-        <Form
-          form={form}
-          // name="validateOnly"
-          name="basic"
-          layout="vertical"
-          autoComplete="off"
-          onFinish={submitSetTargetInfo}
-        >
-          <div style={{ width: "842", display: "flex", marginBottom: '24px' }}>
-            <div style={{ width: "405px", height: "82px", marginRight:"16px" }}>
-              <Form.Item
-                name="blended_cost_of_energy"
-                label="Blended cost of energy"
+      {props.targetPage.fetchedTarget ? (
+        <EditTarget />
+      ) : (
+        <div className="set_target_page">
+          <Spin
+            spinning={props.targetPage.addTargetLoading}
+          >
+            <Form
+              form={form}
+              // name="validateOnly"
+              name="basic"
+              layout="vertical"
+              autoComplete="off"
+              onFinish={submitSetTargetInfo}
+            >
+              <div
+                style={{ width: "842", display: "flex", marginBottom: "24px" }}
               >
-                <Input
-                  style={{height: '52px'}}
-                  height= '52px'
-                  placeholder="enter cost"
-                  prefix={<FundOutlined />}
-                />
-              </Form.Item>
-            </div>
-            <div style={{ width: "405px", height: "82px", marginLeft: "16px" }}>
-              <Form.Item
-                name="diesel_usage_accuracy"
-                label="Usage accuracy diesel"
+                <div
+                  style={{
+                    width: "405px",
+                    height: "82px",
+                    marginRight: "16px",
+                  }}
+                >
+                  <Form.Item
+                    name="blended_cost_of_energy"
+                    label="Blended cost of energy"
+                  >
+                    <Input
+                      style={{ height: "52px" }}
+                      height="52px"
+                      placeholder="enter cost"
+                      prefix={<FundOutlined />}
+                    />
+                  </Form.Item>
+                </div>
+                <div
+                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
+                >
+                  <Form.Item
+                    name="diesel_usage_accuracy"
+                    label="Usage accuracy diesel"
+                  >
+                    <Input
+                      style={{ height: "52px" }}
+                      placeholder="enter percentage"
+                      prefix={<PercentageOutlined />}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+              <div
+                style={{ width: "842", display: "flex", marginBottom: "24px" }}
               >
-                <Input
-                  style={{height: '52px'}}
-                  placeholder="enter percentage"
-                  prefix={<PercentageOutlined />}
-                />
-              </Form.Item>
-            </div>
-          </div>
-          <div style={{ width: "842", display: "flex", marginBottom: '24px' }}>
-            <div style={{ width: "405px", height: "82px", marginRight:"16px" }}>
-              <Form.Item
-                name="utility_usage_accuracy"
-                label="Usage accuracy utility"
+                <div
+                  style={{
+                    width: "405px",
+                    height: "82px",
+                    marginRight: "16px",
+                  }}
+                >
+                  <Form.Item
+                    name="utility_usage_accuracy"
+                    label="Usage accuracy utility"
+                  >
+                    <Input
+                      style={{ height: "52px" }}
+                      placeholder="enter percentage"
+                      prefix={<PercentageOutlined />}
+                    />
+                  </Form.Item>
+                </div>
+                <div
+                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
+                >
+                  <Form.Item
+                    name="maximum_monthly_deviation_hours"
+                    label="Maximum Deviation hours (Month)"
+                  >
+                    <Input
+                      style={{ height: "52px" }}
+                      placeholder="enter time"
+                      prefix={<ClockCircleOutlined />}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+              <div
+                style={{ width: "842", display: "flex", marginBottom: "24px" }}
               >
-                <Input
-                  style={{height: '52px'}}
-                  placeholder="enter percentage"
-                  prefix={<PercentageOutlined />}
-                />
-              </Form.Item>
-            </div>
-            <div style={{ width: "405px", height: "82px", marginLeft: "16px" }}>
-              <Form.Item
-                name="maximum_monthly_deviation_hours"
-                label="Maximum Deviation hours (Month)"
+                <div
+                  style={{
+                    width: "405px",
+                    height: "82px",
+                    marginRight: "16px",
+                  }}
+                >
+                  <Form.Item name="papr" label="PAPR">
+                    <Input
+                      style={{ height: "52px" }}
+                      placeholder="enter PAPR"
+                      prefix={<ProjectOutlined />}
+                    />
+                  </Form.Item>
+                </div>
+                <div
+                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
+                >
+                  <Form.Item
+                    name="fuel_efficiency"
+                    label="Fuel efficiency kWh/L"
+                  >
+                    <Input
+                      style={{ height: "52px" }}
+                      placeholder="enter fuel efficiency"
+                      prefix={<ProjectOutlined />}
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+              <div>
+                <p>Generator Size Efficiency</p>
+              </div>
+              <div
+                style={{ width: "842", display: "flex", marginBottom: "40px" }}
               >
-                <Input
-                  style={{height: '52px'}}
-                  placeholder="enter time"
-                  prefix={<ClockCircleOutlined />}
-                />
+                <div
+                  style={{ width: "270px", height: "82px", marginRight: "8px" }}
+                >
+                  <Form.Item
+                    name="generator_size_efficiency_1"
+                    label="Generator 1"
+                  >
+                    <Input
+                      style={{ height: "52px" }}
+                      placeholder="Enter efficiency"
+                    />
+                  </Form.Item>
+                </div>
+                <div
+                  style={{
+                    width: "270px",
+                    height: "82px",
+                    marginRight: "8px",
+                    marginLeft: "8px",
+                  }}
+                >
+                  <Form.Item
+                    name="generator_size_efficiency_2"
+                    label="Generator 2"
+                  >
+                    <Input
+                      style={{ height: "52px" }}
+                      placeholder="Enter efficiency"
+                    />
+                  </Form.Item>
+                </div>
+                <div
+                  style={{ width: "270px", height: "82px", marginLeft: "8px" }}
+                >
+                  <Form.Item
+                    name="generator_size_efficiency_3"
+                    label="Generator 3"
+                  >
+                    <Input
+                      style={{ height: "52px" }}
+                      placeholder="Enter efficiency"
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+              <Form.Item>
+                <SubmitButton form={form} />
               </Form.Item>
-            </div>
-          </div>
-          <div style={{ width: "842", display: "flex", marginBottom: '24px' }}>
-            <div style={{ width: "405px", height: "82px", marginRight:"16px" }}>
-              <Form.Item
-                name="papr"
-                label="PAPR"
-              >
-                <Input
-                  style={{height: '52px'}}
-                  placeholder="enter PAPR"
-                  prefix={<ProjectOutlined />}
-                />
-              </Form.Item>
-            </div>
-            <div style={{ width: "405px", height: "82px", marginLeft: "16px" }}>
-              <Form.Item
-                name="fuel_efficiency"
-                label="Fuel efficiency kWh/L"
-              >
-                <Input
-                  style={{height: '52px'}}
-                  placeholder="enter fuel efficiency"
-                  prefix={<ProjectOutlined />}
-                />
-              </Form.Item>
-            </div>
-          </div>
-          <div>
-            <p>Generator Size Efficiency</p>
-          </div>
-          <div style={{ width: "842", display: "flex", marginBottom: '40px' }}>
-            <div style={{ width: "270px", height: "82px", marginRight:"8px" }}>
-              <Form.Item
-                name="generator_size_efficiency_1"
-                label="Generator 1"
-              >
-                <Input
-                  style={{height: '52px'}}
-                  placeholder="Enter efficiency"
-                />
-              </Form.Item>
-            </div>
-            <div style={{ width: "270px", height: "82px", marginRight: "8px", marginLeft: "8px" }}>
-              <Form.Item
-                name="generator_size_efficiency_2"
-                label="Generator 2"
-              >
-                <Input
-                  style={{height: '52px'}}
-                  placeholder="Enter efficiency"
-                />
-              </Form.Item>
-            </div>
-            <div style={{ width: "270px", height: "82px", marginLeft: "8px" }}>
-              <Form.Item
-                name="generator_size_efficiency_3"
-                label="Generator 3"
-              >
-                <Input
-                  style={{height: '52px'}}
-                  placeholder="Enter efficiency"
-                />
-              </Form.Item>
-            </div>
-          </div>
-          <Form.Item>
-            <SubmitButton form={form} />
-          </Form.Item>
-        </Form>
-      </div>
-      }
+            </Form>
+          </Spin>
+        </div>
+      )}
     </>
   );
 }

@@ -46,8 +46,9 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const { RangePicker } = DatePicker;
 
   const showEnergyCostBarchart = () => {
-    const clientId = props.auth.userData.client_id
-    props.getClientUtilityCostData(clientId);
+    const clientId = props.auth.userData.client_id;
+    const year = new Date().getFullYear();
+    props.getClientUtilityCostData(clientId, year);
   }
 
   const onDateChange = (date) => {
@@ -85,16 +86,16 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
             data: clientCost,
             backgroundColor: "#094D92",
             borderRadius: 6,
-            barThickness: 40,
-            maxBarThickness: 40,
+            barThickness: 30,
+            maxBarThickness: 30,
           },
           {
             label: "Wyre Cost",
             data: wyreCost,
             backgroundColor: "#F9CF40",
             borderRadius: 6,
-            barThickness: 40,
-            maxBarThickness: 40,
+            barThickness: 30,
+            maxBarThickness: 30,
           },
           {
             label: "Historic Average",

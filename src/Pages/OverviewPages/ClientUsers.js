@@ -1,17 +1,20 @@
-import { Button, Dropdown, Form, Image, Input, Modal, Space, Table, Typography, notification } from "antd";
+import { Button, Dropdown, Form, Image, Input, List, Modal, Space, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, UserOutlined, EditOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { addClientUsersData, getClientUsersData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
 import EditClientUserForm from "./EditClientUserForm";
 import AddClientUserForm from "./AddClientUserForm";
+import { BsThreeDots } from "react-icons/bs";
 
 
 function ClientUsers(props) {
   const [showEditForm, setShowEditForm] = useState(false)
   const [showAddButton, setShowAddButton] = useState(false)
+  const [userBranchesData, setUserBranchesData] = useState([])
+  const [showUserBranches, setShowUserBranches] = useState(false)
   const [ClientUserTableData, setClientUserTableData] = useState({})
 
   const { Search } = Input;
@@ -26,7 +29,35 @@ function ClientUsers(props) {
     showclientUsersList()
   }, [])
 
+  const onSearchClientUser = (e) => {
+    const clientId = props.auth.userData.client_id
+    props.getClientUsersData(clientId, 1, e.target.value)
+  }
+
+  const suffix = (
+    <SearchOutlined
+      onClick={onSearchClientUser}
+      style={{
+        fontSize: 16,
+        color: "white",
+      }}
+    />
+  );
+
   const data = props.clientUsersPage.fetchedClientUser.results
+  const modalData = ClientUserTableData.branches
+  const newModalData = []
+  if (modalData) {
+    modalData.map((newMod) => {
+      newModalData.push(
+        {
+          name : newMod,
+          // id: Math.floor((Math.random() * 10) + 1)
+          
+        }
+      )
+    })
+  }
 
   const clientUersListPaginate = props.clientUsersPage.fetchedClientUser
   const fetchNextPaginatedUsersList = () => {
@@ -50,36 +81,111 @@ function ClientUsers(props) {
     }
   };
 
+  const handleMenuClick = () => {
+    setShowUserBranches(true)
+    setShowEditForm(false)
+  }
+
+  const items = [
+  {
+    label: ' View User Branches',
+    key: '1',
+    icon: <UserOutlined />,
+    onClick: () => {
+      // setClientUserTableData()
+      handleMenuClick()
+    }
+  },
+  {
+    label: 'Edit',
+    key: '2',
+    icon: <EditOutlined />,
+    onClick: () => {
+      setShowEditForm(true);
+    }
+  },
+];
+
+// let branchData = []
+// if (branches) {
+//   branches.map((branch) => {
+//     branchData.push(branch)
+//   })
+// }
+// console.log('display nodal-data = ', branchData);
+
+const menuProps = {
+  items,
+  // onClick: handleMenuClick,
+};
+
   const optionsColumn = () => ({
     key: 'operation',
-    title: 'Operation',
+    title: 'Options',
     width: '10%',
     dataIndex: 'operation',
+    // render: (_, record) => {
+    //     return (
+    //       <a
+    //         target="_blank"
+    //         onClick={(e) => {
+    //           e.preventDefault();
+    //           console.log("On-click");
+    //           setShowEditForm(true);
+    //           setClientUserTableData(record);
+    //         }}
+    //         rel="noopener noreferrer"
+    //       >
+    //         <Button
+    //          style={{
+    //           color:'#5C12A7',
+    //           // background:'#5C12A7'
+    //          }}
+    //         >
+    //           Edit
+    //         </Button>
+            
+    //       </a>
+    //     );
+    // }
     render: (_, record) => {
-        return (
-          <a
-            target="_blank"
-            onClick={(e) => {
-              e.preventDefault();
-              console.log("On-click");
-              setShowEditForm(true);
-              setClientUserTableData(record);
-            }}
-            rel="noopener noreferrer"
+      return (
+        <a
+          target="_blank"
+          onClick={(e) => {
+            e.preventDefault();
+            // setShowUserBranches(true);
+            setClientUserTableData(record);
+          }}
+          rel="noopener noreferrer"
+        >
+          <Dropdown 
+            menu={menuProps}
           >
             <Button
-             style={{
-              color:'#5C12A7',
-              // background:'#5C12A7'
-             }}
+              style={{
+                color: "#5C12A7",
+                width: 44,
+                height: 25,
+                backgroundColor: "rgba(92, 18, 167, 0.1)",
+                borderRadius: 12,
+              }}
             >
-              Edit
+              <BsThreeDots />
             </Button>
-            
-          </a>
-        );
-    }
+          </Dropdown>
+        </a>
+      );
+  }
   });
+
+  const modalColumns = [
+    {
+      title: "Branches",
+      dataIndex: "name",
+      key: "name",
+    }
+  ]
   
   const columns = [
     {
@@ -113,6 +219,9 @@ function ClientUsers(props) {
       </div>
       <div className="AppHeader">
         <Search
+          onClick={onSearchClientUser}
+          enterButton={suffix}
+          allowClear
           placeholder="Search by name"
           style={{
             width: "349.68px",
@@ -139,33 +248,48 @@ function ClientUsers(props) {
       <div className="##########">
         <section className="total-energy-bar-chart">
           <div className="client-page-flex-display">
-              <div className="client-user-table">
-                <Table
-                  className="custom-row-hover"
-                  loading={props.clientUsersPage.fetchClientUserLoading}
-                  dataSource={data}
-                  columns={columns}
-                  onChange={onChange}
-                  pagination={false}
-                />
-                <div className="pagination">
-                  <div>
-                    <Button onClick={fetchPrevPaginatedUsersList}>
-                      Previous
-                    </Button>
-                  </div>
-                  <div>
-                    <Button onClick={fetchNextPaginatedUsersList}>Next</Button>
-                  </div>
+            <div className="client-user-table">
+              <Table
+                className="custom-row-hover"
+                loading={props.clientUsersPage.fetchClientUserLoading}
+                dataSource={data}
+                columns={columns}
+                onChange={onChange}
+                pagination={false}
+              />
+              <div className="pagination">
+                <div>
+                  <Button onClick={fetchPrevPaginatedUsersList}>
+                    Previous
+                  </Button>
+                </div>
+                <div>
+                  <Button onClick={fetchNextPaginatedUsersList}>Next</Button>
                 </div>
               </div>
+              <Modal
+                visible={showUserBranches}
+                title="User Branches"
+                onCancel={() => setShowUserBranches(false)}
+                footer={null}
+                width={557}
+                height={594}
+              >
+                <Table
+                  dataSource={newModalData}
+                  // loading={}
+                  columns={modalColumns}
+                  pagination={false}
+                />
+              </Modal>
+            </div>
             {ClientUserTableData ? (
               <EditClientUserForm
                 ClientUserTableData={ClientUserTableData}
                 showEditForm={showEditForm}
               />
             ) : (
-              <AddClientUserForm />
+              <AddClientUserForm ClientUserTableData={ClientUserTableData} />
             )}
           </div>
         </section>

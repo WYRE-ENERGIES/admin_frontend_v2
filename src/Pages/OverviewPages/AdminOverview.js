@@ -1,4 +1,5 @@
 import { Button, Card, DatePicker, Image, Input, Space, Spin, Table, Tag, Typography } from "antd";
+import { SearchOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined, PlusOutlined, ContainerOutlined, ExpandAltOutlined, FundOutlined, DeleteOutlined, EllipsisOutlined, ProjectOutlined, FundProjectionScreenOutlined, BarsOutlined, ThunderboltOutlined  } from "@ant-design/icons";
@@ -27,6 +28,7 @@ import UtilityEnergyChart from "./UtilityEnergyChart";
 import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
+import BarLoader from 'react-bar-loader';
 import { BsFillBucketFill, BsProjectorFill, BsThunderboltFill } from "react-icons/bs";
 import { PiProjectorScreen } from "react-icons/pi";
 import { CiMoneyBill } from "react-icons/ci";
@@ -88,12 +90,8 @@ const RendeChartsComponents = ({index}) => {
 
 function AdminOverview(props) {
   const [searchParams, setSearchParams] = useSearchParams()
+  const [holdSearchData, setHoldSearchData] = useState('')
   const [dateSearch, setDateSearch] = useState('')
-  const [showTotalEnergyPage, setShowTotalEnergyPage] = useState(true)
-  const [showUtilityCostPage, setShowUtilityCostPage] = useState(false)
-  const [showUtilityEnergyPage, setShowUtilityEnergyPage] = useState(false)
-  const [showDieselCostPage, setShowDieselCostPage] = useState(false)
-  const [showDieselLitrePage, setShowDieselLitrePage] = useState(false)
   const [isSelectChart, setIsSelectChart] = useState(0)
   const [paginationData, setPaginationData] = useState({})
 
@@ -129,6 +127,20 @@ function AdminOverview(props) {
     showKeyMetricsTable()
   }, [])
 
+  const onSearchKeyMetrics = () => {
+    props.getKeyMetricsData(clientId, startDate, endDate, 1, holdSearchData)
+  }
+
+  const suffix = (
+    <SearchOutlined
+      onClick={onSearchKeyMetrics}
+      style={{
+        fontSize: 16,
+        color: "white",
+      }}
+    />
+  );
+
   const data = props.overviewPage.fetchedKeyMetrics.results
   const checkData = props.overviewPage?.fetchedKeyMetrics?.results?.[0]
 
@@ -153,11 +165,6 @@ function AdminOverview(props) {
       props.getKeyMetricsData(clientId, startDate, endDate, paginationQuery);
     }
   };
-
-  const onSearchKeyMetrics = (e) => {
-    props.getKeyMetricsData(clientId, startDate, endDate, 1, e.target.value)
-    console.log("onSearch clicked->>>>>>>>>>>", e.target.value );
-  }
   
   const columns = [
     {
@@ -250,6 +257,11 @@ function AdminOverview(props) {
       // sorter: (a, b) => a.generator_size_efficiency_3 - b.generator_size_efficiency_3,
     },
   ];
+  
+  const handleRowClick = (record) => {
+    // navigate('/detail', { state: { data: record } });
+  };
+
 
   const onChange = (pagination, filters, sorter, extra) => {
     console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
@@ -312,7 +324,10 @@ function AdminOverview(props) {
                     }
                   >
                     <header style={{ fontWeight: "bold" }}>
-                      {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toLocaleString(undefined, {maximumFractionDigits:2})}{" "}
+                      {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toLocaleString(
+                        undefined,
+                        { maximumFractionDigits: 2 }
+                      )}{" "}
                       kWh
                     </header>
                   </Spin>
@@ -335,7 +350,10 @@ function AdminOverview(props) {
                     }
                   >
                     <header style={{ fontWeight: "bold" }}>
-                      {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toLocaleString(undefined, {maximumFractionDigits:2})}{" "}
+                      {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toLocaleString(
+                        undefined,
+                        { maximumFractionDigits: 2 }
+                      )}{" "}
                       tons
                     </header>
                   </Spin>
@@ -365,12 +383,11 @@ function AdminOverview(props) {
         </section>
         <RendeChartsComponents index={isSelectChart} />
         <section className="total-energy-bar-chart">
-          <div 
-            style={{ 
-              // width:1039, 
-              display: "flex", 
-              justifyContent: "space-between" 
-
+          <div
+            style={{
+              // width:1039,
+              display: "flex",
+              justifyContent: "space-between",
             }}
           >
             <div>
@@ -385,11 +402,15 @@ function AdminOverview(props) {
             <div>
               <Search
                 placeholder="Search by name"
-                onChange={onSearchKeyMetrics}
+                enterButton={suffix}
+                onChange={(e) => {
+                  setHoldSearchData(e.target.value);
+                }}
+                allowClear
                 style={{
                   width: 285.57,
                   marginRight: 15,
-                  // height: 43.5           
+                  // height: 43.5
                 }}
               />
               <RangePicker
@@ -400,8 +421,8 @@ function AdminOverview(props) {
                 defaultValue={[
                   // dayjs("01/04/2024", dateFormat),
                   // dayjs("30/04/2024", dateFormat),
-                  dayjs().startOf('month'),
-                  dayjs()
+                  dayjs().startOf("month"),
+                  dayjs(),
                 ]}
                 format={dateFormat}
                 onChange={onSelectDateKeyMetrics}
@@ -416,6 +437,10 @@ function AdminOverview(props) {
                 backgroundColor: record === checkData ? "#F2F2F8" : "",
               },
             })}
+            // rowKey="id"
+            // onRow={(record) => ({
+            //   onClick: () => handleRowClick(record),
+            // })}
             loading={props.overviewPage.fetchKeyMetricsLoading}
             dataSource={data}
             // columns={columns}
@@ -445,25 +470,51 @@ function AdminOverview(props) {
               title="Baseline Energy (kWh)"
               dataIndex="baseline_energy_used"
               key="baseline_energy_used"
-              render= {(value) => <>{ value? value.toLocaleString(undefined, {maximumFractionDigits:2}) : 0}</>}
+              render={(value) => (
+                <>
+                  {value
+                    ? value.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })
+                    : 0}
+                </>
+              )}
             />
             <Column
               title="Blended Cost of Energy"
               dataIndex="blended_cost_of_energy"
               key="blended_cost_of_energy"
-              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
+              render={(value) => (
+                <>
+                  {value.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}
+                </>
+              )}
             />
             <Column
               title="Usage Accuracy Diesel"
               dataIndex="diesel_usage_accuracy"
               key="diesel_usage_accuracy"
-              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
+              render={(value) => (
+                <>
+                  {value.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}
+                </>
+              )}
             />
             <Column
               title="Usage Accuracy Utility"
               dataIndex="utility_usage_accuracy"
               key="utility_usage_accuracy"
-              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
+              render={(value) => (
+                <>
+                  {value.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}
+                </>
+              )}
             />
             <Column
               title="Deviation Hours"
@@ -475,7 +526,13 @@ function AdminOverview(props) {
               title="Fuel Efficiency"
               dataIndex="fuel_efficiency"
               key="fuel_efficiency"
-              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
+              render={(value) => (
+                <>
+                  {value.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}
+                </>
+              )}
             />
             <ColumnGroup title="Generator Efficiency">
               <Column
