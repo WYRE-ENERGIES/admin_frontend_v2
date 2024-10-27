@@ -257,6 +257,11 @@ function AdminOverview(props) {
       // sorter: (a, b) => a.generator_size_efficiency_3 - b.generator_size_efficiency_3,
     },
   ];
+  
+  const handleRowClick = (record) => {
+    // navigate('/detail', { state: { data: record } });
+  };
+
 
   const onChange = (pagination, filters, sorter, extra) => {
     console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
@@ -319,7 +324,10 @@ function AdminOverview(props) {
                     }
                   >
                     <header style={{ fontWeight: "bold" }}>
-                      {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toLocaleString(undefined, {maximumFractionDigits:2})}{" "}
+                      {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toLocaleString(
+                        undefined,
+                        { maximumFractionDigits: 2 }
+                      )}{" "}
                       kWh
                     </header>
                   </Spin>
@@ -342,7 +350,10 @@ function AdminOverview(props) {
                     }
                   >
                     <header style={{ fontWeight: "bold" }}>
-                      {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toLocaleString(undefined, {maximumFractionDigits:2})}{" "}
+                      {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toLocaleString(
+                        undefined,
+                        { maximumFractionDigits: 2 }
+                      )}{" "}
                       tons
                     </header>
                   </Spin>
@@ -372,12 +383,11 @@ function AdminOverview(props) {
         </section>
         <RendeChartsComponents index={isSelectChart} />
         <section className="total-energy-bar-chart">
-          <div 
-            style={{ 
-              // width:1039, 
-              display: "flex", 
-              justifyContent: "space-between" 
-
+          <div
+            style={{
+              // width:1039,
+              display: "flex",
+              justifyContent: "space-between",
             }}
           >
             <div>
@@ -394,13 +404,13 @@ function AdminOverview(props) {
                 placeholder="Search by name"
                 enterButton={suffix}
                 onChange={(e) => {
-                  setHoldSearchData(e.target.value)
+                  setHoldSearchData(e.target.value);
                 }}
                 allowClear
                 style={{
                   width: 285.57,
                   marginRight: 15,
-                  // height: 43.5           
+                  // height: 43.5
                 }}
               />
               <RangePicker
@@ -411,8 +421,8 @@ function AdminOverview(props) {
                 defaultValue={[
                   // dayjs("01/04/2024", dateFormat),
                   // dayjs("30/04/2024", dateFormat),
-                  dayjs().startOf('month'),
-                  dayjs()
+                  dayjs().startOf("month"),
+                  dayjs(),
                 ]}
                 format={dateFormat}
                 onChange={onSelectDateKeyMetrics}
@@ -427,6 +437,10 @@ function AdminOverview(props) {
                 backgroundColor: record === checkData ? "#F2F2F8" : "",
               },
             })}
+            // rowKey="id"
+            // onRow={(record) => ({
+            //   onClick: () => handleRowClick(record),
+            // })}
             loading={props.overviewPage.fetchKeyMetricsLoading}
             dataSource={data}
             // columns={columns}
@@ -456,25 +470,51 @@ function AdminOverview(props) {
               title="Baseline Energy (kWh)"
               dataIndex="baseline_energy_used"
               key="baseline_energy_used"
-              render= {(value) => <>{ value? value.toLocaleString(undefined, {maximumFractionDigits:2}) : 0}</>}
+              render={(value) => (
+                <>
+                  {value
+                    ? value.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })
+                    : 0}
+                </>
+              )}
             />
             <Column
               title="Blended Cost of Energy"
               dataIndex="blended_cost_of_energy"
               key="blended_cost_of_energy"
-              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
+              render={(value) => (
+                <>
+                  {value.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}
+                </>
+              )}
             />
             <Column
               title="Usage Accuracy Diesel"
               dataIndex="diesel_usage_accuracy"
               key="diesel_usage_accuracy"
-              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
+              render={(value) => (
+                <>
+                  {value.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}
+                </>
+              )}
             />
             <Column
               title="Usage Accuracy Utility"
               dataIndex="utility_usage_accuracy"
               key="utility_usage_accuracy"
-              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
+              render={(value) => (
+                <>
+                  {value.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}
+                </>
+              )}
             />
             <Column
               title="Deviation Hours"
@@ -486,7 +526,13 @@ function AdminOverview(props) {
               title="Fuel Efficiency"
               dataIndex="fuel_efficiency"
               key="fuel_efficiency"
-              render= {(value) => <>{value.toLocaleString(undefined, {maximumFractionDigits:2})}</>}
+              render={(value) => (
+                <>
+                  {value.toLocaleString(undefined, {
+                    maximumFractionDigits: 2,
+                  })}
+                </>
+              )}
             />
             <ColumnGroup title="Generator Efficiency">
               <Column

@@ -129,11 +129,11 @@ function EditTarget(props) {
   };
 
   const maxLengthCheck = (object) => {
-    console.log('inputed object======= ', object);
+    let showString = 'Digit can not be more than 1'
     if (object > 1) {
-      object.target.value = object.target.value.slice(
-        0,
-        object.target.max,
+      return (
+        alert(showString)
+        // <InputNumber disabled={true} />
       )
     }
   }
@@ -161,6 +161,7 @@ function EditTarget(props) {
                   label="Blended cost of energy"
                 >
                   <Input
+                    type="number"
                     style={{ height: "52px" }}
                     height="52px"
                     placeholder="enter cost"
@@ -176,6 +177,7 @@ function EditTarget(props) {
                   label="Usage accuracy diesel"
                 >
                   <Input
+                    type="number"
                     style={{ height: "52px" }}
                     placeholder="enter percentage"
                     prefix={<PercentageOutlined />}
@@ -194,6 +196,7 @@ function EditTarget(props) {
                   label="Usage accuracy utility"
                 >
                   <Input
+                    type="number"
                     style={{ height: "52px" }}
                     placeholder="enter percentage"
                     prefix={<PercentageOutlined />}
@@ -208,6 +211,7 @@ function EditTarget(props) {
                   label="Maximum Deviation hours (Month)"
                 >
                   <Input
+                    type="number"
                     style={{ height: "52px" }}
                     placeholder="enter time"
                     prefix={<ClockCircleOutlined />}
@@ -232,11 +236,11 @@ function EditTarget(props) {
                   // ]}
                 >
                   <InputNumber
+                    type="number"
                     style={{ height: "52px", width: "405px" }}
-                    defaultValue="1"
+                    // defaultValue="1"
                     min="0"
                     max="1"
-                    // maxLength="3"
                     step="0.01"
                     onInput={maxLengthCheck}
                     onKeyDown={(evt) => evt.key === 'e' && evt.preventDefault()}
@@ -253,6 +257,7 @@ function EditTarget(props) {
               >
                 <Form.Item name="fuel_efficiency" label="Fuel efficiency kWh/L">
                   <Input
+                    type="number"
                     style={{ height: "52px" }}
                     placeholder="enter fuel efficiency"
                     prefix={<ProjectOutlined />}
@@ -276,6 +281,10 @@ function EditTarget(props) {
                   <Input
                     style={{ height: "52px" }}
                     placeholder="Enter efficiency"
+                    count={{
+                      show: true,
+                      max: 10,
+                    }}
                   />
                 </Form.Item>
               </div>

@@ -135,6 +135,11 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   margin-top: 72px;
 }
 
+/* SET TARGET  */
+.ant-input-number-input-wrap {
+  padding: 11px 0;
+}
+
 .client-page-flex-display {
   display: flex;
   justify-content: space-between;
@@ -166,15 +171,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   /* width: 409px;
   height: 10%; */
   background: #FFFFFF;
-}
-.set_target_psge {
-  /* width: 25%; */
-  /* height: 10%; */
-  /* background: #FFFFFF; */
-  /* padding: 15px; */
-}
-.form_demacation {
-  /* display: inline; */
 }
 
 .sidePage-add-user input {
@@ -691,8 +687,10 @@ a.header-short-button--auth {
 .keymetrics_custom_row_hover {
   width: 1039px;
 }
-.custom-row-hover {
-  /* width: 1039px; */
+.custom-row-hover table {
+  width: 100%;
+  display: table;
+  table-layout: fixed !important;
 }
 /* .custom-row-hover td:first-child {
   border-top-left-radius: 20px;

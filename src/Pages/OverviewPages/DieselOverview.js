@@ -190,19 +190,19 @@ function DieselOverview(props) {
     {
       title: "Diesel consumed this month(L)",
       dataIndex: "current_month_consumption_in_litres",
-      render: (value) => <>{value + 'L'}</>,
+      render: (value) => <>{value}</>,
       key: "current_month_consumption_in_litres",
     },
     {
       title: "Diesel consumed the previous day(L)",
       dataIndex: "previous_day_consumption_in_litres",
-      render: (value) => <>{value + 'L'}</>,
+      render: (value) => <>{value}</>,
       key: "previous_day_consumption_in_litres",
     },
     {
       title: "Diesel remaining(L)",
       dataIndex: "remaining_diesel_litres",
-      render: (value) => <>{value + 'L'}</>,
+      render: (value) => <>{value}</>,
       key: "remaining_diesel_litres",
     },
     procurementsColumn(),
