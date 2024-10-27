@@ -269,7 +269,7 @@ const menuProps = {
               </div>
               <Modal
                 visible={showUserBranches}
-                title="This user belongs to the following Branches"
+                title="User Branches"
                 onCancel={() => setShowUserBranches(false)}
                 footer={null}
                 width={557}
