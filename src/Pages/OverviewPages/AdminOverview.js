@@ -1,4 +1,4 @@
-import { Button, Card, DatePicker, Image, Input, Space, Spin, Table, Tag, Typography } from "antd";
+import { Button, Card, DatePicker, Image, Input, Modal, Space, Spin, Table, Tag, Typography } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
@@ -260,6 +260,16 @@ function AdminOverview(props) {
   
   const handleRowClick = (record) => {
     // navigate('/detail', { state: { data: record } });
+    console.log('This Row is Clicked', record);
+    return (
+      <a
+        rel="noopener noreferrer"
+        href={`/branch-detail/${record.id}/`}
+      >
+        View Branch
+      </a>
+    );
+    
   };
 
 
@@ -436,8 +446,17 @@ function AdminOverview(props) {
                 color: record === checkData ? "#5C12A7" : "",
                 backgroundColor: record === checkData ? "#F2F2F8" : "",
               },
+              onClick: () => handleRowClick(record), // Handle row click
             })}
+            // onRow={(record, rowIndex) => {
+            //   return {
+            //     onClick: (event) => {
+            //       window.location.href = `${window.location.href}branch-details?ee=${record.id}`
+            //     },
+            //   };
+            // }}
             // rowKey="id"
+            rowKey={(record) => record.id}
             // onRow={(record) => ({
             //   onClick: () => handleRowClick(record),
             // })}
@@ -467,6 +486,7 @@ function AdminOverview(props) {
               // }
             />
             <Column
+              width={90}
               title="Baseline Energy (kWh)"
               dataIndex="baseline_energy_used"
               key="baseline_energy_used"
@@ -481,6 +501,7 @@ function AdminOverview(props) {
               )}
             />
             <Column
+              width={90}
               title="Blended Cost of Energy"
               dataIndex="blended_cost_of_energy"
               key="blended_cost_of_energy"
@@ -493,6 +514,7 @@ function AdminOverview(props) {
               )}
             />
             <Column
+              width={90}
               title="Usage Accuracy Diesel"
               dataIndex="diesel_usage_accuracy"
               key="diesel_usage_accuracy"
@@ -505,6 +527,7 @@ function AdminOverview(props) {
               )}
             />
             <Column
+              width={90}
               title="Usage Accuracy Utility"
               dataIndex="utility_usage_accuracy"
               key="utility_usage_accuracy"
@@ -517,12 +540,19 @@ function AdminOverview(props) {
               )}
             />
             <Column
+              width={100}
               title="Deviation Hours"
               dataIndex="deviation_hours"
               key="deviation_hours"
             />
-            <Column title="PAPR" dataIndex="papr" key="papr" />
             <Column
+              width={70} 
+              title="PAPR" 
+              dataIndex="papr" 
+              key="papr" 
+            />
+            <Column
+              width={100}
               title="Fuel Efficiency"
               dataIndex="fuel_efficiency"
               key="fuel_efficiency"
@@ -534,18 +564,23 @@ function AdminOverview(props) {
                 </>
               )}
             />
-            <ColumnGroup title="Generator Efficiency">
+            <ColumnGroup 
+              width= '100px'
+              title="Generator Efficiency">
               <Column
+                width={70}
                 // title="Gen1"
                 dataIndex="generator_size_efficiency_1"
                 key="generator_size_efficiency_1"
               />
               <Column
+                width={70}
                 // title="Gen2"
                 dataIndex="generator_size_efficiency_2"
                 key="generator_size_efficiency_2"
               />
               <Column
+                width={70}
                 // title="Gen3"
                 dataIndex="generator_size_efficiency_3"
                 key="generator_size_efficiency_3"

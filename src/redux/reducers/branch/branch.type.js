@@ -1,0 +1,6 @@
+const branchTypes = {
+    GET_BRANCH_DETAILS_LOADING: "GET_BRANCH_DETAILS_LOADING",
+    GET_BRANCH_DETAILS_SUCCESS: "GET_BRANCH_DETAILS_SUCCESS",
+  };
+  
+  export default branchTypes;
