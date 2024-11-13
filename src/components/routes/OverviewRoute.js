@@ -8,6 +8,7 @@ import AuthRoute from "./AuthRoute";
 import LogOut from "../../Pages/OverviewPages/LogOut";
 import ViewLocations from "../../Pages/OverviewPages/ViewLocations";
 import Support from "../../Pages/OverviewPages/support/Support";
+import BranchDetails from "../../Pages/OverviewPages/BranchDetails";
 
 function OverviewRoute() {
   return (
@@ -21,6 +22,7 @@ function OverviewRoute() {
         <Route path="/locations" element={<ViewLocations />}></Route>
         <Route path="/log-out" element={<LogOut />}></Route>
         <Route path="/support" element={<Support />}></Route>
+        <Route path="/branch-details" element={<BranchDetails />}></Route>
       </Routes>
     </div>
     {/* <Routes>

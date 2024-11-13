@@ -446,20 +446,13 @@ function AdminOverview(props) {
                 color: record === checkData ? "#5C12A7" : "",
                 backgroundColor: record === checkData ? "#F2F2F8" : "",
               },
-              onClick: () => handleRowClick(record), // Handle row click
+              // onClick: () => handleRowClick(record)
+              onClick: (event) => {
+                // window.location.href = `${window.location.href}branch-details?ee=${record.id}`
+              },
             })}
-            // onRow={(record, rowIndex) => {
-            //   return {
-            //     onClick: (event) => {
-            //       window.location.href = `${window.location.href}branch-details?ee=${record.id}`
-            //     },
-            //   };
-            // }}
             // rowKey="id"
             rowKey={(record) => record.id}
-            // onRow={(record) => ({
-            //   onClick: () => handleRowClick(record),
-            // })}
             loading={props.overviewPage.fetchKeyMetricsLoading}
             dataSource={data}
             // columns={columns}
@@ -470,7 +463,8 @@ function AdminOverview(props) {
               title="Branch Name"
               dataIndex="name"
               key="name"
-              width="200px"
+              width="120px"
+              ellipsis={true}
               // render= {
               //   (text) => {
               //     return (
@@ -490,6 +484,7 @@ function AdminOverview(props) {
               title="Baseline Energy (kWh)"
               dataIndex="baseline_energy_used"
               key="baseline_energy_used"
+              ellipsis={true}
               render={(value) => (
                 <>
                   {value
@@ -505,6 +500,7 @@ function AdminOverview(props) {
               title="Blended Cost of Energy"
               dataIndex="blended_cost_of_energy"
               key="blended_cost_of_energy"
+              ellipsis={true}
               render={(value) => (
                 <>
                   {value.toLocaleString(undefined, {
@@ -518,6 +514,7 @@ function AdminOverview(props) {
               title="Usage Accuracy Diesel"
               dataIndex="diesel_usage_accuracy"
               key="diesel_usage_accuracy"
+              ellipsis={true}
               render={(value) => (
                 <>
                   {value.toLocaleString(undefined, {
@@ -531,6 +528,7 @@ function AdminOverview(props) {
               title="Usage Accuracy Utility"
               dataIndex="utility_usage_accuracy"
               key="utility_usage_accuracy"
+              ellipsis={true}
               render={(value) => (
                 <>
                   {value.toLocaleString(undefined, {
@@ -544,18 +542,21 @@ function AdminOverview(props) {
               title="Deviation Hours"
               dataIndex="deviation_hours"
               key="deviation_hours"
+              ellipsis={true}
             />
             <Column
               width={70} 
               title="PAPR" 
               dataIndex="papr" 
               key="papr" 
+              ellipsis={true}
             />
             <Column
               width={100}
               title="Fuel Efficiency"
               dataIndex="fuel_efficiency"
               key="fuel_efficiency"
+              ellipsis={true}
               render={(value) => (
                 <>
                   {value.toLocaleString(undefined, {
@@ -566,24 +567,28 @@ function AdminOverview(props) {
             />
             <ColumnGroup 
               width= '100px'
+              ellipsis={true}
               title="Generator Efficiency">
               <Column
                 width={70}
                 // title="Gen1"
                 dataIndex="generator_size_efficiency_1"
                 key="generator_size_efficiency_1"
+                ellipsis={true}
               />
               <Column
                 width={70}
                 // title="Gen2"
                 dataIndex="generator_size_efficiency_2"
                 key="generator_size_efficiency_2"
+                ellipsis={true}
               />
               <Column
                 width={70}
                 // title="Gen3"
                 dataIndex="generator_size_efficiency_3"
                 key="generator_size_efficiency_3"
+                ellipsis={true}
               />
             </ColumnGroup>
           </Table>

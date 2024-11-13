@@ -690,7 +690,12 @@ a.header-short-button--auth {
 .custom-row-hover table {
   width: 100%;
   display: table;
-  table-layout: fixed !important;
+  table-layout: fixed;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* font-family: 'Montserrat'; */
+  font-size: 12px;
 }
 /* .custom-row-hover td:first-child {
   border-top-left-radius: 20px;
@@ -720,3 +725,24 @@ a.header-short-button--auth {
   background-color: #F1E4FF;
   color: #5C12A7;
 } 
+
+.device_Consumption {
+  /* width: 100%; */
+  gap: 30px;
+}
+
+@media (min-width: 1200px) {
+  .device_Consumption {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+}
+
+.device_card_size {
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+  align-items: center;
+}

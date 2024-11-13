@@ -20,13 +20,6 @@ function BranchDetails(props) {
     const headers = '';
     const [dateChange, setDateChange] = useState(false);
 
-    // const branch_id_ = searchParams.get("branch_id") || props.auth.deviceData.user_id;
-    console.log("Auths data ==> ", props.auth.userData.client_id);
-    console.log("Branch Redux State ==> ", props.branchPage.branchDetailsData);
-    
-
-    const userRoletextData = 'props.auth.userData.role_text';
-
     useEffect(() => {
         const branch_id = searchParams.get("ee")
 
@@ -37,67 +30,14 @@ function BranchDetails(props) {
     }, [headers.selectedDate]);
     
     const data = props.branchPage.branchDetailsData;
-    let arrayData = []
-    arrayData.push(props.branchPage.branchDetailsData)
-    console.log("Array of Data ==> ", data);
-
-    const column = [
-      {
-        title: "address",
-        dataIndex: "address",
-        key: "address",
-      },
-      {
-        title: "email",
-        dataIndex: "email",
-        key: "email",
-      },
-      {
-        title: "name",
-        dataIndex: "name",
-        key: "name",
-      },
-    ];
 
     return (
         <>
             <article className='total-energy-bar-chart'>
-            {/* <article className='table-with-header-container h-no-mt'> */}
-                {/* <div className='table-header h-border-bottom'>
-                    <h3 className='table-header__heading'>{props.branches?.fetchedBranch[0]?.name}</h3>
-                </div>
-                <Spin spinning={props.branches?.fetchBranchLoading}>
-                    <div className="view_branch_top">
-                        <Row>
-                            <Col md={8}>
-                                <div>
-                                    <p className='view_branch-text'>Total Energy: <span>{props.branches?.fetchedBranch[0]?.total_energy.toFixed(2)}</span></p>
-                                    <p className='view_branch-text'>Cost of Energy: <span> {props.branches?.fetchedBranch[0]?.energy_cost.toFixed(2)}</span></p>
-                                </div>
-                            </Col>
-                            <Col md={8}>
-                                <div>
-                                    <p className='view_branch-text'>Fuel Efficiency: <span> {props.branches?.fetchedBranch[0]?.fuel_efficiency.toFixed(2)}</span></p>
-                                    <p className='view_branch-text'>PAPR: <span>{props.branches?.fetchedBranch[0]?.papr?.toFixed(2)}</span></p>
-                                </div>
-                            </Col>
-                        </Row>
-                    </div>
-                </Spin> */}
                 <div className='h-overflow-auto'>
                     <div className='text-center'>
                         <h3 className='table-header__heading'>Branch Details</h3>
                     </div>
-                    {/* <AdminBranchDevicesViewTable
-                        loading={props.devices?.fetchDeviceOverviewLoading}
-                        listOfDevicesData={props.devices?.fetchedDeviceOverview}
-                        deviceType={props.devices?.fetchedDeviceType}
-                        setVisibleDevice={setVisibleDevice}
-                        setDeviceData={setDeviceData}
-                        setDeviceSwitch={setDeviceSwitch}
-                        setCheckedStatus={setCheckedStatus}
-                        userRoletextData={userRoletextData}
-                    /> */}
                     <div style={{width: "100%"}}>
                     <Space>
                         <Card>
@@ -128,36 +68,8 @@ function BranchDetails(props) {
                             <h1>Generator</h1>
                             {data.email}
                         </Card>
-                        {/* <Card className='device_card_size'>
-                            <h1>Generator 2</h1>
-                            {data.email}
-                        </Card> */}
                     </Space>
                     </div>
-                </div>
-                <div className='h-overflow-auto'>
-                    <div className='text-center'>
-                        <h3 className='table-header__heading'>Users</h3>
-                    </div>
-
-                    {/* <AdminBranchUsersViewTable
-                        loading={props.user?.fetchUserOverviewLoading}
-                        branchName={props.branches?.fetchedBranch[0]?.name}
-                        listOfBranchUsersViewData={props.user?.fetchedUserOverview}
-                        showUserModal={setVisibleUser}
-                        setUserData={setUserData}
-                        setUserSwitch={setUserSwitch}
-                        userRoletextData={userRoletextData}
-                    /> */}
-                </div>
-                <div className='h-overflow-auto'>
-                    <div className='text-center'>
-                        {/* <h3 className='table-header__heading'>Energy Stats</h3> */}
-                    </div>
-                    {/* <AdminBranchEnergyStatsViewTable
-                        loading={props.branches?.fetchBranchEnergyStatsLoading}
-                        listOfBranchEnergyStatsViewData={props.branches?.fetchedBranchEnergyStats}
-                    /> */}
                 </div>
             </article>
 
@@ -167,22 +79,11 @@ function BranchDetails(props) {
 
 const mapDispatchToProps = {
     getBranchDetailsData,
-    // getABranch,
-    // getABranchEnergyStats,
-    // getDevicesOverview,
-    // getDeviceTypes,
-    // disableDevice,
-    // getUsersOverview,
-    // removeUser,
-    // // disableUser,
-    // updateUser,
 }
 
 const mapStateToProps = (state) => ({
     branchPage: state.branchPage,
     auth: state.auth,
-    // devices: state.devices,
-    // user: state.user
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(BranchDetails)
