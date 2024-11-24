@@ -1,11 +1,11 @@
 import { APIService } from "../../../config/Api/apiServices";
 import { getBranchDetailsLoading, getBranchDetailsSuccess } from "./branch.creator";
 
-export const getBranchDetailsData = (branchId) => async (dispatch) => {
+export const getBranchDetailsData = (branchId, start_date, end_date) => async (dispatch) => {
 
     dispatch(getBranchDetailsLoading(true));
   
-    const requestUrl = `/api/v2/branch-detail/${branchId}/`;
+    const requestUrl = `/api/v2/branch-detail/${branchId}/?start_date=${start_date}&end_date=${end_date}`;
     try {
       const response = await APIService.get(requestUrl);
   

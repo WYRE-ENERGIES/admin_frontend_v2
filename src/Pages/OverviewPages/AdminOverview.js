@@ -439,159 +439,163 @@ function AdminOverview(props) {
               />
             </div>
           </div>
-          <Table
-            className="custom-row-hover"
-            onRow={(record, index) => ({
-              style: {
-                color: record === checkData ? "#5C12A7" : "",
-                backgroundColor: record === checkData ? "#F2F2F8" : "",
-              },
-              // onClick: () => handleRowClick(record)
-              onClick: (event) => {
-                // window.location.href = `${window.location.href}branch-details?ee=${record.id}`
-              },
-            })}
-            // rowKey="id"
-            rowKey={(record) => record.id}
-            loading={props.overviewPage.fetchKeyMetricsLoading}
-            dataSource={data}
-            // columns={columns}
-            onChange={onChange}
-            pagination={false}
-          >
-            <Column
-              title="Branch Name"
-              dataIndex="name"
-              key="name"
-              width="120px"
-              ellipsis={true}
-              // render= {
-              //   (text) => {
-              //     return (
-              //       <span
-              //         style={{
-              //           fontWeight: 'bold',
-              //         }}
-              //       >
-              //         {text}
-              //       </span>
-              //     )
-              //   },
-              // }
-            />
-            <Column
-              width={90}
-              title="Baseline Energy (kWh)"
-              dataIndex="baseline_energy_used"
-              key="baseline_energy_used"
-              ellipsis={true}
-              render={(value) => (
-                <>
-                  {value
-                    ? value.toLocaleString(undefined, {
-                        maximumFractionDigits: 2,
-                      })
-                    : 0}
-                </>
-              )}
-            />
-            <Column
-              width={90}
-              title="Blended Cost of Energy"
-              dataIndex="blended_cost_of_energy"
-              key="blended_cost_of_energy"
-              ellipsis={true}
-              render={(value) => (
-                <>
-                  {value.toLocaleString(undefined, {
-                    maximumFractionDigits: 2,
-                  })}
-                </>
-              )}
-            />
-            <Column
-              width={90}
-              title="Usage Accuracy Diesel"
-              dataIndex="diesel_usage_accuracy"
-              key="diesel_usage_accuracy"
-              ellipsis={true}
-              render={(value) => (
-                <>
-                  {value.toLocaleString(undefined, {
-                    maximumFractionDigits: 2,
-                  })}
-                </>
-              )}
-            />
-            <Column
-              width={90}
-              title="Usage Accuracy Utility"
-              dataIndex="utility_usage_accuracy"
-              key="utility_usage_accuracy"
-              ellipsis={true}
-              render={(value) => (
-                <>
-                  {value.toLocaleString(undefined, {
-                    maximumFractionDigits: 2,
-                  })}
-                </>
-              )}
-            />
-            <Column
-              width={100}
-              title="Deviation Hours"
-              dataIndex="deviation_hours"
-              key="deviation_hours"
-              ellipsis={true}
-            />
-            <Column
-              width={70} 
-              title="PAPR" 
-              dataIndex="papr" 
-              key="papr" 
-              ellipsis={true}
-            />
-            <Column
-              width={100}
-              title="Fuel Efficiency"
-              dataIndex="fuel_efficiency"
-              key="fuel_efficiency"
-              ellipsis={true}
-              render={(value) => (
-                <>
-                  {value.toLocaleString(undefined, {
-                    maximumFractionDigits: 2,
-                  })}
-                </>
-              )}
-            />
-            <ColumnGroup 
-              width= '100px'
-              ellipsis={true}
-              title="Generator Efficiency">
+          <div style={{overflowX: 'auto'}}>
+            <Table
+              className="custom-row-hover"
+              onRow={(record, index) => ({
+                style: {
+                  color: record === checkData ? "#5C12A7" : "",
+                  backgroundColor: record === checkData ? "#F2F2F8" : "",
+                },
+                // onClick: () => handleRowClick(record)
+                onClick: (event) => {
+                  window.location.href = `${window.location.href}branch?ee=${record.id}`;
+                },
+              })}
+              // rowKey="id"
+              rowKey={(record) => record.id}
+              // scroll={{ x: 'max-content' }}
+              loading={props.overviewPage.fetchKeyMetricsLoading}
+              dataSource={data}
+              // columns={columns}
+              onChange={onChange}
+              pagination={false}
+            >
               <Column
-                width={70}
-                // title="Gen1"
-                dataIndex="generator_size_efficiency_1"
-                key="generator_size_efficiency_1"
+                title="Branch Name"
+                dataIndex="name"
+                key="name"
+                width="120px"
+                ellipsis={true}
+                // render= {
+                //   (text) => {
+                //     return (
+                //       <span
+                //         style={{
+                //           fontWeight: 'bold',
+                //         }}
+                //       >
+                //         {text}
+                //       </span>
+                //     )
+                //   },
+                // }
+              />
+              <Column
+                width={90}
+                title="Baseline Energy (kWh)"
+                dataIndex="baseline_energy_used"
+                key="baseline_energy_used"
+                ellipsis={true}
+                render={(value) => (
+                  <>
+                    {value
+                      ? value.toLocaleString(undefined, {
+                          maximumFractionDigits: 2,
+                        })
+                      : 0}
+                  </>
+                )}
+              />
+              <Column
+                width={90}
+                title="Blended Cost of Energy"
+                dataIndex="blended_cost_of_energy"
+                key="blended_cost_of_energy"
+                ellipsis={true}
+                render={(value) => (
+                  <>
+                    {value.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })}
+                  </>
+                )}
+              />
+              <Column
+                width={90}
+                title="Usage Accuracy Diesel"
+                dataIndex="diesel_usage_accuracy"
+                key="diesel_usage_accuracy"
+                ellipsis={true}
+                render={(value) => (
+                  <>
+                    {value.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })}
+                  </>
+                )}
+              />
+              <Column
+                width={90}
+                title="Usage Accuracy Utility"
+                dataIndex="utility_usage_accuracy"
+                key="utility_usage_accuracy"
+                ellipsis={true}
+                render={(value) => (
+                  <>
+                    {value.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })}
+                  </>
+                )}
+              />
+              <Column
+                width={100}
+                title="Deviation Hours"
+                dataIndex="deviation_hours"
+                key="deviation_hours"
                 ellipsis={true}
               />
               <Column
                 width={70}
-                // title="Gen2"
-                dataIndex="generator_size_efficiency_2"
-                key="generator_size_efficiency_2"
+                title="PAPR"
+                dataIndex="papr"
+                key="papr"
                 ellipsis={true}
               />
               <Column
-                width={70}
-                // title="Gen3"
-                dataIndex="generator_size_efficiency_3"
-                key="generator_size_efficiency_3"
+                width={100}
+                title="Fuel Efficiency"
+                dataIndex="fuel_efficiency"
+                key="fuel_efficiency"
                 ellipsis={true}
+                render={(value) => (
+                  <>
+                    {value.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })}
+                  </>
+                )}
               />
-            </ColumnGroup>
-          </Table>
+              <ColumnGroup
+                width="100px"
+                ellipsis={true}
+                title="Generator Efficiency"
+              >
+                <Column
+                  width={70}
+                  // title="Gen1"
+                  dataIndex="generator_size_efficiency_1"
+                  key="generator_size_efficiency_1"
+                  ellipsis={true}
+                />
+                <Column
+                  width={70}
+                  // title="Gen2"
+                  dataIndex="generator_size_efficiency_2"
+                  key="generator_size_efficiency_2"
+                  ellipsis={true}
+                />
+                <Column
+                  width={70}
+                  // title="Gen3"
+                  dataIndex="generator_size_efficiency_3"
+                  key="generator_size_efficiency_3"
+                  ellipsis={true}
+                />
+              </ColumnGroup>
+            </Table>
+          </div>
           <div className="keymetric_pagination">
             <div>
               <Button onClick={fetchPrevPaginatedKeyMetric}>Previous</Button>

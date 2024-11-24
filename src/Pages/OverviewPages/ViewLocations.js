@@ -124,6 +124,13 @@ function ViewLocations(props) {
         <section className="total-energy-bar-chart">
           <Table
             className="custom-row-hover"
+            onRow={(record, index) => ({
+              onClick: (event) => {
+                window.location.href = `${window.location.href}/branch?ee=${record.id}`;
+              },
+            })}
+            // rowKey="id"
+            rowKey={(record) => record.id}
             loading={props.locationPage.fetchLocationLoading}
             dataSource={data}
             columns={columns}
