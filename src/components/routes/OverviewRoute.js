@@ -8,6 +8,7 @@ import AuthRoute from "./AuthRoute";
 import LogOut from "../../Pages/OverviewPages/LogOut";
 import ViewLocations from "../../Pages/OverviewPages/ViewLocations";
 import Support from "../../Pages/OverviewPages/support/Support";
+import BranchDetails from "../../Pages/OverviewPages/BranchDetails";
 
 function OverviewRoute() {
   return (
@@ -19,8 +20,10 @@ function OverviewRoute() {
         <Route path="/set-target" element={<SetTarget />}></Route>
         <Route path="/diesel" element={<DieselOverview />}></Route>
         <Route path="/locations" element={<ViewLocations />}></Route>
+        <Route path="/locations/branch" element={<BranchDetails />}></Route>
         <Route path="/log-out" element={<LogOut />}></Route>
         <Route path="/support" element={<Support />}></Route>
+        <Route path="/branch" element={<BranchDetails />}></Route>
       </Routes>
     </div>
     {/* <Routes>
