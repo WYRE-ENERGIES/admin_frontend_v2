@@ -457,7 +457,6 @@ function AdminOverview(props) {
               // scroll={{ x: 'max-content' }}
               loading={props.overviewPage.fetchKeyMetricsLoading}
               dataSource={data}
-              // columns={columns}
               onChange={onChange}
               pagination={false}
             >
