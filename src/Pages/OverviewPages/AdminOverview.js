@@ -451,6 +451,7 @@ function AdminOverview(props) {
                 onClick: (event) => {
                   window.location.href = `${window.location.href}branch?ee=${record.id}`;
                 },
+                // onMouseEnter: () => console.log('Mouse entered row:', record),
               })}
               // rowKey="id"
               rowKey={(record) => record.id}

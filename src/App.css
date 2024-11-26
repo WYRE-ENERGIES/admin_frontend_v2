@@ -716,6 +716,12 @@ a.header-short-button--auth {
   color: black;
 }
 
+.ant-table-tbody > tr:hover {
+  background-color: #e6f7ff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
 .chart_buttons {
   background-color: #F2F2F8;
   width: 20%;
