@@ -68,6 +68,15 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   background-color: rgba(242, 242, 248, 0.19);
 }
 
+.ant-layout-sider-children {
+  background-color: #5C12A7;
+}
+
+:where(.css-dev-only-do-not-override-49qm).ant-layout-sider .ant-layout-sider-trigger {
+  background: #5C12A7;
+  color: #5C12A7;
+}
+
 .PageContent {
   margin: 35px 25px 35px 18px;
   background-color: #F2F2F8;
