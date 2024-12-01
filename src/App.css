@@ -785,19 +785,20 @@ a.header-short-button--auth {
   flex-direction: column; */
   align-items: center;
   text-align: center;
-  width: 238px;
+  width: 325px;
 }
 
 .power_demand_value {
   font-family: 'Montserrat';
-  font-size: smaller;
-  font-weight: lighter;
+  /* font-size: smaller; */
+  /* font-weight: lighter; */
 }
 
 .demand_card .header_card h3 {
+  font-family: 'Montserrat';
   /* font-weight: lighter; */
   /* font-size: smaller; */
-  font-size: small;
+  /* font-size: small; */
 }
 
 .sub_head {
@@ -805,3 +806,240 @@ a.header-short-button--auth {
   display: flex;
   margin-bottom: 20px;
 }
+
+/* Branch View starts */
+.dashboard-row-1 {
+  width: 100%;
+  /* margin: 30px; */
+}
+
+@media (min-width: 1200px) {
+  .dashboard-row-1 {
+    /* display: -webkit-box;
+    display: -ms-flexbox; */
+    display: flex;
+    /* -webkit-box-pack: justify;
+    -ms-flex-pack: justify; */
+    justify-content: space-between;
+  }
+}
+
+.dashboard__total-energy {
+  background-color: purple;
+  color:white;
+  text-align: center;
+  /* display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center; */
+}
+
+.total-energy__heading {
+  color: white;
+  font-size: 3.3rem;
+  margin-bottom: 0;
+}
+
+.total-energy_value {
+  font-size: 2rem;
+  font-weight: medium;
+  margin-top: 10px;
+}
+
+.solar-energy_value {
+  color: #FFC205;
+  font-size: 1.8rem;
+}
+
+.dashboard__banner--small {
+  width: 100%;
+  height: 174px;
+  border-radius: border;
+  background-color: white;
+}
+
+@media (min-width: 768px) {
+  .dashboard__banner--small {
+    height: 200px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .dashboard__banner--small {
+    max-width: 31.5%;
+  }
+}
+
+.dashboard__demand-banner,
+.dashboard__cost-emissions-banner {
+  background-color: white;
+  margin-top: 30px;
+}
+
+@media (min-width: 1200px) {
+    .dashboard__demand-banner,
+    .dashboard__cost-emissions-banner {
+    margin-top: 0;
+    }
+}
+
+.dashboard__demand-banner--,
+.dashboard__cost-emissions-banner {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    align-items: center;
+    background-color:white;
+    margin-top: 10px;
+}
+  
+@media (min-width: 1200px) {
+    .dashboard__demand-banner--,
+    .dashboard__cost-emissions-banner {
+    margin-top: 0;
+    }
+}
+
+.small-banner-section {
+    padding: 0 5px;
+}
+
+.small-banner-section__heading {
+    font-size: 1.3rem;
+    /* font-weight: regular; */
+    font-weight: 100;
+ }
+  
+.small-banner-section__subheading {
+    display: block;
+    margin-top: 9px;
+    color: grey;
+}
+  
+.small-banner-section__value {
+    margin-top: 23px;
+  
+    .value {
+      font-size: 2rem;
+      font-weight: medium;
+    }
+  
+    .unit {
+      display: block;
+      margin-top: 16px;
+    }
+}
+
+.dashboard-row-1b {
+  /* width: 100%; */
+  gap: 30px;
+}
+
+@media (min-width: 1200px) {
+  .dashboard-row-1b {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+}
+
+.dashboard__banner--smallb {
+  width: 100%;
+  height: 174px;
+}
+
+@media (min-width: 768px) {
+  .dashboard__banner--smallb {
+    height: 200px;
+  }
+}
+
+@media (min-width: 1200px) {
+  .dashboard__banner--smallb {
+    flex: 1;
+    /* width: 100%; */
+    min-width: 30.5%;
+    column-gap: 30px;
+  }
+}
+
+.dashboard__total-energy-amount {
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  margin-top: 30px;
+  align-items: center;
+}
+
+.total-energy-price__heading {
+  margin-top: 6px;
+}
+
+.total-energy-price__heading__text {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.total-energy-price__hr {
+  width: 100%;
+  height: 0.12rem;
+  background-color: #f0f0f0;
+  margin: 0;
+}
+
+.total-amount-energy-price__body {
+  display: flex;
+  flex-direction: row;
+  height: 100px;
+  width: -webkit-fill-available;
+  margin: 10px 35px;
+  justify-content: space-between;
+}
+
+.total-left-energy-price {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 36%;
+}
+
+.total-right-energy-price {
+  width: -webkit-fill-available;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-left: 10px;
+}
+
+.total-energy-price__common {
+  display: flex;
+  border: 2px solid rgb(248, 245, 246);
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+}
+
+.power-icon__image {
+  height: 60px;
+}
+
+.total-energy-price__kwh__text {
+  font-size: 1.8rem;
+  margin-bottom: 10px;
+}
+
+.total-energy-price__heading__text__hrs {
+  font-size: 1.4rem;
+}
+
+.total-energy-price__footer__text {
+  font-size: 1.8rem;
+  padding: auto;
+}
+
+.total-energy-price__footer__text {
+  font-size: 1.8rem;
+  padding: auto;
+}
+/* Branch View Ends */
