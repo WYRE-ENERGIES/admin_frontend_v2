@@ -979,6 +979,10 @@ a.header-short-button--auth {
   font-size: 1.5rem;
   margin-bottom: 10px;
 }
+.power-icon_size {
+  width: 20px;
+  height: 20px;
+}
 
 .total-energy-price__hr {
   width: 100%;

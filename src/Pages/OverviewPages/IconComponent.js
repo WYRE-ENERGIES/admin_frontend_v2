@@ -2,36 +2,34 @@ import React from "react";
 import ElectricSource from "../icons/ElectricSource";
 import GeneratorSource from "../icons/GeneratorSource";
 
-function IconComponent({ deviceType }) {
-    console.log('Check devices type ->> ', deviceType);
-    
-    const DeviceTypeIconSelector = () => {
+function IconComponent({ deviceType, className }) {
+
+  const DeviceTypeIconSelector = () => {
     let Component = null;
-    console.log('new---------Check devices type ->> ', deviceType);
     switch (deviceType) {
-        case "2":
-          console.log('type ->> ', Component)
+      case 2:
+        // electric source
         Component = ElectricSource;
         break;
-      case "1":
+      case 1:
+        // generator source
         Component = GeneratorSource;
         break;
-      case "SOLAR":
-        Component = GeneratorSource;
-        break;
-      case "1":
+      case 3:
+        // solar source the source component should be changed to solar
         Component = GeneratorSource;
         break;
       default:
         Component = GeneratorSource;
     }
-    return Component;
+
+    return <Component className={className} />;
   };
 
   // let Component = DeviceTypeIconSelector(deviceType);
 
   return (
-      <DeviceTypeIconSelector className="power-icon__image" />
+    <DeviceTypeIconSelector className="power-icon__image" />
   );
 }
 

@@ -211,8 +211,8 @@ function BranchDetails(props) {
                     <div className="total-amount-energy-price__body">
                       <div className="total-left-energy-price total-energy-price__common">
                         {/* Testing ordinary image Component here */}
-                        <img width='15px' src= '/Images/powergrid.png' />
-                        <IconComponent deviceType={eachDevice.type} />
+                        {/* <img width='15px' src= '/Images/powergrid.png' /> */}
+                        <IconComponent className='power-icon_size' deviceType={eachDevice.type} />
                       </div>
                       <div className="total-right-energy-price total-energy-price__common">
                         <p className="total-energy-price__kwh__text">{eachDevice.dashboard.total_kwh.value} {kwh_Unit}</p>
