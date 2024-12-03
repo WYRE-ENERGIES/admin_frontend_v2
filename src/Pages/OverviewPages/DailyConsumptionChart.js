@@ -244,7 +244,7 @@ function DailyConsumptionChart(props) {
             style={{
               // width: 1020,
               // height: 650,
-              borderRadius: 22,
+              borderRadius: 16,
               marginTop: 30
             }}
           >

@@ -135,7 +135,7 @@ function BranchDetails(props) {
               </p>
             </Tooltip>
           </div>
-          <h2 className="total-energy__heading">Total energy</h2>
+          <h2 className="total-energy__heading">Total Energy</h2>
           <p className="total-energy_value">
             <span>{data && data.demand_values.total_kwh}</span>
             <span>{demandsUnit}</span>
