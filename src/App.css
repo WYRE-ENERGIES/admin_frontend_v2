@@ -860,14 +860,14 @@ a.header-short-button--auth {
 }
 
 .total-energy_value {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 16px;
   margin-top: 10px;
 }
 
 .solar-energy_value {
   color: #FFC205;
-  font-size: 1.8rem;
+  font-size: 1rem;
 }
 
 .dashboard__demand-banner,
@@ -901,14 +901,20 @@ a.header-short-button--auth {
     }
 }
 
+.dashboard__demand-banner-- {
+  margin-top: 20px;
+}
+
 .small-banner-section {
     padding: 0 5px;
 }
 
 .small-banner-section__heading {
-    font-size: 1.3rem;
+    /* font-size: 1.3rem; */
+    font-size: 14px;
     /* font-weight: regular; */
     font-weight: 1;
+    
  }
   
 .small-banner-section__subheading {
@@ -921,7 +927,7 @@ a.header-short-button--auth {
     margin-top: 23px;
 } 
 .small-banner-section__value .value {
-      font-size: 2rem;
+      font-size: 1.3rem;
       font-weight: 16px;
     }
   
@@ -977,7 +983,7 @@ a.header-short-button--auth {
 }
 
 .total-energy-price__heading__text {
-  font-size: 1.5rem;
+  font-size: 1rem;
   margin-bottom: 10px;
 }
 .power-icon_size {
@@ -1030,7 +1036,7 @@ a.header-short-button--auth {
 }
 
 .total-energy-price__kwh__text {
-  font-size: 1.8rem;
+  font-size: 1.3rem;
   margin-bottom: 10px;
 }
 
