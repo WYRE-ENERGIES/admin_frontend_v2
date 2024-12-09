@@ -21,6 +21,7 @@ import { useSearchParams } from "react-router-dom";
 import { getBranchDetailsData } from "../../redux/actions/branch/branch.action";
 import DailyConsumptionChart from "./DailyConsumptionChart";
 import IconComponent from "./IconComponent";
+import { numberFormatter } from "../../helpers/genericHelpers";
 
 function BranchDetails(props) {
   const [searchParams] = useSearchParams();
@@ -65,10 +66,14 @@ function BranchDetails(props) {
   const blendedCostOfEnergy =
     data &&
     data.devices.map((eachDevice) => eachDevice.dashboard.cost_of_energy.value);
+  const solarHour = data && data.devices.filter((device) => device.is_source).map((eachDevice, index) => {
+      return eachDevice.dashboard.solar_hours.value
+  })
+  const totalSolarHour = solarHour && solarHour.reduce((cur, sum) => cur + sum, 0)
+  
   const CostUnit = data && data.devices[0].dashboard.cost_of_energy.unit;
   const kwh_Unit = data && data.demand_values.unit;
-  const emissionUnit =
-    data && data.devices[0].dashboard.dashboard_carbon_emissions.unit;
+  const emissionUnit = data && data.devices[0].dashboard.dashboard_carbon_emissions.unit;
   const totalCarbonEmission = carbonEmission?.reduce(
     (acc, sum) => acc + sum,
     0
@@ -137,46 +142,52 @@ function BranchDetails(props) {
           </div>
           <h2 className="total-energy__heading">Total Energy</h2>
           <p className="total-energy_value">
-            <span>{data && data.demand_values.total_kwh}</span>
-            <span>{demandsUnit}</span>
+            <span>{numberFormatter(data && data.demand_values.total_kwh)}</span>
+            <span> kWh</span>
           </p>
+          {props.auth.userData.client_type !== 'RESELLER' &&
+                <p className="total-energy_value solar-energy_value">
+                    <span>Solar Hours: {totalSolarHour && numberFormatter(totalSolarHour)} </span>
+                    <span>{totalSolarHour && 'kWh'}{'('}{((totalSolarHour / data?.demand_values?.total_kwh) * 100)?.toFixed(2)}{'%)'}</span>
+                </p>
+            }
         </article>
         <article className="dashboard__demand-banner dashboard__banner--small">
           <div className="dashboard__demand-banner--">
-            <div className="small-banner-section">
-              <h3 className="small-banner-section__heading">Min Demand</h3>
+          <div className="small-banner-section">
+              <h3 className="small-banner-section__heading">Max. Demand</h3>
               <p className="small-banner-section__value">
                 <span className="value">
-                  {Number(sumMinDemands).toFixed(2)}
+                  {numberFormatter(sumMaxDemands)}
                 </span>
-                <span className="unit">{demandsUnit}</span>
+                <span className="unit">kVA</span>
               </p>
             </div>
             <div className="small-banner-section">
-              <h3 className="small-banner-section__heading">Avg Demand</h3>
+              <h3 className="small-banner-section__heading">Min. Demand</h3>
               <p className="small-banner-section__value">
                 <span className="value">
-                  {Number(sumAvgDemands).toFixed(2)}
+                  {numberFormatter(sumMinDemands)}
                 </span>
-                <span className="unit">{demandsUnit}</span>
+                <span className="unit">kVA</span>
               </p>
             </div>
             <div className="small-banner-section">
-              <h3 className="small-banner-section__heading">Max Demand</h3>
+              <h3 className="small-banner-section__heading">Avg. Demand</h3>
               <p className="small-banner-section__value">
                 <span className="value">
-                  {Number(sumMaxDemands).toFixed(2)}
+                  {numberFormatter(sumAvgDemands)}
                 </span>
-                <span className="unit">{demandsUnit}</span>
+                <span className="unit">kVA</span>
               </p>
             </div>
           </div>
         </article>
         <article className="dashboard__cost-emissions-banner dashboard__banner--small">
           <div className="small-banner-section">
-            <h3 className="small-banner-section__heading">Carbon Emmission</h3>
+            <h3 className="small-banner-section__heading">Carbon Emissions</h3>
             <p className="small-banner-section__value">
-              <span className="value">{totalCarbonEmission}</span>
+              <span className="value">{Number(totalCarbonEmission).toFixed(2)}</span>
               <span className="unit">{emissionUnit}</span>
             </p>
           </div>
@@ -185,7 +196,7 @@ function BranchDetails(props) {
               Blended Cost of Energy
             </h3>
             <p className="small-banner-section__value">
-              <span className="value">{totalBlendedCostOfEnergy}</span>
+              <span className="value">{Number(totalBlendedCostOfEnergy).toFixed(2)}</span>
               <span className="unit">{CostUnit}</span>
             </p>
           </div>
@@ -215,7 +226,7 @@ function BranchDetails(props) {
                         <IconComponent className='power-icon_size' deviceType={eachDevice.type} />
                       </div>
                       <div className="total-right-energy-price total-energy-price__common">
-                        <p className="total-energy-price__kwh__text">{eachDevice.dashboard.total_kwh.value} {kwh_Unit}</p>
+                        <p className="total-energy-price__kwh__text">{numberFormatter(eachDevice.dashboard.total_kwh.value) || 0} kWh</p>
                         {/* <p className="total-energy-price__heading__text__hrs">{convertDecimalTimeToNormal(timeInUse) || 0}</p> */}
                       </div>
                     </div>
