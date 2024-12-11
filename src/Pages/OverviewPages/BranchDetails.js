@@ -21,7 +21,7 @@ import { useSearchParams } from "react-router-dom";
 import { getBranchDetailsData } from "../../redux/actions/branch/branch.action";
 import DailyConsumptionChart from "./DailyConsumptionChart";
 import IconComponent from "./IconComponent";
-import { numberFormatter } from "../../helpers/genericHelpers";
+import { convertDecimalTimeToMinutes, convertDecimalTimeToNormal, numberFormatter } from "../../helpers/genericHelpers";
 
 function BranchDetails(props) {
   const [searchParams] = useSearchParams();
@@ -227,7 +227,7 @@ function BranchDetails(props) {
                       </div>
                       <div className="total-right-energy-price total-energy-price__common">
                         <p className="total-energy-price__kwh__text">{numberFormatter(eachDevice.dashboard.total_kwh.value) || 0} kWh</p>
-                        {/* <p className="total-energy-price__heading__text__hrs">{convertDecimalTimeToNormal(timeInUse) || 0}</p> */}
+                        <p className="total-energy-price__heading__text__hrs">{convertDecimalTimeToMinutes(eachDevice.usage_hours) || 0}</p>
                       </div>
                     </div>
                     <div className="total-energy-price__footer total-energy-price__common">
