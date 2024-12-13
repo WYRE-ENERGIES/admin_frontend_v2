@@ -906,7 +906,7 @@ a.header-short-button--auth {
 }
 
 .small-banner-section {
-    padding: 0 5px;
+    padding: 7px 5px;
 }
 
 .small-banner-section__heading {
@@ -915,6 +915,10 @@ a.header-short-button--auth {
     /* font-weight: regular; */
     font-weight: 1;
     
+ }
+
+ .dashboard__cost-emissions-banner .small-banner-section__heading {
+  margin-top: 0px;
  }
   
 .small-banner-section__subheading {
