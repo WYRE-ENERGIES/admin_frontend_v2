@@ -47,19 +47,11 @@ function BranchDetails(props) {
   }, [headers.selectedDate]);
 
   const data = props.branchPage.branchDetailsData;
-  const avgDemands = data.demand_values?.devices_demands?.map(
-    (demand) => demand.avg
-  );
-  const minDemands = data.demand_values?.devices_demands?.map(
-    (demand) => demand.min
-  );
-  const maxDemands = data.demand_values?.devices_demands?.map(
-    (demand) => demand.max
-  );
+  const maxDemands = data.demand_values?.max_demand
+  const minDemands = data.demand_values?.min_demand
+  const avgDemands = data.demand_values?.avg_demand
+  
   const demandsUnit = data.demand_values?.unit;
-  const sumAvgDemands = avgDemands?.reduce((acc, val) => acc + val, 0);
-  const sumMinDemands = minDemands?.reduce((acc, val) => acc + val, 0);
-  const sumMaxDemands = maxDemands?.reduce((acc, val) => acc + val, 0);
   const carbonEmission = data.devices?.map((eachDevice) => {
     return eachDevice.dashboard.dashboard_carbon_emissions?.value;
   });
@@ -158,7 +150,7 @@ function BranchDetails(props) {
               <h3 className="small-banner-section__heading">Max. Demand</h3>
               <p className="small-banner-section__value">
                 <span className="value">
-                  {numberFormatter(sumMaxDemands)}
+                  {numberFormatter(maxDemands) || 0}
                 </span>
                 <span className="unit">kVA</span>
               </p>
@@ -167,7 +159,7 @@ function BranchDetails(props) {
               <h3 className="small-banner-section__heading">Min. Demand</h3>
               <p className="small-banner-section__value">
                 <span className="value">
-                  {numberFormatter(sumMinDemands)}
+                  {numberFormatter(minDemands) || 0}
                 </span>
                 <span className="unit">kVA</span>
               </p>
@@ -176,7 +168,7 @@ function BranchDetails(props) {
               <h3 className="small-banner-section__heading">Avg. Demand</h3>
               <p className="small-banner-section__value">
                 <span className="value">
-                  {numberFormatter(sumAvgDemands)}
+                  {numberFormatter(avgDemands) || 0}
                 </span>
                 <span className="unit">kVA</span>
               </p>
