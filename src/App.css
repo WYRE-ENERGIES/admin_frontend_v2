@@ -109,6 +109,23 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   margin-top: 20px;
 }
 
+.top-cards-container {
+  display: flex;
+  margin-left: 15px;
+}
+.top-card {
+  background: #FFFFFF;
+  border-radius: 15px;
+  text-align: center;
+  /* align-items: center; */
+  /* align-content: center; */
+  /* justify-items: center; */
+  /* justify-content: center; */
+  margin-left: 15px;
+  height: 60px;
+  width: 198px;
+  display: flex;
+}
 .top-card-1 {
   background: #FFFFFF;
   border-radius: 15px;
@@ -136,6 +153,16 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   margin-top: 10px;
   /* margin-left: 5px; */
   /* margin-right: 5px; */
+}
+
+.top-card-icon {
+  margin-top: 10px;
+  margin-left: 5px;
+}
+.top-card-content {
+  margin-top: 10px;
+  margin-left: 2px;
+  /* justify-content: center; */
 }
 
 .wyre-logo {

@@ -49,13 +49,9 @@ function SideMenu({collapsed, setCollapsed}) {
       navigate(navigateTo)
     }
     const logOut = () => {
-      console.log('Loging-out in first line ========' );
       dispatch(logoutUser());
-      console.log('Loging-out in dispatch ========' );
       window.localStorage.removeItem('loggedWyreUserAdmin');
-      console.log('Loging-out 333 ========' );
       window.location.href = '/';
-      console.log('Loging-out 4444 ========' );
     };
     
     const items = [
