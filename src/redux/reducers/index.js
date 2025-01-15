@@ -7,9 +7,11 @@ import targetReducers from "./target/target.reducer";
 import dieselReducers from "./diesel/diesel.reducer";
 import locationReducers from "./location/location.reducer";
 import branchReducers from "./branch/branch.reducer";
+import overviewReducersBulkMonitoring from "./bulkMonitoring/overview/overview.reducer";
 
 const rootReducers = combineReducers({
     overviewPage: overviewReducers,
+    bMonitoringOverviewPage: overviewReducersBulkMonitoring,
     auth: authReducer,
     headers: headersReducers,
     clientUsersPage: clientUserReducers,
