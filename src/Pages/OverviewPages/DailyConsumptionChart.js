@@ -7,6 +7,7 @@ import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard } 
 import { useSearchParams } from "react-router-dom";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
+import { format } from 'date-fns';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,6 +19,7 @@ import {
 } from 'chart.js';
 import 'chart.js/auto'
 import { Bar } from "react-chartjs-2";
+import { formatParametersDates } from "../../helpers/genericHelpers";
 
 ChartJS.register(
   CategoryScale,
@@ -105,7 +107,8 @@ function DailyConsumptionChart(props) {
   const data = props.branchPage.branchDetailsData.daily_consumption_data
   const newData = {}
   if (data ) {
-    const { dates: dateStrings } = data ? data : { dates: [] };
+    const { dates: theDates } = data ? data : { dates: [] };
+    const dateStrings = theDates.map((fDate) => format(new Date(fDate), 'dd-MM-yyyy'))
     newData.dates = dateStrings;
     data && data.devices.forEach((deviceData, index) => {
         newData[deviceData.name] = deviceData.daily_kwh;
@@ -113,12 +116,12 @@ function DailyConsumptionChart(props) {
   }
 
   const { dates: dateStrings, ...values } = newData ? newData : { dates: [] };
-
+  
   const dataNames = Object.keys(values);
   const dataValues = Object.values(values);
 
-
   const colorsArray = [
+    '#5C12A7',
     '#00C7E6',
     '#FF3DA1',
     '#82ca9d',
@@ -189,9 +192,13 @@ function DailyConsumptionChart(props) {
         position: 'top',
         // align: 'start',
         display: true,
+        fontSize: 40,
+        fontWeight: 'bold',
+        fontFamily: 'Montserrat',
         labels: {
           usePointStyle: true,
           // boxWidth: 6,
+          fontSize: 20
         },
       },
       title: {
@@ -267,7 +274,7 @@ function DailyConsumptionChart(props) {
                 options={options}
                 data={plottedData}
               />
-              <div className="pagination">
+              {/* <div className="pagination">
                 <div>
                   <Button onClick={fetchPrevPaginatedTotalEnergy}>
                     Previous
@@ -276,7 +283,7 @@ function DailyConsumptionChart(props) {
                 <div>
                   <Button onClick={fetchNextPaginatedTotalEnergy}>Next</Button>
                 </div>
-              </div>
+              </div> */}
             </Spin>
           </Card>
       </div>

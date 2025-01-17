@@ -36,8 +36,7 @@ ChartJS.register(
 
 function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const [dateSearch, setDateSearch] = useState('')
-  const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
-    dayjs(),])
+  const [selectedDate, setSelectedDate] = useState(dayjs('2025', 'YYYY'))
   const [costChartData, setCostChartData] = useState({
     labels: [],
     datasets: []
@@ -62,8 +61,6 @@ function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) 
   
   const utilityEnergyReducerStates = props.overviewPage.fetchedUtilityEnergyBarChart.utility_energy_overview
   const reducerStates = props.overviewPage
-  console.log('Reducer states->>>>>>>>>>>>', reducerStates);
-  console.log('Utility-Energy>>>>>>>>>>>>', utilityEnergyReducerStates);
   useEffect(() => {
     if (utilityEnergyReducerStates) {
       const labels = utilityEnergyReducerStates.map((reducer) => {
@@ -92,7 +89,6 @@ function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) 
         ],
       };
       setCostChartData(costDataSource);
-      console.log("Date Value ===== ", dateSearch);
     }
   }, [utilityEnergyReducerStates]);
 
@@ -144,10 +140,13 @@ function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) 
 
   };
 
-  const onDateChange = (date) => {
+  const onDateChange = (select) => {
     const clientId = props.auth.userData.client_id
-    const year = new Date(date).getFullYear();
-    props.getClientUtilityEnergyData(clientId, year)
+    // const year = new Date(date).getFullYear();
+    const useYear = (select);
+    setSelectedDate(useYear)
+    
+    props.getClientUtilityEnergyData(clientId, useYear)
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -180,10 +179,7 @@ function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) 
                 </div>
                 <div>
                   <DatePicker
-                    defaultValue={
-                      dayjs("2024", dateFormat)
-                    }
-                    format={dateFormat}
+                    defaultValue={selectedDate}
                     picker="year"
                     style={{ width: 107.65, height: 44 }}
                     onChange={onDateChange}

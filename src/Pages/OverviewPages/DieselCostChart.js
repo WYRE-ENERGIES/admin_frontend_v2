@@ -23,6 +23,7 @@ import ColumnGroup from "antd/es/table/ColumnGroup";
 import Column from "antd/es/table/Column";
 import Search from "antd/es/input/Search";
 import TotalEnergyChart from "./TotalEnergyChart";
+import { getYear } from "date-fns";
 
 ChartJS.register(
   CategoryScale,
@@ -36,12 +37,11 @@ ChartJS.register(
 
 function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const [dateSearch, setDateSearch] = useState('')
-  const [selectedDate, setSelectedDate] = useState()
+  const [selectedDate, setSelectedDate] = useState(dayjs('2025', 'YYYY'))
   const [costChartData, setCostChartData] = useState({
     labels: [],
     datasets: []
   })
-  
   dayjs.extend(customParseFormat);
   const dateFormat = 'YYYY';
   const { RangePicker } = DatePicker;
@@ -62,15 +62,12 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   
   const utilityEnergyReducerStates = props.overviewPage.fetchedDieselCostBarChart
   const reducerStates = props.overviewPage
-  console.log('Reducer states->>>>>>>>>>>>', reducerStates);
-  console.log('Diesel-Cost>>>>>>>>>>>>', utilityEnergyReducerStates);
   useEffect(() => {
     if (utilityEnergyReducerStates) {
       const labels = utilityEnergyReducerStates.cost_overview.map((reducer) => {
         return reducer.month;
       });
       const averageCost = utilityEnergyReducerStates.average_diesel_purchase
-      console.log('AVERAGE Cost = ', averageCost);
       const dieselCost = utilityEnergyReducerStates.cost_overview.map((reducer) => {
         return reducer.diesel_cost;
       });
@@ -103,7 +100,6 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
         ],
       };
       setCostChartData(costDataSource);
-      console.log("Date Value ===== ", dateSearch);
     }
   }, [utilityEnergyReducerStates]);
 
@@ -155,11 +151,13 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
 
   };
 
-  const onDateChange = (date) => {
+  const onDateChange = (select) => {
     const clientId = props.auth.userData.client_id
-    const year = new Date(date).getFullYear();
-    setSelectedDate(year)
-    props.getClientDieselCostData(clientId, year)
+    // const year = new Date(date).getFullYear();
+    const useYear = (select);
+    setSelectedDate(useYear)
+    
+    props.getClientDieselCostData(clientId, useYear)
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -192,11 +190,7 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                 </div>
                 <div>
                   <DatePicker
-                    // defaultValue={selectedDate}
-                    defaultValue={
-                      dayjs("2024", dateFormat)
-                    }
-                    // format={dateFormat}
+                    defaultValue={selectedDate}
                     picker="year"
                     style={{ width: 107.65, height: 44 }}
                     onChange={onDateChange}

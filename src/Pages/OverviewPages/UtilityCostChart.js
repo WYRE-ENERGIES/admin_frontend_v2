@@ -36,6 +36,7 @@ ChartJS.register(
 
 function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const [dateSearch, setDateSearch] = useState('')
+  const [selectedDate, setSelectedDate] = useState(dayjs('2025', 'YYYY'))
   const [costChartData, setCostChartData] = useState({
     labels: [],
     datasets: []
@@ -51,10 +52,13 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
     props.getClientUtilityCostData(clientId, year);
   }
 
-  const onDateChange = (date) => {
+  const onDateChange = (select) => {
     const clientId = props.auth.userData.client_id
-    const year = new Date(date).getFullYear();
-    props.getClientUtilityCostData(clientId, year)
+    // const year = new Date(date).getFullYear();
+    const useYear = (select);
+    setSelectedDate(useYear)
+    
+    props.getClientUtilityCostData(clientId, useYear)
   }
   
   useEffect(() => {
@@ -62,7 +66,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   }, []);
   
   const costReducerStates = props.overviewPage.fetchedTotalCostBarChart
-  console.log("Cosst-Reducers=========", costReducerStates);
   useEffect(() => {
     if (costReducerStates) {
       const labels = costReducerStates.map((reducer) => {
@@ -110,7 +113,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
         ],
       };
       setCostChartData(costDataSource);
-      console.log("Date Value ===== ", dateSearch);
     }
   }, [costReducerStates]);
 
@@ -189,10 +191,7 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                 </div>
                 <div>
                   <DatePicker
-                    defaultValue={
-                      dayjs("2024", dateFormat)
-                    }
-                    format={dateFormat}
+                    defaultValue={selectedDate}
                     picker="year"
                     style={{ width: 107.65, height: 44 }}
                     onChange={onDateChange}
