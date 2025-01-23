@@ -125,7 +125,6 @@ function EditTarget(props) {
   }, [props.targetPage])
 
   const onChange = (value) => {
-    console.log('changed', value);
   };
 
   const maxLengthCheck = (object) => {

@@ -52,8 +52,8 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
 
   const showDieselCostBarchart = () => {
     const clientId = props.auth.userData.client_id
-    const year = new Date().getFullYear();
-    props.getClientDieselCostData(clientId, year);
+    // const year = new Date().getFullYear();
+    props.getClientDieselCostData(clientId);
   }
   
   useEffect(() => {
@@ -61,7 +61,6 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   }, []);
   
   const utilityEnergyReducerStates = props.overviewPage.fetchedDieselCostBarChart
-  const reducerStates = props.overviewPage
   useEffect(() => {
     if (utilityEnergyReducerStates) {
       const labels = utilityEnergyReducerStates.cost_overview.map((reducer) => {
@@ -153,11 +152,9 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
 
   const onDateChange = (select) => {
     const clientId = props.auth.userData.client_id
-    // const year = new Date(date).getFullYear();
     const useYear = (select);
     setSelectedDate(useYear)
-    
-    props.getClientDieselCostData(clientId, useYear)
+    props.getClientDieselCostData(clientId, getYear(useYear))
   }
 
   const onChange = (pagination, filters, sorter, extra) => {

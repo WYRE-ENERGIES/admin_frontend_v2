@@ -23,6 +23,7 @@ import ColumnGroup from "antd/es/table/ColumnGroup";
 import Column from "antd/es/table/Column";
 import Search from "antd/es/input/Search";
 import TotalEnergyChart from "./TotalEnergyChart";
+import { getYear } from "date-fns";
 
 ChartJS.register(
   CategoryScale,
@@ -53,7 +54,7 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const showDieselLitresBarchart = () => {
     const clientId = props.auth.userData.client_id
     const year = new Date().getFullYear();
-    props.getClientDieselLitresData(clientId, year);
+    props.getClientDieselLitresData(clientId);
   }
   
   useEffect(() => {
@@ -61,15 +62,14 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   }, []);
   
   const utilityEnergyReducerStates = props.overviewPage.fetchedDieselLitresBarChart
-  const reducerStates = props.overviewPage
   useEffect(() => {
     if (utilityEnergyReducerStates) {
-      const labels = utilityEnergyReducerStates.cost_overview.map((reducer) => {
+      const labels = utilityEnergyReducerStates.diesel_overview.map((reducer) => {
         return reducer.month;
       });
       const litreAverage = utilityEnergyReducerStates.average_diesel_litres
-      const dieselCost_or_Litre = utilityEnergyReducerStates.cost_overview.map((reducer) => {
-        return reducer.diesel_cost;
+      const dieselCost_or_Litre = utilityEnergyReducerStates.diesel_overview.map((reducer) => {
+        return reducer.diesel_litres;
       });
 
       const averageLitreLine = Array.from({ length: 12 }, (_, i) => litreAverage)
@@ -152,16 +152,15 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
 
   const onDateChange = (select) => {
     const clientId = props.auth.userData.client_id
-    // const year = new Date(date).getFullYear();
     const useYear = (select);
     setSelectedDate(useYear) 
-    props.getClientDieselLitresData(clientId, useYear)
+    props.getClientDieselLitresData(clientId, getYear(useYear))
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
     console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra)
   };
-
+  
   return (
     <>
       <div className="##########">
@@ -169,39 +168,35 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
         ) : (
           setShowUtilityCostPage(false)
         )} */}
-          <section className="total-energy-bar-chart">
-            <Card
-              style={{
-                borderRadius: 22,
-              }}
-              loading={props.overviewPage.fetchDieselLitresBarChartLoading}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <div>
-                  <h1
-                    style={{
-                      fontSize: "17Px",
-                    }}
-                  >
-                    Diesel Liters
-                  </h1>
-                </div>
-                <div>
-                  <DatePicker
+        <section className="total-energy-bar-chart">
+          <Card
+            style={{
+              borderRadius: 22,
+            }}
+            loading={props.overviewPage.fetchDieselLitresBarChartLoading}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div>
+                <h1
+                  style={{
+                    fontSize: "17Px",
+                  }}
+                >
+                  Diesel Liters
+                </h1>
+              </div>
+              <div>
+                <DatePicker
                     defaultValue={selectedDate}
                     picker="year"
                     style={{ width: 107.65, height: 44 }}
                     onChange={onDateChange}
                   />
-                </div>
               </div>
-              <Bar 
-                options={options} 
-                data={costChartData} 
-              />
-            </Card>
-          </section>
-        
+            </div>
+            <Bar options={options} data={costChartData} />
+          </Card>
+        </section>
       </div>
     </>
   );

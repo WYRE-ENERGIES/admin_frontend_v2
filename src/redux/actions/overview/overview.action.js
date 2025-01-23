@@ -76,14 +76,13 @@ export const getClientUtilityEnergyData = (clientId, year) => async (dispatch) =
     }
 };
 
-export const getClientDieselCostData = (clientId, year) => async (dispatch) => {
+export const getClientDieselCostData = (clientId, year=null) => async (dispatch) => {
 
     dispatch(getDieselCostBarChartLoading(true));
-  
-    const requestUrl = `/api/v2/client-diesel-cost/?client_id=${clientId}&year=${year}`;
-    // const requestUrl = `/api/v2/client-diesel-cost/?client_id=15&year=2024`;
+    const requestUrl = `/api/v2/client-diesel-cost/?client_id=${clientId}`;
+    const queriedRequest = year ? requestUrl + `&year=${year}` : requestUrl
     try {
-      const response = await APIService.get(requestUrl);
+      const response = await APIService.get(queriedRequest);
   
       dispatch(getDieselCostBarChartSuccess(response.data));
   
@@ -95,14 +94,15 @@ export const getClientDieselCostData = (clientId, year) => async (dispatch) => {
     }
 };
 
-export const getClientDieselLitresData = (clientId, year) => async (dispatch) => {
+export const getClientDieselLitresData = (clientId, year=null) => async (dispatch) => {
 
     dispatch(getDieselLitresBarChartLoading(true));
   
-    const requestUrl = `/api/v2/client-diesel-litres?client_id=${clientId}&year=${year}`;
-    // const requestUrl = `/api/v2/client-diesel-litres?client_id=15&year=2023`;
+    const requestUrl = `/api/v2/client-diesel-litres?client_id=${clientId}`;
+    // const queriedRequest = `/api/v2/client-diesel-litres?client_id=${clientId}&year=${year}`;
+    const queriedRequest = year ? requestUrl + `&year=${year}` : requestUrl
     try {
-      const response = await APIService.get(requestUrl);
+      const response = await APIService.get(queriedRequest);
   
       dispatch(getDieselLitresBarChartSuccess(response.data));
   
