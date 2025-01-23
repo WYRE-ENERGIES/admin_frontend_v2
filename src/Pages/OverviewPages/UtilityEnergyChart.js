@@ -49,14 +49,14 @@ function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) 
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
 
-  const showEnergyCostBarchart = () => {
+  const showUtilityEnergyBarchart = () => {
     const clientId = props.auth.userData.client_id
     const year = new Date().getFullYear();
     props.getClientUtilityEnergyData(clientId, year);
   }
   
   useEffect(() => {
-    showEnergyCostBarchart()
+    showUtilityEnergyBarchart()
   }, []);
   
   const utilityEnergyReducerStates = props.overviewPage.fetchedUtilityEnergyBarChart.utility_energy_overview
@@ -142,7 +142,6 @@ function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) 
 
   const onDateChange = (select) => {
     const clientId = props.auth.userData.client_id
-    // const year = new Date(date).getFullYear();
     const useYear = (select);
     setSelectedDate(useYear)
     
