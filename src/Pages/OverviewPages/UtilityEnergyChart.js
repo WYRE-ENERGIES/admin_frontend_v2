@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { getClientUtilityEnergyData, getTotalCostBarChartData } from "../../redux/actions/overview/overview.action";
+import { getClientUtilityEnergyData } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
@@ -23,6 +23,7 @@ import ColumnGroup from "antd/es/table/ColumnGroup";
 import Column from "antd/es/table/Column";
 import Search from "antd/es/input/Search";
 import TotalEnergyChart from "./TotalEnergyChart";
+import { getYear } from "date-fns";
 
 ChartJS.register(
   CategoryScale,
@@ -51,8 +52,7 @@ function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) 
 
   const showUtilityEnergyBarchart = () => {
     const clientId = props.auth.userData.client_id
-    const year = new Date().getFullYear();
-    props.getClientUtilityEnergyData(clientId, year);
+    props.getClientUtilityEnergyData(clientId);
   }
   
   useEffect(() => {
@@ -145,7 +145,7 @@ function UtilityEnergyChart(props, showUtilityCostPage, setShowUtilityCostPage) 
     const useYear = (select);
     setSelectedDate(useYear)
     
-    props.getClientUtilityEnergyData(clientId, useYear)
+    props.getClientUtilityEnergyData(clientId, getYear(useYear))
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
