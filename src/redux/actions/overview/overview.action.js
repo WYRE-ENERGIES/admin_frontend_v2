@@ -58,13 +58,12 @@ export const getClientUtilityCostData = (clientId, year) => async (dispatch) => 
     }
 };
 
-export const getClientUtilityEnergyData = (clientId, year) => async (dispatch) => {
-
+export const getClientUtilityEnergyData = (clientId, year=null) => async (dispatch) => {
     dispatch(getUtilityEnergyBarChartLoading(true));
-  
-    const requestUrl = `/api/v2/client-utility-energy/${clientId}/${year}`;
+    const requestUrl = `/api/v2/client-utility-energy/?client_id=${clientId}`;
+    const queriedRequest = year ? requestUrl + `&year=${year}` : requestUrl
     try {
-      const response = await APIService.get(requestUrl);
+      const response = await APIService.get(queriedRequest);
   
       dispatch(getUtilityEnergyBarChartSuccess(response.data));
   
