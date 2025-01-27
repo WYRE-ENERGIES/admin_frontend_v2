@@ -23,6 +23,7 @@ import ColumnGroup from "antd/es/table/ColumnGroup";
 import Column from "antd/es/table/Column";
 import Search from "antd/es/input/Search";
 import TotalEnergyChart from "./TotalEnergyChart";
+import { getYear } from "date-fns";
 
 ChartJS.register(
   CategoryScale,
@@ -46,10 +47,9 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const dateFormat = 'YYYY';
   const { RangePicker } = DatePicker;
 
-  const showEnergyCostBarchart = () => {
+  const showUtilityCostBarchart = () => {
     const clientId = props.auth.userData.client_id;
-    const year = new Date().getFullYear();
-    props.getClientUtilityCostData(clientId, year);
+    props.getClientUtilityCostData(clientId);
   }
 
   const onDateChange = (select) => {
@@ -58,26 +58,27 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
     const useYear = (select);
     setSelectedDate(useYear)
     
-    props.getClientUtilityCostData(clientId, useYear)
+    props.getClientUtilityCostData(clientId, getYear(useYear))
   }
   
   useEffect(() => {
-    showEnergyCostBarchart()
+    showUtilityCostBarchart()
   }, []);
   
   const costReducerStates = props.overviewPage.fetchedTotalCostBarChart
+  
   useEffect(() => {
     if (costReducerStates) {
-      const labels = costReducerStates.map((reducer) => {
+      const labels = costReducerStates.cost_overview.map((reducer) => {
         return reducer.month;
       });
-      const clientCost = costReducerStates.map((reducer) => {
+      const clientCost = costReducerStates.cost_overview.map((reducer) => {
         return reducer.client_cost;
       });
-      const wyreCost = costReducerStates.map((reducer) => {
+      const wyreCost = costReducerStates.cost_overview.map((reducer) => {
         return reducer.wyre_cost;
       });
-      const historicalAverage = costReducerStates.map((reducer) => {
+      const historicalAverage = costReducerStates.cost_overview.map((reducer) => {
         return reducer.historic_average;
       });
 

@@ -40,13 +40,14 @@ export const getTotalEnergyBarChartData = (clientId, startDate, endDate, paginat
     }
 };
 
-export const getClientUtilityCostData = (clientId, year) => async (dispatch) => {
+export const getClientUtilityCostData = (clientId, year=null) => async (dispatch) => {
 
     dispatch(getTotalCostBarChartLoading(true));
   
-    const requestUrl = `/api/v2/client-utility-cost/?client_id=${clientId}&year=${year}`;
+    const requestUrl = `/api/v2/client-utility-cost/?client_id=${clientId}`;
+    const queriedRequest = year ? requestUrl + `&year=${year}` : requestUrl
     try {
-      const response = await APIService.get(requestUrl);
+      const response = await APIService.get(queriedRequest);
   
       dispatch(getTotalCostBarChartSuccess(response.data));
   
@@ -54,6 +55,7 @@ export const getClientUtilityCostData = (clientId, year) => async (dispatch) => 
       return { fulfilled: true, message: 'successful' }
     } catch (error) {
       dispatch(getTotalCostBarChartLoading(false));
+      
       return { fulfilled: false, message: error.response.data.detail }
     }
 };
