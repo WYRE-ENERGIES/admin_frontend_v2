@@ -83,7 +83,7 @@ function AdminPage(props) {
   const checkData = props.overviewPage?.fetchedKeyMetrics?.results?.[0]
   const column = [
     {
-      title: "Device Name",
+      title: "Location",
       dataIndex: "device_name",
       key: "device_name",
       ellipsis: true,
@@ -98,7 +98,7 @@ function AdminPage(props) {
       ),
     },
     {
-      title: "All Time (kWh)",
+      title: "Total Energy (kWh)",
       dataIndex: "consumption",
       key: "consumption",
       ellipsis: true,
@@ -113,7 +113,7 @@ function AdminPage(props) {
       ),
     },
     {
-      title: "Last Month (kWh)",
+      title: "Previous Month Energy (kWh)",
       dataIndex: "consumption",
       key: "consumption",
       ellipsis: true,
@@ -128,7 +128,7 @@ function AdminPage(props) {
       ),
     },
     {
-      title: "This Month (kWh)",
+      title: "Current Month Energy (kWh)",
       dataIndex: "consumption",
       key: "consumption",
       ellipsis: true,
@@ -151,6 +151,21 @@ function AdminPage(props) {
         <>
           {values
             ? values.amount.value.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })
+            : 0}
+        </>
+      ),
+    },
+    {
+      title: "Utility Bill Accuracy (kWh)",
+      dataIndex: "consumption",
+      key: "consumption",
+      ellipsis: true,
+      render: (values) => (
+        <>
+          {values
+            ? values.this_month.value.toLocaleString(undefined, {
                 maximumFractionDigits: 2,
               })
             : 0}
@@ -241,7 +256,7 @@ function AdminPage(props) {
                       kWh
                     </header>
                   </Spin>
-                  <header>All time Energy</header>
+                  <header>Total Energy</header>
                 </div>
             </div>
             <div className="top-card">
@@ -265,7 +280,7 @@ function AdminPage(props) {
                       kWh
                     </header>
                   </Spin>
-                  <header>Last month Energy</header>
+                  <header>Previous Month Energy</header>
                 </div>
             </div>
             <div className="top-card">
@@ -289,7 +304,7 @@ function AdminPage(props) {
                       kWh
                     </header>
                   </Spin>
-                  <header>This month Energy</header>
+                  <header>Current Month Energy</header>
                 </div>
             </div>
             <div className="top-card">
@@ -318,6 +333,54 @@ function AdminPage(props) {
                     </header>
                   </Spin>
                   <header>Amount</header>
+                </div>
+            </div>
+            <div className="top-card">
+                <div className="top-card-icon">
+                  <Image
+                    style={{ marginLeft: "0px" }}
+                    src="/Images/co2-emmission.png"
+                  />
+                </div>
+                <div className="top-card-content">
+                  <Spin
+                    spinning={
+                      bulkOverviews?.fetchAmountLoading
+                    }
+                  >
+                    <header style={{ fontWeight: "bold" }}>
+                      {bulkOverviews?.fetchedAmount?.amount_due?.value?.toLocaleString(
+                        undefined,
+                        { maximumFractionDigits: 2 }
+                      )}{" "}
+                      tons
+                    </header>
+                  </Spin>
+                  <header>Cureent Month C02</header>
+                </div>
+            </div>
+            <div className="top-card">
+                <div className="top-card-icon">
+                  <Image
+                    style={{ marginLeft: "0px" }}
+                    src="/Images/co2-emmission.png"
+                  />
+                </div>
+                <div className="top-card-content">
+                  <Spin
+                    spinning={
+                      bulkOverviews?.fetchAmountLoading
+                    }
+                  >
+                    <header style={{ fontWeight: "bold" }}>
+                      {bulkOverviews?.fetchedAmount?.amount_due?.value?.toLocaleString(
+                        undefined,
+                        { maximumFractionDigits: 2 }
+                      )}{" "}
+                      tons
+                    </header>
+                  </Spin>
+                  <header>Aggregated C02</header>
                 </div>
             </div>
           </Space>

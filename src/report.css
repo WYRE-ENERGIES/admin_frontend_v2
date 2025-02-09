@@ -1,0 +1,110 @@
+.layer-1 {
+    /* height: 100vh; */
+    /* margin: 30px; */
+    background-color: #F2F2F8;
+    font-family: 'montserrat';
+}
+
+.init-space {
+    margin: 40px;
+    /* border-radius: 40px; */
+}
+
+.icon-and-title {
+    display: flex;
+}
+
+.icon-and-title .image {
+    width: 40px;
+    margin-top: 10px;
+}
+
+.icon-title {
+    text-align: center;
+    justify-content: center;
+}
+
+.icon-title h1 {
+    font-size: 22px;
+    font-weight: light;
+    margin-left: 20px;
+}
+
+.heading {
+    /* margin-bottom: 30px; */
+}
+
+.head-card {
+    /* background-color: rgba(255, 255, 255, 1); */
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.title {
+    width: 50%;
+    height: 132px;
+    border-radius: 22px 0 0 22px;
+    justify-content: center;
+}
+
+.value {
+    width: 50%;
+    height: 132px;
+    border-radius: 0 22px 22px 0;
+    justify-content: center;
+}
+
+.top-doughnut{
+    width: 555px;
+    height: 253px;
+}
+
+.first-barchart{
+    width: 555px;
+    height: 253px;
+}
+
+.operational-performance {
+    height: 357px;
+}
+
+.generator-efficiency {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.current {
+    width: 49%;
+    height: 250px;
+    border-radius: 22px;
+    background-color: rgba(150, 64, 255, 1);
+    color: white;
+    font-size: x-large;
+}
+
+.best-ever {
+    width: 49%;
+    height: 250px;
+    border-radius: 22px;
+    background-color: rgba(75, 138, 255, 1);
+    color: white;
+    font-size: x-large;
+}
+
+.bottom-doughnut {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.band-category {
+    height: 500px;
+    width: 49%;
+}
+
+.data-entry {
+    height: 500px;
+    width: 49%;
+}
