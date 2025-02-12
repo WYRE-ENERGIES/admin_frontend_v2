@@ -10,8 +10,15 @@
     /* border-radius: 40px; */
 }
 
+.metric-container {
+    background-color: white;
+    margin-bottom: 30px;
+}
+
 .icon-and-title {
     display: flex;
+    /* margin-left: 30px; */
+    /* margin-top: 20px; */
 }
 
 .icon-and-title .image {
@@ -71,6 +78,7 @@
 
 .generator-efficiency {
     margin-top: 30px;
+    /* margin-bottom: 30px; */
     display: flex;
     justify-content: space-between;
 }
@@ -91,6 +99,60 @@
     background-color: rgba(75, 138, 255, 1);
     color: white;
     font-size: x-large;
+}
+
+.current-heading {
+    margin-left: 10px;
+    font-size: xx-large;
+    font-weight: light;
+    /* padding: 30px 10px 15px 30px; */
+}
+
+.current-p {
+    margin-left: 10px;
+    /* margin-bottom: 50px; */
+    font-size: 70px;
+    margin-top: -30px;
+    font-weight: bolder;
+}
+
+.current-span {
+    background-color: #F2F2F8;
+    color: red;
+    margin-left: 20px;
+    /* padding: 5px 15px 5px 25px; */
+    padding: 10px;
+    border-radius: 14px;
+    font-weight: lighter;
+    font-size: x-large;
+}
+
+.best-heading {
+    margin-left: 10px;
+    font-size: xx-large;
+    font-weight: light;
+    /* padding: 30px 10px 15px 30px; */
+}
+
+.best-p{
+    margin-left: 10px;
+    margin-top: -30px;
+    font-size: 70px;
+    font-weight: bolder;
+}
+
+.fuel-efficiency {
+    font-size: xx-large;
+    padding: 30px 10px 15px 30px;
+}
+
+.fuel-efficiency-span {
+    background-color: #F2F2F8;
+    color: rgba(150, 64, 255, 1);
+    margin-left: 20px;
+    /* padding: 5px 15px 5px 25px; */
+    padding: 10px;
+    border-radius: 14px;
 }
 
 .bottom-doughnut {

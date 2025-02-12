@@ -169,6 +169,83 @@ function Report(props) {
       ),
     },
   ]
+  const bandCategorizationColumn = [
+    {
+      title: "Band",
+      dataIndex: "consumption",
+      key: "consumption",
+      ellipsis: true,
+      render: (values) => (
+        <>
+          {values
+            ? values.all_time.value.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })
+            : 0}
+        </>
+      ),
+    },
+    {
+      title: "Total Hours(achieved)",
+      dataIndex: "consumption",
+      key: "consumption",
+      ellipsis: true,
+      render: (values) => (
+        <>
+          {values
+            ? values.all_time.value.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })
+            : 0}
+        </>
+      ),
+    },
+    {
+      title: "Expected Hours",
+      dataIndex: "consumption",
+      key: "consumption",
+      ellipsis: true,
+      render: (values) => (
+        <>
+          {values
+            ? values.all_time.value.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })
+            : 0}
+        </>
+      ),
+    },
+    {
+      title: "Deviation (+or_)",
+      dataIndex: "consumption",
+      key: "consumption",
+      ellipsis: true,
+      render: (values) => (
+        <>
+          {values
+            ? values.all_time.value.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })
+            : 0}
+        </>
+      ),
+    },
+    {
+      title: "Percentage Compliance",
+      dataIndex: "consumption",
+      key: "consumption",
+      ellipsis: true,
+      render: (values) => (
+        <>
+          {values
+            ? values.all_time.value.toLocaleString(undefined, {
+                maximumFractionDigits: 2,
+              })
+            : 0}
+        </>
+      ),
+    },
+  ]
 
   return (
     <div className="layer-1">
@@ -226,7 +303,7 @@ function Report(props) {
         <Card>
           <div className="first-barchart">
             <div className="icon-and-title">
-              <Image src="/ReportIcons/Icon1.png" />
+              <Image className="image" src="/ReportIcons/Icon1.png" />
               <div className="icon-title">
                 <h1 style={{ fontSize: "17Px" }}>Top 7 Energy Contributors</h1>
               </div>
@@ -237,8 +314,15 @@ function Report(props) {
       <section className="init-space">
         <div className="consumption-metrics">
           <h1 style={{ fontSize: "32px" }}>Consumption Metrics</h1>
-          <div>
-            <div className="icon-and-title">
+          <div className="metric-container">
+            <div
+              style={{
+                marginLeft: "30px",
+                paddingTop: "15px",
+                paddingBottom: "10px",
+              }}
+              className="icon-and-title"
+            >
               <Image className="image" src="/ReportIcons/Icon2.png" />
               <div className="icon-title">
                 <h1 style={{}}>Utility Consumption</h1>
@@ -246,8 +330,15 @@ function Report(props) {
             </div>
             <Table columns={utilityConsumptnColumn} />
           </div>
-          <div>
-            <div className="icon-and-title">
+          <div className="metric-container">
+            <div
+              style={{
+                marginLeft: "30px",
+                paddingTop: "15px",
+                paddingBottom: "10px",
+              }}
+              className="icon-and-title"
+            >
               <Image className="image" src="/ReportIcons/Icon3.png" />
               <div className="icon-title">
                 <h1 style={{}}>Diesel Consumption</h1>
@@ -255,9 +346,16 @@ function Report(props) {
             </div>
             <Table columns={dieselConsumptnColumn} />
           </div>
-          <div>
-            <div className="icon-and-title">
-              <Image src="/ReportIcons/Icon4.png" />
+          <div className="metric-container">
+            <div
+              style={{
+                marginLeft: "30px",
+                paddingTop: "15px",
+                paddingBottom: "10px",
+              }}
+              className="icon-and-title"
+            >
+              <Image className="image" src="/ReportIcons/Icon4.png" />
               <div className="icon-title">
                 <h1 style={{}}>Solar Hours Consumption</h1>
               </div>
@@ -276,8 +374,15 @@ function Report(props) {
             </div>
           </div>
         </Card>
-        <div>
-          <div className="icon-and-title">
+        <div style={{ marginTop: "30px" }} className="metric-container">
+          <div
+            style={{
+              marginLeft: "30px",
+              paddingTop: "15px",
+              paddingBottom: "10px",
+            }}
+            className="icon-and-title"
+          >
             <Image className="image" src="/ReportIcons/Icon4.png" />
             <div className="icon-title">
               <h1>Energy Usage Breakdown</h1>
@@ -285,9 +390,16 @@ function Report(props) {
           </div>
           <Table />
         </div>
-        <div>
-          <div className="icon-and-title">
-            <Image className='image' src="/ReportIcons/Icon3.png" />
+        <div className="metric-container">
+          <div
+            style={{
+              marginLeft: "30px",
+              paddingTop: "15px",
+              paddingBottom: "10px",
+            }}
+            className="icon-and-title"
+          >
+            <Image className="image" src="/ReportIcons/Icon3.png" />
             <div className="icon-title">
               <h1 style={{}}>Deviation Utility and Diesel</h1>
             </div>
@@ -300,29 +412,48 @@ function Report(props) {
         <div className="generator-efficiency">
           <Card className="current">
             <div>
-              <h1 style={{}}>Current Month Efficiency</h1>
-              <p>
-                85.3% <span>-3.5%</span>
+              <p className='current-heading'>Current Month Efficiency</p>
+              <p className='current-p'>
+                85.3% <span className='current-span'>-3.5%</span>
               </p>
             </div>
           </Card>
           <Card className="best-ever">
             <div>
-              <h1 style={{}}>Best Ever Efficiency</h1>
-              <p>93.7%</p>
+              <p className='best-heading'>Best Ever Efficiency</p>
+              <p className='best-p'>93.7%</p>
             </div>
           </Card>
         </div>
-        <div>
-          <h1 style={{}}>
-            Fuel Efficiency Accuracy Comparison <span>Accuracy: 91.4%</span>
+        <div className="metric-container">
+          <h1 className='fuel-efficiency'>
+            Fuel Efficiency Accuracy Comparison <span className='fuel-efficiency-span'>Accuracy: 91.4%</span>
           </h1>
           <Table />
         </div>
-        <div>
-          <h1 style={{}}>Band Categorization</h1>
+        {/* <div className="metric-container">
+          <Image className="image" src="/ReportIcons/Icon2.png" />
+          <div style={{marginLeft:'30px', paddingTop:'15px', paddingBottom:'10px'}} className="icon-and-title">
+            <h1 style={{}}>Band Categorization</h1>
+          </div>
           <Table />
-        </div>
+        </div> */}
+        <div style={{marginTop:'30px'}} className="metric-container">
+            <div
+              style={{
+                marginLeft: "30px",
+                paddingTop: "15px",
+                paddingBottom: "10px",
+              }}
+              className="icon-and-title"
+            >
+              <Image className="image" src="/ReportIcons/Icon2.png" />
+              <div className="icon-title">
+                <h1 style={{}}>Band Categorization</h1>
+              </div>
+            </div>
+            <Table columns={bandCategorizationColumn} />
+          </div>
         <div className="bottom-doughnut">
           <Card className="band-category">
             <div>
