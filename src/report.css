@@ -10,6 +10,17 @@
     /* border-radius: 40px; */
 }
 
+.wyre-logo {
+    justify-self: center;
+    padding: 55px 0 0px 0;
+    /* margin-top: 60px; */
+}
+
+.heading {
+    text-align: center;
+    font-size: xx-large;
+}
+
 .metric-container {
     background-color: white;
     margin-bottom: 30px;
@@ -64,16 +75,18 @@
 
 .top-doughnut{
     width: 555px;
-    height: 253px;
+    /* height: 253px; */
+    align-items: center;
+    justify-content: center;
 }
 
 .first-barchart{
     width: 555px;
-    height: 253px;
+    /* height: 253px; */
 }
 
 .operational-performance {
-    height: 357px;
+    /* height: 357px; */
 }
 
 .generator-efficiency {
@@ -162,11 +175,18 @@
 }
 
 .band-category {
-    height: 500px;
+    /* height: 500px; */
     width: 49%;
+    justify-content: center;
 }
 
 .data-entry {
-    height: 500px;
+    /* height: 500px; */
     width: 49%;
+}
+
+.doughnut-position {
+    /* margin-left: 50px; */
+    width: 90%;
+    height: 80%;
 }

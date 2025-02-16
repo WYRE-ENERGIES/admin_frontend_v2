@@ -7,6 +7,22 @@ import { loginAUser } from '../../redux/actions/auth/auth.action';
 import { connect } from 'react-redux';
 import SocialCluster from '../smallComponents/SocialCluster.js';
 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip as ReTooltip,
+  Legend as ReLegend,
+  ResponsiveContainer,
+} from "recharts";
+import { Doughnut, Bar as ChartBar } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+
+// Register necessary Chart.js components
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 
 
 function Report(props) {
@@ -247,14 +263,213 @@ function Report(props) {
     },
   ]
 
+  const doughnutData = {
+    labels: ['Red', 'Blue', 'Yellow'],
+    datasets: [
+      {
+        data: [300, 50, 100],  // Values for each segment
+        backgroundColor: ['#FF5733', '#33B5FF', '#FFEB33'], // Colors for each segment
+        hoverOffset: 4, // Optional: Adjust hover effect
+      },
+    ],
+  };
+
+  const dataEntryData = {
+    labels: ['Purple'],
+    datasets: [
+      {
+        data: [100],  // Values for each segment
+        backgroundColor: ['purple'], // Colors for each segment
+        hoverOffset: 4, // Optional: Adjust hover effect
+      },
+    ],
+  };
+  
+  const doughnutOptions = {
+    responsive: true,
+    plugins: {
+      tooltip: {
+        callbacks: {
+          label: function(tooltipItem) {
+            return `${tooltipItem.label}: ${tooltipItem.raw}`; // Custom tooltip label format
+          }
+        }
+      }
+    }
+  };
+
+// Data with segmented bars
+const data = [
+  {
+    name: "Operational",
+    segment1: 4000, fill:"purple",
+    segment2: 2400, fill:"purple",
+    segment3: 2400, fill:"purple",
+  },
+  {
+    name: "Non Operational",
+    segment1: 3000, fill:"yellow",
+    segment2: 1398, fill:"yellow",
+    segment3: 2210, fill:"yellow",
+  },
+  {
+    name: "Weeekend Hours",
+    segment1: 2000, fill:"blue",
+    segment2: 9800, fill:"blue",
+    segment3: 2290, fill:"blue",
+  },
+];
+
+const SegmentedBarChart = () => (
+  <ResponsiveContainer width="100%" height={400}>
+    <BarChart data={data}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="name" />
+      <YAxis />
+      <ReTooltip />
+      <ReLegend />
+      <Bar dataKey="segment1" fill="#8884d8" />
+      <Bar dataKey="segment2" fill="#82ca9d" />
+      <Bar dataKey="segment3" fill="#ffc658" />
+    </BarChart>
+  </ResponsiveContainer>
+);
+
+const top7Data = [
+  {
+    name: "Operational",
+    segment1: 4000, fill:"purple",
+    segment2: 2400, fill:"blue",
+    segment3: 2100, fill:"green",
+    segment4: 3800, fill:"grey",
+  },
+];
+
+const Top7 = [
+  {
+    data_type: "Diesel Usage Data",
+    data_entered: "80",
+    weight_age: "24",
+    score_contribue: "15",
+  },
+  {
+    data_type: "Diesel Consumption Data",
+    data_entered: "30",
+    weight_age: "24",
+    score_contribue: "15",
+  },
+  {
+    data_type: "Utility Payment Receipts",
+    data_entered: "30",
+    weight_age: "24",
+    score_contribue: "15",
+  },
+  {
+    data_type: "Energy Usage Data",
+    data_entered: "30",
+    weight_age: "24",
+    score_contribue: "15",
+  },
+];
+
+const dataSource = {
+  labels: Top7.map(topData => topData.data_type),
+  datasets: [
+    {
+      label: "Current usage",
+      data:  Top7.map(topData => topData.data_entered),
+      backgroundColor: "#F9CF40",
+      borderRadius: 6,
+      barThickness: 40,
+      maxBarThickness: 40,
+    },
+    // {
+    //   label: "Monthly average usage ",
+    //   data: averageLitreLine,
+    //   backgroundColor: "#EF0000",
+    //   type: "line",
+    //   borderColor: "#EF0000",
+    //   borderWidth: 1,
+    //   fill: false,
+    //   // xAxisID: "axis-bar",
+    // },
+  ],
+};
+
+const options = {
+  responsive: true,
+  plugins: {
+    legend: {
+      position: 'top',
+      // align: 'start',
+      display: true,
+      labels: {
+        usePointStyle: true,
+      },
+    },
+    title: {
+      display: true,
+      text: 'Quantity(Liters)',
+      fontWeight: 'bold',
+      position: 'left'
+    },
+  },
+
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: "Period(Month)",
+        fontWeight: "bold",
+        position: "left",
+      },
+      ticks: {
+        font: {
+          weight: 'bold',
+        }
+      },
+      stacked: false,
+      grid: {
+        drawOnChartArea: false
+      }
+    },
+    y: {
+      stacked: false,
+      grid: {
+        drawOnChartArea: true
+      }
+    }
+  },
+};
+
+const TopSegmentedBarChart = () => (
+  <ResponsiveContainer width="100%" height={400}>
+    <BarChart data={top7Data}>
+      <CartesianGrid strokeDasharray="3 3" />
+      <XAxis dataKey="name" />
+      <YAxis />
+      <ReTooltip />
+      <ReLegend />
+      <Bar dataKey="segment1"  />
+      <Bar dataKey="segment2"  />
+      <Bar dataKey="segment3"  />
+      {/* <Bar dataKey="segment4"  /> */}
+    </BarChart>
+  </ResponsiveContainer>
+);
+
   return (
     <div className="layer-1">
       <section className="init-space">
         <div className="heading">
-          <h1 style={{ textAlign: "center" }}>
-            Monthly Energy Report for Royal-garden December, 2024
+          <div className='wyre-logo'>
+            <Image width={100} src="/ReportIcons/Wyre-logo.png" />
+          </div>
+          <h1>
+            Monthly Energy Report for Royal-garden
+            <p>December, 2024</p>
           </h1>
-          <p style={{ textAlign: "center" }}>powered by Wyre</p>
+          <p>powered by Wyre</p>
         </div>
       </section>
       <section className="init-space">
@@ -273,7 +488,7 @@ function Report(props) {
         <div className="head-card">
           <Card className="title">
             <div>
-              <h1 style={{ fontSize: "32Px", textAlign: "center" }}>
+              <h1 style={{ fontSize: "30Px", textAlign: "center" }}>
                 Total Energy Consumed:
               </h1>
             </div>
@@ -281,7 +496,7 @@ function Report(props) {
           <Card className="value">
             <div>
               <h1 style={{ fontSize: "32Px", textAlign: "center" }}>
-                ~ 4,500 kWh
+              <Image className="image" src="/ReportIcons/tilder.png" /> 4,500 kWh
               </h1>
             </div>
           </Card>
@@ -296,6 +511,7 @@ function Report(props) {
                 <h1 style={{ fontSize: "17Px" }}>Energy Consumed per Source</h1>
               </div>
             </div>
+            <Doughnut data={doughnutData} options={doughnutOptions} />
           </div>
         </Card>
       </section>
@@ -309,6 +525,8 @@ function Report(props) {
               </div>
             </div>
           </div>
+            {/* <TopSegmentedBarChart /> */}
+            <ChartBar options={options} data={dataSource} />
         </Card>
       </section>
       <section className="init-space">
@@ -373,6 +591,7 @@ function Report(props) {
               <h1>Power Demand</h1>
             </div>
           </div>
+          <SegmentedBarChart />
         </Card>
         <div style={{ marginTop: "30px" }} className="metric-container">
           <div
@@ -456,13 +675,15 @@ function Report(props) {
           </div>
         <div className="bottom-doughnut">
           <Card className="band-category">
-            <div>
-              <h1 style={{ fontSize: "17Px" }}>Band Categorization</h1>
+            <h1 style={{ fontSize: "17Px" }}>Band Categorization</h1>
+            <div className='doughnut-position'>
+              <Doughnut data={doughnutData} options={doughnutOptions} />
             </div>
           </Card>
           <Card className="data-entry">
-            <div>
               <h1 style={{ fontSize: "17Px" }}>Data Entry Score</h1>
+            <div className='doughnut-position'>
+              <Doughnut data={dataEntryData} options={doughnutOptions} />
             </div>
           </Card>
         </div>
