@@ -267,9 +267,9 @@ function Report(props) {
     labels: ['Red', 'Blue', 'Yellow'],
     datasets: [
       {
-        data: [300, 50, 100],  // Values for each segment
-        backgroundColor: ['#FF5733', '#33B5FF', '#FFEB33'], // Colors for each segment
-        hoverOffset: 4, // Optional: Adjust hover effect
+        data: [300, 50, 100],
+        backgroundColor: ['#FF5733', '#33B5FF', '#FFEB33'], 
+        hoverOffset: 4, 
       },
     ],
   };
@@ -278,9 +278,9 @@ function Report(props) {
     labels: ['Purple'],
     datasets: [
       {
-        data: [100],  // Values for each segment
-        backgroundColor: ['purple'], // Colors for each segment
-        hoverOffset: 4, // Optional: Adjust hover effect
+        data: [100],  
+        backgroundColor: ['purple'], 
+        hoverOffset: 4,
       },
     ],
   };
@@ -378,8 +378,8 @@ const dataSource = {
     {
       label: "Current usage",
       data:  Top7.map(topData => topData.data_entered),
-      backgroundColor: "#F9CF40",
-      borderRadius: 6,
+      backgroundColor: ["rgba(249, 207, 64, 1)", "rgba(52, 213, 253, 1)", "rgba(150, 64, 255, 1)", "rgba(52, 75, 253, 1)"],
+      borderRadius: 22,
       barThickness: 40,
       maxBarThickness: 40,
     },
@@ -414,7 +414,7 @@ const options = {
       position: 'left'
     },
   },
-
+  indexAxis: 'y',
   scales: {
     x: {
       title: {
@@ -437,7 +437,7 @@ const options = {
       stacked: false,
       grid: {
         drawOnChartArea: true
-      }
+      },
     }
   },
 };
