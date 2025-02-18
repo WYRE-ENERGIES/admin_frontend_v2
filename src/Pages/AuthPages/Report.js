@@ -1,11 +1,16 @@
 /* eslint-disable no-restricted-globals */
 import React, { useState } from 'react';
 
-import { Spin, Form, notification, Table, Card, Space, Image } from 'antd';
-import { Input } from 'antd';
+import { Image,Card, Table } from 'antd';
+
 import { loginAUser } from '../../redux/actions/auth/auth.action';
 import { connect } from 'react-redux';
-import SocialCluster from '../smallComponents/SocialCluster.js';
+
+
+import newReportData from '../../newreport.json'
+import { utilityConsumptnColumn, solarHourConsumptnColumn, 
+  bandCategorizationColumn, deviationUsageBreakdownColumn, 
+  deviationUtitlityAndDieselColumn, fuelEfficiencyAccuracyComparisonColumn } from '../../helpers/reportTableColumns.js';
 
 import {
   BarChart,
@@ -27,240 +32,16 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 function Report(props) {
   const [errorMessage, setErrorMessage] = useState(undefined);
-  const [form] = Form.useForm();
 
-  const utilityConsumptnColumn = [
-    {
-      title: "Energy(kWh)",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Time of use",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Expected Bill",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Last Bill Accuracy(%)",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-  ]
-  const dieselConsumptnColumn = [
-    {
-      title: "Energy(kWh)",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Time of use",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Expected Bill",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Last Bill Accuracy(%)",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-  ]
-  const solarHourConsumptnColumn = [
-    {
-      title: "Energy consumed during solar hours (kWh)",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Time of use",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-  ]
-  const bandCategorizationColumn = [
-    {
-      title: "Band",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Total Hours(achieved)",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Expected Hours",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Deviation (+or_)",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
-    {
-      title: "Percentage Compliance",
-      dataIndex: "consumption",
-      key: "consumption",
-      ellipsis: true,
-      render: (values) => (
-        <>
-          {values
-            ? values.all_time.value.toLocaleString(undefined, {
-                maximumFractionDigits: 2,
-              })
-            : 0}
-        </>
-      ),
-    },
+
+  const energy_usage_breakdown= newReportData.energy_deviation.filter((en)=>['Operational Period', 'Non-Operational Period', 'Weekend Period'].includes(en.name))
+
+
+  const solarHourConsumption = [
+    {name: `Energy Consumed during solar hours (${newReportData.solar_hour.unit})`, 
+      value: newReportData.solar_hour.value},
+    {name: 'Solar percentage', 
+      value: (newReportData.solar_hour.value/ newReportData.total_energy.value) * 100 }
   ]
 
   const doughnutData = {
@@ -458,6 +239,14 @@ const TopSegmentedBarChart = () => (
   </ResponsiveContainer>
 );
 
+
+const fuelEfficiencyAccuracyComparisonTableData =[
+  {key: 'Recommended', value: 'Achieved', unit: 'kWh/litre'},
+  { key: (newReportData.fuel_efficiency_accuracy_comparison.recommended.value).toString() + newReportData.fuel_efficiency_accuracy_comparison.recommended.unit, 
+    value: newReportData.fuel_efficiency_accuracy_comparison.achieved.value + newReportData.fuel_efficiency_accuracy_comparison.achieved.unit },
+]
+
+
   return (
     <div className="layer-1">
       <section className="init-space">
@@ -496,7 +285,8 @@ const TopSegmentedBarChart = () => (
           <Card className="value">
             <div>
               <h1 style={{ fontSize: "32Px", textAlign: "center" }}>
-              <Image className="image" src="/ReportIcons/tilder.png" /> 4,500 kWh
+              <Image className="image" src="/ReportIcons/tilder.png" />
+                ~ {newReportData.total_energy.value + " " + newReportData.total_energy.unit}
               </h1>
             </div>
           </Card>
@@ -546,7 +336,7 @@ const TopSegmentedBarChart = () => (
                 <h1 style={{}}>Utility Consumption</h1>
               </div>
             </div>
-            <Table columns={utilityConsumptnColumn} />
+            <Table columns={utilityConsumptnColumn} dataSource={newReportData.energy_consumed.devices.filter((d)=> d.type === 'Utility' )} />
           </div>
           <div className="metric-container">
             <div
@@ -562,7 +352,7 @@ const TopSegmentedBarChart = () => (
                 <h1 style={{}}>Diesel Consumption</h1>
               </div>
             </div>
-            <Table columns={dieselConsumptnColumn} />
+            <Table columns={utilityConsumptnColumn} dataSource={newReportData.energy_consumed.devices.filter((d) => d.type === 'Generator' )} />
           </div>
           <div className="metric-container">
             <div
@@ -578,7 +368,7 @@ const TopSegmentedBarChart = () => (
                 <h1 style={{}}>Solar Hours Consumption</h1>
               </div>
             </div>
-            <Table columns={solarHourConsumptnColumn} />
+            <Table columns={solarHourConsumptnColumn} dataSource={solarHourConsumption} />
           </div>
         </div>
       </section>
@@ -607,7 +397,7 @@ const TopSegmentedBarChart = () => (
               <h1>Energy Usage Breakdown</h1>
             </div>
           </div>
-          <Table />
+          <Table dataSource={energy_usage_breakdown} columns={deviationUsageBreakdownColumn} />
         </div>
         <div className="metric-container">
           <div
@@ -623,7 +413,7 @@ const TopSegmentedBarChart = () => (
               <h1 style={{}}>Deviation Utility and Diesel</h1>
             </div>
           </div>
-          <Table />
+          <Table dataSource={newReportData.energy_deviation} columns={deviationUtitlityAndDieselColumn} />
         </div>
       </section>
       <section className="init-space">
@@ -632,23 +422,23 @@ const TopSegmentedBarChart = () => (
           <Card className="current">
             <div>
               <p className='current-heading'>Current Month Efficiency</p>
-              <p className='current-p'>
-                85.3% <span className='current-span'>-3.5%</span>
+              <p className='current-p'>{newReportData.generator_size_efficiency.current_month.value + newReportData.generator_size_efficiency.current_month.unit}
+              <span className='current-span'>{newReportData.generator_size_efficiency.current_month.value - newReportData.generator_size_efficiency.best_month.value}{newReportData.generator_size_efficiency.best_month.unit}</span>
               </p>
             </div>
           </Card>
           <Card className="best-ever">
             <div>
               <p className='best-heading'>Best Ever Efficiency</p>
-              <p className='best-p'>93.7%</p>
+              <p className='best-p'>{newReportData.generator_size_efficiency.best_month.value + newReportData.generator_size_efficiency.best_month.unit}</p>
             </div>
           </Card>
         </div>
         <div className="metric-container">
           <h1 className='fuel-efficiency'>
-            Fuel Efficiency Accuracy Comparison <span className='fuel-efficiency-span'>Accuracy: 91.4%</span>
+            Fuel Efficiency Accuracy Comparison <span className='fuel-efficiency-span'>Accuracy: {newReportData.fuel_efficiency_accuracy_comparison.accuracy.value + newReportData.fuel_efficiency_accuracy_comparison.accuracy.unit}</span>
           </h1>
-          <Table />
+          <Table dataSource={fuelEfficiencyAccuracyComparisonTableData} columns={fuelEfficiencyAccuracyComparisonColumn} />
         </div>
         {/* <div className="metric-container">
           <Image className="image" src="/ReportIcons/Icon2.png" />
@@ -657,22 +447,22 @@ const TopSegmentedBarChart = () => (
           </div>
           <Table />
         </div> */}
-        <div style={{marginTop:'30px'}} className="metric-container">
-            <div
-              style={{
-                marginLeft: "30px",
-                paddingTop: "15px",
-                paddingBottom: "10px",
-              }}
-              className="icon-and-title"
-            >
-              <Image className="image" src="/ReportIcons/Icon2.png" />
-              <div className="icon-title">
-                <h1 style={{}}>Band Categorization</h1>
-              </div>
+        <div style={{ marginTop: '30px' }} className="metric-container">
+          <div
+            style={{
+              marginLeft: "30px",
+              paddingTop: "15px",
+              paddingBottom: "10px",
+            }}
+            className="icon-and-title"
+          >
+            <Image className="image" src="/ReportIcons/Icon2.png" />
+            <div className="icon-title">
+              <h1 style={{}}>Band Categorization</h1>
             </div>
-            <Table columns={bandCategorizationColumn} />
           </div>
+          <Table columns={bandCategorizationColumn} dataSource={newReportData.utility_band_categorization} />
+        </div>
         <div className="bottom-doughnut">
           <Card className="band-category">
             <h1 style={{ fontSize: "17Px" }}>Band Categorization</h1>
