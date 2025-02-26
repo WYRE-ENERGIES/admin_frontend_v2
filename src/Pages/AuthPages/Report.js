@@ -3,9 +3,6 @@ import React, { useState } from 'react';
 
 import { Image,Card, Table } from 'antd';
 
-import { loginAUser } from '../../redux/actions/auth/auth.action';
-import { connect } from 'react-redux';
-
 
 import newReportData from '../../newreport.json'
 import { utilityConsumptnColumn, solarHourConsumptnColumn, 
@@ -28,6 +25,12 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 // Register necessary Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const logoSrc = '/ReportIcons/Wyre-logo.png';
+const tilderSrc = '/ReportIcons/tilder.png';
+const icon1Src = '/ReportIcons/Icon1.png';
+const icon2Src = '/ReportIcons/Icon2.png';
+const icon3Src = '/ReportIcons/Icon3.png';
+const icon4Src = '/ReportIcons/Icon4.png';
 
 
 function Report(props) {
@@ -252,7 +255,7 @@ const fuelEfficiencyAccuracyComparisonTableData =[
       <section className="init-space">
         <div className="heading">
           <div className='wyre-logo'>
-            <Image width={100} src="/ReportIcons/Wyre-logo.png" />
+            <Image width={100} src={logoSrc} />
           </div>
           <h1>
             Monthly Energy Report for Royal-garden
@@ -285,7 +288,7 @@ const fuelEfficiencyAccuracyComparisonTableData =[
           <Card className="value">
             <div>
               <h1 style={{ fontSize: "32Px", textAlign: "center" }}>
-              <Image className="image" src="/ReportIcons/tilder.png" />
+              <Image className="image" src={tilderSrc} />
                 ~ {newReportData.total_energy.value + " " + newReportData.total_energy.unit}
               </h1>
             </div>
@@ -296,7 +299,7 @@ const fuelEfficiencyAccuracyComparisonTableData =[
         <Card>
           <div className="top-doughnut">
             <div className="icon-and-title">
-              <Image className="image" src="/ReportIcons/Icon1.png" />
+              <Image className="image" src={icon1Src} />
               <div className="icon-title">
                 <h1 style={{ fontSize: "17Px" }}>Energy Consumed per Source</h1>
               </div>
@@ -309,7 +312,7 @@ const fuelEfficiencyAccuracyComparisonTableData =[
         <Card>
           <div className="first-barchart">
             <div className="icon-and-title">
-              <Image className="image" src="/ReportIcons/Icon1.png" />
+              <Image className="image" src={icon1Src} />
               <div className="icon-title">
                 <h1 style={{ fontSize: "17Px" }}>Top 7 Energy Contributors</h1>
               </div>
@@ -331,12 +334,12 @@ const fuelEfficiencyAccuracyComparisonTableData =[
               }}
               className="icon-and-title"
             >
-              <Image className="image" src="/ReportIcons/Icon2.png" />
+              <Image className="image" src={icon2Src} />
               <div className="icon-title">
                 <h1 style={{}}>Utility Consumption</h1>
               </div>
             </div>
-            <Table columns={utilityConsumptnColumn} dataSource={newReportData.energy_consumed.devices.filter((d)=> d.type === 'Utility' )} />
+            <Table pagination={false}  columns={utilityConsumptnColumn} dataSource={newReportData.energy_consumed.devices.filter((d)=> d.type === 'Utility' )} />
           </div>
           <div className="metric-container">
             <div
@@ -347,12 +350,12 @@ const fuelEfficiencyAccuracyComparisonTableData =[
               }}
               className="icon-and-title"
             >
-              <Image className="image" src="/ReportIcons/Icon3.png" />
+              <Image className="image" src={icon3Src} />
               <div className="icon-title">
                 <h1 style={{}}>Diesel Consumption</h1>
               </div>
             </div>
-            <Table columns={utilityConsumptnColumn} dataSource={newReportData.energy_consumed.devices.filter((d) => d.type === 'Generator' )} />
+            <Table pagination={false} columns={utilityConsumptnColumn} dataSource={newReportData.energy_consumed.devices.filter((d) => d.type === 'Generator' )} />
           </div>
           <div className="metric-container">
             <div
@@ -363,12 +366,12 @@ const fuelEfficiencyAccuracyComparisonTableData =[
               }}
               className="icon-and-title"
             >
-              <Image className="image" src="/ReportIcons/Icon4.png" />
+              <Image className="image" src={icon4Src} />
               <div className="icon-title">
                 <h1 style={{}}>Solar Hours Consumption</h1>
               </div>
             </div>
-            <Table columns={solarHourConsumptnColumn} dataSource={solarHourConsumption} />
+            <Table pagination={false}  columns={solarHourConsumptnColumn} dataSource={solarHourConsumption} />
           </div>
         </div>
       </section>
@@ -376,7 +379,7 @@ const fuelEfficiencyAccuracyComparisonTableData =[
         <h1 style={{ fontSize: "17Px" }}>Operational Performance</h1>
         <Card className="operational-performance">
           <div className="icon-and-title">
-            <Image className="image" src="/ReportIcons/Icon1.png" />
+            <Image className="image" src={icon1Src} />
             <div className="icon-title">
               <h1>Power Demand</h1>
             </div>
@@ -392,12 +395,12 @@ const fuelEfficiencyAccuracyComparisonTableData =[
             }}
             className="icon-and-title"
           >
-            <Image className="image" src="/ReportIcons/Icon4.png" />
+            <Image className="image" src={icon4Src} />
             <div className="icon-title">
               <h1>Energy Usage Breakdown</h1>
             </div>
           </div>
-          <Table dataSource={energy_usage_breakdown} columns={deviationUsageBreakdownColumn} />
+          <Table pagination={false} dataSource={energy_usage_breakdown} columns={deviationUsageBreakdownColumn} />
         </div>
         <div className="metric-container">
           <div
@@ -408,12 +411,12 @@ const fuelEfficiencyAccuracyComparisonTableData =[
             }}
             className="icon-and-title"
           >
-            <Image className="image" src="/ReportIcons/Icon3.png" />
+            <Image className="image" src={icon3Src} />
             <div className="icon-title">
               <h1 style={{}}>Deviation Utility and Diesel</h1>
             </div>
           </div>
-          <Table dataSource={newReportData.energy_deviation} columns={deviationUtitlityAndDieselColumn} />
+          <Table pagination={false} dataSource={newReportData.energy_deviation} columns={deviationUtitlityAndDieselColumn} />
         </div>
       </section>
       <section className="init-space">
@@ -438,7 +441,7 @@ const fuelEfficiencyAccuracyComparisonTableData =[
           <h1 className='fuel-efficiency'>
             Fuel Efficiency Accuracy Comparison <span className='fuel-efficiency-span'>Accuracy: {newReportData.fuel_efficiency_accuracy_comparison.accuracy.value + newReportData.fuel_efficiency_accuracy_comparison.accuracy.unit}</span>
           </h1>
-          <Table dataSource={fuelEfficiencyAccuracyComparisonTableData} columns={fuelEfficiencyAccuracyComparisonColumn} />
+          <Table pagination={false} dataSource={fuelEfficiencyAccuracyComparisonTableData} columns={fuelEfficiencyAccuracyComparisonColumn} />
         </div>
         {/* <div className="metric-container">
           <Image className="image" src="/ReportIcons/Icon2.png" />
@@ -456,12 +459,12 @@ const fuelEfficiencyAccuracyComparisonTableData =[
             }}
             className="icon-and-title"
           >
-            <Image className="image" src="/ReportIcons/Icon2.png" />
+            <Image className="image" src={icon2Src} />
             <div className="icon-title">
               <h1 style={{}}>Band Categorization</h1>
             </div>
           </div>
-          <Table columns={bandCategorizationColumn} dataSource={newReportData.utility_band_categorization} />
+          <Table pagination={false}  columns={bandCategorizationColumn} dataSource={newReportData.utility_band_categorization} />
         </div>
         <div className="bottom-doughnut">
           <Card className="band-category">
@@ -482,12 +485,5 @@ const fuelEfficiencyAccuracyComparisonTableData =[
   );
 }
 
-const mapDispatchToProps = {
-  loginAUser
-};
 
-const mapStateToProps = (state) => ({
-  auth: state.auth,
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(Report);
+export default Report;
