@@ -102,6 +102,11 @@
             "value": "80",
             "unit": "%"
         },
+        "previous_month": {
+          "date": "03/3024",
+            "value": "90",
+            "unit": "%"
+        },
         "best_month": {
             "date": "04/3024",
             "value": "92",
