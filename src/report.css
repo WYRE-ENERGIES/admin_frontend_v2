@@ -73,16 +73,115 @@
     justify-content: center;
 }
 
+.flex-doughnut {
+    /* display: flex; */
+    width: 750px;
+    height: 750px;
+    margin-top: -70px;
+}
+
+.doughnut-labels {
+    /* margin-left: 50px; */
+    margin-top: 180px;
+    font-family: 'montserrat';
+    font-size: x-large;
+    /* font-weight: bolder; */
+}
+
+.doughnut-labels .utility-color {
+    padding: 0px 20px 0px 20px ;
+    border-radius: 14px;
+    background-color: rgba(52, 75, 253, 1);
+}
+
+.doughnut-labels .generator1-color {
+    padding: 0px 20px 0px 20px ;
+    border-radius: 14px;
+    background-color: rgba(249, 207, 64, 1);
+}
+
+.doughnut-labels .generator2-color {
+    padding: 0px 20px 0px 20px ;
+    border-radius: 14px;
+    background-color: rgba(75, 138, 255, 1);
+}
+
+.doughnut-labels .inverter-color {
+    padding: 0px 20px 0px 20px ;
+    border-radius: 14px;
+    background-color: rgba(150, 64, 255, 1);
+}
+
 .top-doughnut{
-    width: 555px;
+    /* width: 555px; */
     /* height: 253px; */
-    align-items: center;
-    justify-content: center;
+    /* align-items: center; */
+    /* justify-content: center; */
 }
 
 .first-barchart{
     width: 555px;
     /* height: 253px; */
+}
+
+.pDemand-labels {
+    display: flex;
+    /* overflow: hidden; */
+    /* justify-items: center; */
+    /* margin-left: 50px; */
+    /* margin-top: 100px; */
+    font-family: 'montserrat';
+    font-size: 23px;
+    /* font-weight: bolder; */
+}
+
+.list_in_7 {
+  /* list-style-type: none; */
+  /* margin: 0; */
+  /* padding: 0; */
+  /* overflow: hidden; */
+    /* float: left; */
+
+  li {
+    float: left;
+    font-family: 'montserrat';
+    font-size: 25px;
+    /* display: block; */
+    text-align: center;
+    padding:  0 60px 0 0;
+  }
+}
+
+.list_in_7 .utility-color {
+    padding: 5px;
+    border-radius: 100%;
+    background-color: rgba(52, 75, 253, 1);
+}
+
+.list_in_7 .generator1-color {
+    padding: 0px 10px 0px 10px ;
+    border-radius: 100%;
+    background-color: rgba(249, 207, 64, 1);
+}
+
+.list_in_7 .generator2-color {
+    padding: 0px 10px 0px 10px ;
+    border-radius: 100%;
+    background-color: rgba(75, 138, 255, 1);
+}
+
+.list_in_7 .inverter-color {
+    padding: 0px 10px 0px 10px ;
+    border-radius: 100%;
+    background-color: rgba(150, 64, 255, 1);
+}
+
+.max-demand-lists {
+    margin-right: 45px;
+}
+
+.min-demand-lists {
+    margin-left: 65px;
 }
 
 .operational-performance {
@@ -189,4 +288,25 @@
     /* margin-left: 50px; */
     width: 90%;
     height: 80%;
+}
+
+.band-lists {
+    font-weight: 'bolder'; 
+    font-size: 20px;
+}
+    
+.fisrt-list::marker {
+    color: rgba(150, 64, 255, 1);
+}
+
+.second-list::marker {
+    color: rgba(249, 207, 64, 1);
+}
+
+.third-list::marker {
+    color: rgba(52, 75, 253, 1);
+}
+
+.fourth-list::marker {
+    color: rgba(75, 138, 255, 1);
 }

@@ -41,6 +41,7 @@ function AdminPage(props) {
   const handleDateSearch = (e) => setDateSearch(e.target.value)
   
   dayjs.extend(customParseFormat);
+  const dateFormat = 'DD/MM/YYYY';
   const { RangePicker } = DatePicker;
 
   const clientId = searchParams.get("client_id") || props.auth.userData.client_id;
@@ -196,194 +197,158 @@ function AdminPage(props) {
   return (
     <>
       <div className="AppHeader">
-        <Typography.Title style={{ fontSize: "30px", fontWeight: "bold" }}>
+        <Typography.Title className="Admin-heading">
           Admin Overview
         </Typography.Title>
-        <Space>
+        <Space className="calender-and-button">
+          <RangePicker className="monitoring-calender"
+            defaultValue={[dayjs().startOf("month"), dayjs()]}
+            format={dateFormat}
+            onChange={""}
+          />
           <div>
-            <Button
-              style={{
-                width: "227.5px",
-                height: "42.32px",
-                fontWeight: "bold",
-                fontSize: "15px",
-                borderRadius: "11px",
-              }}
-            >
+            <Button className="download-button">
               <DownloadOutlined />
               Download Report
             </Button>
           </div>
-          {/* <div>
-            <Button
-              style={{
-                backgroundColor: "#5C12A7",
-                color: "white",
-                width: "167.78px",
-                height: "42.32px",
-                fontSize: "15px",
-                borderRadius: "11px",
-                fontWeight: "bold",
-              }}
-            >
-              <PlusOutlined />
-              Add User
-            </Button>
-          </div> */}
         </Space>
       </div>
+      {/* <Space > */}
+
+      {/* </Space> */}
       <div className="##########">
         <section className="top-cards-container">
-          <Space>
+          {/* <div className="cards-layer"> */}
+          {/* <div className="layer-1"> */}
             <div className="top-card">
-                <div className="top-card-icon">
-                  <Image
-                    style={{ marginLeft: "0px" }}
-                    src="/Images/energy-consumption.png"
-                  />
-                </div>
-                <div className="top-card-content">
-                  <Spin
-                    spinning={
-                      bulkOverviews?.fetchAllTimeEnergyConsumptionLoading
-                    }
-                  >
-                    <header style={{ fontWeight: "bold" }}>
-                      {bulkOverviews?.fetchedAllTimeEnergyConsumption?.total_consumption?.toLocaleString(
-                        undefined,
-                        { maximumFractionDigits: 2 }
-                      ) ?? 0 }{" "}
-                      kWh
-                    </header>
-                  </Spin>
-                  <header>Total Energy</header>
-                </div>
+              <div className="top-card-icon">
+                <Image className="icon"
+                  src="/Images/energy-consumption.png"
+                />
+              </div>
+              <div className="top-card-content">
+                <Spin
+                  spinning={bulkOverviews?.fetchAllTimeEnergyConsumptionLoading}
+                >
+                  <header className="heading-value">
+                    {bulkOverviews?.fetchedAllTimeEnergyConsumption?.total_consumption?.toLocaleString(
+                      undefined,
+                      { maximumFractionDigits: 2 }
+                    ) ?? 0}{" "}
+                    <span className="heading-unit">kWh</span>
+                  </header>
+                </Spin>
+                <header className="heading-title">Total Energy</header>
+              </div>
             </div>
             <div className="top-card">
-                <div className="top-card-icon">
-                  <Image
-                    style={{ marginLeft: "0px" }}
-                    src="/Images/energy-consumption.png"
-                  />
-                </div>
-                <div className="top-card-content">
-                  <Spin
-                    spinning={
-                      bulkOverviews?.fetchLastMonthEnergyConsumptionLoading
-                    }
-                  >
-                    <header style={{ fontWeight: "bold" }}>
-                      {bulkOverviews?.fetchedLastMonthEnergyConsumption?.last_month_consumption?.value?.toLocaleString(
-                        undefined,
-                        { maximumFractionDigits: 2 }
-                      ) ?? 0 }{" "}
-                      kWh
-                    </header>
-                  </Spin>
-                  <header>Previous Month Energy</header>
-                </div>
+              <div className="top-card-icon">
+                <Image className="icon"
+                  src="/Images/energy-consumption.png"
+                />
+              </div>
+              <div className="top-card-content">
+                <Spin
+                  spinning={
+                    bulkOverviews?.fetchLastMonthEnergyConsumptionLoading
+                  }
+                >
+                  <header className="heading-value">
+                    {bulkOverviews?.fetchedLastMonthEnergyConsumption?.last_month_consumption?.value?.toLocaleString(
+                      undefined,
+                      { maximumFractionDigits: 2 }
+                    ) ?? 0}{" "}
+                    <span className="heading-unit">kWh</span>
+                  </header>
+                </Spin>
+                <header className="heading-title">Previous Month Energy</header>
+              </div>
             </div>
             <div className="top-card">
-                <div className="top-card-icon">
-                  <Image
-                    style={{ marginLeft: "0px" }}
-                    src="/Images/energy-consumption.png"
-                  />
-                </div>
-                <div className="top-card-content">
-                  <Spin
-                    spinning={
-                      bulkOverviews?.fetchThisMonthEnergyConsumptionLoading
-                    }
-                  >
-                    <header style={{ fontWeight: "bold" }}>
-                      {bulkOverviews?.fetchedThisMonthEnergyConsumption?.this_month_consumption?.value?.toLocaleString(
-                        undefined,
-                        { maximumFractionDigits: 2 }
-                      )}{" "}
-                      kWh
-                    </header>
-                  </Spin>
-                  <header>Current Month Energy</header>
-                </div>
+              <div className="top-card-icon">
+                <Image className="icon"
+                  src="/Images/energy-consumption.png"
+                />
+              </div>
+              <div className="top-card-content">
+                <Spin
+                  spinning={
+                    bulkOverviews?.fetchThisMonthEnergyConsumptionLoading
+                  }
+                >
+                  <header className="heading-value">
+                    {bulkOverviews?.fetchedThisMonthEnergyConsumption?.this_month_consumption?.value?.toLocaleString(
+                      undefined,
+                      { maximumFractionDigits: 2 }
+                    )}{" "}
+                    <span className="heading-unit">kWh</span>
+                  </header>
+                </Spin>
+                <header className="heading-title">Current Month Energy</header>
+              </div>
+            </div>
+          {/* </div> */}
+          {/* <div className="layer-2"> */}
+            <div className="top-card">
+              <div className="top-card-icon">
+                <Image style={{height:30, width:30}} className="amount-icon"
+                  src="/Images/naira-icon.png"
+                />
+              </div>
+              <div className="top-card-content">
+                <Spin spinning={bulkOverviews?.fetchAmountLoading}>
+                  <header className="heading-value">
+                    {bulkOverviews?.fetchedAmount?.amount_due?.value?.toLocaleString(
+                      undefined,
+                      { maximumFractionDigits: 2 }
+                    )}{" "}
+                    <span className="heading-unit">Naira</span>
+                  </header>
+                </Spin>
+                <header className="heading-title">Amount</header>
+              </div>
             </div>
             <div className="top-card">
-                <div className="top-card-icon">
-                  <Image
-                    style={{ marginLeft: "0px" }}
-                    src="/Images/co2-emmission.png"
-                  />
-                  {/* <Image
-                    style={{width:20, height: 20, marginLeft: "0px", background: 'F9CF40', backgroundColor: 'F9CF40' }}
-                    src="/Images/moneyIcon.png"
-                  /> */}
-                </div>
-                <div style={{marginLeft:25}} className="top-card-content">
-                  <Spin
-                    spinning={
-                      bulkOverviews?.fetchAmountLoading
-                    }
-                  >
-                    <header style={{ fontWeight: "bold" }}>
-                      {bulkOverviews?.fetchedAmount?.amount_due?.value?.toLocaleString(
-                        undefined,
-                        { maximumFractionDigits: 2 }
-                      )}{" "}
-                      Naira
-                    </header>
-                  </Spin>
-                  <header>Amount</header>
-                </div>
+              <div className="top-card-icon">
+                <Image className="icon"
+                  src="/Images/co2-emmission.png"
+                />
+              </div>
+              <div className="top-card-content">
+                <Spin spinning={bulkOverviews?.fetchAmountLoading}>
+                  <header className="heading-value">
+                    {bulkOverviews?.fetchedAmount?.amount_due?.value?.toLocaleString(
+                      undefined,
+                      { maximumFractionDigits: 2 }
+                    )}{" "}
+                    <span className="heading-unit">tons</span>
+                  </header>
+                </Spin>
+                <header className="heading-title">Current Month C02</header>
+              </div>
             </div>
             <div className="top-card">
-                <div className="top-card-icon">
-                  <Image
-                    style={{ marginLeft: "0px" }}
-                    src="/Images/co2-emmission.png"
-                  />
-                </div>
-                <div className="top-card-content">
-                  <Spin
-                    spinning={
-                      bulkOverviews?.fetchAmountLoading
-                    }
-                  >
-                    <header style={{ fontWeight: "bold" }}>
-                      {bulkOverviews?.fetchedAmount?.amount_due?.value?.toLocaleString(
-                        undefined,
-                        { maximumFractionDigits: 2 }
-                      )}{" "}
-                      tons
-                    </header>
-                  </Spin>
-                  <header>Cureent Month C02</header>
-                </div>
+              <div className="top-card-icon">
+                <Image className="icon"
+                  src="/Images/co2-emmission.png"
+                />
+              </div>
+              <div className="top-card-content">
+                <Spin spinning={bulkOverviews?.fetchAmountLoading}>
+                  <header className="heading-value">
+                    {bulkOverviews?.fetchedAmount?.amount_due?.value?.toLocaleString(
+                      undefined,
+                      { maximumFractionDigits: 2 }
+                    )}{" "}
+                    <span className="heading-unit">tons</span>
+                  </header>
+                </Spin>
+                <header className="heading-title">Aggregated C02</header>
+              </div>
             </div>
-            <div className="top-card">
-                <div className="top-card-icon">
-                  <Image
-                    style={{ marginLeft: "0px" }}
-                    src="/Images/co2-emmission.png"
-                  />
-                </div>
-                <div className="top-card-content">
-                  <Spin
-                    spinning={
-                      bulkOverviews?.fetchAmountLoading
-                    }
-                  >
-                    <header style={{ fontWeight: "bold" }}>
-                      {bulkOverviews?.fetchedAmount?.amount_due?.value?.toLocaleString(
-                        undefined,
-                        { maximumFractionDigits: 2 }
-                      )}{" "}
-                      tons
-                    </header>
-                  </Spin>
-                  <header>Aggregated C02</header>
-                </div>
-            </div>
-          </Space>
+          {/* </div> */}
+          {/* </div> */}
         </section>
         <section className="total-energy-bar-chart">
           <div
@@ -428,7 +393,7 @@ function AdminPage(props) {
               />
             </div> */}
           </div>
-          <div style={{overflowX: 'auto'}}>
+          <div style={{ overflowX: "auto" }}>
             <Table
               className="custom-row-hover"
               // onRow={(record, index) => ({
@@ -448,8 +413,7 @@ function AdminPage(props) {
               columns={column}
               onChange={onChange}
               pagination={false}
-            >
-            </Table>
+            ></Table>
           </div>
         </section>
       </div>

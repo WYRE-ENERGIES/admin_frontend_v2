@@ -30,6 +30,11 @@
   /* border-bottom: 1px solid rgba(0, 0, 0, 0.15); */
 }
 
+.Admin-heading {
+  font-family: 30px;
+  font-weight: bold;
+}
+
 .SidemenuAndPagecontent {
   display: flex;
   flex: 1;
@@ -109,23 +114,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   margin-top: 20px;
 }
 
-.top-cards-container {
-  display: flex;
-  margin-left: 15px;
-}
-.top-card {
-  background: #FFFFFF;
-  border-radius: 15px;
-  text-align: center;
-  /* align-items: center; */
-  /* align-content: center; */
-  /* justify-items: center; */
-  /* justify-content: center; */
-  margin-left: 15px;
-  height: 60px;
-  width: 198px;
-  display: flex;
-}
 .top-card-1 {
   background: #FFFFFF;
   border-radius: 15px;
@@ -155,20 +143,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   /* margin-right: 5px; */
 }
 
-.top-card-icon {
-  margin-top: 10px;
-  margin-left: 5px;
-}
-.top-card-content {
-  margin-top: 10px;
-  margin-left: 2px;
-  /* justify-content: center; */
-}
-
 .wyre-logo {
   margin-bottom: 15px;
-  margin-left: 14px;
-  margin-top: 72px;
+  margin-left: -120px;
+  margin-top: 17px;
 }
 
 /* SET TARGET  */
@@ -1085,3 +1063,456 @@ a.header-short-button--auth {
   padding: auto;
 }
 /* Branch View Ends */
+
+/* ATC Interface */
+.top-cards-container {
+  display: grid;
+  /* flex-wrap: wrap; */
+  /* justify-content: space-between; */
+  /* padding: 10px; */
+  grid-template-columns: auto auto auto;
+  margin: 0 30px 0 30px ;
+  gap: 10px;
+}
+
+.top-card {
+  background: #FFFFFF;
+  border-radius: 15px;
+  /* text-align: center; */
+  align-items: center;
+  /* align-content: center; */
+  /* justify-items: center; */
+  justify-content: start;
+  height: 68px;
+  width: 340px;
+  /* width: 100%; */
+  display: flex;
+  /* gap: 10px; */
+  /* flex-direction: row; */
+  /* flex: 1 1 30%; */
+}
+
+.card-content {
+  margin-top: 10px;
+  /* margin-left: 5px; */
+  /* margin-right: 5px; */
+}
+
+.top-card-icon {
+  width: 10%;
+  padding-left: 10px;
+}
+
+.icon {
+  /* margin-right: 100px; */
+  width: 50px;
+  height: 50px;
+}
+
+.amount-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.top-card-content {
+  /* margin-top: 10px; */
+  width: 90%;
+  /* padding: 0 10px 0 10px; */
+  padding: 0;
+  /* margin-right: 65px; */
+  text-align: center;
+  justify-content: center;
+  align-content: center;
+}
+.top-card-content p{
+  margin-top: 10px;
+  /* margin-left: 25px; */
+  background-color: blue;
+  text-align: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.heading-value {
+  font-weight: bold;
+}
+
+.heading-unit {
+  /* font-size: larger; */
+}
+
+.monitoring-calender {
+  width: 264.29px ;
+  height: 41.19px ;
+  border-radius: 11px ;
+}
+
+.download-button {
+  width: "227.5px";
+  height: 42.32px;
+  font-weight: bold;
+  font-size: 15px;
+  border-radius: 11px;
+}
+
+@media (max-width: 1536px) {
+  .top-card {
+    /* width: 310px; */
+  }
+}
+
+@media (max-width: 1340px) {
+  .top-card {
+    width: 325px;
+  }
+
+}
+@media (max-width: 1330px) {
+  .top-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 1320px) {
+  .top-card {
+    width: 320px;
+  }
+}
+
+@media (max-width: 1300px) {
+  .top-card {
+    width: 315px;
+  }
+}
+
+@media (max-width: 1280px) {
+  .calender-and-button {
+    margin-bottom: -7px;
+  }
+  .top-card {
+    width: 270px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .top-card {
+    width: 265px;
+  }
+}
+
+@media (max-width: 1130px) {
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto ;
+  }
+  .top-card {
+    width: 260px;
+  }
+}
+
+@media (max-width: 1118px) {
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto ;
+  }
+  .monitoring-calender {
+    width: 200px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-card {
+    width: 258px;
+  }
+}
+
+@media (max-width: 1115px) {
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto ;
+  }
+  .monitoring-calender {
+    width: 200px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-card {
+    width: 258px;
+  }
+}
+
+@media (max-width: 1112px) {
+  .Admin-heading {
+    font-size: 10px;
+  }
+  .calender-and-button {
+    /* margin-bottom: -10px; */
+  }
+  .monitoring-calender {
+    width: 200px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+  }
+  .top-card {
+    width: 254px;
+  }
+  .heading-title {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .Admin-heading {
+    font-size: 10px;
+  }
+  .calender-and-button {
+    /* margin-bottom: -10px; */
+  }
+  .monitoring-calender {
+    width: 200px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+  }
+  .top-card {
+    width: 249px;
+  }
+  .heading-title {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .Admin-heading {
+    font-size: 10px;
+  }
+  .calender-and-button {
+    /* margin-bottom: -10px; */
+  }
+  .monitoring-calender {
+    width: 200px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+  }
+  .top-card {
+    width: 243px;
+  }
+  .heading-title {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 1060px) {
+  .Admin-heading {
+    font-size: 10px;
+  }
+  .calender-and-button {
+    /* margin-bottom: -10px; */
+  }
+  .monitoring-calender {
+    width: 200px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+  }
+  .top-card {
+    width: 237px;
+  }
+  .heading-title {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 1040px) {
+  .Admin-heading {
+    font-size: 10px;
+  }
+  .calender-and-button {
+    /* margin-bottom: -10px; */
+  }
+  .monitoring-calender {
+    width: 200px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto;
+  }
+  .top-card {
+    width: 231px;
+  }
+  .heading-title {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .Admin-heading {
+    font-size: 10px;
+  }
+  .calender-and-button {
+    margin-bottom: -10px;
+  }
+  .monitoring-calender {
+    width: 200px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto; 
+    /* gap: 10px; */
+  }
+  .top-card {
+    width: 220px;
+  }
+  .heading-title {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 1000px) {
+  .Admin-heading {
+    font-size: 10px;
+  }
+  .calender-and-button {
+    margin-bottom: -10px;
+  }
+  .monitoring-calender {
+    width: 200px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto auto; 
+    /* gap: 10px; */
+  }
+  .top-card {
+    width: 218px;
+  }
+  .heading-title {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 992px) {
+  /* .AppHeader {
+    display: grid;
+    margin-bottom: 100px;
+  } */
+  .Admin-heading {
+    font-size: 10px;
+  }
+  .monitoring-calender {
+    width: 200px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto; 
+    /* gap: 10px; */
+  }
+  .top-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 820px) {
+  .AppHeader {
+    display: grid;
+    margin-bottom: 100px;
+  }
+  .Admin-heading {}
+
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto; 
+    /* gap: 10px; */
+  }
+
+  .top-card {
+  }
+}
+
+@media (max-width: 768px) {
+  .AppHeader {
+    display: grid;
+    margin-bottom: 100px;
+  }
+  .top-cards-container {
+    display: grid;
+    /* grid-template-columns: repeat(2, 1fr); 4 equal columns by default */
+    grid-template-columns: auto auto; 
+    gap: 10px;
+  }
+  .top-card {
+    /* flex: 1 1 45%; */
+    /* width: 150px; */
+  }
+}
+
+@media (max-width: 480px) {
+  .AppHeader {
+    display: grid;
+    margin-bottom: 100px;
+  }
+  .top-cards-container {
+    display: grid;
+    /* grid-template-columns: 1fr; 1 column on mobile */
+    grid-template-columns: auto;
+  }
+  .top-card {
+    /* flex: 1 1 100%; */
+  }
+}
+
+.cards-layer {
+  display: flex;
+}
+
+.layer-1 {
+  display: flex;
+  /* justify-content: center; */
+  margin-bottom: 10px;
+}
+
+.layer-2 {
+  margin-top: 20px;
+  display: flex;
+}
