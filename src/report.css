@@ -1,0 +1,312 @@
+.layer-1 {
+    /* height: 100vh; */
+    /* margin: 30px; */
+    background-color: #F2F2F8;
+    font-family: 'montserrat';
+}
+
+.init-space {
+    margin: 40px;
+    /* border-radius: 40px; */
+}
+
+.wyre-logo {
+    justify-self: center;
+    padding: 55px 0 0px 0;
+    /* margin-top: 60px; */
+}
+
+.heading {
+    text-align: center;
+    font-size: xx-large;
+}
+
+.metric-container {
+    background-color: white;
+    margin-bottom: 30px;
+}
+
+.icon-and-title {
+    display: flex;
+    /* margin-left: 30px; */
+    /* margin-top: 20px; */
+}
+
+.icon-and-title .image {
+    width: 40px;
+    margin-top: 10px;
+}
+
+.icon-title {
+    text-align: center;
+    justify-content: center;
+}
+
+.icon-title h1 {
+    font-size: 22px;
+    font-weight: light;
+    margin-left: 20px;
+}
+
+.heading {
+    /* margin-bottom: 30px; */
+}
+
+.head-card {
+    /* background-color: rgba(255, 255, 255, 1); */
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.title {
+    width: 50%;
+    height: 132px;
+    border-radius: 22px 0 0 22px;
+    justify-content: center;
+}
+
+.value {
+    width: 50%;
+    height: 132px;
+    border-radius: 0 22px 22px 0;
+    justify-content: center;
+}
+
+.flex-doughnut {
+    /* display: flex; */
+    width: 750px;
+    height: 750px;
+    margin-top: -70px;
+}
+
+.doughnut-labels {
+    /* margin-left: 50px; */
+    margin-top: 180px;
+    font-family: 'montserrat';
+    font-size: x-large;
+    /* font-weight: bolder; */
+}
+
+.doughnut-labels .utility-color {
+    padding: 0px 20px 0px 20px ;
+    border-radius: 14px;
+    background-color: rgba(52, 75, 253, 1);
+}
+
+.doughnut-labels .generator1-color {
+    padding: 0px 20px 0px 20px ;
+    border-radius: 14px;
+    background-color: rgba(249, 207, 64, 1);
+}
+
+.doughnut-labels .generator2-color {
+    padding: 0px 20px 0px 20px ;
+    border-radius: 14px;
+    background-color: rgba(75, 138, 255, 1);
+}
+
+.doughnut-labels .inverter-color {
+    padding: 0px 20px 0px 20px ;
+    border-radius: 14px;
+    background-color: rgba(150, 64, 255, 1);
+}
+
+.top-doughnut{
+    /* width: 555px; */
+    /* height: 253px; */
+    /* align-items: center; */
+    /* justify-content: center; */
+}
+
+.first-barchart{
+    width: 555px;
+    /* height: 253px; */
+}
+
+.pDemand-labels {
+    display: flex;
+    /* overflow: hidden; */
+    /* justify-items: center; */
+    /* margin-left: 50px; */
+    /* margin-top: 100px; */
+    font-family: 'montserrat';
+    font-size: 23px;
+    /* font-weight: bolder; */
+}
+
+.list_in_7 {
+  /* list-style-type: none; */
+  /* margin: 0; */
+  /* padding: 0; */
+  /* overflow: hidden; */
+    /* float: left; */
+
+  li {
+    float: left;
+    font-family: 'montserrat';
+    font-size: 25px;
+    /* display: block; */
+    text-align: center;
+    padding:  0 60px 0 0;
+  }
+}
+
+.list_in_7 .utility-color {
+    padding: 5px;
+    border-radius: 100%;
+    background-color: rgba(52, 75, 253, 1);
+}
+
+.list_in_7 .generator1-color {
+    padding: 0px 10px 0px 10px ;
+    border-radius: 100%;
+    background-color: rgba(249, 207, 64, 1);
+}
+
+.list_in_7 .generator2-color {
+    padding: 0px 10px 0px 10px ;
+    border-radius: 100%;
+    background-color: rgba(75, 138, 255, 1);
+}
+
+.list_in_7 .inverter-color {
+    padding: 0px 10px 0px 10px ;
+    border-radius: 100%;
+    background-color: rgba(150, 64, 255, 1);
+}
+
+.max-demand-lists {
+    margin-right: 45px;
+}
+
+.min-demand-lists {
+    margin-left: 65px;
+}
+
+.operational-performance {
+    /* height: 357px; */
+}
+
+.generator-efficiency {
+    margin-top: 30px;
+    /* margin-bottom: 30px; */
+    display: flex;
+    justify-content: space-between;
+}
+
+.current {
+    width: 49%;
+    height: 250px;
+    border-radius: 22px;
+    background-color: rgba(150, 64, 255, 1);
+    color: white;
+    font-size: x-large;
+}
+
+.best-ever {
+    width: 49%;
+    height: 250px;
+    border-radius: 22px;
+    background-color: rgba(75, 138, 255, 1);
+    color: white;
+    font-size: x-large;
+}
+
+.current-heading {
+    margin-left: 10px;
+    font-size: xx-large;
+    font-weight: light;
+    /* padding: 30px 10px 15px 30px; */
+}
+
+.current-p {
+    margin-left: 10px;
+    /* margin-bottom: 50px; */
+    font-size: 70px;
+    margin-top: -30px;
+    font-weight: bolder;
+}
+
+.current-span {
+    background-color: #F2F2F8;
+    color: red;
+    margin-left: 20px;
+    /* padding: 5px 15px 5px 25px; */
+    padding: 10px;
+    border-radius: 14px;
+    font-weight: lighter;
+    font-size: x-large;
+}
+
+.best-heading {
+    margin-left: 10px;
+    font-size: xx-large;
+    font-weight: light;
+    /* padding: 30px 10px 15px 30px; */
+}
+
+.best-p{
+    margin-left: 10px;
+    margin-top: -30px;
+    font-size: 70px;
+    font-weight: bolder;
+}
+
+.fuel-efficiency {
+    font-size: xx-large;
+    padding: 30px 10px 15px 30px;
+}
+
+.fuel-efficiency-span {
+    background-color: #F2F2F8;
+    color: rgba(150, 64, 255, 1);
+    margin-left: 20px;
+    /* padding: 5px 15px 5px 25px; */
+    padding: 10px;
+    border-radius: 14px;
+}
+
+.bottom-doughnut {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.band-category {
+    /* height: 500px; */
+    width: 49%;
+    justify-content: center;
+}
+
+.data-entry {
+    /* height: 500px; */
+    width: 49%;
+}
+
+.doughnut-position {
+    /* margin-left: 50px; */
+    width: 90%;
+    height: 80%;
+}
+
+.band-lists {
+    font-weight: 'bolder'; 
+    font-size: 20px;
+}
+    
+.fisrt-list::marker {
+    color: rgba(150, 64, 255, 1);
+}
+
+.second-list::marker {
+    color: rgba(249, 207, 64, 1);
+}
+
+.third-list::marker {
+    color: rgba(52, 75, 253, 1);
+}
+
+.fourth-list::marker {
+    color: rgba(75, 138, 255, 1);
+}

@@ -1,0 +1,151 @@
+{
+    "total_energy": {
+        "value": "10000",
+        "unit": "kWh"
+    },
+    "solar_hour": {
+        "value": "10000",
+        "unit": "kWh"
+    },
+    "power_demand": {
+        "operational": {
+            "peak": "10000",
+            "average": "10000",
+            "minimum": "10000",
+            "total_energy": "100000",
+            "unit": "kWh"
+        },
+        "non_operational": {
+            "peak": "10000",
+            "average": "10000",
+            "minimum": "10000",
+            "total_energy": "100000",
+            "unit": "kWh"
+        },
+        "weekends": {
+            "peak": "10000",
+            "average": "10000",
+            "minimum": "10000",
+            "total_energy": "100000",
+            "unit": "kWh"
+        }
+
+    },
+    "energy_consumed": {
+        "devices": [
+            {
+                "name": "inverter",
+                "value": "23",
+                "type": "Utility",
+                "time_of_use": "20",
+                "expected_bill": "20",
+                "last_bill_accuracy": "20"
+            },
+            {
+                "name": "gen1",
+                "value": "23",
+                "type": "Generator",
+                "time_of_use": "20",
+                "expected_bill": "20",
+                "last_bill_accuracy": "20"
+            },
+            {
+                "name": "PHCN",
+                "value": "23",
+                "type": "Utility",
+                "time_of_use": "20",
+                "expected_bill": "20",
+                "last_bill_accuracy": "20"
+            }
+        ]
+    },
+    "energy_deviation": [
+        {
+            "name": "Energy(KWH)",
+            "value": "10000",
+            "deviation": "10000",
+            "unit": "kWh",
+            "deviationUnit": "kWh"
+        },
+        {
+            "name": "Operational Period",
+            "value": "10000",
+            "deviation": "10000",
+            "unit": "kWh",
+            "deviationUnit": "hours"
+        },
+        {
+            "name": "Non-Operational Period",
+            "value": "10000",
+            "deviation": "10000",
+            "unit": "kWh",
+            "deviationUnit": "hours"
+        },
+        {
+            "name": "Weekend Period",
+            "value": "10000",
+            "deviation": "10000",
+            "unit": "kWh",
+            "deviationUnit": "hours"
+        },
+        {
+            "name": "Liters(diesel-usage)",
+            "value": "10000",
+            "deviation": "10000",
+            "unit": "liters",
+            "deviationUnit": "hours"
+        }
+    ],
+    "generator_size_efficiency": {
+        "current_month": {
+          "date": "04/3024",
+            "value": "80",
+            "unit": "%"
+        },
+        "best_month": {
+            "date": "04/3024",
+            "value": "92",
+            "unit": "%"
+        }
+    },
+    "fuel_efficiency_accuracy_comparison": {
+        "accuracy": {
+            "value": "91.5",
+            "unit": "%"
+        },
+        "recommended": {
+            "value": "3.4",
+            "unit": "kWh/liter"
+        },
+        "achieved": {
+            "value": "3.6",
+            "unit": "kWh/liter"
+        }
+    },
+    "utility_band_categorization": [
+        {
+            "band": "A",
+            "total_hours": "720",
+            "expected_hours": "620"
+        },
+        {
+            "band": "B",
+            "total_hours": "720",
+            "expected_hours": "620"
+        },
+        {
+            "band": "C",
+            "total_hours": "720",
+            "expected_hours": "620"
+        },
+        {
+            "band": "D",
+            "total_hours": "720",
+            "expected_hours": "620"
+        }
+    ],
+    "data_entry": {
+        "value": "67",
+        "unit": "%"
+    }
+}

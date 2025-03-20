@@ -54,7 +54,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
 
   const onDateChange = (select) => {
     const clientId = props.auth.userData.client_id
-    // const year = new Date(date).getFullYear();
     const useYear = (select);
     setSelectedDate(useYear)
     

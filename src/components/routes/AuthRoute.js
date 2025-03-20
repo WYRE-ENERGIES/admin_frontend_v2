@@ -6,6 +6,8 @@ import Login from '../../Pages/AuthPages/Login';
 // import ScrollToTop from '../helpers/ScrollToTop';
 import Footer from '../../Pages/OtherPages/Footer';
 import AuthHeader from '../../Pages/OtherPages/AuthHeader';
+import Report from '../../Pages/AuthPages/Report';
+import InMail from '../../Pages/AuthPages/InMail';
 
 function AuthRoute() {
   return (
@@ -16,6 +18,8 @@ function AuthRoute() {
         {/* <ScrollToTop> */}
           <Routes>
             <Route exact path='/' element={<Login />} />
+            {/* <Route exact path='/report' element={<Report/>} /> */}
+            {/* <Route exact path='/in-mail' element={<InMail />} /> */}
             {/* <Route path='/about' element={<About />} /> */}
             {/* <Route path='/contact' element={<Contact />} /> */}
             {/* <Route path='/reset-password' element={<ResetPassword />} /> */}
