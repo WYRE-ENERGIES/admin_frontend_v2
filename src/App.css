@@ -31,7 +31,9 @@
 }
 
 .Admin-heading {
-  font-family: 30px;
+  font-family: 'montserrat';
+  /* font-size: 30px; */
+  font-size: x-large;
   font-weight: bold;
 }
 
@@ -1246,7 +1248,7 @@ a.header-short-button--auth {
 
 @media (max-width: 1112px) {
   .Admin-heading {
-    font-size: 10px;
+    /* font-size: 10px; */
   }
   .calender-and-button {
     /* margin-bottom: -10px; */
@@ -1272,7 +1274,7 @@ a.header-short-button--auth {
 
 @media (max-width: 1100px) {
   .Admin-heading {
-    font-size: 10px;
+    /* font-size: 10px; */
   }
   .calender-and-button {
     /* margin-bottom: -10px; */
@@ -1298,7 +1300,7 @@ a.header-short-button--auth {
 
 @media (max-width: 1080px) {
   .Admin-heading {
-    font-size: 10px;
+    /* font-size: 10px; */
   }
   .calender-and-button {
     /* margin-bottom: -10px; */
@@ -1324,7 +1326,7 @@ a.header-short-button--auth {
 
 @media (max-width: 1060px) {
   .Admin-heading {
-    font-size: 10px;
+    /* font-size: 10px; */
   }
   .calender-and-button {
     /* margin-bottom: -10px; */
@@ -1350,7 +1352,7 @@ a.header-short-button--auth {
 
 @media (max-width: 1040px) {
   .Admin-heading {
-    font-size: 10px;
+    /* font-size: 10px; */
   }
   .calender-and-button {
     /* margin-bottom: -10px; */
@@ -1376,7 +1378,7 @@ a.header-short-button--auth {
 
 @media (max-width: 1024px) {
   .Admin-heading {
-    font-size: 10px;
+    /* font-size: 10px; */
   }
   .calender-and-button {
     margin-bottom: -10px;
@@ -1394,7 +1396,7 @@ a.header-short-button--auth {
     /* gap: 10px; */
   }
   .top-card {
-    width: 220px;
+    width: 223.2px;
   }
   .heading-title {
     font-size: 15px;
@@ -1403,7 +1405,7 @@ a.header-short-button--auth {
 
 @media (max-width: 1000px) {
   .Admin-heading {
-    font-size: 10px;
+    /* font-size: 10px; */
   }
   .calender-and-button {
     margin-bottom: -10px;
@@ -1434,10 +1436,35 @@ a.header-short-button--auth {
     margin-bottom: 100px;
   } */
   .Admin-heading {
-    font-size: 10px;
+    font-size: larger;
   }
   .monitoring-calender {
-    width: 200px;
+    width: 215px;
+  }
+  .download-button {
+    width: 150px;
+    font-size: small;
+  }
+  .top-cards-container {
+    display: grid;
+    grid-template-columns: auto auto; 
+    /* gap: 10px; */
+  }
+  .top-card {
+    width: 100%;
+  }
+}
+
+@media (max-width: 900px) {
+  /* .AppHeader {
+    display: grid;
+    margin-bottom: 100px;
+  } */
+  .Admin-heading {
+    font-size: 15px;
+  }
+  .monitoring-calender {
+    width: 215px;
   }
   .download-button {
     width: 150px;
@@ -1456,10 +1483,18 @@ a.header-short-button--auth {
 @media (max-width: 820px) {
   .AppHeader {
     display: grid;
-    margin-bottom: 100px;
+    margin-bottom: 50px;
   }
-  .Admin-heading {}
-
+  .Admin-heading {
+    font-size: xx-large;
+  }
+  .monitoring-calender {
+    width: 240px;
+  }
+  .download-button {
+    width: 240px;
+    font-size: large;
+  }
   .top-cards-container {
     display: grid;
     grid-template-columns: auto auto; 
@@ -1473,17 +1508,21 @@ a.header-short-button--auth {
 @media (max-width: 768px) {
   .AppHeader {
     display: grid;
-    margin-bottom: 100px;
+    margin-bottom: 50px;
+  }
+  .monitoring-calender {
+    width: 217px;
+  }
+  .download-button {
+    width: 217px;
+    font-size: large;
   }
   .top-cards-container {
     display: grid;
-    /* grid-template-columns: repeat(2, 1fr); 4 equal columns by default */
     grid-template-columns: auto auto; 
-    gap: 10px;
+    /* gap: 10px; */
   }
   .top-card {
-    /* flex: 1 1 45%; */
-    /* width: 150px; */
   }
 }
 
@@ -1492,13 +1531,19 @@ a.header-short-button--auth {
     display: grid;
     margin-bottom: 100px;
   }
+  .Admin-heading {
+    /* background-color: red; */
+    font-size: 26px;
+    margin-bottom: 5px;
+  }
+  .calender-and-button {
+    /* display: flex; */
+  }
   .top-cards-container {
     display: grid;
-    /* grid-template-columns: 1fr; 1 column on mobile */
     grid-template-columns: auto;
   }
   .top-card {
-    /* flex: 1 1 100%; */
   }
 }
 
