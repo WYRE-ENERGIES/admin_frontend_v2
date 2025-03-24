@@ -36,7 +36,7 @@ import {
   import { useDispatch } from "react-redux";
   import { logoutUser } from "../../redux/actions/auth/auth.creator";
     
-  function BulkSideMenu({collapsed, setCollapsed}) {
+  function BulkSideMenu({collapsed, setCollapsed, onBreakpoint}) {
       const [selectedLocation, setSelectedLocation] = useState('/')
       const location = useLocation()
       const {
@@ -150,6 +150,8 @@ import {
           collapsible
           collapsed={collapsed}
           onCollapse={(value) => setCollapsed(value)}
+          onBreakpoint={onBreakpoint} // This triggers collapse on screen resize
+          breakpoint="sm" // Collapse when screen width is <= 768px
         >
           <div className="wyre-logo">
             <Space>
@@ -158,9 +160,8 @@ import {
                 type="text"
                 icon={
                   collapsed ? (
-                    <MenuOutlined style={{ color: "white" }} />
+                    <MenuOutlined style={{ color: "white", marginLeft:120,  }} />
                   ) : (
-                    // <MenuFoldOutlined style={{ color: "white" }} />
                     <>
                       <Image width={80} src="/Images/Wyre white-08 1.png"></Image>
                       <Button

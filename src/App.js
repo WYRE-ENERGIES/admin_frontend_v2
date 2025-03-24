@@ -16,10 +16,10 @@ function App() {
   const {
     token: { colorBgContainer },
   } = theme.useToken();
+  const onBreakpoint = (broken) => {
+    setCollapsed(broken);  // This ensures the sidebar collapses on smaller screens
+  };
 
-  const doColapse = () => {
-  }
-  // setCollapsed(collapsed)
   return (
     <div className="App">
       <BrowserRouter>
@@ -28,7 +28,7 @@ function App() {
         <div>
           {/* <AppHeader /> */}
           <div className="SidemenuAndPagecontent">
-            <SideMenu trigger={null} collapsible collapsed={collapsed} doColapse={doColapse} setCollapsed={setCollapsed}  />
+            <SideMenu trigger={null} collapsible collapsed={collapsed} setCollapsed={setCollapsed} onBreakpoint={onBreakpoint}  />
             <PageView />
           </div>
           {/* <AppFooter /> */}
@@ -37,7 +37,7 @@ function App() {
         <div>
           {/* <AppHeader /> */}
           <div className="SidemenuAndPagecontent">
-            <BulkSideMenu trigger={null} collapsible collapsed={collapsed} doColapse={doColapse} setCollapsed={setCollapsed}  />
+            <BulkSideMenu trigger={null} collapsible collapsed={collapsed} setCollapsed={setCollapsed}  />
             <BulkmonitoringPageView />
           </div>
           {/* <AppFooter /> */}
