@@ -1,23 +1,12 @@
 /* eslint-disable no-restricted-globals */
-import React, { useState } from 'react';
+import React from 'react';
 
 import { Image,Card, Table } from 'antd';
 
 import newReportData from '../../newreport.json'
-import { utilityConsumptnColumn, solarHourConsumptnColumn, 
-  bandCategorizationColumn, deviationUsageBreakdownColumn, 
-  deviationUtitlityAndDieselColumn, fuelEfficiencyAccuracyComparisonColumn } from '../../helpers/reportTableColumns.js';
+import { deviationUsageBreakdownColumn, 
+  deviationUtitlityAndDieselColumn} from '../../helpers/reportTableColumns.js';
 
-import {
-  BarChart,
-  Bar as RechartsBar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip as ReTooltip,
-  Legend as ReLegend,
-  ResponsiveContainer,
-} from "recharts";
 import { Doughnut } from 'react-chartjs-2';
 import { Bar } from 'react-chartjs-2';
 import {
@@ -31,7 +20,6 @@ import {
   Title
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { spaceChildren } from "antd/es/button/buttonHelpers.js";
 
 // Register necessary Chart.js components
 ChartJS.register(
