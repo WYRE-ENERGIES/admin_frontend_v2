@@ -58,27 +58,27 @@ function SideMenu({collapsed, setCollapsed}) {
       {
         label: "Admin Overview",
         key: "/",
-        icon: <ProjectOutlined />,
+        icon: <ProjectOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
         label: "Users",
         key: "/client-user",
-        icon: <UserOutlined />,
+        icon: <UserOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
         label: "View Location",
         key: "/locations",
-        icon: <EnvironmentOutlined />,
+        icon: <EnvironmentOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
         label: "Set Target",
         key: "/set-target",
-        icon: <AimOutlined />,
+        icon: <AimOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
         label: "Diesel Overview",
         key: "/diesel",
-        icon: <HeatMapOutlined />,
+        icon: <HeatMapOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       // {
       //   label: "Regions Activities",
@@ -98,37 +98,15 @@ function SideMenu({collapsed, setCollapsed}) {
         key: '/log-out',
         // key: {onclick:() => logOut()},
         onclick:{logOut},
-        icon: <LoginOutlined />,
+        icon: <LoginOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
         label: "Support",
         key: "/support",
-        icon: <MailOutlined />,
+        icon: <MailOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
         type: 'divider',
-      },
-      {
-        label: 'Polaris Bank',
-        key: "#",
-        icon: (
-          <div style={{
-            // marginRight: '5px'
-          }}>
-            <Image
-            width={73}
-            height={38}
-            style={{
-              paddingRight: '36px',
-              // paddingTop: '5px'
-              // marginRight: '95px'
-            }}
-            // preview={null}
-            // src="/Images/Group 1688.png"
-            src={require('../../Logos/polaris-logo/polarisSvg.svg').default} alt='Clients Logo'
-          />
-          </div>
-        ),
       },
     ]
   
@@ -146,6 +124,7 @@ function SideMenu({collapsed, setCollapsed}) {
           height: "100vh",
           // position: "fixed",
           position: "sticky",
+          right: 0,
           left: 0,
           top: 0,
           bottom: 0,
@@ -154,11 +133,12 @@ function SideMenu({collapsed, setCollapsed}) {
         }}
         collapsible
         collapsed={collapsed}
+        collapsedWidth={60}
+        trigger={null} 
         onCollapse={(value) => setCollapsed(value)}
       >
         <div className="wyre-logo">
-          <Space>
-            {/* <Image width={80} src="/Images/Wyre white-08 1.png"></Image> */}
+            <Image width={80} src="/Images/Wyre white-08 1.png"></Image>
             <Button
               type="text"
               icon={
@@ -166,39 +146,39 @@ function SideMenu({collapsed, setCollapsed}) {
                   <MenuOutlined style={{ color: "white" }} />
                 ) : (
                   // <MenuFoldOutlined style={{ color: "white" }} />
-                  <>
-                    <Image width={80} src="/Images/Wyre white-08 1.png"></Image>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '100%'
+                  }}>
+                    {/* <Image width={80} src="/Images/Wyre white-08 1.png"></Image> */}
                     <Button
                       type="text"
                       icon={
                         collapsed ? (
                           <MenuOutlined style={{ color: "white" }} />
                         ) : (
-                          <MenuOutlined style={{ marginLeft:220, color: "white" }} />
+                          <MenuOutlined style={{ marginLeft: 0, color: "white" }} />
                         )
                       }
                       onClick={() => {
                         setCollapsed(!collapsed);
                       }}
-                      style={{
-                        // fontSize: "16px",
-                        width: '0px',
-                        // height: 64,
-                      }}
                     />
-                  </>
+                  </div>
                 )
               }
               onClick={() => {
                 setCollapsed(!collapsed);
               }}
-              style={{
-                // fontSize: "16px",
+            style={{
+              marginLeft: '5px',
+              scale: collapsed ? '1.1' : '1',
                 width: 52,
                 // height: 64,
               }}
             />
-          </Space>
         </div>
         <Menu
           className="SideMenuVertical"
@@ -210,6 +190,31 @@ function SideMenu({collapsed, setCollapsed}) {
           mode="vertical"
           items={items}
         />
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'start',
+          width: '100%',
+            padding: 0,
+            marginTop: '20px'
+          }}>
+            <Image
+            width={73}
+            height={38}
+            style={{
+            padding: 0,
+              // paddingTop: '5px'
+            }}
+            // preview={null}
+            // src="/Images/Group 1688.png"
+            src={require('../../Logos/polaris-logo/polarisSvg.svg').default} alt='Clients Logo'
+          />
+          <p style={{
+            fontSize: '12px',
+            display: collapsed ? 'none' : 'block',
+            color: 'white'
+          }}>Polaris Bank</p>
+          </div>
       </Sider>
     );
   }

@@ -146,9 +146,12 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 }
 
 .wyre-logo {
-  margin-bottom: 15px;
-  margin-left: -120px;
-  margin-top: 17px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+  width: 100%;
 }
 
 /* SET TARGET  */
