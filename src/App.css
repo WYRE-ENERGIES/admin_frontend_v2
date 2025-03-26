@@ -115,6 +115,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 }
 
 .top-card-1 {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   background: #FFFFFF;
   border-radius: 15px;
   text-align: center;
@@ -126,6 +127,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   /* margin-top: 20px; */
 }
 .top-card-2 {
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   background: #FFFFFF;
   border-radius: 15px;
   text-align: center;
@@ -708,19 +710,26 @@ a.header-short-button--auth {
   table-layout: fixed;
   margin: 0;
   padding: 0;
+  background: whitesmoke;
   box-sizing: border-box;
   /* font-family: 'Montserrat'; */
   font-size: 12px;
 }
-/* .custom-row-hover td:first-child {
+.custom-row-hover td:first-child {
   border-top-left-radius: 20px;
   border-bottom-left-radius: 20px;
- }
+  /* gap: 50px; */
+}
  
  .custom-row-hover td:last-child {
    border-top-right-radius: 20px;
    border-bottom-right-radius: 20px;
-  } */
+   /* gap: 50px; */
+}
+
+.custom-row-hover tr >td {
+  background: white;
+}
 
 .custom-row-hover tr:hover >td  {
   border-bottom: 4px solid rgba(0, 0, 0, 0.15);
@@ -734,6 +743,11 @@ a.header-short-button--auth {
   background-color: #e6f7ff;
   cursor: pointer;
   transition: background-color 0.3s ease;
+}
+
+.first-row tr > td {
+  color: #5C12A7;
+  background-color: #F2F2F8;
 }
 
 .chart_buttons {
@@ -1501,7 +1515,7 @@ a.header-short-button--auth {
     /* flex: 1 1 100%; */
   }
 }
-
+    
 .cards-layer {
   display: flex;
 }

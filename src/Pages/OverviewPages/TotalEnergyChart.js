@@ -111,18 +111,19 @@ function TotalEnergyChart(props) {
       const energyDataSource = {
         labels: breakLabels,
         datasets: [
+          
           {
-            label: "Utility",
-            data: data1,
-            backgroundColor: "#094D92",
+            label: "Generator",
+            data: data2,
+            backgroundColor: "#43D540",
             borderRadius: 6,
             barThickness: 40,
             maxBarThickness: 40,
           },
           {
-            label: "Generator",
-            data: data2,
-            backgroundColor: "#43D540",
+            label: "Utility",
+            data: data1,
+            backgroundColor: "#094D92",
             borderRadius: 6,
             barThickness: 40,
             maxBarThickness: 40,
