@@ -43,6 +43,7 @@ function AdminPage(props) {
   dayjs.extend(customParseFormat);
   const dateFormat = 'DD/MM/YYYY';
   const { RangePicker } = DatePicker;
+  const { Title, Text } = Typography;
 
   const clientId = searchParams.get("client_id") || props.auth.userData.client_id;
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
@@ -197,9 +198,9 @@ function AdminPage(props) {
   return (
     <>
       <div className="AppHeader">
-        <Typography.Title className="Admin-heading">
+        <Text className="Admin-heading">
           Admin Overview
-        </Typography.Title>
+        </Text>
         <Space className="calender-and-button">
           <RangePicker className="monitoring-calender"
             defaultValue={[dayjs().startOf("month"), dayjs()]}
