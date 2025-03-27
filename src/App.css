@@ -755,6 +755,16 @@ a.header-short-button--auth {
   background-color: #F2F2F8;
 }
 
+.first-row td:first-child {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+
+.first-row td:last-child {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+
 .chart_buttons {
   background-color: #F2F2F8;
   width: 20%;
