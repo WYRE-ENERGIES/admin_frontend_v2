@@ -148,9 +148,10 @@ function AdminOverview(props) {
     if (value >= 50) return "#FFBF00";
     if (value < 50) return "#EF0000";
   };
-  const getUsageAccuracy = (value) => {
+  const getUsageAccuracy = (value, record, index ) => {
     if (value >= 95) return "#43D540";
     if (value < 95) return "#EF0000";
+    if (index === 0) return "#5C12A7"; 
   }; 
   const checkData = props.overviewPage?.fetchedKeyMetrics?.results?.[0]
 
@@ -439,8 +440,6 @@ function AdminOverview(props) {
                   // height: 43.5
                 }}
                 defaultValue={[
-                  // dayjs("01/04/2024", dateFormat),
-                  // dayjs("30/04/2024", dateFormat),
                   dayjs().startOf("month"),
                   dayjs(),
                 ]}
@@ -452,11 +451,10 @@ function AdminOverview(props) {
           <div style={{overflowX: 'auto'}}>
             <Table
               className="custom-row-hover"
-              // className="custom-table-with-curved-rows"
               rowClassName={(record, index) => {
                 if (index === 0) return "first-row";
               }}
-              onRow={(record, index) => ({
+              onRow={(record) => ({
                 style: {
                   color: record === checkData ? "#5C12A7" : "",
                   backgroundColor: record === checkData ? "#F2F2F8" : "",
@@ -552,8 +550,8 @@ function AdminOverview(props) {
                 dataIndex="diesel_usage_accuracy"
                 key="diesel_usage_accuracy"
                 ellipsis={true}
-                render={(value) => (
-                  <div style={{ color: getUsageAccuracy(value), fontWeight: "bold" }} >
+                render={(value, record, index) => (
+                  <div style={{ color: record === checkData ? "#5C12A7" : getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
                     {value.toLocaleString(undefined, {
                       maximumFractionDigits: 2,
                     })}
@@ -566,8 +564,8 @@ function AdminOverview(props) {
                 dataIndex="utility_usage_accuracy"
                 key="utility_usage_accuracy"
                 ellipsis={true}
-                render={(value, index) => (
-                  <div style={{ color: getUsageAccuracy(value, index), fontWeight: "bold" }} >
+                render={(value, record, index) => (
+                  <div style={{ color: record === checkData ? "#5C12A7" : getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
                     {value.toLocaleString(undefined, {
                       maximumFractionDigits: 2,
                     })}
