@@ -750,10 +750,10 @@ a.header-short-button--auth {
   transition: background-color 0.3s ease;
 }
 
-.first-row tr > td {
+/* .first-row tr > td {
   color: #5C12A7;
   background-color: #F2F2F8;
-}
+} */
 
 .first-row td:first-child {
   border-top-left-radius: 0px;

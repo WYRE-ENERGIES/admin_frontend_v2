@@ -149,9 +149,9 @@ function AdminOverview(props) {
     if (value < 50) return "#EF0000";
   };
   const getUsageAccuracy = (value, record, index ) => {
-    if (value >= 95) return "#43D540";
-    if (value < 95) return "#EF0000";
     if (index === 0) return "#5C12A7"; 
+    if (value < 95) return "#EF0000";
+    if (value >= 95) return "#43D540";
   }; 
   const checkData = props.overviewPage?.fetchedKeyMetrics?.results?.[0]
 
@@ -551,7 +551,7 @@ function AdminOverview(props) {
                 key="diesel_usage_accuracy"
                 ellipsis={true}
                 render={(value, record, index) => (
-                  <div style={{ color: record === checkData ? "#5C12A7" : getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
+                  <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
                     {value.toLocaleString(undefined, {
                       maximumFractionDigits: 2,
                     })}
@@ -565,7 +565,7 @@ function AdminOverview(props) {
                 key="utility_usage_accuracy"
                 ellipsis={true}
                 render={(value, record, index) => (
-                  <div style={{ color: record === checkData ? "#5C12A7" : getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
+                  <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
                     {value.toLocaleString(undefined, {
                       maximumFractionDigits: 2,
                     })}
