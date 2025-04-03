@@ -231,12 +231,11 @@ const menuProps = {
         <Space>
           <div>
             <Button
-              style={{ backgroundColor: "#5C12A7", color: "white" }}
+              style={{ width:"183.68px", height:"46.96px", fontWeight:"bold", borderRadius:"12px", backgroundColor: "#5C12A7", color: "white" }}
               onClick={(e) => {
                 e.preventDefault();
                 setShowAddButton(true);
                 setShowEditForm(false);
-                console.log("This button is expecting Actions");
               }}
             >
               <PlusOutlined />
@@ -254,6 +253,7 @@ const menuProps = {
                 loading={props.clientUsersPage.fetchClientUserLoading}
                 dataSource={data}
                 columns={columns}
+                rowStyle={{ marginBottom: '20px' }}
                 onChange={onChange}
                 pagination={false}
               />

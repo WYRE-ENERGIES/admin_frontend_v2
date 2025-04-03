@@ -45,12 +45,12 @@ const SubmitButton = ({ form }) => {
   }, [values]);
   return (
     <Button
-      style={{ backgroundColor: "#5C12A7", color: "white", width: "100%" }}
+      style={{ backgroundColor: "#5C12A7", color: "white", height:"40px", borderRadius:"7px", width: "100%" }}
       type="primary"
       htmlType="submit"
       // disabled={!submittable}
     >
-      Submit
+      Add User
     </Button>
   );
 };
@@ -129,7 +129,7 @@ function AddClientUserForm(props) {
       <div className="percentage_container">
         <div className="sidePage-add-user-container">
           <div className="sidePage-add-user">
-            <h3>Add User</h3>
+            <p className="user-form-heading">Add User</p>
             <div className="user-center-image">
               <Image src="/Images/Group 1688.png"></Image>
             </div>
@@ -150,7 +150,7 @@ function AddClientUserForm(props) {
                   },
                 ]}
               >
-                <Input />
+                <Input placeholder="John Doe"/>
               </Form.Item>
               <Form.Item
                 name="email"
@@ -161,7 +161,7 @@ function AddClientUserForm(props) {
                   },
                 ]}
               >
-                <Input />
+                <Input placeholder="example@gmail.com"/>
               </Form.Item>
               <Form.Item
                 name="phone_number"
@@ -172,7 +172,7 @@ function AddClientUserForm(props) {
                   },
                 ]}
               >
-                <Input />
+                <Input placeholder="+234 080 224 554 41"/>
               </Form.Item>
               <Form.Item
                 name="location"
@@ -191,9 +191,11 @@ function AddClientUserForm(props) {
                   style={
                     {
                       // width: "100%",
+                      height:"40px",
+                      background: "#F2F2F8"
                     }
                   }
-                  placeholder="Assign Location"
+                  placeholder="Add Location"
                   // defaultValue={["AdeolaHopewell", "Agodi"]}
                   onChange={handleChange}
                   options={options}

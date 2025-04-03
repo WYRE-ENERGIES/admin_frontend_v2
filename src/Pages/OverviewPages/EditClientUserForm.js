@@ -49,7 +49,7 @@ const SubmitButton = ({ form }) => {
   }, [values]);
   return (
     <Button
-      style={{ backgroundColor: "#5C12A7", color: "white", width: "100%" }}
+      style={{ backgroundColor: "#5C12A7", color: "white", height:"40px", borderRadius:"7px", width: "100%" }}
       type="primary"
       htmlType="submit"
       // disabled={!submittable}
@@ -109,6 +109,8 @@ function EditClientUserForm(props) {
         allowClear
         style={{
           // width: "100%",
+          height:"40px",
+          background: "#F2F2F8"
         }}
         placeholder="Change Location"
         // defaultValue={[]}
@@ -145,7 +147,7 @@ function EditClientUserForm(props) {
         <div className="percentage_container">
           <div className="sidePage-add-user-container">
             <div className="sidePage-add-user">
-              <h3>Edit User</h3>
+              <p className="user-form-heading">Edit User</p>
               <div className="user-center-image">
                 <Image src="/Images/Group 1688.png"></Image>
               </div>
