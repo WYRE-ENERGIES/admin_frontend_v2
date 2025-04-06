@@ -191,7 +191,6 @@ function AddClientUserForm(props) {
                   style={
                     {
                       // width: "100%",
-                      height:"40px",
                       background: "#F2F2F8"
                     }
                   }
