@@ -142,6 +142,17 @@ function AdminOverview(props) {
   );
 
   const data = props.overviewPage.fetchedKeyMetrics.results
+  const getGenEfficiency = (value) => {
+    if (value >= 86) return "#FFBF00";
+    if (value >= 66) return "#43D540";
+    if (value >= 50) return "#FFBF00";
+    if (value < 50) return "#EF0000";
+  };
+  const getUsageAccuracy = (value, record, index ) => {
+    if (index === 0) return "#5C12A7"; 
+    if (value < 95) return "#EF0000";
+    if (value >= 95) return "#43D540";
+  }; 
   const checkData = props.overviewPage?.fetchedKeyMetrics?.results?.[0]
 
   const keyMetricsPaginate = props.overviewPage.fetchedKeyMetrics
@@ -429,8 +440,6 @@ function AdminOverview(props) {
                   // height: 43.5
                 }}
                 defaultValue={[
-                  // dayjs("01/04/2024", dateFormat),
-                  // dayjs("30/04/2024", dateFormat),
                   dayjs().startOf("month"),
                   dayjs(),
                 ]}
@@ -442,10 +451,14 @@ function AdminOverview(props) {
           <div style={{overflowX: 'auto'}}>
             <Table
               className="custom-row-hover"
-              onRow={(record, index) => ({
+              rowClassName={(record, index) => {
+                if (index === 0) return "first-row";
+              }}
+              onRow={(record) => ({
                 style: {
                   color: record === checkData ? "#5C12A7" : "",
                   backgroundColor: record === checkData ? "#F2F2F8" : "",
+                  fontWeight: record === checkData ? "bold" : ""
                 },
                 // onClick: () => handleRowClick(record)
                 onClick: (event) => {
@@ -467,19 +480,11 @@ function AdminOverview(props) {
                 key="name"
                 width="120px"
                 ellipsis={true}
-                // render= {
-                //   (text) => {
-                //     return (
-                //       <span
-                //         style={{
-                //           fontWeight: 'bold',
-                //         }}
-                //       >
-                //         {text}
-                //       </span>
-                //     )
-                //   },
-                // }
+                render= {
+                  (text) => (
+                    <span style={{ fontWeight: "bold" }}>{text}</span>
+                  )
+                }
               />
               <Column
                 width={90}
@@ -502,34 +507,6 @@ function AdminOverview(props) {
                 title="Blended Cost of Energy"
                 dataIndex="blended_cost_of_energy"
                 key="blended_cost_of_energy"
-                ellipsis={true}
-                render={(value) => (
-                  <>
-                    {value.toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
-                    })}
-                  </>
-                )}
-              />
-              <Column
-                width={90}
-                title="Usage Accuracy Diesel"
-                dataIndex="diesel_usage_accuracy"
-                key="diesel_usage_accuracy"
-                ellipsis={true}
-                render={(value) => (
-                  <>
-                    {value.toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
-                    })}
-                  </>
-                )}
-              />
-              <Column
-                width={90}
-                title="Usage Accuracy Utility"
-                dataIndex="utility_usage_accuracy"
-                key="utility_usage_accuracy"
                 ellipsis={true}
                 render={(value) => (
                   <>
@@ -567,6 +544,34 @@ function AdminOverview(props) {
                   </>
                 )}
               />
+              <Column
+                width={90}
+                title="Diesel Usage Accuracy"
+                dataIndex="diesel_usage_accuracy"
+                key="diesel_usage_accuracy"
+                ellipsis={true}
+                render={(value, record, index) => (
+                  <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
+                    {value.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                )}
+              />
+              <Column
+                width={90}
+                title="Utility Usage Accuracy"
+                dataIndex="utility_usage_accuracy"
+                key="utility_usage_accuracy"
+                ellipsis={true}
+                render={(value, record, index) => (
+                  <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
+                    {value.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                )}
+              />
               <ColumnGroup
                 width="100px"
                 ellipsis={true}
@@ -577,6 +582,11 @@ function AdminOverview(props) {
                   // title="Gen1"
                   dataIndex="generator_size_efficiency_1"
                   key="generator_size_efficiency_1"
+                  render= {
+                    (value) => (
+                      <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
+                    )
+                  }
                   ellipsis={true}
                 />
                 <Column
@@ -584,6 +594,11 @@ function AdminOverview(props) {
                   // title="Gen2"
                   dataIndex="generator_size_efficiency_2"
                   key="generator_size_efficiency_2"
+                  render= {
+                    (value) => (
+                      <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
+                    )
+                  }
                   ellipsis={true}
                 />
                 <Column
@@ -591,6 +606,11 @@ function AdminOverview(props) {
                   // title="Gen3"
                   dataIndex="generator_size_efficiency_3"
                   key="generator_size_efficiency_3"
+                  render= {
+                    (value) => (
+                      <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
+                    )
+                  }
                   ellipsis={true}
                 />
               </ColumnGroup>

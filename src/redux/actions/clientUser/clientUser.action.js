@@ -1,5 +1,5 @@
 import { APIService } from "../../../config/Api/apiServices";
-import { addClientUserLoading, addClientUserSuccess, addUserBranchLoading, addUserBranchSuccess, deleteClientUserLoading, deleteClientUserSuccess, editClientUserLoading, editClientUserSuccess, getClientUserLoading, getClientUserSuccess, getUserBranchLoading, getUserBranchSuccess } from "./clientUser.creator";
+import { addClientUserLoading, addClientUserSuccess, addUserBranchLoading, addUserBranchSuccess, deleteClientUserLoading, deleteClientUserSuccess, editClientUserLoading, editClientUserSuccess, getClientUserLoading, getClientUserSuccess, getUserBranchLoading, getUserBranchSuccess, getViewUserBranchesLoading, getViewUserBranchesSuccess } from "./clientUser.creator";
 
 export const addClientUsersData = (clientId, values) => async (dispatch) => {
 
@@ -41,11 +41,12 @@ export const getClientUsersData = (clientId, paginationQuery=1, branchName) => a
 
     dispatch(getClientUserLoading(true));
   
-    const requestUrl = `/api/v2/clients/${clientId}/users/?page=${paginationQuery}`;
+    // const requestUrl = `/api/v2/clients/${clientId}/users/?page=${paginationQuery}`;
+    const requestUrl = `/api/v2/clients/${clientId}/users/?no_pagination=true`;
     const initUrl = `/api/v2/clients/${clientId}/users/?page=${paginationQuery}`
     const reqUrl = branchName ? initUrl + `&search=${branchName}` : initUrl
     try {
-      const response = await APIService.get(reqUrl);
+      const response = await APIService.get(requestUrl);
   
       dispatch(getClientUserSuccess(response.data));
   
@@ -53,6 +54,23 @@ export const getClientUsersData = (clientId, paginationQuery=1, branchName) => a
       return { fulfilled: true, message: 'successful' }
     } catch (error) {
       dispatch(getClientUserLoading(false));
+      return { fulfilled: false, message: error.response.data.detail }
+    }
+};
+
+export const getViewUserBranchesData = (branchId) => async (dispatch) => {
+
+    dispatch(getViewUserBranchesLoading(true));
+    const requestUrl = `/cadmin/add_user/${branchId}`;
+    try {
+      const response = await APIService.get(requestUrl);
+  
+      dispatch(getViewUserBranchesSuccess(response.data));
+  
+      dispatch(getViewUserBranchesLoading(false))
+      return { fulfilled: true, message: 'successful' }
+    } catch (error) {
+      dispatch(getViewUserBranchesLoading(false));
       return { fulfilled: false, message: error.response.data.detail }
     }
 };
@@ -80,7 +98,7 @@ export const updateClientUsersData = (clientId, id, values) => async (dispatch) 
 
     dispatch(editClientUserLoading(true));
   
-    const requestUrl = `/api/v2/clients/${clientId}/users/${id}`;
+    const requestUrl = `/api/v2/clients/${clientId}/users/${id}/`;
     try {
       const response = await APIService.put(requestUrl, values);
   

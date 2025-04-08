@@ -4,7 +4,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { PlusOutlined, SearchOutlined, UserOutlined, EditOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
-import { addClientUsersData, getClientUsersData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
+import { addClientUsersData, getClientUsersData, getViewUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
 import EditClientUserForm from "./EditClientUserForm";
 import AddClientUserForm from "./AddClientUserForm";
 import { BsThreeDots } from "react-icons/bs";
@@ -13,25 +13,37 @@ import { BsThreeDots } from "react-icons/bs";
 function ClientUsers(props) {
   const [showEditForm, setShowEditForm] = useState(false)
   const [showAddButton, setShowAddButton] = useState(false)
-  const [userBranchesData, setUserBranchesData] = useState([])
+  const [clientUserApiData, setClientUserApiData] = useState([])
+  const [holdPaginatedData, setHoldPaginatedData] = useState([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
   const [showUserBranches, setShowUserBranches] = useState(false)
   const [ClientUserTableData, setClientUserTableData] = useState({})
 
   const { Search } = Input;
   
   dayjs.extend(customParseFormat);
-  const showclientUsersList = () => {
-    const clientId = props.auth.userData.client_id
-    props.getClientUsersData(clientId);
-  }
 
   useEffect(() => {
-    showclientUsersList()
+    const clientId = props.auth.userData.client_id
+    props.getClientUsersData(clientId);
   }, [])
+
+  useEffect(() => {
+    if (props.clientUsersPage.fetchedClientUser) {
+      setClientUserApiData(props.clientUsersPage.fetchedClientUser)
+    }
+  }, [props.clientUsersPage.fetchedClientUser])
+
+  useEffect(() => {
+    props.getViewUserBranchesData(ClientUserTableData.id)
+  }, [ClientUserTableData])
+
+
 
   const onSearchClientUser = (e) => {
     const clientId = props.auth.userData.client_id
-    props.getClientUsersData(clientId, 1, e.target.value)
+    props.getClientUsersData(clientId, e.target.value)
   }
 
   const suffix = (
@@ -44,42 +56,31 @@ function ClientUsers(props) {
     />
   );
 
-  const data = props.clientUsersPage.fetchedClientUser.results
-  const modalData = ClientUserTableData.branches
-  const newModalData = []
-  if (modalData) {
-    modalData.map((newMod) => {
-      newModalData.push(
-        {
-          name : newMod,
-          // id: Math.floor((Math.random() * 10) + 1)
-          
-        }
-      )
-    })
-  }
-
-  const clientUersListPaginate = props.clientUsersPage.fetchedClientUser
-  const fetchNextPaginatedUsersList = () => {
-    const clientId = props.auth.userData.client_id;
-    const currentPage = Number(clientUersListPaginate.page) || 0;
-    const itemsPerPage = Number(clientUersListPaginate.count) || 10;
-    const totalPages = Number( clientUersListPaginate.total_pages) || 0
-    if (!currentPage || (totalPages - currentPage) > 0) {
-      const paginationQuery = `&page=${currentPage+1}`;
-      props.getClientUsersData(clientId, paginationQuery);
-    }
+  const handleSearch = (e) => {
+    const filtered = clientUserApiData.filter((item) =>
+      item.username.toLowerCase().includes(e.target.value.toLowerCase())
+    );
+    setHoldPaginatedData(filtered)
   };
+  const newModalData = props.clientUsersPage.fetchedViewUserBranches.data
 
-  const fetchPrevPaginatedUsersList = () => {
-    const clientId = props.auth.userData.client_id;
-    const currentPage = Number(clientUersListPaginate.page) || 0;
-    const itemsPerPage = Number(clientUersListPaginate.count) || 10;
-    if (currentPage && currentPage > 1) {
-      const paginationQuery = `&page=${currentPage-1}`;
-      props.getClientUsersData(clientId, paginationQuery);
-    }
-  };
+    const fetchNextPaginatedUsersList = () => {
+      const totalPages = currentPage*pageSize < clientUserApiData.length;
+      if (totalPages) {
+        setCurrentPage(currentPage +1);
+      }
+    };
+  
+    const fetchPrevPaginatedUsersList = () => {
+      if (currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+    };
+
+  useEffect( () => {
+    const paginatedData = clientUserApiData.slice((currentPage-1)*pageSize, currentPage*pageSize)
+    setHoldPaginatedData(paginatedData)
+  }, [currentPage, clientUserApiData])
 
   const handleMenuClick = () => {
     setShowUserBranches(true)
@@ -105,14 +106,6 @@ function ClientUsers(props) {
     }
   },
 ];
-
-// let branchData = []
-// if (branches) {
-//   branches.map((branch) => {
-//     branchData.push(branch)
-//   })
-// }
-// console.log('display nodal-data = ', branchData);
 
 const menuProps = {
   items,
@@ -219,24 +212,24 @@ const menuProps = {
       </div>
       <div className="AppHeader">
         <Search
-          onClick={onSearchClientUser}
-          enterButton={suffix}
+          // onClick={onSearchClientUser}
+          onChange={handleSearch}
+          // enterButton="suffix"
           allowClear
           placeholder="Search by name"
           style={{
             width: "349.68px",
-            height: "49.69px",
+            height: "69.69px",
           }}
         />
         <Space>
           <div>
             <Button
-              style={{ backgroundColor: "#5C12A7", color: "white" }}
+              style={{ width:"183.68px", height:"46.96px", fontWeight:"bold", borderRadius:"12px", backgroundColor: "#5C12A7", color: "white" }}
               onClick={(e) => {
                 e.preventDefault();
                 setShowAddButton(true);
                 setShowEditForm(false);
-                console.log("This button is expecting Actions");
               }}
             >
               <PlusOutlined />
@@ -252,9 +245,18 @@ const menuProps = {
               <Table
                 className="custom-row-hover"
                 loading={props.clientUsersPage.fetchClientUserLoading}
-                dataSource={data}
+                dataSource={holdPaginatedData}
                 columns={columns}
-                onChange={onChange}
+                rowStyle={{ marginBottom: '20px' }}
+                // onChange={onChange}
+                // pagination={{
+                //   current: currentPage,
+                //   pageSize: pageSize,
+                //   total: data.length,
+                //   showSizeChanger: true,
+                //   pageSizeOptions: ["5", "10", "20", "50"]
+                // }}
+                // onChange={handlePagination}
                 pagination={false}
               />
               <div className="pagination">
@@ -301,6 +303,7 @@ const menuProps = {
 const mapDispatchToProps = {
   addClientUsersData,
   getClientUsersData,
+  getViewUserBranchesData,
   updateClientUsersData,
   removeClientUsersData,
 };
