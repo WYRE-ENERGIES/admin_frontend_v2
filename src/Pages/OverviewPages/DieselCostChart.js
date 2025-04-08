@@ -37,7 +37,7 @@ ChartJS.register(
 
 function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const [dateSearch, setDateSearch] = useState('')
-  const [selectedDate, setSelectedDate] = useState(dayjs('2025', 'YYYY'))
+  const [selectedDate, setSelectedDate] = useState()
   const [costChartData, setCostChartData] = useState({
     labels: [],
     datasets: []
@@ -115,7 +115,7 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
       },
       title: {
         display: true,
-        text: 'Amount(Naira)',
+        text: 'Amount (Naira)',
         fontWeight: 'bold',
         position: 'left'
       },
@@ -125,7 +125,7 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
       x: {
         title: {
           display: true,
-          text: "Period(Month)",
+          text: "Period (Month)",
           fontWeight: "bold",
           position: "left",
         },
@@ -189,7 +189,7 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                   <DatePicker
                     defaultValue={selectedDate}
                     picker="year"
-                    style={{ width: 107.65, height: 44 }}
+                    style={{ width: 120.65, height: 44 }}
                     onChange={onDateChange}
                   />
                 </div>

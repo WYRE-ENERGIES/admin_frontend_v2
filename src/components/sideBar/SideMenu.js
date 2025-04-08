@@ -183,6 +183,7 @@ function SideMenu({collapsed, setCollapsed}) {
         <Menu
           className="SideMenuVertical"
           theme="white"
+          selectedKeys={selectedLocation}
           defaultSelectedKeys={["1"]}
           onClick={(Item) => {
             navigate(Item.key);

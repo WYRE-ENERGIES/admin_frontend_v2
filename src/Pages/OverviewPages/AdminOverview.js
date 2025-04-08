@@ -29,10 +29,10 @@ import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
 import BarLoader from 'react-bar-loader';
-import { BsFillBucketFill, BsProjectorFill, BsThunderboltFill } from "react-icons/bs";
-import { PiProjectorScreen } from "react-icons/pi";
+import { BsDatabase, BsDatabaseCheck, BsDatabaseFill, BsDatabaseFillGear, BsDatabaseFillX, BsDatabaseLock, BsDatabaseUp, BsFillBucketFill, BsProjectorFill, BsThunderbolt, BsThunderboltFill } from "react-icons/bs";
+import { PiDatabase, PiDatabaseLight, PiDatabaseThin, PiLightningDuotone, PiLightningSlashDuotone, PiLightningThin, PiMoneyWavy, PiProjectorScreen } from "react-icons/pi";
 import { CiMoneyBill } from "react-icons/ci";
-import { BiMoney } from "react-icons/bi";
+import { BiCandles, BiData, BiMoney } from "react-icons/bi";
 
 ChartJS.register(
   CategoryScale,
@@ -47,27 +47,27 @@ const buttons = [
   {
     label: "Total Energy",
     // key: "/",
-    icon: <ThunderboltOutlined />,
+    icon: <PiLightningDuotone />,
   },
   {
     label: "Utility Cost",
     // key: "/",
-    icon: <FundOutlined />,
+    icon: <BiMoney />,
   },
   {
     label: "Utility Energy",
     // key: "/",
-    icon: <ExpandAltOutlined />,
+    icon: <BiCandles />,
   },
   {
     label: "Diesel Cost",
     // key: "/",
-    icon: <FundOutlined />,
+    icon: <BiMoney />,
   },
   {
     label: "Diesel Liters",
     // key: "/",
-    icon: <DeleteOutlined />,
+    icon: <PiDatabase />,
   },
 ]
 

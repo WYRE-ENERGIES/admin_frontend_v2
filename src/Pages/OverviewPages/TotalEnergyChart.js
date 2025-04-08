@@ -187,8 +187,8 @@ function TotalEnergyChart(props) {
     },
   ]
   
-  const onSearchTotalEnergy = () => {
-    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, holdSearchData)
+  const onSearchTotalEnergy = (e) => {
+    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, e.target.value)
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -196,7 +196,7 @@ function TotalEnergyChart(props) {
   };
   const suffix = (
     <SearchOutlined
-      onClick={onSearchTotalEnergy}
+      // onClick={onSearchTotalEnergy}
       style={{
         fontSize: 16,
         color: "white",
@@ -239,9 +239,10 @@ function TotalEnergyChart(props) {
                   <Search
                     placeholder="Search by name"
                     enterButton={suffix}
-                    onChange={(e) => {
-                      setHoldSearchData(e.target.value);
-                    }}
+                    // onChange={(e) => {
+                    //   setHoldSearchData(e.target.value);
+                    // }}
+                    onChange={onSearchTotalEnergy}
                     allowClear
                     style={{
                       width: 222, 

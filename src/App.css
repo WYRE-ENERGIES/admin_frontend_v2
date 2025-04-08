@@ -768,6 +768,7 @@ a.header-short-button--auth {
 
 .custom-row-hover tr:hover >td  {
   border-bottom: 4px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 4px rgba(0, 0, 0, 0.2);
   filter: drop-shadow( rgba(0, 0, 0, 0.15) );
   /* background: unset !important; */
   opacity: 2;
@@ -805,6 +806,10 @@ a.header-short-button--auth {
   background-color: #F1E4FF;
   color: #5C12A7;
 } 
+
+li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
+  /* background-color; */
+}
 
 .device_Consumption {
   font-family: 'Montserrat';
