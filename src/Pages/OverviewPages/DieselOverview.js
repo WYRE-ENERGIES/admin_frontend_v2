@@ -287,17 +287,20 @@ function DieselOverview(props) {
         </Space>
       </div>
       <div className="##########">
-        <section className="total-energy-bar-chart">
+        <section className="total-energy-bar-chart diesel-overview-table">
           {/* <div className="client-page-flex-display"> */}
           {/* <div className="client-user-table"> */}
-          <Table
-            className="custom-row-hover"
-            loading={props.dieselPage.fetchDieselLoading}
-            dataSource={data}
-            columns={columns}
-            onChange={onChange}
-            pagination={false}
-          />
+          <div className="table-responsive-wrapper">
+            <Table
+              className="custom-row-hover"
+              loading={props.dieselPage.fetchDieselLoading}
+              dataSource={data}
+              columns={columns}
+              onChange={onChange}
+              pagination={false}
+              scroll={{ x: true }}
+            />
+          </div>
           <Modal
             visible={showprocurementsModal}
             title="Procurements Table"
@@ -311,6 +314,7 @@ function DieselOverview(props) {
               loading={props.dieselPage.fetchDieselProcurementLoading}
               columns={procurementModal}
               pagination={false}
+              scroll={{ x: true }}
             />
             <div className="modal_pagination">
               <div>

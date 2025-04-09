@@ -20,6 +20,7 @@
   font-style: normal;
   height: 50px;
   display: flex;
+  flex-wrap: nowrap;
   justify-content: space-between;
   align-items: center;
   /* padding: 4px 20px 4px 12px; */
@@ -28,6 +29,31 @@
   margin-top: 10px; */
   margin: 30px;
   /* border-bottom: 1px solid rgba(0, 0, 0, 0.15); */
+}
+
+.mobile-title {
+  font-size: 25px;
+  font-weight: bold;
+}
+
+@media (max-width: 768px) {
+  .mobile-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+}
+
+.mobile-button {
+    padding: 20px 25px;
+  font-weight: bold;
+  font-size: 15px;
+  border-radius: 11px;
+}
+
+@media (max-width: 768px) {
+  .mobile-button {
+    padding: 20px 15px;
+  }
 }
 
 .Admin-heading {
@@ -58,6 +84,13 @@
   background-color: #5C12A7;
   color: white;
   /* position: sticky; */
+}
+
+@media (max-width: 768px) {
+.SideMenuVertical{
+  margin-left: 15px;
+  /* position: sticky; */
+}
 }
 
 /* span.ant-menu-title-content{
@@ -161,28 +194,33 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 
 .client-page-flex-display {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-
-  /* media-query */
-  @media (max-width: 1022px) {
-    display: grid;
-    .client-user-table {
-      width: 114%;
-      margin-bottom: 15px;
-    }
-  }
 }
 
 .percentage_container{
   background-color: #FFFFFF;
   /* width: 26%; */
-  width: 280px;
+  width: 28%;
   height: 10%;
+}
+
+@media (max-width: 1022px) {
+  .percentage_container{
+    width: 100%;
+  }
 }
 
 .client-user-table{
   /* width: 71%; */
-  width: 740px;
+  width: 70%;
+  margin-block: 15px;
+}
+
+@media (max-width: 1022px) {
+.client-user-table{
+    width: 100%;
+  }
 }
 
 .sidePage-add-user-container {
@@ -211,11 +249,18 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 .support_bottomSection {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: space-around;
-  padding: 60px 80px;
+  justify-content: space-between;
+  padding: 40px 30px;
   /* background: #f0f7ed; */
   border-radius: 12px;
+}
+
+@media (max-width: 768px) {
+  .support_bottomSection {
+    font-size: 12px;
+  }
 }
 
 
@@ -671,11 +716,29 @@ a.header-short-button--auth {
   margin: 30px;
 }
 
+@media (max-width: 768px) {
+  .total-energy-bar-chart {
+    margin: 20px;
+  }
+  .users-table {
+    margin: 40px;
+  }
+  .diesel-overview-table {
+    margin-top: 80px;
+  }
+}
 .set_target_page {
   font-family: 'Montserrat';
   font-size: medium;
   font-weight: 600;
   margin: 30px;
+}
+
+@media (max-width: 768px) {
+  .set_target_page {
+    margin: 16px;
+    font-size: 12px;
+  }
 }
 
 .pagination {
@@ -708,7 +771,6 @@ a.header-short-button--auth {
 }
 .custom-row-hover table {
   width: 100%;
-  max-width: 100%;
   display: table;
   table-layout: fixed;
   margin: 0;
@@ -741,10 +803,99 @@ a.header-short-button--auth {
   transition: background-color 0.3s ease;
 }
 
+.search-bar-date-picker .search-bar {
+  width: 222px;
+}
+
+.search-bar-date-picker .picker-date {
+  width: 222px;
+}
+
+@media (max-width: 768px) {
+.search-bar-date-picker {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.search-bar-date-picker .search-bar {
+  width: 50%;
+}
+
+.search-bar-date-picker .picker-date {
+  width: 50%;
+}
+}
+
+@media (max-width: 568px) {
+.search-bar-date-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 30px;
+}
+
+.search-bar-date-picker .search-bar {
+  width: 100%;
+}
+
+.search-bar-date-picker .picker-date {
+  width: 100%;
+}
+}
+
+.user-search-input {
+  width: 349.68px;
+  height: 49.69px;
+}
+
+@media (max-width: 768px) {
+  .user-search-input { 
+    width: 100%;
+    height: 49.69px;
+  }
+}
+
 .chart_buttons {
   background-color: #F2F2F8;
   width: 20%;
   height: 45px;
+}
+
+.chart_buttons_container_mobile {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.chart_buttons_container {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+
+@media (max-width: 1000px) {
+.chart_buttons {
+  width: 25%;
+  height: 45px;
+}
+}
+
+@media (max-width: 768px) {
+.chart_buttons {
+  width: 33%;
+  height: 45px;
+}
+}
+
+@media (max-width: 568px) {
+.chart_buttons {
+  width: 50%;
+  height: 45px;
+}
 }
 
 .chart_buttons:focus {
@@ -1291,7 +1442,8 @@ a.header-short-button--auth {
   }
   .top-cards-container {
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto auto; 
+    /* gap: 10px; */
   }
   .top-card {
     width: 249px;
@@ -1317,7 +1469,8 @@ a.header-short-button--auth {
   }
   .top-cards-container {
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto auto; 
+    /* gap: 10px; */
   }
   .top-card {
     width: 243px;
@@ -1343,7 +1496,8 @@ a.header-short-button--auth {
   }
   .top-cards-container {
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto auto; 
+    /* gap: 10px; */
   }
   .top-card {
     width: 237px;
@@ -1369,7 +1523,8 @@ a.header-short-button--auth {
   }
   .top-cards-container {
     display: grid;
-    grid-template-columns: auto auto auto;
+    grid-template-columns: auto auto auto; 
+    /* gap: 10px; */
   }
   .top-card {
     width: 231px;
@@ -1486,7 +1641,7 @@ a.header-short-button--auth {
 @media (max-width: 820px) {
   .AppHeader {
     display: grid;
-    margin-bottom: 50px;
+    margin: 20px;
   }
   .Admin-heading {
     font-size: xx-large;
@@ -1511,7 +1666,7 @@ a.header-short-button--auth {
 @media (max-width: 768px) {
   .AppHeader {
     display: grid;
-    margin-bottom: 50px;
+    margin: 20px;
   }
   .monitoring-calender {
     width: 217px;
@@ -1532,7 +1687,7 @@ a.header-short-button--auth {
 @media (max-width: 480px) {
   .AppHeader {
     display: grid;
-    margin-bottom: 100px;
+    margin: 20px;
   }
   .Admin-heading {
     /* background-color: red; */
@@ -1563,4 +1718,127 @@ a.header-short-button--auth {
 .layer-2 {
   margin-top: 20px;
   display: flex;
+}
+
+.mobile-header {
+  display: none;
+  position: sticky;
+  width: 100vw;
+  top: 0;
+  z-index: 100;
+  background-color: #5C12A7;
+  padding-top: 30px;
+  padding-bottom: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-button {
+   display: none;
+  }
+
+  .wyre-logo {
+    padding-left: 50px;
+  }
+}
+
+.mobile-header img {
+  margin-left: 20px;
+}
+
+.mobile-header button {
+  margin-right: 20px;
+}
+
+@media (max-width: 768px) {
+  .mobile-header {
+    display: flex;
+  }
+  
+  .SidemenuAndPagecontent {
+    flex-direction: column;
+  }
+}
+
+/* Override ant design drawer styles for mobile menu */
+.ant-drawer-content-wrapper {
+  box-shadow: -8px 0 8px rgba(0, 0, 0, 0.15);
+}
+
+.ant-drawer .ant-drawer-content {
+  background-color: #5C12A7;
+}
+
+/* Ensure the page content takes full width on mobile */
+@media (max-width: 768px) {
+  .PageContent {
+    margin: 16px;
+    width: calc(100% - 32px);
+  }
+}
+
+.co2.total-energy-card {
+  padding: 0 16px;
+}
+
+.co2.total-energy-card .ant-space {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.top-card-1, .top-card-2 {
+  background: #FFFFFF;
+  border-radius: 15px;
+  padding-inline: 20px;
+  padding-top: 5px;
+  padding-bottom: 12px;
+  height: auto;
+  min-width: 200px;
+  margin: 0;
+}
+
+
+@media screen and (max-width: 768px) {
+  .co2.total-energy-card .ant-space {
+    justify-content: center;
+  }
+
+  .top-card-1, .top-card-2 {
+    flex: 1;
+    min-width: 160px;
+  }
+}
+
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+}
+
+.table-responsive-wrapper .ant-table {
+  min-width: 100%;
+}
+
+.table-responsive-wrapper .ant-table-container {
+  border-radius: 8px;
+}
+
+@media (max-width: 768px) {
+  .table-responsive-wrapper {
+    margin: 0 -16px;
+    width: calc(100% + 32px);
+    border-radius: 0;
+  }
+  
+  .table-responsive-wrapper .ant-table-container {
+    border-radius: 0;
+  }
 }

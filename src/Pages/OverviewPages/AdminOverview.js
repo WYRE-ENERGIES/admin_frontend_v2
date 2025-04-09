@@ -1,12 +1,12 @@
-import { Button, Card, DatePicker, Image, Input, Modal, Space, Spin, Table, Tag, Typography } from "antd";
+import { Button, DatePicker, Image, Input, Space, Spin, Table, Typography } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { DownloadOutlined, PlusOutlined, ContainerOutlined, ExpandAltOutlined, FundOutlined, DeleteOutlined, EllipsisOutlined, ProjectOutlined, FundProjectionScreenOutlined, BarsOutlined, ThunderboltOutlined  } from "@ant-design/icons";
+import { DownloadOutlined, ExpandAltOutlined, FundOutlined, DeleteOutlined, ThunderboltOutlined  } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { getKeyMetricsData, getTotalCostBarChartData, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
+import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
-import { connect, useSelector } from "react-redux";
+import { connect } from "react-redux";
 import moment from "moment";
 import {
   Chart as ChartJS,
@@ -18,8 +18,6 @@ import {
   Legend,
 } from 'chart.js';
 import 'chart.js/auto'
-import { Bar } from "react-chartjs-2";
-import Pagination from "../../components/Pagination";
 import ColumnGroup from "antd/es/table/ColumnGroup";
 import Column from "antd/es/table/Column";
 import UtilityCostChart from "./UtilityCostChart";
@@ -28,11 +26,6 @@ import UtilityEnergyChart from "./UtilityEnergyChart";
 import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
-import BarLoader from 'react-bar-loader';
-import { BsFillBucketFill, BsProjectorFill, BsThunderboltFill } from "react-icons/bs";
-import { PiProjectorScreen } from "react-icons/pi";
-import { CiMoneyBill } from "react-icons/ci";
-import { BiMoney } from "react-icons/bi";
 
 ChartJS.register(
   CategoryScale,
@@ -279,20 +272,13 @@ function AdminOverview(props) {
 
   return (
     <>
-      <div className="AppHeader">
-        <Typography.Title style={{ fontSize: "30px", fontWeight: "bold" }}>
+      <div className="AppHeader" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h4 className="mobile-title">
           Admin Overview
-        </Typography.Title>
-        <Space>
+        </h4>
           <div>
             <Button
-              style={{
-                width: "227.5px",
-                height: "42.32px",
-                fontWeight: "bold",
-                fontSize: "15px",
-                borderRadius: "11px",
-              }}
+              className="mobile-button"
             >
               <DownloadOutlined />
               Download Report
@@ -314,7 +300,6 @@ function AdminOverview(props) {
               Add User
             </Button>
           </div> */}
-        </Space>
       </div>
       <div className="##########">
         <section className="co2 & total-energy-card">
@@ -378,7 +363,7 @@ function AdminOverview(props) {
             Chart Metrics
           </Typography.Title>
           <div
-            className=""
+            className="chart_buttons_container"
             style={{
               // backgroundColor: "#F2F2F8",
               width: "100%",
@@ -394,11 +379,7 @@ function AdminOverview(props) {
         <RendeChartsComponents index={isSelectChart} />
         <section className="total-energy-bar-chart">
           <div
-            style={{
-              // width:1039,
-              display: "flex",
-              justifyContent: "space-between",
-            }}
+            style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}
           >
             <div>
               <h1
@@ -409,23 +390,23 @@ function AdminOverview(props) {
                 Key Metrics
               </h1>
             </div>
-            <div>
+            <div className="search-bar-date-picker">
               <Search
                 placeholder="Search by name"
                 enterButton={suffix}
+                className="search-bar"
                 onChange={(e) => {
                   setHoldSearchData(e.target.value);
                 }}
                 allowClear
                 style={{
-                  width: 285.57,
                   marginRight: 15,
                   // height: 43.5
                 }}
               />
               <RangePicker
+                className="picker-date"
                 style={{
-                  width: 224.81,
                   // height: 43.5
                 }}
                 defaultValue={[

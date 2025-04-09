@@ -212,21 +212,18 @@ const menuProps = {
 
   return (
     <>
-      <div className="AppHeader">
+      <div className="AppHeader" style={{margin: "30px"}}>
         <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
           Users
         </Typography.Title>
       </div>
-      <div className="AppHeader">
+      <div className="AppHeader" style={{margin: "30px"}}>
         <Search
           onClick={onSearchClientUser}
           enterButton={suffix}
           allowClear
           placeholder="Search by name"
-          style={{
-            width: "349.68px",
-            height: "49.69px",
-          }}
+          className="user-search-input"
         />
         <Space>
           <div>
@@ -246,17 +243,20 @@ const menuProps = {
         </Space>
       </div>
       <div className="##########">
-        <section className="total-energy-bar-chart">
+        <section className="total-energy-bar-chart users-table">
           <div className="client-page-flex-display">
             <div className="client-user-table">
-              <Table
-                className="custom-row-hover"
-                loading={props.clientUsersPage.fetchClientUserLoading}
-                dataSource={data}
-                columns={columns}
-                onChange={onChange}
-                pagination={false}
-              />
+              <div className="table-responsive-wrapper">
+                <Table
+                  className="custom-row-hover"
+                  loading={props.clientUsersPage.fetchClientUserLoading}
+                  dataSource={data}
+                  columns={columns}
+                  onChange={onChange}
+                  pagination={false}
+                  scroll={{ x: true }}
+                />
+              </div>
               <div className="pagination">
                 <div>
                   <Button onClick={fetchPrevPaginatedUsersList}>
@@ -275,12 +275,14 @@ const menuProps = {
                 width={557}
                 height={594}
               >
-                <Table
-                  dataSource={newModalData}
-                  // loading={}
-                  columns={modalColumns}
-                  pagination={false}
-                />
+                <div className="table-responsive-wrapper">
+                  <Table
+                    dataSource={newModalData}
+                    columns={modalColumns}
+                    pagination={false}
+                    scroll={{ x: true }}
+                  />
+                </div>
               </Modal>
             </div>
             {ClientUserTableData ? (

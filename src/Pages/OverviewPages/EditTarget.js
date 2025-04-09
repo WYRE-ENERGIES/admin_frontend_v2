@@ -59,8 +59,8 @@ const SubmitButton = ({ form }) => {
     <Button
       style={{
         backgroundColor: "#5C12A7",
-        color: "white",
-        width: "370px",
+        color: "white",        
+        width: "100%",
         height: "52px",
       }}
       type="primary"
@@ -150,10 +150,10 @@ function EditTarget(props) {
             onFinish={submitEditTargetInfo}
           >
             <div
-              style={{ width: "842", display: "flex", marginBottom: "24px" }}
+              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
             >
               <div
-                style={{ width: "405px", height: "82px", marginRight: "16px" }}
+                style={{ width: "100%", height: "82px", marginRight: "16px" }}
               >
                 <Form.Item
                   name="blended_cost_of_energy"
@@ -169,7 +169,7 @@ function EditTarget(props) {
                 </Form.Item>
               </div>
               <div
-                style={{ width: "405px", height: "82px", marginLeft: "16px" }}
+                style={{ width: "100%", height: "82px" }}
               >
                 <Form.Item
                   name="diesel_usage_accuracy"
@@ -185,10 +185,10 @@ function EditTarget(props) {
               </div>
             </div>
             <div
-              style={{ width: "842", display: "flex", marginBottom: "24px" }}
+              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
             >
               <div
-                style={{ width: "405px", height: "82px", marginRight: "16px" }}
+                style={{ width: "100%", height: "82px", marginRight: "16px" }}
               >
                 <Form.Item
                   name="utility_usage_accuracy"
@@ -203,7 +203,7 @@ function EditTarget(props) {
                 </Form.Item>
               </div>
               <div
-                style={{ width: "405px", height: "82px", marginLeft: "16px" }}
+                style={{ width: "100%", height: "82px" }}
               >
                 <Form.Item
                   name="maximum_monthly_deviation_hours"
@@ -219,10 +219,10 @@ function EditTarget(props) {
               </div>
             </div>
             <div
-              style={{ width: "842", display: "flex", marginBottom: "24px" }}
+              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
             >
               <div
-                style={{ width: "405px", height: "82px", marginRight: "16px" }}
+                style={{ width: "100%", height: "82px", marginRight: "16px" }}
               >
                 <Form.Item
                   name="papr"
@@ -236,7 +236,7 @@ function EditTarget(props) {
                 >
                   <InputNumber
                     type="number"
-                    style={{ height: "52px", width: "405px" }}
+                    style={{ height: "52px", width: "100%"}}
                     // defaultValue="1"
                     min="0"
                     max="1"
@@ -252,7 +252,7 @@ function EditTarget(props) {
                 </Form.Item>
               </div>
               <div
-                style={{ width: "405px", height: "82px", marginLeft: "16px" }}
+                style={{ width: "100%", height: "82px" }}
               >
                 <Form.Item name="fuel_efficiency" label="Fuel efficiency kWh/L">
                   <Input
@@ -268,10 +268,10 @@ function EditTarget(props) {
               <p>Generator Size Efficiency</p>
             </div>
             <div
-              style={{ width: "842", display: "flex", marginBottom: "40px" }}
+              style={{ width: "100%", display: "flex", marginBottom: "40px" }}
             >
               <div
-                style={{ width: "270px", height: "82px", marginRight: "8px" }}
+                style={{ width: "100%", height: "82px", marginRight: "8px" }}
               >
                 <Form.Item
                   name="generator_size_efficiency_1"
@@ -289,7 +289,7 @@ function EditTarget(props) {
               </div>
               <div
                 style={{
-                  width: "270px",
+                  width: "100%",
                   height: "82px",
                   marginRight: "8px",
                   marginLeft: "8px",
@@ -306,7 +306,7 @@ function EditTarget(props) {
                 </Form.Item>
               </div>
               <div
-                style={{ width: "270px", height: "82px", marginLeft: "8px" }}
+                style={{ width: "100%", height: "82px", marginLeft: "8px" }}
               >
                 <Form.Item
                   name="generator_size_efficiency_3"
@@ -320,7 +320,8 @@ function EditTarget(props) {
               </div>
             </div>
             <Form.Item>
-              <SubmitButton form={form} />
+              <div style={{width: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", justifyContent: "space-between", alignItems: "center", gap: "16px"}}>
+                <SubmitButton form={form} />
 
               {/* // disabled={!submittable} */}
               <Popconfirm
@@ -330,15 +331,19 @@ function EditTarget(props) {
                 form={form}
               >
                 <div
-                  style={{
-                    position: "relative",
-                    top: "-36px",
-                    marginLeft: "390px",
+                    style={{
+                      width: "100%",
+                      backgroundColor: "#FFFFFF",
+                      height: "52px",
+                      borderRadius: "5px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      cursor: "pointer",
                   }}
                 >
                   <a
-                    style={{
-                      padding: "16px 150px 16px 150px",
+                      style={{
                       backgroundColor: "#FFFFFF",
                       color: "red",
                       borderRadius: "5px",
@@ -348,6 +353,7 @@ function EditTarget(props) {
                   </a>
                 </div>
               </Popconfirm>
+           </div>
             </Form.Item>
           </Form>
         </Spin>

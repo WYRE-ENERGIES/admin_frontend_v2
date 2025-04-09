@@ -223,7 +223,7 @@ function TotalEnergyChart(props) {
             <Spin
               spinning={props.overviewPage.fetchTotalEnergyBarChartLoading}
             >
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}>
                 <div>
                   <h1
                     style={{
@@ -234,22 +234,22 @@ function TotalEnergyChart(props) {
                     {/* {moveLegend} */}
                   </h1>
                 </div>
-                <div>
+                <div className="search-bar-date-picker">
                   <Search
                     placeholder="Search by name"
                     enterButton={suffix}
+                    className="search-bar"
                     onChange={(e) => {
                       setHoldSearchData(e.target.value);
                     }}
                     allowClear
                     style={{
-                      width: 222, 
                       marginRight: 10,
                     }}
                   />
                   <RangePicker
+                    className="picker-date"
                     style={{
-                      width: 222,
                       // height: 43
                     }}
                     // defaultValue={[
@@ -266,11 +266,11 @@ function TotalEnergyChart(props) {
                   />
                 </div>
               </div>
-              <Bar
-                onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
-                options={options}
+                <Bar
+                  onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
+                  options={options}
                 data={energyChartData}
-              />
+                />
               {/* <Pagination
               totalPosts = {chartPages.lenght} 
               postsPerPage = {postsPerPage}

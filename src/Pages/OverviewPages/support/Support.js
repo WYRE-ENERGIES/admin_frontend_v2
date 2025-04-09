@@ -125,7 +125,7 @@ const Support = () => {
             )}
           />
         </section>
-        <section className= "support_bottomSection">
+        <section className="support_bottomSection">
           {data.map((item, index) => (
             <InnerCard
               key={`${item.title} ${index}`}
