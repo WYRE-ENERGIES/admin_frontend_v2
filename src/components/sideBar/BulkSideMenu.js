@@ -113,6 +113,7 @@ import {
               <Image
               width={73}
               height={38}
+              preview={false}
               style={{
                 paddingRight: '36px',
                 // paddingTop: '5px'
@@ -163,7 +164,7 @@ import {
                     <MenuOutlined style={{ color: "white", marginLeft:120,  }} />
                   ) : (
                     <>
-                      <Image width={80} src="/Images/Wyre white-08 1.png"></Image>
+                      <Image width={80} preview={false} src="/Images/Wyre white-08 1.png"></Image>
                       <Button
                         type="text"
                         icon={

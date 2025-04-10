@@ -138,7 +138,7 @@ function SideMenu({collapsed, setCollapsed}) {
         onCollapse={(value) => setCollapsed(value)}
       >
         <div className="wyre-logo">
-            <Image width={80} src="/Images/Wyre white-08 1.png"></Image>
+            <Image width={80} preview={false} src="/Images/Wyre white-08 1.png"></Image>
             <Button
               type="text"
               icon={
@@ -202,6 +202,7 @@ function SideMenu({collapsed, setCollapsed}) {
             <Image
             width={73}
             height={38}
+            preview={false}
             style={{
             padding: 0,
               // paddingTop: '5px'
