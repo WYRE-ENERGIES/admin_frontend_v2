@@ -334,7 +334,8 @@ function AdminOverview(props) {
               <Space>
                 <div className="card-content">
                   <Image
-                    style={{ marginLeft: "0px" }}
+                    preview={false}
+                    style={{ marginLeft: "0px",cursor: "default"  }}
                     src="/Images/energy-consumption.png"
                   />
                 </div>
@@ -360,6 +361,7 @@ function AdminOverview(props) {
               <Space>
                 <div className="card-content">
                   <Image
+                    preview={false}
                     style={{ marginLeft: "0px" }}
                     src="/Images/co2-emmission.png"
                   />
