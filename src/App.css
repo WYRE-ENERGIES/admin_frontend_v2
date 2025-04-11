@@ -725,6 +725,7 @@ a.header-short-button--auth {
   }
   .diesel-overview-table {
     margin-top: 80px;
+    margin-inline: 30px;
   }
 }
 .set_target_page {
