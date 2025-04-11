@@ -127,6 +127,7 @@ function SideMenu({collapsed, setCollapsed}) {
       <>
         <div className="wyre-logo">
             <Image width={80} preview={false} src="/Images/Wyre white-08 1.png"></Image>
+            <Image width={80} preview={false} src="/Images/Wyre white-08 1.png"></Image>
             <Button
             type="text"
             className="mobile-menu-button"

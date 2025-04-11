@@ -41,25 +41,30 @@ const buttons = [
     label: "Total Energy",
     // key: "/",
     icon: <PiLightningDuotone />,
+    icon: <PiLightningDuotone />,
   },
   {
     label: "Utility Cost",
     // key: "/",
+    icon: <Image src="/icon/power-grid.jpg" alt="Diesel Liters" style={{ width: 20, height: 20 }} />,
     icon: <Image src="/icon/power-grid.jpg" alt="Diesel Liters" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Utility Energy",
     // key: "/",
     icon: <Image src="/icon/power-grid.jpg" alt="utility energy" style={{ width: 20, height: 20 }} />,
+    icon: <Image src="/icon/power-grid.jpg" alt="utility energy" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Diesel Cost",
     // key: "/",
     icon: <Image src="/icon/generator.webp" alt="Diesel cost" style={{ width: 20, height: 20 }} />,
+    icon: <Image src="/icon/generator.webp" alt="Diesel cost" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Diesel Liters",
     // key: "/",
+    icon: <Image src="/icon/generator.webp" alt="Diesel Liters" style={{ width: 20, height: 20 }} />,
     icon: <Image src="/icon/generator.webp" alt="Diesel Liters" style={{ width: 20, height: 20 }} />,
   },
 ]
@@ -555,6 +560,34 @@ function AdminOverview(props) {
                   </div>
                 )}
               />
+              <Column
+                width={90}
+                title="Diesel Usage Accuracy"
+                dataIndex="diesel_usage_accuracy"
+                key="diesel_usage_accuracy"
+                ellipsis={true}
+                render={(value, record, index) => (
+                  <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
+                    {value.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                )}
+              />
+              <Column
+                width={90}
+                title="Utility Usage Accuracy"
+                dataIndex="utility_usage_accuracy"
+                key="utility_usage_accuracy"
+                ellipsis={true}
+                render={(value, record, index) => (
+                  <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
+                    {value.toLocaleString(undefined, {
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                )}
+              />
               <ColumnGroup
                 width="100px"
                 ellipsis={true}
@@ -589,11 +622,6 @@ function AdminOverview(props) {
                   // title="Gen3"
                   dataIndex="generator_size_efficiency_3"
                   key="generator_size_efficiency_3"
-                  render= {
-                    (value) => (
-                      <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
-                    )
-                  }
                   ellipsis={true}
                 />
               </ColumnGroup>
