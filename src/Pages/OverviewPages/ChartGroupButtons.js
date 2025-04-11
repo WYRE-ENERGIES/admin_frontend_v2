@@ -22,13 +22,13 @@ function ChartGroupButtons({ buttons, isSelectChart, setIsSelectChart }) {
     return (
       <div className="chart_buttons_container_mobile">
         <Select
-          style={{ width: '100%', height: '45px'}}
+          style={{ width: '100%', height: '45px', fontSize: '12px'}}
           value={isSelectChart}
           onChange={(value) => setIsSelectChart(value)}
           options={buttons.map((button, index) => ({
             value: index,
             label: (
-              <span>
+              <span style={{ fontSize: '15px', fontWeight: '500' }}>
                 {button.icon} {button.label}
               </span>
             )
