@@ -9,6 +9,8 @@ const initialState = {
     newUserBranches: false,
     fetchClientUserLoading: false,
     fetchedClientUser: false,
+    fetchViewUserBranchesLoading: false,
+    fetchedViewUserBranches: false,
     fetchUserBranchesLoading: false,
     fetchedUserBranches: false,
     updateClientUserLoading: false,
@@ -50,6 +52,17 @@ const clientUserReducers = (state = initialState, action) => {
             return {
                 ...state,
                 fetchedClientUser: action.payload
+            }
+
+        case clientUserTypes.GET_VIEW_USER_BRANCHES_LOADING:
+            return {
+                ...state,
+                fetchViewUserBranchesLoading: action.payload
+            }
+        case clientUserTypes.GET_VIEW_USER_BRANCHES_SUCCESS:
+            return {
+                ...state,
+                fetchedViewUserBranches: action.payload
             }
 
         case clientUserTypes.GET_USER_BRANCH_LOADING:

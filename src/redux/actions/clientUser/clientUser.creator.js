@@ -27,6 +27,15 @@ export const getClientUserSuccess = (payload = true) => ({
     payload,
 });
 
+export const getViewUserBranchesLoading = (payload = true) => ({
+    type: clientUserTypes.GET_VIEW_USER_BRANCHES_LOADING,
+    payload,
+});
+export const getViewUserBranchesSuccess = (payload = true) => ({
+    type: clientUserTypes.GET_VIEW_USER_BRANCHES_SUCCESS,
+    payload,
+});
+
 export const getUserBranchLoading = (payload = true) => ({
     type: clientUserTypes.GET_USER_BRANCH_LOADING,
     payload,

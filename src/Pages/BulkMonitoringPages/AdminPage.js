@@ -226,6 +226,7 @@ function AdminPage(props) {
               <div className="top-card-icon">
                 <Image className="icon"
                   src="/Images/energy-consumption.png"
+                  preview={false}
                 />
               </div>
               <div className="top-card-content">
@@ -247,6 +248,7 @@ function AdminPage(props) {
               <div className="top-card-icon">
                 <Image className="icon"
                   src="/Images/energy-consumption.png"
+                  preview={false}
                 />
               </div>
               <div className="top-card-content">
@@ -270,6 +272,7 @@ function AdminPage(props) {
               <div className="top-card-icon">
                 <Image className="icon"
                   src="/Images/energy-consumption.png"
+                  preview={false}
                 />
               </div>
               <div className="top-card-content">
@@ -295,6 +298,7 @@ function AdminPage(props) {
               <div className="top-card-icon">
                 <Image style={{height:30, width:30}} className="amount-icon"
                   src="/Images/naira-icon.png"
+                  preview={false}
                 />
               </div>
               <div className="top-card-content">
@@ -314,6 +318,7 @@ function AdminPage(props) {
               <div className="top-card-icon">
                 <Image className="icon"
                   src="/Images/co2-emmission.png"
+                  preview={false}
                 />
               </div>
               <div className="top-card-content">
@@ -333,6 +338,7 @@ function AdminPage(props) {
               <div className="top-card-icon">
                 <Image className="icon"
                   src="/Images/co2-emmission.png"
+                  preview={false}
                 />
               </div>
               <div className="top-card-content">

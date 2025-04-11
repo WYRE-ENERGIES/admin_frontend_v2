@@ -111,18 +111,19 @@ function TotalEnergyChart(props) {
       const energyDataSource = {
         labels: breakLabels,
         datasets: [
+          
           {
-            label: "Utility",
-            data: data1,
-            backgroundColor: "#094D92",
+            label: "Generator",
+            data: data2,
+            backgroundColor: "#43D540",
             borderRadius: 6,
             barThickness: 40,
             maxBarThickness: 40,
           },
           {
-            label: "Generator",
-            data: data2,
-            backgroundColor: "#43D540",
+            label: "Utility",
+            data: data1,
+            backgroundColor: "#094D92",
             borderRadius: 6,
             barThickness: 40,
             maxBarThickness: 40,
@@ -186,8 +187,8 @@ function TotalEnergyChart(props) {
     },
   ]
   
-  const onSearchTotalEnergy = () => {
-    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, holdSearchData)
+  const onSearchTotalEnergy = (e) => {
+    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, e.target.value)
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -195,7 +196,7 @@ function TotalEnergyChart(props) {
   };
   const suffix = (
     <SearchOutlined
-      onClick={onSearchTotalEnergy}
+      // onClick={onSearchTotalEnergy}
       style={{
         fontSize: 16,
         color: "white",

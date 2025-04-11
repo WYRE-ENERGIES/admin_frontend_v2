@@ -126,7 +126,7 @@ function SideMenu({collapsed, setCollapsed}) {
     const MenuContent = () => (
       <>
         <div className="wyre-logo">
-            <Image width={80} src="/Images/Wyre white-08 1.png"></Image>
+            <Image width={80} preview={false} src="/Images/Wyre white-08 1.png"></Image>
             <Button
             type="text"
             className="mobile-menu-button"
@@ -172,6 +172,7 @@ function SideMenu({collapsed, setCollapsed}) {
         <Menu
           className="SideMenuVertical"
           theme="white"
+          selectedKeys={selectedLocation}
           defaultSelectedKeys={["1"]}
           onClick={(Item) => {
             navigate(Item.key);

@@ -77,20 +77,26 @@ function ViewLocations(props) {
     {
       title: "Zone",
       dataIndex: "current_month_consumption_in_litres",
-      render: (value) => <>{- + '-'}</>,
-      key: "current_month_consumption_in_litres",
-    },
-    {
-      title: "Geo Location",
-      dataIndex: "previous_day_consumption_in_litres",
       render: (value) => <>{}</>,
-      key: "previous_day_consumption_in_litres",
+      key: "current_month_consumption_in_litres",
     },
     {
       title: "City",
       dataIndex: "remaining_diesel_litres",
       render: (value) => <>{}</>,
       key: "remaining_diesel_litres",
+    },
+    {
+      title: "Address",
+      dataIndex: "remaining_diesel_litres",
+      render: (value) => <>{}</>,
+      key: "remaining_diesel_litres",
+    },
+    {
+      title: "Geo Location",
+      dataIndex: "previous_day_consumption_in_litres",
+      render: (value) => <>{}</>,
+      key: "previous_day_consumption_in_litres",
     },
   ];
 
