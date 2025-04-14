@@ -15,6 +15,7 @@ function ClientUsers(props) {
   const [showAddButton, setShowAddButton] = useState(false)
   const [clientUserApiData, setClientUserApiData] = useState([])
   const [holdPaginatedData, setHoldPaginatedData] = useState([])
+  const [paginateFilter, setpaginateFilter] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [showUserBranches, setShowUserBranches] = useState(false)
@@ -58,9 +59,10 @@ function ClientUsers(props) {
 
   const handleSearch = (e) => {
     const filtered = clientUserApiData.filter((item) =>
-      item.username.toLowerCase().includes(e.target.value.toLowerCase())
+      item.username.toLowerCase().includes(e.target.value.toLowerCase()),
     );
-    setHoldPaginatedData(filtered)
+    setHoldPaginatedData(filtered.slice((currentPage-1)*pageSize, currentPage*pageSize))
+    setpaginateFilter(e.target.value)
   };
   const newModalData = props.clientUsersPage.fetchedViewUserBranches.data
 
@@ -76,6 +78,7 @@ function ClientUsers(props) {
         setCurrentPage(currentPage - 1);
       }
     };
+    
 
   useEffect( () => {
     const paginatedData = clientUserApiData.slice((currentPage-1)*pageSize, currentPage*pageSize)
