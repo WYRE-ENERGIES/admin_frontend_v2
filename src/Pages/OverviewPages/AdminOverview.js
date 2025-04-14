@@ -52,22 +52,22 @@ const buttons = [
   {
     label: "Utility Cost",
     // key: "/",
-    icon: <Image src="/icon/power-grid.jpg" alt="Diesel Liters" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/icon/utility-cost.png" alt="utility cost" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Utility Energy",
     // key: "/",
-    icon: <Image src="/icon/power-grid.jpg" alt="utility energy" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/icon/utility-energy.png" alt="utility energy" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Diesel Cost",
     // key: "/",
-    icon: <Image src="/icon/generator.webp" alt="Diesel cost" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/icon/diesel-cost.png" alt="Diesel cost" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Diesel Liters",
     // key: "/",
-    icon: <Image src="/icon/generator.webp" alt="Diesel Liters" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/icon/diesel-litre.png" alt="Diesel Liters" style={{ width: 20, height: 20 }} />,
   },
 ]
 
