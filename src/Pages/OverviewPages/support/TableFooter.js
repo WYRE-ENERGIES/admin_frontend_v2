@@ -4,8 +4,8 @@ import React from 'react'
 
 const TableFooter = ({ handleClick, pageNo, totalPages, hasNext, hasPrev }) => {
   return (
-    <section className=''>
-      <div className={''}>
+    <section className='' style={{width: "100%"}}>
+      <div className={''} style={{display: "flex", justifyContent: "space-between", alignItems: "center"}}>
         <Button disabled={hasPrev} onClick={(e) => handleClick(pageNo - 1)}>
           Previous
         </Button>

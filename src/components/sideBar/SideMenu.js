@@ -1,14 +1,3 @@
-// function SideMenu() {
-//     return (
-//       <div className="SideMenu">
-//         <sidebar>Side Menu</sidebar>
-//       </div>
-//     );
-//   }
-  
-//   export default SideMenu;
-
-
 import {
   EnvironmentOutlined,
   UserOutlined,
@@ -26,7 +15,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from "@ant-design/icons";
-import { Button, Image, Menu, Space, theme } from "antd";
+import { Button, Image, Menu, Space, theme, Drawer } from "antd";
 import Form from "antd/es/form/Form";
 import Sider from "antd/es/layout/Sider";
 import useToken from "antd/es/theme/useToken";
@@ -37,12 +26,29 @@ import { useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/actions/auth/auth.creator";
   
 function SideMenu({collapsed, setCollapsed}) {
-    const [selectedLocation, setSelectedLocation] = useState('/')
-    const location = useLocation()
+    const [selectedLocation, setSelectedLocation] = useState('/');
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+    const location = useLocation();
     const {
       token: { colorBgContainer },
     } = theme.useToken();
-    const dispatch = useDispatch
+    const dispatch = useDispatch;
+
+    // Handle window resize
+    useEffect(() => {
+      const handleResize = () => {
+        const mobile = window.innerWidth <= 768;
+        setIsMobile(mobile);
+        if (!mobile) {
+          setMobileDrawerOpen(false);
+        }
+      };
+
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     const onLogout = () => {
       const navigateTo = '/'
       dispatch(logoutUser())
@@ -110,37 +116,20 @@ function SideMenu({collapsed, setCollapsed}) {
       },
     ]
   
-    useEffect( () => {
-      const pathName = location.pathname
-      setSelectedLocation(pathName)
-    }, [location.pathname])
-  
-    const navigate = useNavigate()
-    return (
-      <Sider
-        // className="SideMenu"
-        style={{
-          // overflow: 'auto',
-          height: "100vh",
-          // position: "fixed",
-          position: "sticky",
-          right: 0,
-          left: 0,
-          top: 0,
-          bottom: 0,
-          color: "white",
-          marginLeft: 15
-        }}
-        collapsible
-        collapsed={collapsed}
-        collapsedWidth={60}
-        trigger={null} 
-        onCollapse={(value) => setCollapsed(value)}
-      >
+    useEffect(() => {
+      const pathName = location.pathname;
+      setSelectedLocation(pathName);
+    }, [location.pathname]);
+
+    const navigate = useNavigate();
+
+    const MenuContent = () => (
+      <>
         <div className="wyre-logo">
             <Image width={80} preview={false} src="/Images/Wyre white-08 1.png"></Image>
             <Button
-              type="text"
+            type="text"
+            className="mobile-menu-button"
               icon={
                 collapsed ? (
                   <MenuOutlined style={{ color: "white" }} />
@@ -187,40 +176,94 @@ function SideMenu({collapsed, setCollapsed}) {
           defaultSelectedKeys={["1"]}
           onClick={(Item) => {
             navigate(Item.key);
+            if (isMobile) {
+              setMobileDrawerOpen(false);
+            }
           }}
           mode="vertical"
           items={items}
         />
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'start',
+        <div
+          className="SideMenuVertical"
+          style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'start',
           width: '100%',
-            padding: 0,
-            marginTop: '20px'
-          }}>
-            <Image
+          padding: 0,
+          marginTop: '20px'
+
+        }}>
+          <Image
             width={73}
             height={38}
-            preview={false}
-            style={{
-            padding: 0,
-              // paddingTop: '5px'
-            }}
-            // preview={null}
-            // src="/Images/Group 1688.png"
-            src={require('../../Logos/polaris-logo/polarisSvg.svg').default} alt='Clients Logo'
+            style={{ padding: 0 }}
+            src={require('../../Logos/polaris-logo/polarisSvg.svg').default}
+            alt='Clients Logo'
           />
           <p style={{
             fontSize: '12px',
             display: collapsed ? 'none' : 'block',
             color: 'white'
           }}>Polaris Bank</p>
-          </div>
+        </div>
+      </>
+    );
+
+    // Mobile Header
+    const MobileHeader = () => (
+      <div className="mobile-header">
+        <Image width={80} src="/Images/Wyre white-08 1.png" />
+        <Button
+          type="text"
+          icon={<MenuOutlined style={{ color: "white" }} />}
+          onClick={() => setMobileDrawerOpen(true)}
+          style={{ color: "white" }}
+        />
+      </div>
+    );
+
+    if (isMobile) {
+      return (
+        <>
+          <MobileHeader />
+          <Drawer
+            placement="right"
+            onClose={() => setMobileDrawerOpen(false)}
+            open={mobileDrawerOpen}
+            width={280}
+            bodyStyle={{ padding: 0, backgroundColor: "#5C12A7" }}
+            headerStyle={{ display: 'none' }}
+          >
+            <MenuContent />
+          </Drawer>
+        </>
+      );
+    }
+
+    return (
+      <Sider
+        style={{
+          height: "100vh",
+          position: "sticky",
+          right: 0,
+          left: 0,
+          top: 0,
+          bottom: 0,
+          color: "white",
+          marginLeft: 15
+        }}
+        collapsible
+        collapsed={collapsed}
+        collapsedWidth={60}
+        trigger={null}
+        onCollapse={(value) => setCollapsed(value)}
+      >
+        <MenuContent />
       </Sider>
     );
-  }
-  
-  export default SideMenu;
+}
+
+export default SideMenu;
   
   

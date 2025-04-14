@@ -126,7 +126,7 @@ function AddClientUserForm(props) {
 
   return (
     <>
-      <div className="percentage_container">
+      <div id="add-user" className="percentage_container">
         <div className="sidePage-add-user-container">
           <div className="sidePage-add-user">
             <p className="user-form-heading">Add User</p>
