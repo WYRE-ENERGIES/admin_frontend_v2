@@ -1,4 +1,5 @@
 import { Button, Dropdown, Form, Image, Input, List, Modal, Space, Table, Typography, notification } from "antd";
+
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { PlusOutlined, SearchOutlined, UserOutlined, EditOutlined } from "@ant-design/icons";
@@ -15,6 +16,7 @@ function ClientUsers(props) {
   const [showAddButton, setShowAddButton] = useState(false)
   const [clientUserApiData, setClientUserApiData] = useState([])
   const [holdPaginatedData, setHoldPaginatedData] = useState([])
+  const [paginateFilter, setpaginateFilter] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
   const [showUserBranches, setShowUserBranches] = useState(false)
