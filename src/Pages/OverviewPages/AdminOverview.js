@@ -51,12 +51,12 @@ const buttons = [
   {
     label: "Utility Energy",
     // key: "/",
-    icon: <Image preview={false} src="/icon/utility-energy.png" alt="utility energy" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/icon/thunderbolt.png" alt="utility energy" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Diesel Cost",
     // key: "/",
-    icon: <Image preview={false} src="/icon/diesel-cost.png" alt="Diesel cost" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/icon/utility-cost.png" alt="Diesel cost" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Diesel Liters",
@@ -618,6 +618,11 @@ function AdminOverview(props) {
                   // title="Gen3"
                   dataIndex="generator_size_efficiency_3"
                   key="generator_size_efficiency_3"
+                  render= {
+                    (value) => (
+                      <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
+                    )
+                  }
                   ellipsis={true}
                 />
               </ColumnGroup>
