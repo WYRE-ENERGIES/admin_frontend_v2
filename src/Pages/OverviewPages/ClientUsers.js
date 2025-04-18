@@ -64,7 +64,7 @@ function ClientUsers(props) {
       const filtered = clientUserApiData.filter((item) =>
         item.username.toLowerCase().includes(e.target.value.toLowerCase())
       );
-      setHoldPaginatedData(filtered)
+      setHoldPaginatedData(filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize))
     };
     const newModalData = props.clientUsersPage.fetchedViewUserBranches.data
 
@@ -256,7 +256,7 @@ function ClientUsers(props) {
                   <Table
                     className="custom-row-hover"
                     loading={props.clientUsersPage.fetchClientUserLoading}
-                    dataSource={clientUserApiData}
+                    dataSource={holdPaginatedData}
                     columns={columns}
                     onChange={onChange}
                     pagination={false}
