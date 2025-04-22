@@ -15,12 +15,13 @@ function ClientUsers(props) {
   const [showEditForm, setShowEditForm] = useState(false)
   const [showAddButton, setShowAddButton] = useState(false)
   const [clientUserApiData, setClientUserApiData] = useState([])
-  const [holdPaginatedData, setHoldPaginatedData] = useState([])
-  const [paginateFilter, setpaginateFilter] = useState([])
+  const [holdPaginatedData, setHoldPaginatedData] = useState(null)
+  const [pageDataHolder, setPageDataHolder] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
   const [showUserBranches, setShowUserBranches] = useState(false)
   const [ClientUserTableData, setClientUserTableData] = useState({})
+  const pageSize = 10
+  const isNextLoadable = currentPage*pageSize < pageDataHolder.length;
 
   const { Search } = Input;
   
@@ -42,56 +43,38 @@ function ClientUsers(props) {
     props.getViewUserBranchesData(ClientUserTableData.id)
   }, [ClientUserTableData])
 
-
-
-  const onSearchClientUser = (e) => {
-    const clientId = props.auth.userData.client_id
-    props.getClientUsersData(clientId, e.target.value)
-    props.getClientUsersData(clientId, e.target.value)
-  }
-
-    const suffix = (
-      <SearchOutlined
-        onClick={onSearchClientUser}
-        style={{
-          fontSize: 16,
-          color: "white",
-        }}
-      />
-    );
-
-    const handleSearch = (e) => {
-      const filtered = clientUserApiData.filter((item) =>
-        item.username.toLowerCase().includes(e.target.value.toLowerCase())
-      );
-      setHoldPaginatedData(filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize))
-    };
-    const newModalData = props.clientUsersPage.fetchedViewUserBranches.data
+  const handleSearch = (e) => {
+    const filtered = clientUserApiData.filter((item) =>
+      item.username.toLowerCase().includes(e.target.value.toLowerCase() 
+  )
+);
+    setPageDataHolder(filtered)
+    setCurrentPage(1);
+  };
+  const newModalData = props.clientUsersPage.fetchedViewUserBranches.data
 
   useEffect(() => {
-    const paginatedData = clientUserApiData.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+    const paginatedData = pageDataHolder.slice((currentPage - 1) * pageSize, currentPage * pageSize)
     setHoldPaginatedData(paginatedData)
-  }, [currentPage, clientUserApiData])
+  }, [currentPage, pageDataHolder])
+
+  useEffect(() => {
+    setPageDataHolder(clientUserApiData)
+  }, [clientUserApiData])
 
   const fetchNextPaginatedUsersList = () => {
-      const totalPages = currentPage * pageSize < clientUserApiData.length;
-      if (totalPages)
+      if (isNextLoadable)
       {
-        setCurrentPage(currentPage + 1);
+        setCurrentPage(currentPage+ 1);
       }
-    };
+  };
   
-    const fetchPrevPaginatedUsersList = () => {
-      if (currentPage > 1)
-      {
-        setCurrentPage(currentPage - 1);
-      }
-    };
-
-    useEffect(() => {
-      const paginatedData = clientUserApiData.slice((currentPage - 1) * pageSize, currentPage * pageSize)
-      setHoldPaginatedData(paginatedData)
-    }, [currentPage, clientUserApiData])
+  const fetchPrevPaginatedUsersList = () => {
+    if (currentPage > 1)
+    {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
     const handleMenuClick = () => {
       setShowUserBranches(true)
@@ -128,30 +111,6 @@ function ClientUsers(props) {
       title: 'Options',
       width: '10%',
       dataIndex: 'operation',
-      // render: (_, record) => {
-      //     return (
-      //       <a
-      //         target="_blank"
-      //         onClick={(e) => {
-      //           e.preventDefault();
-      //           console.log("On-click");
-      //           setShowEditForm(true);
-      //           setClientUserTableData(record);
-      //         }}
-      //         rel="noopener noreferrer"
-      //       >
-      //         <Button
-      //          style={{
-      //           color:'#5C12A7',
-      //           // background:'#5C12A7'
-      //          }}
-      //         >
-      //           Edit
-      //         </Button>
-            
-      //       </a>
-      //     );
-      // }
       render: (_, record) => {
         return (
           <a
@@ -265,12 +224,15 @@ function ClientUsers(props) {
                 </div>
                 <div className="pagination">
                   <div>
-                    <Button onClick={fetchPrevPaginatedUsersList}>
+                    <Button onClick={fetchPrevPaginatedUsersList} disabled={currentPage===1}>
                       Previous
                     </Button>
                   </div>
+                  <span style={{ margin: '0 8px' }}>
+                    Page {currentPage} of {Math.ceil(pageDataHolder.length / pageSize)}
+                  </span>
                   <div>
-                    <Button onClick={fetchNextPaginatedUsersList}>Next</Button>
+                    <Button onClick={fetchNextPaginatedUsersList} disabled={currentPage*pageSize >= pageDataHolder.length}>Next</Button>
                   </div>
                 </div>
                 <Modal
