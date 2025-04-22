@@ -44,10 +44,11 @@ function ClientUsers(props) {
   }, [ClientUserTableData])
 
   const handleSearch = (e) => {
+    const searchValue = e.target.value.toLowerCase();
     const filtered = clientUserApiData.filter((item) =>
-      item.username.toLowerCase().includes(e.target.value.toLowerCase() 
-  )
-);
+      item.username.toLowerCase().includes(searchValue) ||
+      item.email.toLowerCase().includes(searchValue)
+    );
     setPageDataHolder(filtered)
     setCurrentPage(1);
   };
