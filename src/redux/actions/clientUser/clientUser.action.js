@@ -58,10 +58,10 @@ export const getClientUsersData = (clientId, paginationQuery=1, branchName) => a
     }
 };
 
-export const getViewUserBranchesData = (branchId) => async (dispatch) => {
+export const getViewUserBranchesData = (userId) => async (dispatch) => {
 
     dispatch(getViewUserBranchesLoading(true));
-    const requestUrl = `/cadmin/add_user/${branchId}`;
+    const requestUrl = `/cadmin/add_user/${userId}`;
     try {
       const response = await APIService.get(requestUrl);
   
