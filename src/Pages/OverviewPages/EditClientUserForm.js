@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action";
 import AddClientUserForm from "./AddClientUserForm";
+import { getLocationsData } from "../../redux/actions/location/location.action";
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
@@ -72,16 +73,18 @@ function EditClientUserForm(props) {
     })
     setSelectedLocation(props.ClientUserTableData.branches)
   }, [props.ClientUserTableData])
+  console.log('selected location ->>>>', selectedLocation)
+  console.log('holdLocationData ->>>>', holdLocationData)
 
   const options = [];
   useEffect(() => {
     const handleBranch = async () => {
       const userId = props.ClientUserTableData.id
-      const requestBranchesData = await props.getUserBranchesData(userId)
+      const requestBranchesData = await props.getLocationsData(clientId)
       // return requestBranchesData
       if (requestBranchesData.fulfilled) {
         // return requestBranchesData.data.data
-        setHoldLocationData(requestBranchesData.data.data)
+        setHoldLocationData(requestBranchesData.data.results)
       }
     }
     handleBranch()
@@ -101,7 +104,6 @@ function EditClientUserForm(props) {
 
   const handleChange = (value) => {
     setSelectedLocation(value);
-    console.log('thishdohjiiosdjosdjoidjd', value);
   };
 
   const SelectBranch = () => {
@@ -142,19 +144,22 @@ function EditClientUserForm(props) {
       // holdLocationData -- list of all branch in array of object
 
     // make a filter to return values in the holdLocationData that are not in the selectedLocation
-    const ss = holdLocationData.filter((vv) => vv === id)
-    console.log('this is ss', ss)
 
     // const returningIntArray = [2,5]
       // How do you ensure to product an array of numbers here
 
+      // const filteredLocationData = holdLocationData.filter(filtered => selectedLocation.includes(filtered.name))
+      const filteredLocationData = holdLocationData.filter(filtered => selectedLocation.includes(filtered.name)).map(data => data.id)
+      console.log('filtered data ->>>>', filteredLocationData)
+
       const assignLocationRequest = await props.assignLocation(
         id,
-        { branches: selectedLocation }
+        { branches: filteredLocationData }
       );
       if (assignLocationRequest.fulfilled) {
         successNotificationPopUp("success", "client user page");
         form.resetFields();
+        setSelectedLocation(null)
         return showclientUsersList();
       }else{
         successNotificationPopUp('error', 'error assigning user to branch');
@@ -245,6 +250,7 @@ function EditClientUserForm(props) {
 
 const mapDispatchToProps = {
   getClientUsersData,
+  getLocationsData,
   getUserBranchesData,
   updateClientUsersData,
   assignLocation,

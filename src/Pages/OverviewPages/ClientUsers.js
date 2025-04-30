@@ -1,14 +1,15 @@
-import { Button, Dropdown, Form, Image, Input, List, Modal, Space, Table, Typography, notification } from "antd";
+import { Button, Dropdown, Form, Image, Input, List, Modal, Popconfirm, Space, Table, Typography, notification } from "antd";
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { PlusOutlined, SearchOutlined, UserOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusOutlined, SearchOutlined, UserOutlined, EditOutlined, CloseOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
-import { addClientUsersData, getClientUsersData, getViewUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
+import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData, getViewUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
 import EditClientUserForm from "./EditClientUserForm";
 import AddClientUserForm from "./AddClientUserForm";
 import { BsThreeDots } from "react-icons/bs";
+import { getLocationsData } from "../../redux/actions/location/location.action";
 
 
 function ClientUsers(props) {
@@ -19,6 +20,8 @@ function ClientUsers(props) {
   const [pageDataHolder, setPageDataHolder] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [showUserBranches, setShowUserBranches] = useState(false)
+  const [seletedBranches, setseletedBranches] = useState([])
+  const [holdLocationData, setHoldLocationData] = useState([])
   const [ClientUserTableData, setClientUserTableData] = useState({})
   const pageSize = 10
   const isNextLoadable = currentPage*pageSize < pageDataHolder.length;
@@ -40,9 +43,49 @@ function ClientUsers(props) {
     }, [props.clientUsersPage.fetchedClientUser])
 
   useEffect(() => {
-    props.getViewUserBranchesData(ClientUserTableData.id)
-  }, [ClientUserTableData])
+    if (ClientUserTableData.id) {
+      props.getViewUserBranchesData(ClientUserTableData.id)   
+    }
+  }, [ClientUserTableData.id])
 
+  useEffect(() => {
+    if (props.clientUsersPage.fetchedViewUserBranches.data) {
+      setseletedBranches(props.clientUsersPage.fetchedViewUserBranches.data)    
+    }
+  }, [props.clientUsersPage.fetchedViewUserBranches.data])
+
+  useEffect(() => {
+    const fetchAllLocations = async () => {
+      const userId = ClientUserTableData.id
+      const fetchAllLocationsData = await props.getLocationsData(props.auth.userData.client_id)
+      if (fetchAllLocationsData.fulfilled) {
+        setHoldLocationData(fetchAllLocationsData.data.data)
+      }
+    }
+    fetchAllLocations()
+  }, [ClientUserTableData.id])
+
+  // useEffect(() => {
+  //   const assignedLocationData = ClientUserTableData.branches
+  //   if (assignedLocationData) {
+  //   }
+  //     setseletedBranches(assignedLocationData)
+  // }, [ClientUserTableData.id])
+  
+  const handleCancel = async (record) => {
+    console.log('Clicked Row ==>', record);
+    
+    // const getSelectedLocatonId = holdLocationData.filter(location => !record.includes(location.name)).map(filtered => filtered.id)
+    // console.log(' Row Id', getSelectedLocatonId);
+    // const doCancelLocation = await props.assignLocation(ClientUserTableData.id, { branches: getSelectedLocatonId })
+    // if (doCancelLocation.fulfilled) {
+    //   setseletedBranches(seletedBranches);
+    //   console.log('Remaining Branches === ', seletedBranches);
+    // }
+    const doCancel = seletedBranches.filter(item => item !== record);
+    console.log('Remaining Branches === ', ClientUserTableData.id, {remove: doCancel});
+  }
+  
   const handleSearch = (e) => {
     const searchValue = e.target.value.toLowerCase();
     const filtered = clientUserApiData.filter((item) =>
@@ -52,7 +95,6 @@ function ClientUsers(props) {
     setPageDataHolder(filtered)
     setCurrentPage(1);
   };
-  const newModalData = props.clientUsersPage.fetchedViewUserBranches.data
 
   useEffect(() => {
     const paginatedData = pageDataHolder.slice((currentPage - 1) * pageSize, currentPage * pageSize)
@@ -148,7 +190,21 @@ function ClientUsers(props) {
         title: "Branches",
         dataIndex: "name",
         key: "name",
-      }
+      },
+      {
+        title: 'Action',
+        key: 'action',
+        render: (_, record) => (
+          <Popconfirm
+            title="Are you sure you want to remove this location?"
+            onConfirm={() => handleCancel(record)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <CloseOutlined style={{ color: 'red', cursor: 'pointer' }} />
+          </Popconfirm>
+        ),
+      },
     ]
   
     const columns = [
@@ -246,7 +302,7 @@ function ClientUsers(props) {
                 >
                   <div className="table-responsive-wrapper">
                     <Table
-                      dataSource={newModalData}
+                      dataSource={seletedBranches}
                       columns={modalColumns}
                       pagination={false}
                       scroll={{ x: true }}
@@ -257,6 +313,7 @@ function ClientUsers(props) {
               {ClientUserTableData ? (
                 <EditClientUserForm
                   ClientUserTableData={ClientUserTableData}
+                  assignedLocationData={seletedBranches}
                   showEditForm={showEditForm}
                 />
               ) : (
@@ -272,7 +329,9 @@ function ClientUsers(props) {
 const mapDispatchToProps = {
   addClientUsersData,
   getClientUsersData,
-  getViewUserBranchesData,
+  getLocationsData,
+  getUserBranchesData,
+  assignLocation,
   getViewUserBranchesData,
   updateClientUsersData,
   removeClientUsersData,
