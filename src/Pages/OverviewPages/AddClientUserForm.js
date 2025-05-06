@@ -98,51 +98,26 @@ function AddClientUserForm(props) {
     const clientId = props.auth.userData.client_id
     props.getClientUsersData(clientId);
   }
-  // const submitNewClientUsers = async (values) => {
-  //   const {location, ...others } = values;
-  //   const createUserRequest = await props.addClientUsersData(clientId, others);
-
-  //   if (createUserRequest.fulfilled) {
-  //     // after the request has been created,
-  //     // call the endpoint to assing user
-  //     const assignLocationRequest = await props.assignLocation(
-  //       createUserRequest.data.id,
-  //       {branches: location}
-  //     );
-  //     if (assignLocationRequest.fulfilled) {
-  //       successNotificationPopUp("success", "client user page");
-  //       form.resetFields();
-  //       return showclientUsersList();
-  //     }
-
-      
-  //   }
-  //   return errorNotificationPopUp('error', 'client user page')  
-  // };
-
   const submitNewClientUsers = async (values) => {
     const {location, ...others } = values;
-    // const createUserRequest = await props.addClientUsersData(clientId, others);
-    console.log('Assign Location data ---> ', {add: location});
+    const createUserRequest = await props.addClientUsersData(clientId, others);
 
-    // if (createUserRequest.fulfilled) {
-      // after the request has been created,
-      // call the endpoint to assing user
-
-      // const assignLocationRequest = await props.assignLocation(
-      //   createUserRequest.data.id,
-      //   {branches: location}
-      // );
-      // if (assignLocationRequest.fulfilled) {
-      //   successNotificationPopUp("success", "client user page");
-      //   form.resetFields();
-      //   return showclientUsersList();
-      // }
+    if (createUserRequest.fulfilled) {
+      const assignLocationRequest = await props.assignLocation(
+        createUserRequest.data.id,
+        {user: createUserRequest.data.id, add: location}
+      );
+      if (assignLocationRequest.fulfilled) {
+        successNotificationPopUp("success", "client user page");
+        form.resetFields();
+        return showclientUsersList();
+      }
 
       
-    // }
-    // return errorNotificationPopUp('error', 'client user page')  
+    }
+    return errorNotificationPopUp('error', 'client user page')  
   };
+  
 
   const onChange = (pagination, filters, sorter, extra) => {
     // console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);

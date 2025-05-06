@@ -11,6 +11,18 @@ import AddClientUserForm from "./AddClientUserForm";
 import { BsThreeDots } from "react-icons/bs";
 import { getLocationsData } from "../../redux/actions/location/location.action";
 
+const successNotificationPopUp = (type, formName) => {
+  notification[type]({
+    message: 'User Branch Deleted',
+    description: `branch assigned to this ${formName} has been deleted`,
+  });
+};
+const errorNotificationPopUp = (type, formName) => {
+  notification[type]({
+    message: 'Failed',
+    description: `deleting this ${formName} branch failed, please try again later`,
+  });
+};
 
 function ClientUsers(props) {
   const [showEditForm, setShowEditForm] = useState(false)
@@ -64,26 +76,16 @@ function ClientUsers(props) {
     }
     fetchAllLocations()
   }, [ClientUserTableData.id])
-
-  // useEffect(() => {
-  //   const assignedLocationData = ClientUserTableData.branches
-  //   if (assignedLocationData) {
-  //   }
-  //     setseletedBranches(assignedLocationData)
-  // }, [ClientUserTableData.id])
   
   const handleCancel = async (record) => {
-    console.log('Clicked Row ==>', record);
-    
-    // const getSelectedLocatonId = holdLocationData.filter(location => !record.includes(location.name)).map(filtered => filtered.id)
-    // console.log(' Row Id', getSelectedLocatonId);
-    // const doCancelLocation = await props.assignLocation(ClientUserTableData.id, { branches: getSelectedLocatonId })
-    // if (doCancelLocation.fulfilled) {
-    //   setseletedBranches(seletedBranches);
-    //   console.log('Remaining Branches === ', seletedBranches);
-    // }
-    const doCancel = seletedBranches.filter(item => item !== record);
-    console.log('Remaining Branches === ', ClientUserTableData.id, {remove: doCancel});
+    const doCancelLocation = await props.assignLocation(ClientUserTableData.id, {user: ClientUserTableData.id, remove: [record.id]})
+    if (doCancelLocation.fulfilled) {
+      successNotificationPopUp("success", "user");
+      props.getViewUserBranchesData(ClientUserTableData.id)
+      props.getClientUsersData(props.auth.userData.client_id);
+    }else{
+      errorNotificationPopUp('error', 'user')
+    }
   }
   
   const handleSearch = (e) => {

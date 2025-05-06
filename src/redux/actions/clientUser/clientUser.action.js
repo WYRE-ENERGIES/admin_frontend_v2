@@ -25,7 +25,7 @@ export const assignLocation = (userId, values) => async (dispatch) => {
   
     const requestUrl = `/api/v2/client_user_branch_permissions/${userId}/`;
     try {
-      const response = await APIService.post(requestUrl, values);
+      const response = await APIService.patch(requestUrl, values);
       
       dispatch(addUserBranchSuccess(response.data));
   

@@ -2,10 +2,10 @@ import { Button, Form, Image, Input, Select, Space, Table, Typography, notificat
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { PlusOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 // import { EditOutlined } from "@ant-design/icons";
 import { connect, useSelector } from "react-redux";
-import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action";
+import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData, getViewUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action";
 import AddClientUserForm from "./AddClientUserForm";
 import { getLocationsData } from "../../redux/actions/location/location.action";
 
@@ -64,6 +64,9 @@ function EditClientUserForm(props) {
   const [form] = Form.useForm();
   const [holdLocationData, setHoldLocationData] = useState([])
   const [selectedLocation, setSelectedLocation] = useState([]);
+  const [newLocation, setNewLocation] = useState([]);
+  const [addedLocations, setAddedLocations] = useState([]);
+  const [removedLocations, setRemovedLocations] = useState([]);
 
   useEffect(() => {
     form.setFieldsValue({
@@ -72,16 +75,13 @@ function EditClientUserForm(props) {
       phone_number: props.ClientUserTableData.phone_number,
     })
     setSelectedLocation(props.ClientUserTableData.branches)
+    setNewLocation(props.ClientUserTableData.branches)
   }, [props.ClientUserTableData])
-  console.log('selected location ->>>>', selectedLocation)
-  console.log('holdLocationData ->>>>', holdLocationData)
 
   const options = [];
   useEffect(() => {
     const handleBranch = async () => {
-      const userId = props.ClientUserTableData.id
       const requestBranchesData = await props.getLocationsData(clientId)
-      // return requestBranchesData
       if (requestBranchesData.fulfilled) {
         // return requestBranchesData.data.data
         setHoldLocationData(requestBranchesData.data.results)
@@ -103,7 +103,11 @@ function EditClientUserForm(props) {
   }
 
   const handleChange = (value) => {
-    setSelectedLocation(value);
+    const newSelections = value.filter(branch => !selectedLocation.includes(branch));
+    const removedSelections = selectedLocation.filter(branch => !value.includes(branch))
+    setAddedLocations(newSelections)
+    setRemovedLocations(removedSelections)
+    setNewLocation(value);
   };
 
   const SelectBranch = () => {
@@ -115,8 +119,8 @@ function EditClientUserForm(props) {
           // width: "100%",
           background: "#F2F2F8"
         }}
-        defaultValue={selectedLocation}
-        placeholder="Change Location"
+        defaultValue={newLocation}
+        // placeholder="Change Location"
         // defaultValue={[]}
         onChange={handleChange}
         options={options}
@@ -130,36 +134,24 @@ function EditClientUserForm(props) {
     props.getClientUsersData(clientId);
   }
   const clientId = props.auth.userData.client_id
+  
+  const getAddedId = holdLocationData.filter(location => addedLocations.includes(location.name)).map(filtered => filtered.id)
+  const getRemovedId = holdLocationData.filter(location => removedLocations.includes(location.name)).map(filtered => filtered.id)
+
   const submitUpdateClientUsers = async (values) => {
     const id = props.ClientUserTableData.id
     const {location, ...others } = values;
-
     const request = await props.updateClientUsersData(clientId, id, others);
-
     if (request.fulfilled) {
-      // convert to numbers
-
-
-      // selectedLocation -- list of selected data in array of string
-      // holdLocationData -- list of all branch in array of object
-
-    // make a filter to return values in the holdLocationData that are not in the selectedLocation
-
-    // const returningIntArray = [2,5]
-      // How do you ensure to product an array of numbers here
-
-      // const filteredLocationData = holdLocationData.filter(filtered => selectedLocation.includes(filtered.name))
-      const filteredLocationData = holdLocationData.filter(filtered => selectedLocation.includes(filtered.name)).map(data => data.id)
-      console.log('filtered data ->>>>', filteredLocationData)
-
       const assignLocationRequest = await props.assignLocation(
         id,
-        { branches: filteredLocationData }
+        {user: id, add: getAddedId, remove: getRemovedId}
       );
       if (assignLocationRequest.fulfilled) {
         successNotificationPopUp("success", "client user page");
-        form.resetFields();
-        setSelectedLocation(null)
+        form.resetFields(); 
+        setNewLocation(null)
+        props.getViewUserBranchesData(props.ClientUserTableData.id)
         return showclientUsersList();
       }else{
         successNotificationPopUp('error', 'error assigning user to branch');
@@ -169,7 +161,6 @@ function EditClientUserForm(props) {
 
     }
       errorNotificationPopUp('error', 'client user page')
-
   };
 
   return (
@@ -254,6 +245,7 @@ const mapDispatchToProps = {
   getUserBranchesData,
   updateClientUsersData,
   assignLocation,
+  getViewUserBranchesData
 };
 
 const mapStateToProps = (state) => ({
