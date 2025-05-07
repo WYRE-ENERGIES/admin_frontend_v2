@@ -11,6 +11,8 @@ import Support from "../../Pages/OverviewPages/support/Support";
 import BranchDetails from "../../Pages/OverviewPages/BranchDetails";
 import AdminPage from "../../Pages/BulkMonitoringPages/AdminPage";
 import DevicesListPage from "../../Pages/BulkMonitoringPages/DevicesListPage";
+import ClientOverview from "../../Pages/OverviewPages/ClientOverview";
+import CreateClient from "../../Pages/OverviewPages/CreateClient";
 
 function BulkMonitoringRoute() {
   return (
@@ -25,7 +27,9 @@ function BulkMonitoringRoute() {
         <Route path="/locations/branch" element={<BranchDetails />}></Route>
         <Route path="/log-out" element={<LogOut />}></Route>
         <Route path="/support" element={<Support />}></Route>
-        <Route path="/branch" element={<BranchDetails />}></Route>
+          <Route path="/branch" element={<BranchDetails />}></Route>
+            <Route path="/clients" element={<ClientOverview />}></Route>
+          <Route path="/create-client" element={<CreateClient />}></Route>
       </Routes>
     </div>
     {/* <Routes>

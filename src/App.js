@@ -9,6 +9,7 @@ import { useState } from 'react';
 import AuthRoute from './components/routes/AuthRoute';
 import BulkSideMenu from './components/sideBar/BulkSideMenu';
 import BulkmonitoringPageView from './components/pageContent/PageViews/BulkmonitoringPageView';
+import { ConfigProvider } from 'antd';
 
 function App() {
   const decodedUser = authHelper()
@@ -21,6 +22,13 @@ function App() {
   };
 
   return (
+        <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#5c3592',
+        },
+      }}
+    >
     <div className="App">
       <BrowserRouter>
       {
@@ -28,16 +36,28 @@ function App() {
         <div>
           {/* <AppHeader /> */}
           <div className="SidemenuAndPagecontent">
-            <SideMenu trigger={null} collapsible collapsed={collapsed} setCollapsed={setCollapsed} onBreakpoint={onBreakpoint}  />
+            <SideMenu
+              trigger={null}
+              collapsible
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+              onBreakpoint={onBreakpoint}
+            />
             <PageView />
           </div>
           {/* <AppFooter /> */}
         </div> :
-        decodedUser && decodedUser.client_type === "BULK_MONITORING" ?
+        decodedUser && (decodedUser.client_type === "None" || decodedUser.client_type === "BULK_MONITORING") ?
         <div>
           {/* <AppHeader /> */}
           <div className="SidemenuAndPagecontent">
-            <BulkSideMenu trigger={null} collapsible collapsed={collapsed} setCollapsed={setCollapsed}  />
+            <BulkSideMenu
+              trigger={null}
+              collapsible
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+              onBreakpoint={onBreakpoint}
+            />
             <BulkmonitoringPageView />
           </div>
           {/* <AppFooter /> */}
@@ -46,6 +66,7 @@ function App() {
       }
       </BrowserRouter>
     </div>
+      </ConfigProvider>
   );
 }
 

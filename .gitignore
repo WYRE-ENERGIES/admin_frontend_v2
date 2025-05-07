@@ -130,3 +130,4 @@ dist
 .tern-port
 build/
 
+.qodo
