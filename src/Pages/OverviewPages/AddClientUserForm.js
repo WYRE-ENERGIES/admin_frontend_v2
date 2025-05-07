@@ -103,11 +103,9 @@ function AddClientUserForm(props) {
     const createUserRequest = await props.addClientUsersData(clientId, others);
 
     if (createUserRequest.fulfilled) {
-      // after the request has been created,
-      // call the endpoint to assing user
       const assignLocationRequest = await props.assignLocation(
         createUserRequest.data.id,
-        {branches: location}
+        {user: createUserRequest.data.id, add: location}
       );
       if (assignLocationRequest.fulfilled) {
         successNotificationPopUp("success", "client user page");
@@ -119,6 +117,7 @@ function AddClientUserForm(props) {
     }
     return errorNotificationPopUp('error', 'client user page')  
   };
+  
 
   const onChange = (pagination, filters, sorter, extra) => {
     // console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);

@@ -2,11 +2,12 @@ import { Button, Form, Image, Input, Select, Space, Table, Typography, notificat
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { PlusOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 // import { EditOutlined } from "@ant-design/icons";
 import { connect, useSelector } from "react-redux";
-import { addClientUsersData, getClientUsersData, getUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
+import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData, getViewUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action";
 import AddClientUserForm from "./AddClientUserForm";
+import { getLocationsData } from "../../redux/actions/location/location.action";
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
@@ -49,10 +50,10 @@ const SubmitButton = ({ form }) => {
   }, [values]);
   return (
     <Button
-      style={{ backgroundColor: "#5C12A7", color: "white", height:"40px", borderRadius:"7px", width: "100%" }}
+      style={{ backgroundColor: "#5C12A7", color: "white", height: "40px", borderRadius: "7px", width: "100%" }}
       type="primary"
       htmlType="submit"
-      // disabled={!submittable}
+    // disabled={!submittable}
     >
       Save
     </Button>
@@ -62,46 +63,53 @@ const SubmitButton = ({ form }) => {
 function EditClientUserForm(props) {
   const [form] = Form.useForm();
   const [holdLocationData, setHoldLocationData] = useState([])
-
-  const { Search } = Input;
+  const [selectedLocation, setSelectedLocation] = useState([]);
+  const [newLocation, setNewLocation] = useState([]);
+  const [addedLocations, setAddedLocations] = useState([]);
+  const [removedLocations, setRemovedLocations] = useState([]);
 
   useEffect(() => {
     form.setFieldsValue({
       username: props.ClientUserTableData.username,
       email: props.ClientUserTableData.email,
       phone_number: props.ClientUserTableData.phone_number,
-      branches: holdLocationData.map(locationData => locationData.name),
     })
+    setSelectedLocation(props.ClientUserTableData.branches)
+    setNewLocation(props.ClientUserTableData.branches)
   }, [props.ClientUserTableData])
 
   const options = [];
-  useEffect( () => {
+  useEffect(() => {
     const handleBranch = async () => {
-      const userId = props.ClientUserTableData.id
-      const requestBranchesData = await props.getUserBranchesData(userId)
-      // return requestBranchesData
+      const requestBranchesData = await props.getLocationsData(clientId)
       if (requestBranchesData.fulfilled) {
         // return requestBranchesData.data.data
-        setHoldLocationData(requestBranchesData.data.data)
+        setHoldLocationData(requestBranchesData.data.results)
       }
     }
     handleBranch()
   }, [props.ClientUserTableData.id])
-  const branches = props.ClientUserTableData.branches
+
   if (holdLocationData) {
     // options = branches[eachBranch];
     holdLocationData.map((location) => {
       options.push({
-          label: location.name,
-          value: location.name
-        })
+        label: location.name,
+        value: location.name,
+        key: location.id,
+      })
     })
-    
+
   }
 
   const handleChange = (value) => {
+    const newSelections = value.filter(branch => !selectedLocation.includes(branch));
+    const removedSelections = selectedLocation.filter(branch => !value.includes(branch))
+    setAddedLocations(newSelections)
+    setRemovedLocations(removedSelections)
+    setNewLocation(value);
   };
-  
+
   const SelectBranch = () => {
     return (
       <Select
@@ -111,33 +119,48 @@ function EditClientUserForm(props) {
           // width: "100%",
           background: "#F2F2F8"
         }}
-        placeholder="Change Location"
+        defaultValue={newLocation}
+        // placeholder="Change Location"
         // defaultValue={[]}
         onChange={handleChange}
         options={options}
       />
     );
   }
-  
+
   dayjs.extend(customParseFormat);
   const showclientUsersList = () => {
     const clientId = props.auth.userData.client_id
     props.getClientUsersData(clientId);
   }
   const clientId = props.auth.userData.client_id
+  
+  const getAddedId = holdLocationData.filter(location => addedLocations.includes(location.name)).map(filtered => filtered.id)
+  const getRemovedId = holdLocationData.filter(location => removedLocations.includes(location.name)).map(filtered => filtered.id)
+
   const submitUpdateClientUsers = async (values) => {
     const id = props.ClientUserTableData.id
-    const request = await props.updateClientUsersData(clientId, id, values);
-
+    const {location, ...others } = values;
+    const request = await props.updateClientUsersData(clientId, id, others);
     if (request.fulfilled) {
-      successNotificationPopUp('success', 'client user page');
-      form.resetFields();
-      return showclientUsersList()
+      const assignLocationRequest = await props.assignLocation(
+        id,
+        {user: id, add: getAddedId, remove: getRemovedId}
+      );
+      if (assignLocationRequest.fulfilled) {
+        successNotificationPopUp("success", "client user page");
+        form.resetFields(); 
+        setNewLocation(null)
+        props.getViewUserBranchesData(props.ClientUserTableData.id)
+        return showclientUsersList();
+      }else{
+        successNotificationPopUp('error', 'error assigning user to branch');
+        form.resetFields();
+        return showclientUsersList()
+      }
+
     }
       errorNotificationPopUp('error', 'client user page')
-      // form.resetFields()
-    
-    
   };
 
   return (
@@ -192,15 +215,15 @@ function EditClientUserForm(props) {
                   <Input />
                 </Form.Item>
                 <Form.Item
-                  name="update location"
-                  label="Update Location"
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //   },
-                  // ]}
+                  name="location"
+                  label="Updat Location"
+                // rules={[
+                //   {
+                //     required: true,
+                //   },
+                // ]}
                 >
-                  <SelectBranch />
+                  <SelectBranch branches={props.ClientUserTableData.branches} />
                 </Form.Item>
                 <Form.Item>
                   <SubmitButton form={form} />
@@ -218,8 +241,11 @@ function EditClientUserForm(props) {
 
 const mapDispatchToProps = {
   getClientUsersData,
+  getLocationsData,
   getUserBranchesData,
   updateClientUsersData,
+  assignLocation,
+  getViewUserBranchesData
 };
 
 const mapStateToProps = (state) => ({
