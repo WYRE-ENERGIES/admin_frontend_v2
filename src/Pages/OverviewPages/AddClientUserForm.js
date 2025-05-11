@@ -1,4 +1,4 @@
-import { Button, Form, Image, Input, Select, notification } from "antd";
+import { Button, Form, Image, Input, Select, Spin, notification } from "antd";
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData } from "../../redux/actions/clientUser/clientUser.action"; 
@@ -132,77 +132,81 @@ function AddClientUserForm(props) {
             <div className="user-center-image">
               <Image src="/Images/Group 1688.png"></Image>
             </div>
-            <Form
-              form={form}
-              // name="validateOnly"
-              name="basic"
-              layout="vertical"
-              autoComplete="off"
-              onFinish={submitNewClientUsers}
+            <Spin
+              spinning={props.clientUsersPage.newClientUserLoading}
             >
-              <Form.Item
-                name="username"
-                label="Name"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
+              <Form
+                form={form}
+                // name="validateOnly"
+                name="basic"
+                layout="vertical"
+                autoComplete="off"
+                onFinish={submitNewClientUsers}
               >
-                <Input placeholder="John Doe"/>
-              </Form.Item>
-              <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input placeholder="example@gmail.com"/>
-              </Form.Item>
-              <Form.Item
-                name="phone_number"
-                label="Phone Number"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
-              >
-                <Input placeholder="+234 080 224 554 41"/>
-              </Form.Item>
-              <Form.Item
-                name="location"
-                label="Assign Location"
+                <Form.Item
+                  name="username"
+                  label="Name"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="John Doe" />
+                </Form.Item>
+                <Form.Item
+                  name="email"
+                  label="Email"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="example@gmail.com" />
+                </Form.Item>
+                <Form.Item
+                  name="phone_number"
+                  label="Phone Number"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="+234 080 224 554 41" />
+                </Form.Item>
+                <Form.Item
+                  name="location"
+                  label="Assign Location"
                 // rules={[
                 //   {
                 //     required: true,
                 //   },
                 // ]}
-              >
-                {/* <Input /> */}
-                {/* <SelectBranch /> */}
-                <Select
-                  mode="multiple"
-                  allowClear
-                  style={
-                    {
-                      // width: "100%",
-                      background: "#F2F2F8"
+                >
+                  {/* <Input /> */}
+                  {/* <SelectBranch /> */}
+                  <Select
+                    mode="multiple"
+                    allowClear
+                    style={
+                      {
+                        // width: "100%",
+                        background: "#F2F2F8"
+                      }
                     }
-                  }
-                  placeholder="Add Location"
-                  // defaultValue={["AdeolaHopewell", "Agodi"]}
-                  onChange={handleChange}
-                  options={options}
-                />
-              </Form.Item>
-              <Form.Item>
-                <SubmitButton form={form} />
-              </Form.Item>
-            </Form>
+                    placeholder="Add Location"
+                    // defaultValue={["AdeolaHopewell", "Agodi"]}
+                    onChange={handleChange}
+                    options={options}
+                  />
+                </Form.Item>
+                <Form.Item>
+                  <SubmitButton form={form} />
+                </Form.Item>
+              </Form>
+            </Spin>
           </div>
         </div>
       </div>
