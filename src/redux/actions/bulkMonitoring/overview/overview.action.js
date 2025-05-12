@@ -10,7 +10,7 @@ export const getAllTimeEnergyConsumptionData = (clientId) => async (dispatch) =>
     try {
       const response = await APIService.get(requestUrl);
   
-      dispatch(getAllTimeEnergyConsumptionSuccess(response.data.data));
+      dispatch(getAllTimeEnergyConsumptionSuccess(response.data));
   
       dispatch(getAllTimeEnergyConsumptionLoading(false))
       return { fulfilled: true, message: 'successful' }

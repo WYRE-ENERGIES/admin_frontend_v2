@@ -1,4 +1,4 @@
-import { Button, Form, Image, Input, Select, Space, Table, Typography, notification } from "antd";
+import { Button, Form, Image, Input, Select, Space, Spin, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { PlusOutlined } from "@ant-design/icons";
@@ -173,62 +173,66 @@ function EditClientUserForm(props) {
               <div className="user-center-image">
                 <Image src="/Images/Group 1688.png"></Image>
               </div>
-              <Form
-                form={form}
-                // name="validateOnly"
-                name="basic"
-                layout="vertical"
-                autoComplete="off"
-                onFinish={submitUpdateClientUsers}
+              <Spin
+                spinning={props.clientUsersPage.updateClientUserLoading}
               >
-                <Form.Item
-                  name="username"
-                  label="Name"
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
+                <Form
+                  form={form}
+                  // name="validateOnly"
+                  name="basic"
+                  layout="vertical"
+                  autoComplete="off"
+                  onFinish={submitUpdateClientUsers}
                 >
-                  <Input />
-                </Form.Item>
-                <Form.Item
-                  name="email"
-                  label="Email"
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-                <Form.Item
-                  name="phone_number"
-                  label="Phone Number"
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
-                >
-                  <Input />
-                </Form.Item>
-                <Form.Item
-                  name="location"
-                  label="Updat Location"
-                // rules={[
-                //   {
-                //     required: true,
-                //   },
-                // ]}
-                >
-                  <SelectBranch branches={props.ClientUserTableData.branches} />
-                </Form.Item>
-                <Form.Item>
-                  <SubmitButton form={form} />
-                </Form.Item>
-              </Form>
+                  <Form.Item
+                    name="username"
+                    label="Name"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                  <Form.Item
+                    name="email"
+                    label="Email"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                  <Form.Item
+                    name="phone_number"
+                    label="Phone Number"
+                    rules={[
+                      {
+                        required: true,
+                      },
+                    ]}
+                  >
+                    <Input />
+                  </Form.Item>
+                  <Form.Item
+                    name="location"
+                    label="Updat Location"
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //   },
+                  // ]}
+                  >
+                    <SelectBranch branches={props.ClientUserTableData.branches} />
+                  </Form.Item>
+                  <Form.Item>
+                    <SubmitButton form={form} />
+                  </Form.Item>
+                </Form>
+              </Spin>
             </div>
           </div>
         </div>

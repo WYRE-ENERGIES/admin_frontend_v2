@@ -247,7 +247,7 @@ function ClientUsers(props) {
             // onClick={onSearchClientUser}
             // enterButton="suffix"
             allowClear
-            placeholder="Search by name"
+            placeholder="Search by username or email"
             className="user-search-input"
           />
           <Space>

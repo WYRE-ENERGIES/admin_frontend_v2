@@ -234,7 +234,7 @@ function AdminPage(props) {
                   spinning={bulkOverviews?.fetchAllTimeEnergyConsumptionLoading}
                 >
                   <header className="heading-value">
-                    {bulkOverviews?.fetchedAllTimeEnergyConsumption?.total_consumption?.toLocaleString(
+                    {bulkOverviews?.fetchedAllTimeEnergyConsumption?.total_consumption?.value.toLocaleString(
                       undefined,
                       { maximumFractionDigits: 2 }
                     ) ?? 0}{" "}
