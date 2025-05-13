@@ -1,6 +1,5 @@
-
 import moment from "moment";
-import { addUserBranchLoading, addUserBranchSuccess, addUsersLoading, addUsersSuccess, editUserLoading, editUserSuccess, getAllDevicesLoading, getAllDevicesSuccess, getDeviceReadingsLoading, getDeviceReadingsSuccess, getRolesLoading, getRolesSuccess, loginUserLoading } from "./auth.creator";
+import { addUserBranchLoading, addUserBranchSuccess, addUsersLoading, addUsersSuccess, editUserLoading, editUserSuccess, getAllDevicesLoading, getAllDevicesSuccess, getDeviceConsumptionLoading, getDeviceConsumptionSuccess, getDeviceReadingsLoading, getDeviceReadingsSuccess, getDeviceSwitchLoading, getDeviceSwitchSuccess, getRolesLoading,  getRolesSuccess, loginUserLoading } from "./auth.creator";
 import { APIService, APIServiceNoAuth } from "../../../config/Api/apiServices";
 
 
@@ -52,34 +51,60 @@ export const getAllRoles = () => async (dispatch) => {
   }
 };
 
-export const getDownloadAllDevices = (password) => async (dispatch) => {
-
+export const getDownloadAllDevices = () => async (dispatch) => {
   dispatch(getAllDevicesLoading(true));
-  const requestUrl = `/api/v1/get_all_devices/${password}`;
+  const requestUrl = `/api/v1/get_all_devices`;
   try {
     const response = await APIServiceNoAuth.get(requestUrl);
-
     dispatch(getAllDevicesSuccess(response.data));
-    dispatch(getAllDevicesLoading(false))
-    return { fulfilled: true, message: 'successful' }
+    dispatch(getAllDevicesLoading(false));
+    return { fulfilled: true, message: 'successful' };
   } catch (error) {
     dispatch(getAllDevicesLoading(false));
-    return { fulfilled: false, message: error.response.data.detail }
+    return { fulfilled: false, message: error.response.data.detail };
   }
 };
 
-export const getDownloadDeviceReadings = (password, deviceId, userDateRange) => async (dispatch) => {
-
+export const getDownloadDeviceReadings = (deviceId, userDateRange) => async (dispatch) => {
   dispatch(getDeviceReadingsLoading(true));
-  const requestUrl = `/api/v1/get_device_readings/${password}/${deviceId}/${moment(userDateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(userDateRange[1]).format('DD-MM-YYYY HH:mm')}/`;
+  const requestUrl = `/api/v1/get_device_readings/${deviceId}/${moment(userDateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(userDateRange[1]).format('DD-MM-YYYY HH:mm')}/`;
   try {
     const response = await APIService.get(requestUrl);
-
     dispatch(getDeviceReadingsSuccess(response.data.authenticatedData));
-    dispatch(getDeviceReadingsLoading(false))
-    return { fulfilled: true, message: 'successful', data: response.data }
+    dispatch(getDeviceReadingsLoading(false));
+    return { fulfilled: true, message: 'successful', data: response.data };
   } catch (error) {
     dispatch(getDeviceReadingsLoading(false));
+    return { fulfilled: false, message: error.response.data.detail };
+  }
+};
+
+export const getDownloadDeviceConsumption = (deviceId, userDateRange, operatingTimeRange) => async (dispatch) => {
+  dispatch(getDeviceConsumptionLoading(true));
+  const requestUrl = `/api/v1/get_timed_device_readings/${deviceId}/${moment(userDateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(userDateRange[1]).format('DD-MM-YYYY HH:mm')}/${moment(operatingTimeRange[0]).format('HH') + '/' + moment(operatingTimeRange[1]).format('HH')}`;
+  try {
+    const response = await APIService.get(requestUrl);
+    dispatch(getDeviceConsumptionSuccess(response.data.authenticatedData));
+    dispatch(getDeviceConsumptionLoading(false));
+    return { fulfilled: true, message: 'successful', data: response.data };
+  } catch (error) {
+    dispatch(getDeviceConsumptionLoading(false));
+    return { fulfilled: false, message: error.response.data.detail };
+  }
+};
+
+export const toggleNonPostingDevice = (deviceId) => async (dispatch) => {
+
+  dispatch(getDeviceSwitchLoading(true));
+  const requestUrl = `/api/v1/toggle_npa/${deviceId}/`;
+  try {
+    const response = await APIService.post(requestUrl);
+
+    dispatch(getDeviceSwitchSuccess(response.data.authenticatedData));
+    dispatch(getDeviceSwitchLoading(false))
+    return { fulfilled: true, message: 'successful', data: response.data }
+  } catch (error) {
+    dispatch(getDeviceSwitchLoading(false));
     return { fulfilled: false, message: error.response.data.detail }
   }
 };

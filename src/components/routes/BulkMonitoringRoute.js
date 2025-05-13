@@ -13,6 +13,7 @@ import AdminPage from "../../Pages/BulkMonitoringPages/AdminPage";
 import DevicesListPage from "../../Pages/BulkMonitoringPages/DevicesListPage";
 import ClientOverview from "../../Pages/OverviewPages/ClientOverview";
 import CreateClient from "../../Pages/OverviewPages/CreateClient";
+import DownloadPage from "../../Pages/AuthPages/DownloadPage";
 
 function BulkMonitoringRoute() {
   return (
@@ -30,6 +31,7 @@ function BulkMonitoringRoute() {
           <Route path="/branch" element={<BranchDetails />}></Route>
             <Route path="/clients" element={<ClientOverview />}></Route>
           <Route path="/create-client" element={<CreateClient />}></Route>
+            <Route exact path='/download-csv' element={<DownloadPage />} />
       </Routes>
     </div>
     {/* <Routes>

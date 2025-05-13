@@ -13,6 +13,8 @@ const INITIAL_STATE = {
     newUsers: false,
     newUserBranchLoading: false,
     newUserBranch: false,
+    deviceSwitchLoading: false,
+    deviceSwitchSuccess: false,
 };
 
 const authReducer = (state = INITIAL_STATE, action) => {
@@ -127,6 +129,18 @@ const authReducer = (state = INITIAL_STATE, action) => {
                 ...state,
                 updateUserLoading: action.payload,
 
+            };
+
+        case authTypes.GET_DEVICE_SWITCH_LOADING:
+            return {
+                ...state,
+                deviceSwitchLoading: action.payload,
+            };
+            
+        case authTypes.GET_DEVICE_SWITCH_SUCCESS:
+            return {
+                ...state,
+                deviceSwitchSuccess: action.payload,
             };
 
         default: return state;

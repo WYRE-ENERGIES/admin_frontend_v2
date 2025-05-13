@@ -22,7 +22,7 @@ function App() {
   };
 
   return (
-        <ConfigProvider
+    <ConfigProvider
       theme={{
         token: {
           colorPrimary: '#5c3592',
@@ -47,7 +47,7 @@ function App() {
           </div>
           {/* <AppFooter /> */}
         </div> :
-        decodedUser && (decodedUser.client_type === "None" || decodedUser.client_type === "BULK_MONITORING") ?
+        decodedUser && decodedUser.client_type === "BULK_MONITORING" ?
         <div>
           {/* <AppHeader /> */}
           <div className="SidemenuAndPagecontent">
