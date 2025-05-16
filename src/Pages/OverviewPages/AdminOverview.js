@@ -121,8 +121,8 @@ function AdminOverview(props) {
     showKeyMetricsTable()
   }, [])
 
-  const onSearchKeyMetrics = () => {
-    props.getKeyMetricsData(clientId, startDate, endDate, 1, holdSearchData)
+  const onSearchKeyMetrics = (e) => {
+    props.getKeyMetricsData(clientId, startDate, endDate, 1, e.target.value)
   }
 
   const suffix = (
@@ -150,6 +150,7 @@ function AdminOverview(props) {
   const checkData = props.overviewPage?.fetchedKeyMetrics?.results?.[0]
 
   const keyMetricsPaginate = props.overviewPage.fetchedKeyMetrics
+  const current_page = keyMetricsPaginate.page
   const fetchNextPaginatedKeyMetric = () => {
     const clientId = props.auth.userData.client_id;
     const currentPage = Number(keyMetricsPaginate.page) || 0;
@@ -265,7 +266,6 @@ function AdminOverview(props) {
   
   const handleRowClick = (record) => {
     // navigate('/detail', { state: { data: record } });
-    console.log('This Row is Clicked', record);
     return (
       <a
         rel="noopener noreferrer"
@@ -407,11 +407,9 @@ function AdminOverview(props) {
             <div className="search-bar-date-picker">
               <Search
                 placeholder="Search by name"
-                enterButton={suffix}
+                enterButton
                 className="search-bar"
-                onChange={(e) => {
-                  setHoldSearchData(e.target.value);
-                }}
+                onChange={onSearchKeyMetrics}
                 allowClear
                 style={{
                   marginRight: 15,
@@ -630,10 +628,13 @@ function AdminOverview(props) {
           </div>
           <div className="keymetric_pagination">
             <div>
-              <Button onClick={fetchPrevPaginatedKeyMetric}>Previous</Button>
+              <Button onClick={fetchPrevPaginatedKeyMetric} disabled={current_page===1}>Previous</Button>
             </div>
+            <span style={{ margin: '0 8px' }}>
+              Page {keyMetricsPaginate.page} of {keyMetricsPaginate.total_pages}
+            </span>
             <div>
-              <Button onClick={fetchNextPaginatedKeyMetric}>Next</Button>
+              <Button onClick={fetchNextPaginatedKeyMetric} disabled={current_page*keyMetricsPaginate.count >= keyMetricsPaginate.count*keyMetricsPaginate.total_pages}>Next</Button>
             </div>
           </div>
         </section>
