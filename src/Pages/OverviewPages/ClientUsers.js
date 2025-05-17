@@ -92,7 +92,8 @@ function ClientUsers(props) {
     const searchValue = e.target.value.toLowerCase();
     const filtered = clientUserApiData.filter((item) =>
       item.username.toLowerCase().includes(searchValue) ||
-      item.email.toLowerCase().includes(searchValue)
+      item.email.toLowerCase().includes(searchValue) ||
+      item.phone_number.includes(e.target.value)
     );
     setPageDataHolder(filtered)
     setCurrentPage(1);
@@ -247,7 +248,7 @@ function ClientUsers(props) {
             // onClick={onSearchClientUser}
             // enterButton="suffix"
             allowClear
-            placeholder="Search by username or email"
+            placeholder="Search by username or email or phone number"
             className="user-search-input"
           />
           <Space>

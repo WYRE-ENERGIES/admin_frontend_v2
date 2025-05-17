@@ -87,7 +87,7 @@ function AdminOverview(props) {
   const [holdSearchData, setHoldSearchData] = useState('')
   const [dateSearch, setDateSearch] = useState('')
   const [isSelectChart, setIsSelectChart] = useState(0)
-  const [paginationData, setPaginationData] = useState({})
+  const [keyMetricsData, setkeyMetricsData] = useState({})
 
   const { Search } = Input;
   const handleDateSearch = (e) => setDateSearch(e.target.value)
@@ -120,6 +120,12 @@ function AdminOverview(props) {
   useEffect(() => {
     showKeyMetricsTable()
   }, [])
+  
+  useEffect(() => {
+    if (props.overviewPage.fetchedKeyMetrics) {
+      setkeyMetricsData(props.overviewPage.fetchedKeyMetrics)
+    }
+  }, [props.overviewPage.fetchedKeyMetrics])
 
   const onSearchKeyMetrics = (e) => {
     props.getKeyMetricsData(clientId, startDate, endDate, 1, e.target.value)
@@ -149,13 +155,11 @@ function AdminOverview(props) {
   }; 
   const checkData = props.overviewPage?.fetchedKeyMetrics?.results?.[0]
 
-  const keyMetricsPaginate = props.overviewPage.fetchedKeyMetrics
-  const current_page = keyMetricsPaginate.page
   const fetchNextPaginatedKeyMetric = () => {
     const clientId = props.auth.userData.client_id;
-    const currentPage = Number(keyMetricsPaginate.page) || 0;
-    const itemsPerPage = Number(keyMetricsPaginate.count) || 10;
-    const totalPages = Number( keyMetricsPaginate.total_pages) || 0
+    const currentPage = Number(keyMetricsData.page) || 0;
+    const itemsPerPage = Number(keyMetricsData.count) || 10;
+    const totalPages = Number( keyMetricsData.total_pages) || 0
     if (!currentPage || (totalPages - currentPage) > 0) {
       const paginationQuery = `&page=${currentPage+1}`;
       props.getKeyMetricsData(clientId, startDate, endDate, paginationQuery);
@@ -164,8 +168,8 @@ function AdminOverview(props) {
 
   const fetchPrevPaginatedKeyMetric = () => {
     const clientId = props.auth.userData.client_id;
-    const currentPage = Number(keyMetricsPaginate.page) || 0;
-    const itemsPerPage = Number(keyMetricsPaginate.count) || 10;
+    const currentPage = Number(keyMetricsData.page) || 0;
+    const itemsPerPage = Number(keyMetricsData.count) || 10;
     if (currentPage && currentPage > 1) {
       const paginationQuery = `&page=${currentPage-1}`;
       props.getKeyMetricsData(clientId, startDate, endDate, paginationQuery);
@@ -628,13 +632,13 @@ function AdminOverview(props) {
           </div>
           <div className="keymetric_pagination">
             <div>
-              <Button onClick={fetchPrevPaginatedKeyMetric} disabled={current_page===1}>Previous</Button>
+              <Button onClick={fetchPrevPaginatedKeyMetric} disabled={keyMetricsData.page===1}>Previous</Button>
             </div>
             <span style={{ margin: '0 8px' }}>
-              Page {keyMetricsPaginate.page} of {keyMetricsPaginate.total_pages}
+              Page {keyMetricsData.page} of {keyMetricsData.total_pages}
             </span>
             <div>
-              <Button onClick={fetchNextPaginatedKeyMetric} disabled={current_page*keyMetricsPaginate.count >= keyMetricsPaginate.count*keyMetricsPaginate.total_pages}>Next</Button>
+              <Button onClick={fetchNextPaginatedKeyMetric} disabled={keyMetricsData.page*keyMetricsData.count >= keyMetricsData.count*keyMetricsData.total_pages}>Next</Button>
             </div>
           </div>
         </section>
