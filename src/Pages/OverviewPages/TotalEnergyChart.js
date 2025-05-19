@@ -45,6 +45,7 @@ function TotalEnergyChart(props) {
   dayjs.extend(customParseFormat);
   const dateFormat = 'DD/MM/YYYY';
   const { RangePicker } = DatePicker;
+  const totalPages = paginationData.results
 
   const clientId = searchParams.get("client_id") || props.auth.userData.client_id;
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
@@ -197,7 +198,7 @@ function TotalEnergyChart(props) {
   ]
   
   const onSearchTotalEnergy = (e) => {
-    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, e.target.value)
+    props.getTotalEnergyBarChartData(clientId, startDate, endDate, 1, e.target.value) 
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -205,7 +206,7 @@ function TotalEnergyChart(props) {
   };
   const suffix = (
     <SearchOutlined
-      // onClick={onSearchTotalEnergy}
+      onClick={onSearchTotalEnergy}
       style={{
         fontSize: 16,
         color: "white",
@@ -247,11 +248,9 @@ function TotalEnergyChart(props) {
                 <div className="search-bar-date-picker">
                   <Search
                     placeholder="Search by name"
-                    enterButton={suffix}
+                    enterButton
                     className="search-bar"
-                    onChange={(e) => {
-                      setHoldSearchData(e.target.value);
-                    }}
+                    onChange={onSearchTotalEnergy}
                     allowClear
                     style={{
                       marginRight: 10,
@@ -302,12 +301,15 @@ function TotalEnergyChart(props) {
             <button onClick={fetchPrevPaginatedTotalEnergy}>Previous</button> */}
               <div className="pagination">
                 <div>
-                  <Button onClick={fetchPrevPaginatedTotalEnergy}>
+                  <Button onClick={fetchPrevPaginatedTotalEnergy} disabled={paginationData.page===1}>
                     Previous
                   </Button>
                 </div>
+                <span style={{ margin: '0 8px' }}>
+                  Page {paginationData.page} of {paginationData.total_pages}
+                </span>
                 <div>
-                  <Button onClick={fetchNextPaginatedTotalEnergy}>Next</Button>
+                  <Button onClick={fetchNextPaginatedTotalEnergy} disabled={paginationData.page*paginationData.count >= paginationData.count*paginationData.total_pages}>Next</Button>
                 </div>
               </div>
             </Spin>
