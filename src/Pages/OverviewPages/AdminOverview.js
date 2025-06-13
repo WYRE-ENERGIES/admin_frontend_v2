@@ -558,7 +558,7 @@ function AdminOverview(props) {
                   </div>
                 )}
               />
-              <Column
+              {/* <Column
                 width={90}
                 title="Diesel Usage Accuracy"
                 dataIndex="diesel_usage_accuracy"
@@ -571,8 +571,8 @@ function AdminOverview(props) {
                     })}
                   </div>
                 )}
-              />
-              <Column
+              /> */}
+              {/* <Column
                 width={90}
                 title="Utility Usage Accuracy"
                 dataIndex="utility_usage_accuracy"
@@ -585,7 +585,7 @@ function AdminOverview(props) {
                     })}
                   </div>
                 )}
-              />
+              /> */}
               <ColumnGroup
                 width="100px"
                 ellipsis={true}

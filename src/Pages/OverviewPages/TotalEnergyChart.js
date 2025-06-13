@@ -130,14 +130,14 @@ function TotalEnergyChart(props) {
             barThickness: 40,
             maxBarThickness: 40,
           },
-          {
-            label: "Utility",
-            data: data1,
-            backgroundColor: "#094D92",
-            borderRadius: 6,
-            barThickness: 40,
-            maxBarThickness: 40,
-          },
+          // {
+          //   label: "Utility",
+          //   data: data1,
+          //   backgroundColor: "#094D92",
+          //   borderRadius: 6,
+          //   barThickness: 40,
+          //   maxBarThickness: 40,
+          // },
         ],
       };
 
