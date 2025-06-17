@@ -11,6 +11,5 @@ export const downloadFile = (data, downloadName = 'raw_data.csv') => {
 }
 
 export const compareDateInfo = (dateInfo, minutes) =>{
-    console.log('this si sjdkjsjod', moment().isAfter(moment(dateInfo).add('minutes', minutes)))
     return moment().isAfter(moment(dateInfo).add('minutes', minutes));
 }

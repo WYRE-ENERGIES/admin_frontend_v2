@@ -10,6 +10,8 @@ import AuthRoute from './components/routes/AuthRoute';
 import BulkSideMenu from './components/sideBar/BulkSideMenu';
 import BulkmonitoringPageView from './components/pageContent/PageViews/BulkmonitoringPageView';
 import { ConfigProvider } from 'antd';
+import OtherSideMenu from "./components/sideBar/OtherSideMenu";
+import OtherPageView from "./components/pageContent/PageViews/OtherPageView";
 
 function App() {
   const decodedUser = authHelper()
@@ -60,8 +62,24 @@ function App() {
             />
             <BulkmonitoringPageView />
           </div>
+                  {/* <AppFooter /> */}
+                </div>
+                : decodedUser && decodedUser.client_type === "None" ?
+              <div>
+          {/* <AppHeader /> */}
+          <div className="SidemenuAndPagecontent">
+            <OtherSideMenu
+              trigger={null}
+              collapsible
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+              onBreakpoint={onBreakpoint}
+            />
+            <OtherPageView />
+          </div>
           {/* <AppFooter /> */}
-        </div> :
+                </div>
+          :
         <AuthRoute />
       }
       </BrowserRouter>
