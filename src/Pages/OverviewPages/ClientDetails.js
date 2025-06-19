@@ -23,12 +23,15 @@ const ClientDetails = () => {
   const navigate = useNavigate();
   const [client, setClient] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [branches, setBranches] = useState([]);
+  const [branchLoading, setBranchLoading] = useState(false);
 
   useEffect(() => {
     const fetchClientDetails = async () => {
       try {
-        const response = await APIService.get(`/cadmin/clients/${clientId}`);
-        setClient(response.data);
+        const response = await APIService.get(`/api/v1/accounts/view-update-client/${clientId}/`);
+        setClient(response.data.client);
       } catch (error) {
         notification.error({
           message: 'Error',
@@ -39,23 +42,62 @@ const ClientDetails = () => {
       }
     };
 
+    const fetchBranches = async () => {
+      setBranchLoading(true);
+      try {
+        const response = await APIService.get(`/api/v1/accounts/client/${clientId}/branches/`);
+        setBranches(response.data.branches || []);
+      } catch (error) {
+        notification.error({
+          message: 'Error',
+          description: 'Failed to load branches'
+        });
+      } finally {
+        setBranchLoading(false);
+      }
+    };
+
     fetchClientDetails();
+    fetchBranches();
   }, [clientId]);
 
-  const handleSuspendClient = () => {
-    // TODO: Implement suspend client functionality
-    notification.warning({
-      message: 'Suspend Client',
-      description: 'Client suspension functionality to be implemented'
-    });
+  const handleSuspendClient = async () => {
+    if (!client) return;
+    setActionLoading(true);
+    try {
+      await APIService.suspendClient(client.id, !client.is_active);
+      notification.success({
+        message: client.is_active ? 'Suspend Client' : 'Activate Client',
+        description: client.is_active ? 'Client has been suspended successfully.' : 'Client has been activated successfully.'
+      });
+      // Refresh client details
+      const response = await APIService.get(`/api/v1/accounts/view-update-client/${client.id}/`);
+      setClient(response.data.client);
+    } catch (error) {
+      notification.error({
+        message: client.is_active ? 'Suspend Client' : 'Activate Client',
+        description: error?.response?.data?.message || error.message || 'Failed to update client status.'
+      });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  const handleLoginAsClient = () => {
-    // TODO: Implement login as client functionality
-    notification.info({
-      message: 'Login as Client',
-      description: 'Login as client functionality to be implemented'
-    });
+  const handleLoginAsClient = async () => {
+    if (!client) return;
+    try {
+      await APIService.forceLoginClientAdmin(client.id);
+      notification.success({
+        message: 'Login as Client',
+        description: 'You have been logged in as the client admin.'
+      });
+      // Optionally, redirect or handle the response here
+    } catch (error) {
+      notification.error({
+        message: 'Login as Client',
+        description: error?.response?.data?.message || error.message || 'Failed to login as client.'
+      });
+    }
   };
 
   const handleEditSection = (section) => {
@@ -64,6 +106,27 @@ const ClientDetails = () => {
       message: 'Edit Section',
       description: `Edit functionality for ${section} to be implemented`
     });
+  };
+
+  const handleSuspendBranch = async (branchId, isActive) => {
+    setBranchLoading(true);
+    try {
+      await APIService.suspendBranch(branchId, isActive);
+      notification.success({
+        message: isActive ? 'Activate Branch' : 'Suspend Branch',
+        description: isActive ? 'Branch has been activated successfully.' : 'Branch has been suspended successfully.'
+      });
+      // Refresh branches
+      const response = await APIService.get(`/api/v1/accounts/client/${clientId}/branches/`);
+      setBranches(response.data.branches || []);
+    } catch (error) {
+      notification.error({
+        message: isActive ? 'Activate Branch' : 'Suspend Branch',
+        description: error?.response?.data?.message || error.message || 'Failed to update branch status.'
+      });
+    } finally {
+      setBranchLoading(false);
+    }
   };
 
   if (loading) {
@@ -92,18 +155,40 @@ const ClientDetails = () => {
       key: 'address',
     },
     {
+      title: 'Status',
+      dataIndex: 'Is_active',
+      key: 'Is_active',
+      render: (isActive) => (
+        isActive === false ? (
+          <span style={{ color: 'red', fontWeight: 'bold' }}>Suspended</span>
+        ) : (
+          <span style={{ color: 'green', fontWeight: 'bold' }}>Active</span>
+        )
+      ),
+    },
+    {
       title: 'Devices',
       dataIndex: 'devices',
       key: 'devices',
       render: (devices) => (
-        <ul style={{ padding: 0, margin: 0 }}>
-          {devices?.map((device, index) => (
-            <li key={index}>
-              {device.name} ({device.type}) - {device.provider}
-              {device.type === 1 && ` - ${device.gen_size}kVA (${device.fuel_type})`}
-            </li>
-          ))}
-        </ul>
+        devices && devices.length > 0
+          ? devices.map(device => device.device_name || device.name).join(', ')
+          : '---'
+      ),
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <Button
+          type="primary"
+          danger={record.Is_active}
+          size="small"
+          loading={branchLoading}
+          onClick={() => handleSuspendBranch(record.branch_id, !record.Is_active)}
+        >
+          {record.Is_active ? 'Suspend' : 'Activate'}
+        </Button>
       ),
     },
   ];
@@ -151,11 +236,11 @@ const ClientDetails = () => {
         </div>
         <Space>
           <Button 
-            type="primary" 
-            danger
+            danger={client?.is_active}
+            loading={actionLoading}
             onClick={handleSuspendClient}
           >
-            Suspend Client
+            {client?.is_active ? 'Suspend Client' : 'Activate Client'}
           </Button>
           <Button 
             type="primary"
@@ -184,7 +269,7 @@ const ClientDetails = () => {
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} md={8}>
             <Text strong>Client Name:</Text>
-            <div>{client?.name || client?.client_name || '---'}</div>
+            <div>{client?.name || '---'}</div>
           </Col>
           <Col xs={24} sm={12} md={8}>
             <Text strong>Client Type:</Text>
@@ -202,15 +287,25 @@ const ClientDetails = () => {
             <Text strong>Address:</Text>
             <div>{client?.address || '---'}</div>
           </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Text strong>Region:</Text>
+            <div>{client?.region || '---'}</div>
+          </Col>
+          <Col xs={24} sm={12} md={8}>
+            <Text strong>Status:</Text>
+            <div>
+              {client?.is_active === false ? (
+                <span style={{ color: 'red', fontWeight: 'bold' }}>Suspended</span>
+              ) : (
+                <span style={{ color: 'green', fontWeight: 'bold' }}>Active</span>
+              )}
+            </div>
+          </Col>
           <Col xs={24}>
             <Text strong>Additional Emails:</Text>
             <div>
               {client?.additional_emails?.length > 0 ? (
-                <ul style={{ margin: 0, paddingLeft: '20px' }}>
-                  {client.additional_emails.map((email, index) => (
-                    <li key={index}>{email}</li>
-                  ))}
-                </ul>
+                client.additional_emails.join(', ')
               ) : '---'}
             </div>
           </Col>
@@ -270,10 +365,11 @@ const ClientDetails = () => {
         style={{ marginBottom: '20px' }}
       >
         <Table 
-          dataSource={client?.branches || []} 
+          dataSource={branches} 
           columns={branchColumns}
-          rowKey="name"
+          rowKey="branch_id"
           pagination={false}
+          loading={branchLoading}
         />
       </Card>
 

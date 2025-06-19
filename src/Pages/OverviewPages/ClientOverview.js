@@ -26,6 +26,7 @@ const ClientOverview = () => {
           clientType: client.client_type || '---',
           phone: client.phone_number || '---',
           email: client.email || '---',
+          is_active: client.is_active,
         }));
         setClients(formattedClients);
         setFilteredClients(formattedClients);
@@ -55,13 +56,13 @@ const ClientOverview = () => {
     navigate(`/client/${clientId}`);
   };
 
-  const handleSuspendClient = async (clientId) => {
+  const handleSuspendClient = async (clientId, isActive) => {
     setLoading(true);
     try {
-      await APIService.suspendClient(clientId, false);
+      await APIService.suspendClient(clientId, isActive);
       notification.success({
-        message: 'Suspend Client',
-        description: 'Client has been suspended successfully.'
+        message: isActive ? 'Activate Client' : 'Suspend Client',
+        description: isActive ? 'Client has been activated successfully.' : 'Client has been suspended successfully.'
       });
       // Refresh the client list
       const response = await APIService.get('/cadmin/clients');
@@ -73,13 +74,14 @@ const ClientOverview = () => {
         clientType: client.client_type || '---',
         phone: client.phone_number || '---',
         email: client.email || '---',
+        is_active: client.is_active,
       }));
       setClients(formattedClients);
       setFilteredClients(formattedClients);
     } catch (error) {
       notification.error({
-        message: 'Suspend Client',
-        description: error?.response?.data?.message || error.message || 'Failed to suspend client.'
+        message: isActive ? 'Activate Client' : 'Suspend Client',
+        description: error?.response?.data?.message || error.message || 'Failed to update client status.'
       });
     } finally {
       setLoading(false);
@@ -114,6 +116,19 @@ const ClientOverview = () => {
       align: 'center',
     },
     {
+      title: 'Status',
+      dataIndex: 'is_active',
+      key: 'is_active',
+      align: 'center',
+      render: (is_active) => (
+        is_active === false ? (
+          <span style={{ color: 'red', fontWeight: 'bold' }}>Suspended</span>
+        ) : (
+          <span style={{ color: 'green', fontWeight: 'bold' }}>Active</span>
+        )
+      ),
+    },
+    {
       title: 'Action',
       key: 'action',
       align: 'center',
@@ -127,10 +142,10 @@ const ClientOverview = () => {
                 onClick: () => handleViewClient(record.key)
               },
               {
-                key: 'suspend',
-                label: 'Suspend',
-                danger: true,
-                onClick: () => handleSuspendClient(record.key)
+                key: record.is_active ? 'suspend' : 'activate',
+                label: record.is_active ? 'Suspend' : 'Activate',
+                danger: record.is_active ? true : false,
+                onClick: () => handleSuspendClient(record.key, !record.is_active)
               }
             ]
           }}
