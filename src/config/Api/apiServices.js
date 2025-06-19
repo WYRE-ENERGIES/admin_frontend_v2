@@ -85,6 +85,10 @@ export const APIService = {
     putMultipart(endpoint, data) {
         return instance.put(endpoint, data);
     },
+
+    suspendClient(clientId, isActive) {
+        return instance.patch(`/api/v2/suspend_client/${clientId}/`, { is_active: isActive });
+    },
 };
 
 export const APIServiceNoAuth = {

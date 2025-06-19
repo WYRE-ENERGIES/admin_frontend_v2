@@ -55,12 +55,35 @@ const ClientOverview = () => {
     navigate(`/client/${clientId}`);
   };
 
-  const handleSuspendClient = (clientId) => {
-    // TODO: Implement suspend client functionality
-    notification.warning({
-      message: 'Suspend Client',
-      description: 'Client suspension functionality to be implemented'
-    });
+  const handleSuspendClient = async (clientId) => {
+    setLoading(true);
+    try {
+      await APIService.suspendClient(clientId, false);
+      notification.success({
+        message: 'Suspend Client',
+        description: 'Client has been suspended successfully.'
+      });
+      // Refresh the client list
+      const response = await APIService.get('/cadmin/clients');
+      const data = response.data.results || response.data || [];
+      const formattedClients = data.map((client, idx) => ({
+        key: client.id || idx,
+        name: client.name || client.client_name || client.username || '---',
+        branches: client.number_of_branches || '---',
+        clientType: client.client_type || '---',
+        phone: client.phone_number || '---',
+        email: client.email || '---',
+      }));
+      setClients(formattedClients);
+      setFilteredClients(formattedClients);
+    } catch (error) {
+      notification.error({
+        message: 'Suspend Client',
+        description: error?.response?.data?.message || error.message || 'Failed to suspend client.'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const columns = [
@@ -85,7 +108,7 @@ const ClientOverview = () => {
       key: 'email',
     },
     {
-      title: 'Number of Branches',
+      title: 'Branches',
       dataIndex: 'branches',
       key: 'branches',
       align: 'center',
