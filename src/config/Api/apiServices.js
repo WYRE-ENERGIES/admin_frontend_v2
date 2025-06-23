@@ -75,15 +75,27 @@ export const APIService = {
     },
 
     postMultipart(endpoint, data, config = {}) {
-        return instance.post(endpoint, data, config);
+        return instanceMultipart.post(endpoint, data, config);
     },
 
     patchMultipart(endpoint, data) {
-        return instance.patch(endpoint, data);
+        return instanceMultipart.patch(endpoint, data);
     },
 
     putMultipart(endpoint, data) {
-        return instance.put(endpoint, data);
+        return instanceMultipart.put(endpoint, data);
+    },
+
+    suspendClient(clientId, isActive) {
+        return instance.patch(`/api/v2/suspend_client/${clientId}/`, { is_active: isActive });
+    },
+
+    suspendBranch(branchId, isActive) {
+        return instance.patch(`/api/v2/suspend_branch/${branchId}/`, { is_active: isActive });
+    },
+
+    forceLoginClientAdmin(clientId) {
+        return instance.post(`/api/v2/force-login-client-admin/${clientId}/`);
     },
 };
 
