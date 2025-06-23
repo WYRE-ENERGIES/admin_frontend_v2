@@ -57,7 +57,7 @@ function DownloadPage(props) {
   const [formTwo] = Form.useForm();
   const [formThree] = Form.useForm();
   const [formFour] = Form.useForm();
-  const [pPassword, setPPassword] = useState(null);
+  const [pPassword, setPPassword] = useState("12345678");
   const [deviceName, setDeviceName] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
   const [branchName, setBranchName] = useState(false);
@@ -538,8 +538,8 @@ function DownloadPage(props) {
       });
     }
     return notification.error({
-      message: "failed",
-      description: request.message,
+      message: "Not found",
+      description: "No data for that selection",
     });
   };
   const onSelectFormSubmit = async (values) => {
@@ -631,33 +631,6 @@ function DownloadPage(props) {
         <Title level={2} style={{ textAlign: "center", marginBottom: "32px" }}>
           Download CSV File
         </Title>
-
-        {!sessionStorage.getItem('pp') || compareDateInfo(sessionStorage.getItem('ppt'), 30) ? (
-          <Card style={cardStyle}>
-            <Form
-              form={form}
-              name="basic"
-              layout="vertical"
-              onFinish={onPasswordFormSubmit}
-            >
-              <Form.Item
-                name="password"
-                label="Password"
-                rules={[
-                  { required: true, message: "Please enter password" },
-                  { max: 60, message: "Password cannot be more than 60 characters" }
-                ]}
-              >
-                <Input.Password size="large" />
-              </Form.Item>
-              <Form.Item>
-                <Button style={buttonStyle} htmlType="submit">
-                  Submit
-                </Button>
-              </Form.Item>
-            </Form>
-          </Card>
-        ) : (
           <Row gutter={[24, 24]}>
             <Col xs={24} lg={12}>
               <Card title="Download Device Readings" style={cardStyle}>
@@ -824,7 +797,7 @@ function DownloadPage(props) {
               </Card>
             </Col>
           </Row>
-        )}
+
       </Spin>
     </div>
   );
