@@ -7,6 +7,7 @@ import Login from '../../Pages/AuthPages/Login';
 import AuthHeader from '../../Pages/OtherPages/AuthHeader';
 import Report from '../../Pages/AuthPages/Report';
 import DownloadPage from '../../Pages/AuthPages/DownloadPage';
+import ForceLoginHandler from "../../Pages/AuthPages/ForceLoginHandler";
 
 function AuthRoute() {
   return (
@@ -21,7 +22,8 @@ function AuthRoute() {
             {/* <Route exact path='/in-mail' element={<InMail />} /> */}
             {/* <Route path='/about' element={<About />} /> */}
             {/* <Route path='/contact' element={<Contact />} /> */}
-            {/* <Route path='/reset-password' element={<ResetPassword />} /> */}
+          {/* <Route path='/reset-password' element={<ResetPassword />} /> */}
+          <Route path="/force-login" element={<ForceLoginHandler />}></Route>
             <Route path='/download-csv' element={<DownloadPage />} />
           </Routes>
         {/* </ScrollToTop> */}
