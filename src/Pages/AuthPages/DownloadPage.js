@@ -13,7 +13,7 @@ import {
 import { connect } from "react-redux";
 import { AlertFilled, FireFilled, SearchOutlined } from '@ant-design/icons';
 
-import { Spin, Form, notification, Select, DatePicker, Table, Switch, Tag, Button, Space, ConfigProvider, TimePicker, Card, Row, Col, Typography } from "antd";
+import { Spin, Form, notification, Select, DatePicker, Table, Switch, Tag, Button, Space, TimePicker, Card, Row, Col, Typography } from "antd";
 import en from 'antd/es/date-picker/locale/en_US';
 import enUS from 'antd/es/locale/en_US';
 import dayjs from 'dayjs';

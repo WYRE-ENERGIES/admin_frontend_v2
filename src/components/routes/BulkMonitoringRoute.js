@@ -29,8 +29,6 @@ function BulkMonitoringRoute() {
         <Route path="/log-out" element={<LogOut />}></Route>
         <Route path="/support" element={<Support />}></Route>
           <Route path="/branch" element={<BranchDetails />}></Route>
-            <Route path="/clients" element={<ClientOverview />}></Route>
-          <Route path="/create-client" element={<CreateClient />}></Route>
             <Route exact path='/download-csv' element={<DownloadPage />} />
       </Routes>
     </div>

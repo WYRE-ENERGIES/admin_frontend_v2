@@ -53,7 +53,7 @@ export const getAllRoles = () => async (dispatch) => {
 
 export const getDownloadAllDevices = () => async (dispatch) => {
   dispatch(getAllDevicesLoading(true));
-  const requestUrl = `/api/v1/get_all_devices`;
+  const requestUrl = `/api/v1/get_all_devices/12345678/`;
   try {
     const response = await APIServiceNoAuth.get(requestUrl);
     dispatch(getAllDevicesSuccess(response.data));

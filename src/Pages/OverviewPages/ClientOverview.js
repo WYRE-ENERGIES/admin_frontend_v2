@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Table, Space, Tag, Spin, notification, Input } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Button, Table, Space, Tag, Spin, notification, Input, Dropdown } from 'antd';
+import { PlusOutlined, MoreOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { APIService } from '../../config/Api/apiServices';
 
@@ -51,6 +51,18 @@ const ClientOverview = () => {
     setFilteredClients(filtered);
   };
 
+  const handleViewClient = (clientId) => {
+    navigate(`/client/${clientId}`);
+  };
+
+  const handleSuspendClient = (clientId) => {
+    // TODO: Implement suspend client functionality
+    notification.warning({
+      message: 'Suspend Client',
+      description: 'Client suspension functionality to be implemented'
+    });
+  };
+
   const columns = [
     {
       title: 'Client Name',
@@ -78,16 +90,33 @@ const ClientOverview = () => {
       key: 'branches',
       align: 'center',
     },
-    // Uncomment and update if you want actions
-    // {
-    //   title: 'Action',
-    //   key: 'action',
-    //   render: (_, record) => (
-    //     <Space size="middle">
-    //       <a>Edit</a>
-    //     </Space>
-    //   ),
-    // },
+    {
+      title: 'Action',
+      key: 'action',
+      align: 'center',
+      render: (_, record) => (
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: 'view',
+                label: 'View Client',
+                onClick: () => handleViewClient(record.key)
+              },
+              {
+                key: 'suspend',
+                label: 'Suspend',
+                danger: true,
+                onClick: () => handleSuspendClient(record.key)
+              }
+            ]
+          }}
+          trigger={['click']}
+        >
+          <Button type="text" icon={<MoreOutlined />} />
+        </Dropdown>
+      ),
+    },
   ];
 
   const handleCreateClient = () => {

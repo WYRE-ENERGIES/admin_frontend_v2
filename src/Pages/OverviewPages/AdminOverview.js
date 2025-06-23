@@ -1,9 +1,9 @@
-import { Button, DatePicker, Image, Input, Space, Spin, Table, Typography } from "antd";
+import { Button, DatePicker, message, Image, Input, Space, Spin, Table, Typography } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
@@ -27,6 +27,9 @@ import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
 import { PiLightningDuotone } from "react-icons/pi";
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -88,8 +91,62 @@ function AdminOverview(props) {
   const [dateSearch, setDateSearch] = useState('')
   const [isSelectChart, setIsSelectChart] = useState(0)
   const [keyMetricsData, setkeyMetricsData] = useState({})
+    const [downloading, setDownloading] = useState(false);
+    const reportRef = useRef(null);
 
   const { Search } = Input;
+    const handleDownloadPdf = async () => {
+    if (!reportRef.current) return;
+
+    setDownloading(true);
+    message.loading({ content: 'Generating PDF...', key: 'pdfDownload' });
+
+    try
+    {
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      const element = reportRef.current;
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+
+      const pdfWidth = 210; // A4 width in mm
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      const pdf = new jsPDF({
+        orientation: pdfHeight > pdfWidth ? 'portrait' : 'landscape',
+        unit: 'mm',
+        format: [pdfWidth, pdfHeight]
+      });
+
+      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+
+      console.log("props:", props)
+      const branchName = props?.auth?.userData?.client_name || 'branch';
+      const month = new Date().getMonth();
+      const year = new Date().getFullYear();
+ 
+      const filename = `${branchName}_${month}_energy_report_${year}.pdf`;
+
+      pdf.save(filename);
+      message.success({ content: 'PDF downloaded successfully!', key: 'pdfDownload' });
+    } catch (error)
+    {
+      console.error('Error generating PDF:', error);
+      message.error({ content: 'Failed to generate PDF', key: 'pdfDownload' });
+    } finally
+    {
+      setDownloading(false);
+    }
+    };
+  
   const handleDateSearch = (e) => setDateSearch(e.target.value)
   
   dayjs.extend(customParseFormat);
@@ -287,13 +344,15 @@ function AdminOverview(props) {
   };
 
   return (
-    <>
+    <main ref={reportRef}>
       <div className="AppHeader" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h4 className="mobile-title">
-          Admin Overview
+          {downloading ? "Report" : "Admin Overview"}
         </h4>
           <div>
-            <Button
+          <Button
+            onClick={handleDownloadPdf}
+            disabled={downloading || props.overviewPage.fetchKeyMetricsLoading || props.overviewPage.fetchTotalEnergyTopCardLoading || props.overviewPage.fetchTotalEnergyBarChartDataLoading}
               className="mobile-button"
             >
               <DownloadOutlined />
@@ -376,6 +435,7 @@ function AdminOverview(props) {
             </div>
           </Space>
         </section>
+         {!downloading && (
         <section className="total-energy-bar-chart">
           <Typography.Title style={{ fontSize: "20px" }}>
             Chart Metrics
@@ -394,6 +454,7 @@ function AdminOverview(props) {
             />
           </div>
         </section>
+         )}
         <RendeChartsComponents index={isSelectChart} />
         <section className="total-energy-bar-chart">
           <div
@@ -643,7 +704,7 @@ function AdminOverview(props) {
           </div>
         </section>
       </div>
-    </>
+    </main>
   );
 }
 
@@ -659,3 +720,4 @@ const mapStateToProps = (state) => ({
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminOverview);
+
