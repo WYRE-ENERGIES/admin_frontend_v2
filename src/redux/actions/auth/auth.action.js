@@ -55,13 +55,13 @@ export const getDownloadAllDevices = () => async (dispatch) => {
   dispatch(getAllDevicesLoading(true));
   const requestUrl = `/api/v1/get_all_devices/12345678/`;
   try {
-    const response = await APIServiceNoAuth.get(requestUrl);
+    const response = await APIService.get(requestUrl);
     dispatch(getAllDevicesSuccess(response.data));
     dispatch(getAllDevicesLoading(false));
     return { fulfilled: true, message: 'successful' };
   } catch (error) {
     dispatch(getAllDevicesLoading(false));
-    return { fulfilled: false, message: error.response.data.detail };
+    return { fulfilled: false, message: error.response?.data?.detail || 'Failed to fetch devices.' };
   }
 };
 
