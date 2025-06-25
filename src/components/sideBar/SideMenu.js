@@ -14,6 +14,7 @@ import {
   CustomerServiceOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { Button, Image, Menu, Space, theme, Drawer } from "antd";
 import Form from "antd/es/form/Form";
@@ -29,6 +30,7 @@ function SideMenu({collapsed, setCollapsed}) {
     const [selectedLocation, setSelectedLocation] = useState('/');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+    const [isAdminImpersonating, setIsAdminImpersonating] = useState(false);
     const location = useLocation();
     const {
       token: { colorBgContainer },
@@ -49,14 +51,30 @@ function SideMenu({collapsed, setCollapsed}) {
       return () => window.removeEventListener('resize', handleResize);
     }, []);
 
+    useEffect(() => {
+        const adminBackup = localStorage.getItem('adminUserBackup');
+        setIsAdminImpersonating(!!adminBackup);
+    }, [location.pathname]);
+
     const onLogout = () => {
       const navigateTo = '/'
       dispatch(logoutUser())
       navigate(navigateTo)
     }
+
+    const goBackToAdmin = () => {
+        const adminBackup = localStorage.getItem('adminUserBackup');
+        if (adminBackup) {
+            // localStorage.setItem('loggedWyreUserAdmin', adminBackup);
+            // localStorage.removeItem('adminUserBackup');
+            window.location.href = '/force-login-admin';
+        }
+    };
+
     const logOut = () => {
       dispatch(logoutUser());
       window.localStorage.removeItem('loggedWyreUserAdmin');
+      window.localStorage.removeItem('adminUserBackup');
       window.location.href = '/';
     };
     
@@ -115,6 +133,28 @@ function SideMenu({collapsed, setCollapsed}) {
         type: 'divider',
       },
     ]
+
+    if (isAdminImpersonating) {
+        // Find the last divider
+        let lastDividerIdx = -1;
+        for (let i = items.length - 1; i >= 0; i--) {
+            if (items[i].type === 'divider') {
+                lastDividerIdx = i;
+                break;
+            }
+        }
+        const backToAdminItem = {
+            label: "Back to Admin",
+            key: "/back-to-admin",
+            onClick: goBackToAdmin,
+            icon: <ArrowLeftOutlined />,
+        };
+        if (lastDividerIdx !== -1) {
+            items.splice(lastDividerIdx, 0, backToAdminItem);
+        } else {
+            items.push(backToAdminItem);
+        }
+    }
   
     useEffect(() => {
       const pathName = location.pathname;

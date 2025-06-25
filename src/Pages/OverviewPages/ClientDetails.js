@@ -112,7 +112,8 @@ const ClientDetails = () => {
       const tokenData = response.data?.data?.token;
       const userData = response.data?.data;
       if (tokenData?.access && tokenData?.refresh) {
-        // Open /force-login in a new tab with tokens and user info as query params
+        localStorage.setItem('adminUserBackup', localStorage.getItem('loggedWyreUserAdmin'));
+
         const params = new URLSearchParams({
           access: tokenData.access,
           refresh: tokenData.refresh,
