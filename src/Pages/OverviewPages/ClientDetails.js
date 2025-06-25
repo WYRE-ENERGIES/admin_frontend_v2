@@ -32,6 +32,10 @@ const ClientDetails = () => {
   const [branches, setBranches] = useState([]);
   const [branchLoading, setBranchLoading] = useState(false);
   const [regions, setRegions] = useState([]);
+  const [additionalUsers, setAdditionalUsers] = useState([]);
+  const [additionalUsersLoading, setAdditionalUsersLoading] = useState(false);
+  const [mainUser, setMainUser] = useState(null);
+  const [mainUserLoading, setMainUserLoading] = useState(false);
 
   // Modal states
   const [editingSection, setEditingSection] = useState(null);
@@ -67,9 +71,42 @@ const ClientDetails = () => {
     }
   }, [clientId]);
 
+  const fetchAdditionalUsers = useCallback(async () => {
+    setAdditionalUsersLoading(true);
+    try {
+      const response = await APIService.get(`/api/v1/accounts/client/${clientId}/additional-user/`);
+      setAdditionalUsers(response.data.users || []);
+      console.log(response.data)
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: 'Failed to load additional users'
+      });
+    } finally {
+      setAdditionalUsersLoading(false);
+    }
+  }, [clientId]);
+
+  const fetchMainUser = useCallback(async () => {
+    setMainUserLoading(true);
+    try {
+      const response = await APIService.get(`/api/v1/accounts/client/${clientId}/main-user/`);
+      setMainUser(response.data.user || null);
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: 'Failed to load main user'
+      });
+    } finally {
+      setMainUserLoading(false);
+    }
+  }, [clientId]);
+
   useEffect(() => {
     fetchClientDetails();
     fetchBranches();
+    fetchAdditionalUsers();
+    fetchMainUser();
 
     const fetchRegions = async () => {
       try {
@@ -83,7 +120,7 @@ const ClientDetails = () => {
       }
     };
     fetchRegions();
-  }, [clientId, fetchClientDetails, fetchBranches]);
+  }, [clientId, fetchClientDetails, fetchBranches, fetchAdditionalUsers, fetchMainUser]);
 
   const handleSuspendClient = async () => {
     if (!client) return;
@@ -252,8 +289,8 @@ const ClientDetails = () => {
     },
     {
       title: 'Role',
-      dataIndex: 'roles',
       key: 'roles',
+      render: (_, record) => `${record.roles.name || ''}`, 
     },
   ];
 
@@ -367,28 +404,30 @@ const ClientDetails = () => {
         extra={<Button type="text" icon={<EditOutlined />} onClick={() => setEditingSection('mainUser')}>Edit</Button>}
         style={{ marginBottom: '20px' }}
       >
-        <Row gutter={[16, 16]}>
-          <Col xs={24} sm={12} md={8}>
-            <Text strong>Username:</Text>
-            <div>{client?.main_user?.username || '---'}</div>
-          </Col>
-          <Col xs={24} sm={12} md={8}>
-            <Text strong>Name:</Text>
-            <div>{`${client?.main_user?.first_name || ''} ${client?.main_user?.last_name || ''}`.trim() || '---'}</div>
-          </Col>
-          <Col xs={24} sm={12} md={8}>
-            <Text strong>Email:</Text>
-            <div>{client?.main_user?.email || '---'}</div>
-          </Col>
-          <Col xs={24} sm={12} md={8}>
-            <Text strong>Phone Number:</Text>
-            <div>{client?.main_user?.phone_number || '---'}</div>
-          </Col>
-          <Col xs={24} sm={12} md={8}>
-            <Text strong>Role:</Text>
-            <div>Client Admin</div>
-          </Col>
-        </Row>
+        <Spin spinning={mainUserLoading}>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} sm={12} md={8}>
+              <Text strong>Username:</Text>
+              <div>{mainUser?.username || '---'}</div>
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <Text strong>Name:</Text>
+              <div>{`${mainUser?.first_name || ''} ${mainUser?.last_name || ''}`.trim() || '---'}</div>
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <Text strong>Email:</Text>
+              <div>{mainUser?.email || '---'}</div>
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <Text strong>Phone Number:</Text>
+              <div>{mainUser?.phone_number || '---'}</div>
+            </Col>
+            <Col xs={24} sm={12} md={8}>
+              <Text strong>Role:</Text>
+              <div>{mainUser?.roles?.name || 'Client Admin'}</div>
+            </Col>
+          </Row>
+        </Spin>
       </Card>
 
       {/* Branches & Devices Section */}
@@ -412,10 +451,11 @@ const ClientDetails = () => {
         extra={<Button type="text" icon={<EditOutlined />} onClick={() => setEditingSection('additionalUsers')}>Edit</Button>}
       >
         <Table 
-          dataSource={client?.additional_users || []} 
+          dataSource={additionalUsers} 
           columns={userColumns}
-          rowKey="username"
+          rowKey="id"
           pagination={false}
+          loading={additionalUsersLoading}
         />
       </Card>
 
@@ -428,12 +468,16 @@ const ClientDetails = () => {
       <EditMainUserModal
         visible={editingSection === 'mainUser'}
         onCancel={() => setEditingSection(null)}
-        user={client?.main_user}
+        user={mainUser}
+        clientId={clientId}
+        onUserUpdated={fetchMainUser}
       />
       <EditAdditionalUsersModal
         visible={editingSection === 'additionalUsers'}
         onCancel={() => setEditingSection(null)}
-        users={client?.additional_users}
+        users={additionalUsers}
+        clientId={clientId}
+        onUserUpdated={fetchAdditionalUsers}
       />
       <EditBranchModal
         visible={!!editingBranch}

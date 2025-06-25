@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Button, Select, notification, Switch } from 'antd';
+import { APIService } from '../../config/Api/apiServices';
 
 const { Option } = Select;
 
-const EditMainUserModal = ({ visible, onCancel, user }) => {
+const EditMainUserModal = ({ visible, onCancel, user, clientId, onUserUpdated }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [changePassword, setChangePassword] = useState(false);
+  const [roles, setRoles] = useState([]);
 
   useEffect(() => {
     if (user) {
@@ -17,9 +19,26 @@ const EditMainUserModal = ({ visible, onCancel, user }) => {
         email: user.email,
         phone_number: user.phone_number,
         is_active: user.is_active !== false,
+        roles: user.roles?.id || user.roles, // pre-select role id if available
       });
     }
   }, [user, form]);
+
+  useEffect(() => {
+    // Fetch roles from API
+    const fetchRoles = async () => {
+      try {
+        const response = await APIService.get('/api/v2/roles');
+        if (response.data && response.data.authenticatedData) {
+          const rolesArr = Object.entries(response.data.authenticatedData).map(([name, id]) => ({ id, name }));
+          setRoles(rolesArr);
+        }
+      } catch (error) {
+        notification.error({ message: 'Error', description: 'Failed to fetch user roles.' });
+      }
+    };
+    fetchRoles();
+  }, []);
 
   const handleFinish = async (values) => {
     setLoading(true);
@@ -29,14 +48,23 @@ const EditMainUserModal = ({ visible, onCancel, user }) => {
         delete values.password;
         delete values.confirm_password;
       }
-
-      // TODO: Replace with actual API endpoint when available
-      console.log('Updating main user with values:', values);
-      
-      notification.info({
-        message: 'Not Implemented',
-        description: 'The endpoint for updating the main user is not available yet.',
-      });
+      // PATCH main user
+      const payload = {
+        user_id: user.id,
+        username: values.username,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        email: values.email,
+        phone_number: values.phone_number,
+        is_active: values.is_active,
+        roles: values.roles, // send role id
+      };
+      if (changePassword && values.password) {
+        payload.password = values.password;
+      }
+      await APIService.patch(`/api/v1/accounts/client/${clientId}/main-user/`, payload);
+      notification.success({ message: 'Main user updated successfully' });
+      if (onUserUpdated) onUserUpdated();
       onCancel();
     } catch (error) {
       notification.error({
@@ -74,6 +102,13 @@ const EditMainUserModal = ({ visible, onCancel, user }) => {
         </Form.Item>
         <Form.Item name="phone_number" label="Phone Number">
           <Input />
+        </Form.Item>
+        <Form.Item name="roles" label="Role" rules={[{ required: true, message: 'Please select a role' }]}>
+          <Select placeholder="Select role">
+            {roles.filter(role => role.name !== 'SUPERADMIN').map(role => (
+              <Option key={role.id} value={role.id}>{role.name}</Option>
+            ))}
+          </Select>
         </Form.Item>
         <Form.Item name="is_active" label="Active Status" valuePropName="checked">
           <Switch />

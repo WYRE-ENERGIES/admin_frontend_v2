@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, notification, Table, Form, Input, Select, Space, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { APIService } from '../../config/Api/apiServices';
 
 const { Option } = Select;
 
-const EditAdditionalUsersModal = ({ visible, onCancel, users }) => {
+const EditAdditionalUsersModal = ({ visible, onCancel, users, clientId, onUserUpdated }) => {
   const [editingUsers, setEditingUsers] = useState([]);
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [roles, setRoles] = useState([]);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -17,21 +19,45 @@ const EditAdditionalUsersModal = ({ visible, onCancel, users }) => {
     }
   }, [users]);
 
+  useEffect(() => {
+    // Fetch roles from API
+    const fetchRoles = async () => {
+      try {
+        const response = await APIService.get('/api/v2/roles');
+        if (response.data && response.data.authenticatedData) {
+          const rolesArr = Object.entries(response.data.authenticatedData).map(([name, id]) => ({ id, name }));
+          setRoles(rolesArr);
+        }
+      } catch (error) {
+        notification.error({ message: 'Error', description: 'Failed to fetch user roles.' });
+      }
+    };
+    fetchRoles();
+  }, []);
+
   const handleSave = async () => {
     setLoading(true);
     try {
-      // TODO: Replace with actual API endpoint when available
-      console.log('Saving additional users:', editingUsers);
-      
-      notification.info({
-        message: 'Not Implemented',
-        description: 'The endpoint for updating additional users is not available yet.',
-      });
+      // PATCH each edited user (could be optimized for batch, but API expects one at a time)
+      for (const user of editingUsers) {
+        const payload = {
+          user_id: user.id,
+          username: user.username,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          roles: typeof user.roles === 'object' ? user.roles.id : user.roles,
+          phone_number: user.phone_number,
+        };
+        await APIService.patch(`/api/v1/accounts/client/${clientId}/additional-user/`, payload);
+      }
+      notification.success({ message: 'Users updated successfully' });
+      if (onUserUpdated) onUserUpdated();
       onCancel();
     } catch (error) {
       notification.error({
         message: 'Error',
-        description: 'Failed to update additional users.',
+        description: error?.response?.data?.message || error.message || 'Failed to update additional users.',
       });
     } finally {
       setLoading(false);
@@ -61,24 +87,43 @@ const EditAdditionalUsersModal = ({ visible, onCancel, users }) => {
     setEditingUsers(editingUsers.filter(user => user.username !== username));
   };
 
-  const handleUserFormSubmit = (values) => {
+  const handleUserFormSubmit = async (values) => {
     if (editingUser) {
-      // Edit existing user
+      // Edit existing user (handled in handleSave)
       setEditingUsers(editingUsers.map(user => 
         user.username === editingUser.username ? { ...user, ...values } : user
       ));
+      setIsAddModalVisible(false);
+      setEditingUser(null);
+      form.resetFields();
     } else {
-      // Add new user
-      const newUser = {
-        ...values,
-        key: values.username,
-        id: Date.now(), // Temporary ID
-      };
-      setEditingUsers([...editingUsers, newUser]);
+      // Add new user: POST to API
+      setLoading(true);
+      try {
+        const payload = [{
+          username: values.username,
+          password: values.password,
+          first_name: values.first_name,
+          last_name: values.last_name,
+          email: values.email,
+          roles: typeof values.roles === 'object' ? values.roles.id : values.roles,
+          phone_number: values.phone_number,
+        }];
+        await APIService.post(`/api/v1/accounts/client/${clientId}/additional-user/`, payload);
+        notification.success({ message: 'User created successfully' });
+        if (onUserUpdated) onUserUpdated();
+        setIsAddModalVisible(false);
+        setEditingUser(null);
+        form.resetFields();
+      } catch (error) {
+        notification.error({
+          message: 'Error',
+          description: error?.response?.data?.message || error.message || 'Failed to create user.',
+        });
+      } finally {
+        setLoading(false);
+      }
     }
-    setIsAddModalVisible(false);
-    setEditingUser(null);
-    form.resetFields();
   };
 
   const columns = [
@@ -90,7 +135,11 @@ const EditAdditionalUsersModal = ({ visible, onCancel, users }) => {
     },
     { title: 'Email', dataIndex: 'email', key: 'email' },
     { title: 'Phone', dataIndex: 'phone_number', key: 'phone_number' },
-    { title: 'Role', dataIndex: 'roles', key: 'roles' },
+    {
+      title: 'Role',
+      key: 'roles',
+      render: (_, record) => `${record.roles.name || ''}`, 
+    },
     {
       title: 'Action',
       key: 'action',
@@ -173,6 +222,15 @@ const EditAdditionalUsersModal = ({ visible, onCancel, users }) => {
           >
             <Input disabled={!!editingUser} />
           </Form.Item>
+          {!editingUser && (
+            <Form.Item 
+              name="password" 
+              label="Password" 
+              rules={[{ required: true, message: 'Please enter password' }, { min: 8, message: 'Password must be at least 8 characters' }]}
+            >
+              <Input.Password />
+            </Form.Item>
+          )}
           <Form.Item 
             name="first_name" 
             label="First Name" 
@@ -206,9 +264,10 @@ const EditAdditionalUsersModal = ({ visible, onCancel, users }) => {
             rules={[{ required: true, message: 'Please select a role' }]}
           >
             <Select placeholder="Select role">
-              <Option value="OPERATOR">OPERATOR</Option>
-              <Option value="MANAGER">MANAGER</Option>
-              <Option value="VIEWER">VIEWER</Option>
+              {roles.map(role => (
+                 role.name !== "SUPERADMIN" &&
+                    <Option key={role.id} value={role.id}>{role.name}</Option>
+              ))}
             </Select>
           </Form.Item>
         </Form>
