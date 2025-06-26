@@ -18,6 +18,7 @@ import {
     LoginOutlined,
     MailOutlined,
     DownloadOutlined,
+    ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { Button, Image, Menu, theme, Drawer, Space } from "antd";
 import Sider from "antd/es/layout/Sider";

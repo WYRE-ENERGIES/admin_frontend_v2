@@ -109,13 +109,23 @@ const ClientDetails = () => {
     if (!client) return;
     try {
       const response = await APIService.forceLoginClientAdmin(client.id);
-      const accessToken = response.data?.data?.token?.access;
-      if (accessToken) {
-        const dashboardUrl = `/?token=${accessToken}`;
-        window.open(dashboardUrl, '_blank');
+      const tokenData = response.data?.data?.token;
+      const userData = response.data?.data;
+      if (tokenData?.access && tokenData?.refresh) {
+        localStorage.setItem('adminUserBackup', localStorage.getItem('loggedWyreUserAdmin'));
+
+        const params = new URLSearchParams({
+          access: tokenData.access,
+          refresh: tokenData.refresh,
+          username: userData.username,
+          email: userData.email,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+        });
+        window.open(`/force-login?${params.toString()}`, '_blank');
         notification.success({
           message: 'Login as Client',
-          description: 'A new tab has been opened for the client dashboard.'
+          description: 'A new tab has been opened for the client admin.'
         });
       } else {
         notification.error({
