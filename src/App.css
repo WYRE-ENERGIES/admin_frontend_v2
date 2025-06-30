@@ -883,12 +883,28 @@ a.header-short-button--auth {
   transition: background-color 0.3s ease;
 }
 
+.search-bar .ant-btn-primary {
+  background-color: #5c3592;
+  border-color: #5c3592;
+}
+
+.search-bar .ant-btn-primary:hover {
+  background-color: #5c3592;
+  border-color: #5c3592;
+}
+
 .search-bar-date-picker .search-bar {
   width: 222px;
 }
 
 .search-bar-date-picker .picker-date {
-  width: 222px;
+  width: 150px;
+}
+
+.search-bar-date-picker .select-bar {
+  width: 150px;
+  background: white;
+  color: #000;
 }
 
 @media (max-width: 768px) {
@@ -904,6 +920,10 @@ a.header-short-button--auth {
 }
 
 .search-bar-date-picker .picker-date {
+  width: 50%;
+}
+
+.search-bar-date-picker .select-bar {
   width: 50%;
 }
 }
@@ -923,6 +943,10 @@ a.header-short-button--auth {
 }
 
 .search-bar-date-picker .picker-date {
+  width: 100%;
+}
+
+.search-bar-date-picker .select-bar {
   width: 100%;
 }
 }

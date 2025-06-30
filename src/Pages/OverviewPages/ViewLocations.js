@@ -4,6 +4,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { getLocationsData } from "../../redux/actions/location/location.action";
+import { PlusOutlined } from "@ant-design/icons";
 
 function ViewLocations(props) {
   const [dieselDataTable, setDieselDataTable] = useState({})
@@ -75,7 +76,7 @@ function ViewLocations(props) {
       // sortDirections: ["descend"],
     },
     {
-      title: "Zone",
+      title: "Region",
       dataIndex: "current_month_consumption_in_litres",
       render: (value) => <>{}</>,
       key: "current_month_consumption_in_litres",
@@ -93,7 +94,7 @@ function ViewLocations(props) {
       key: "remaining_diesel_litres",
     },
     {
-      title: "Geo Location",
+      title: "Action",
       dataIndex: "previous_day_consumption_in_litres",
       render: (value) => <>{}</>,
       key: "previous_day_consumption_in_litres",
@@ -108,7 +109,7 @@ function ViewLocations(props) {
     <>
       <div className="AppHeader">
         <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
-          View Location
+          Location
         </Typography.Title>
         {/* <Space>
           <RangePicker
@@ -122,9 +123,24 @@ function ViewLocations(props) {
               dayjs()
             ]}
             format={dateFormat}
-            onChange={onSelectDateDieselOverview}
+            // onChange={onSelectDateDieselOverview}
           />
         </Space> */}
+        <Space>
+          <div>
+            <Button
+              style={{ width: "183.68px", height: "46.96px", fontWeight: "bold", borderRadius: "12px", backgroundColor: "#5C12A7", color: "white" }}
+              onClick={(e) => {
+                e.preventDefault();
+                // setShowAddButton(true);
+                // setShowEditForm(false);
+              }}
+            >
+              <PlusOutlined />
+              Add
+            </Button>
+          </div>
+        </Space>
       </div>
       <div className="##########">
         <section className="total-energy-bar-chart">

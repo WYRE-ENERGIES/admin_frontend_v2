@@ -72,7 +72,7 @@ function SideMenu({collapsed, setCollapsed}) {
         icon: <UserOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
-        label: "View Location",
+        label: "Location",
         key: "/locations",
         icon: <EnvironmentOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },

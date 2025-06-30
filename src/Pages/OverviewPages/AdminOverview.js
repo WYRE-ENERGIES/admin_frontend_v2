@@ -1,13 +1,13 @@
-import { Button, DatePicker, Image, Input, Space, Spin, Table, Typography } from "antd";
+import { Button, DatePicker, Image, Input, Space, Spin, Table, Select, Typography, message } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
+import { getKeyMetricsData, getTotalCostTopCard, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
-import moment from "moment";
+import moment, { months } from "moment";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -27,6 +27,7 @@ import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
 import { PiLightningDuotone } from "react-icons/pi";
+import { getLocationsData } from "../../redux/actions/location/location.action";
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -40,28 +41,27 @@ const buttons = [
   {
     label: "Total Energy",
     // key: "/",
-    icon: <PiLightningDuotone />,
-    icon: <PiLightningDuotone />,
+    icon: <Image preview={false} src="/Images/total-energy-icon.jpeg" alt="" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Utility Cost",
     // key: "/",
-    icon: <Image preview={false} src="/icon/utility-cost.png" alt="utility cost" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/Images/cost-icon.jpeg" alt="" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Utility Energy",
     // key: "/",
-    icon: <Image preview={false} src="/icon/thunderbolt.png" alt="utility energy" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/Images/utility-energy-icon.jpeg" alt="" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Diesel Cost",
     // key: "/",
-    icon: <Image preview={false} src="/icon/utility-cost.png" alt="Diesel cost" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/Images/cost-icon.jpeg" alt="" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Diesel Liters",
     // key: "/",
-    icon: <Image preview={false} src="/icon/diesel-litre.png" alt="Diesel Liters" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/Images/diesel-litre-icon.jpeg" alt="" style={{ width: 20, height: 20 }} />,
   },
 ]
 
@@ -85,15 +85,34 @@ const RendeChartsComponents = ({index}) => {
 function AdminOverview(props) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [holdSearchData, setHoldSearchData] = useState('')
-  const [dateSearch, setDateSearch] = useState('')
   const [isSelectChart, setIsSelectChart] = useState(0)
-  const [keyMetricsData, setkeyMetricsData] = useState({})
+  const [keyMetricsData, setkeyMetricsData] = useState([])
+  const [pageDataHolder, setPageDataHolder] = useState([])
+  const [holdLocationData, setHoldLocationData] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
+  let options=[]
+  if (holdLocationData) {
+    holdLocationData.map((item) => {
+    options.push({
+      value: item.id,
+      label: item.name,
+      key: item.id
+    })
+  })
+  }
+  // const selectRegion = OPTIONS.map((o) => !selectedItems.includes(o));
+  const handleRegionChange = value => {
+    console.log(`selected ${value}`);
+  };
+  
+  console.log('pageDataHolder-------> ', pageDataHolder);
+  console.log('keyMetricsData-------> ', keyMetricsData);
+  console.log('Check IDs-------> ', selectedIds);
 
   const { Search } = Input;
-  const handleDateSearch = (e) => setDateSearch(e.target.value)
   
   dayjs.extend(customParseFormat);
-  const dateFormat = 'DD/MM/YYYY';
+  const dateFormat = 'MM/YYYY';
   const { RangePicker } = DatePicker;
 
   const clientId = searchParams.get("client_id") || props.auth.userData.client_id;
@@ -101,36 +120,90 @@ function AdminOverview(props) {
   // const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().format("DD-MM-YYYY HH:mm");
 
-  const showKeyMetricsTable = () => {
+  // const showKeyMetricsTable = () => {
+  //   const clientId = props.auth.userData.client_id
+  //   props.getKeyMetricsData(clientId, startDate, endDate);
+  // }
+  const showKeyMetricsTable = (date) => {
     const clientId = props.auth.userData.client_id
-    props.getKeyMetricsData(clientId, startDate, endDate);
+    const month = dayjs(date).month() + 1; // JS month is 0-indexed, so add 1
+    const year = dayjs(date).year();
+    props.getKeyMetricsData(clientId, month, year)
   }
 
-  const onSelectDateKeyMetrics = (date) => {
-    const date1 = dayjs(date[0]).format("DD-MM-YYYY HH:mm");
-    const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
-    props.getKeyMetricsData(clientId, date1, date2)
-  }
+  // const onSelectDateKeyMetrics = (date) => {
+  //   const date1 = dayjs(date[0]).format("DD-MM-YYYY HH:mm");
+  //   const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
+  //   props.getKeyMetricsData(clientId, date1, date2)
+  // }
+  const handleDateChange = (date) => {
+      if (!date) return;
+      const month = dayjs(date).month() + 1; // JS month is 0-indexed, so add 1
+      const year = dayjs(date).year();
+      props.getKeyMetricsData(clientId, month, year);
+    };
 
   useEffect(() => {
     const client_id = clientId
     props.getTotalEnergyTopCard(client_id, startDate, endDate);
+    props.getTotalCostTopCard(client_id, startDate, endDate);
   }, []);
-
   useEffect(() => {
     showKeyMetricsTable()
   }, [])
-  
+  useEffect(() => {
+    const handleBranch = async () => {
+      const requestBranchesData = await props.getLocationsData(clientId)
+      if (requestBranchesData.fulfilled) {
+        setHoldLocationData(requestBranchesData.data.results)
+      }
+    }
+    handleBranch()
+  },[])
   useEffect(() => {
     if (props.overviewPage.fetchedKeyMetrics) {
-      setkeyMetricsData(props.overviewPage.fetchedKeyMetrics)
+      setkeyMetricsData(props.overviewPage.fetchedKeyMetrics.results)
     }
   }, [props.overviewPage.fetchedKeyMetrics])
+  useEffect(() => {
+    setPageDataHolder(keyMetricsData)
+  }, [keyMetricsData])
 
-  const onSearchKeyMetrics = (e) => {
-    props.getKeyMetricsData(clientId, startDate, endDate, 1, e.target.value)
+  const onSearchKeyMetrics = (e, date) => {
+    const month = dayjs(date).month() + 1; // JS month is 0-indexed, so add 1
+    const year = dayjs(date).year();
+    props.getKeyMetricsData(clientId, month, year , 1, e.target.value)
+  }
+  const displayedData = selectedIds.length === 0
+    ? keyMetricsData
+    : keyMetricsData.filter(item => selectedIds.includes(item.id));
+
+  // const handleCompareBranches = (e) => {
+  //   const filtered = data.filter((item) =>
+  //     item
+  //   );
+  //   setPageDataHolder(filtered)
+  //   console.log('id-Value--------> ', filtered.e)
+  //   return filtered.e
+  //   setCurrentPage(1);
+  // };
+
+  const handleCompareBranches = (Ids) => {
+    console.log('id == ', Ids);
+  if (Ids.length <= 5) {
+    setSelectedIds(Ids);
+  } else {
+    message.warning('You can only select up to 5 branches');
   }
 
+    // setCurrentPage(1);
+    const filteredBranches = keyMetricsData.filter(item => Ids.includes(item.id))
+    // setEnergyChartData(filteredBranches)
+    console.log('filteredBranches == ', filteredBranches);
+    // setkeyMetricsData(filteredBranches)
+
+
+  };
   const suffix = (
     <SearchOutlined
       onClick={onSearchKeyMetrics}
@@ -155,24 +228,30 @@ function AdminOverview(props) {
   }; 
   const checkData = props.overviewPage?.fetchedKeyMetrics?.results?.[0]
 
-  const fetchNextPaginatedKeyMetric = () => {
+  const fetchNextPaginatedKeyMetric = (date) => {
+    if (!date) return;
+    const month = dayjs(date).month() + 1;
+    const year = dayjs(date).year();
     const clientId = props.auth.userData.client_id;
     const currentPage = Number(keyMetricsData.page) || 0;
     const itemsPerPage = Number(keyMetricsData.count) || 10;
     const totalPages = Number( keyMetricsData.total_pages) || 0
     if (!currentPage || (totalPages - currentPage) > 0) {
       const paginationQuery = `&page=${currentPage+1}`;
-      props.getKeyMetricsData(clientId, startDate, endDate, paginationQuery);
+      props.getKeyMetricsData(clientId, month, year, paginationQuery);
     }
   };
 
-  const fetchPrevPaginatedKeyMetric = () => {
+  const fetchPrevPaginatedKeyMetric = (date) => {
+    if (!date) return;
+    const month = dayjs(date).month() + 1;
+    const year = dayjs(date).year();
     const clientId = props.auth.userData.client_id;
     const currentPage = Number(keyMetricsData.page) || 0;
     const itemsPerPage = Number(keyMetricsData.count) || 10;
     if (currentPage && currentPage > 1) {
       const paginationQuery = `&page=${currentPage-1}`;
-      props.getKeyMetricsData(clientId, startDate, endDate, paginationQuery);
+      props.getKeyMetricsData(clientId, month, year, paginationQuery);
     }
   };
   
@@ -320,13 +399,40 @@ function AdminOverview(props) {
       <div className="##########">
         <section className="co2 & total-energy-card">
           <Space>
+            <div className="top-card-2">
+              <Space>
+                <div className="card-content">
+                  <Image style={{ height: 30, width: 30 }} className="amount-icon"
+                    src="/Images/naira-cost-icon.jpeg"
+                    preview={false}
+                  />
+                </div>
+                <div className="card-content">
+                  <Spin
+                    spinning={
+                      props.overviewPage?.fetchTotalCostTopCardLoading
+                    }
+                  >
+                    <header style={{ fontWeight: "bold" }}>
+                      {props.overviewPage?.fetchedTotalCostTopCard.total_calculated_cost?.toLocaleString(
+                        undefined,
+                        { maximumFractionDigits: 2 }
+                      )}{" "}
+                      Naira
+                    </header>
+                  </Spin>
+                  <header>Total Cost</header>
+                </div>
+              </Space>
+            </div>
             <div className="top-card-1">
               <Space>
                 <div className="card-content">
                   <Image
                     preview={false}
-                    style={{ marginLeft: "0px",cursor: "default"  }}
-                    src="/Images/energy-consumption.png"
+                    // style={{ marginLeft: "0px",cursor: "default"  }}
+                    style={{ height: 30, width: 30 }}
+                    src="/Images/total-energy-topCard.jpeg"
                   />
                 </div>
                 <div className="card-content">
@@ -352,8 +458,9 @@ function AdminOverview(props) {
                 <div className="card-content">
                   <Image
                     preview={false}
-                    style={{ marginLeft: "0px" }}
-                    src="/Images/co2-emmission.png"
+                    // style={{ marginLeft: "0px" }}
+                    style={{ height: 30, width: 30 }}
+                    src="/Images/co2-icon.jpeg"
                   />
                 </div>
                 <div className="card-content">
@@ -420,7 +527,32 @@ function AdminOverview(props) {
                   // height: 43.5
                 }}
               />
-              <RangePicker
+              <Select
+                className="select-bar"
+                mode="multiple"
+                placeholder="Select branches"
+                maxTagCount={1}
+                maxTagTextLength={10}
+                maxTagPlaceholder={omittedValues => `+${omittedValues.length} more`}
+                onChange={handleCompareBranches}
+                value={selectedIds}
+                style={{ marginRight: 10 }}
+                options={options}
+              />
+              <Select
+                className="select-bar"
+                prefix="Region"
+                defaultValue="lucy"
+                style={{ marginRight: 10 }}
+                onChange={handleRegionChange}
+                options={[
+                  { value: 'jack', label: 'North' },
+                  { value: 'lucy', label: 'South' },
+                  { value: 'Yiminghe', label: 'East' },
+                  { value: 'disabled', label: 'Disabled', disabled: true },
+                ]}
+              />
+              <DatePicker
                 className="picker-date"
                 style={{
                   // height: 43.5
@@ -429,8 +561,12 @@ function AdminOverview(props) {
                   dayjs().startOf("month"),
                   dayjs(),
                 ]}
+                picker="month"
                 format={dateFormat}
-                onChange={onSelectDateKeyMetrics}
+                onChange={handleDateChange}
+                disabledDate={(current) => {
+                  return current && current > dayjs().endOf('month');
+                }}
               />
             </div>
           </div>
@@ -456,7 +592,7 @@ function AdminOverview(props) {
               rowKey={(record) => record.id}
               // scroll={{ x: 'max-content' }}
               loading={props.overviewPage.fetchKeyMetricsLoading}
-              dataSource={data}
+              dataSource={displayedData}
               onChange={onChange}
               pagination={false}
             >
@@ -649,6 +785,8 @@ function AdminOverview(props) {
 
 const mapDispatchToProps = {
   getTotalEnergyTopCard,
+  getTotalCostTopCard,
+  getLocationsData,
   getTotalEnergyBarChartData,
   getKeyMetricsData,
 };
