@@ -428,12 +428,12 @@ function TotalEnergyChart(props) {
                   />
                 </div>
               </div>
-                <Bar
-                  onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
-                  options={options}
+              <Bar
+                onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
+                options={options}
                 // data={energyChartData}
                 data={chartJsData}
-                />
+              />
               {/* <Pagination
               totalPosts = {chartPages.lenght} 
               postsPerPage = {postsPerPage}
