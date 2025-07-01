@@ -1,4 +1,4 @@
-import { Button, Card, DatePicker, Image, Input, Space, Table, Typography } from "antd";
+import { Button, Card, DatePicker, Image, Input, Select, Space, Table, Typography } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
@@ -185,14 +185,56 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                     Diesel Cost
                   </h1>
                 </div>
-                <div>
+                {/* <div>
                   <DatePicker
                     defaultValue={selectedDate}
                     picker="year"
                     style={{ width: 120.65, height: 44 }}
                     onChange={onDateChange}
                   />
-                </div>
+                </div> */}
+                <div className="">
+                <Select
+                  className="select-bar"
+                  mode="multiple"
+                  maxTagCount={1}
+                  maxTagTextLength={10}
+                  maxTagPlaceholder={omittedValues => `+${omittedValues.length} more`}
+                  placeholder="Select branches"
+                  // onChange={handleCompareBranch}
+                  // value={selectedIds}
+                  style={{ width:165, marginRight: 10 }}
+                  // options={selectOptions}
+                />
+                {/* <Button
+                  type="default"
+                  onClick={() => setSelectedIds([])}
+                  disabled={selectedIds.length === 0}
+                  style={{ marginTop: 16 }}
+                >
+                  Reset Selection
+                </Button> */}
+                <Select
+                  className="select-bar"
+                  // prefix="Region"
+                  placeholder="Search by Region"
+                  // defaultValue="lucy"
+                  style={{ marginRight: 10, width:165 }}
+                  // onChange={handleRegionChange}
+                  options={[
+                    { value: 'jack', label: 'North' },
+                    { value: 'lucy', label: 'South' },
+                    { value: 'Yiminghe', label: 'East' },
+                    { value: 'disabled', label: 'Disabled', disabled: true },
+                  ]}
+                />
+                <DatePicker
+                  defaultValue={selectedDate}
+                  picker="year"
+                  style={{}}
+                  onChange={onDateChange}
+                />
+              </div>
               </div>
               <Bar options={options} data={costChartData} />
             </Card>

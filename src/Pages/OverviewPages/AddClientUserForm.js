@@ -202,6 +202,32 @@ function AddClientUserForm(props) {
                     options={options}
                   />
                 </Form.Item>
+                <Form.Item
+                  name="role"
+                  label="Assign Role"
+                // rules={[
+                //   {
+                //     required: true,
+                //   },
+                // ]}
+                >
+                  {/* <Input /> */}
+                  {/* <SelectBranch /> */}
+                  <Select
+                    mode="single"
+                    allowClear
+                    style={
+                      {
+                        // width: "100%",
+                        background: "#F2F2F8"
+                      }
+                    }
+                    placeholder="Add Role"
+                    // defaultValue={["AdeolaHopewell", "Agodi"]}
+                    onChange={handleChange}
+                    options={[]}
+                  />
+                </Form.Item>
                 <Form.Item>
                   <SubmitButton form={form} />
                 </Form.Item>

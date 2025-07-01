@@ -9,6 +9,15 @@ export const getTotalEnergyTopCardSuccess = (payload = true) => ({
     payload,
 });
 
+export const getTotalCostTopCardLoading = (payload = true) => ({
+    type: overviewTypes.GET_TOTAL_COST_TOP_CARD_LOADING,
+    payload,
+});  
+export const getTotalCostTopCardSuccess = (payload = true) => ({
+    type: overviewTypes.GET_TOTAL_COST_TOP_CARD_SUCCESS,
+    payload,
+});
+
 export const getTotalEnergyBarChartLoading = (payload = true) => ({
     type: overviewTypes.GET_TOTAL_ENERGY_BARCHART_LOADING,
     payload,
