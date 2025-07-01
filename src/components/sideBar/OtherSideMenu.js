@@ -17,6 +17,8 @@ import {
     HeatMapOutlined,
     LoginOutlined,
     MailOutlined,
+    DownloadOutlined,
+    ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { Button, Image, Menu, theme, Drawer, Space } from "antd";
 import Sider from "antd/es/layout/Sider";
@@ -24,8 +26,9 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logoutUser } from "../../redux/actions/auth/auth.creator";
+import DownloadPage from "../../Pages/AuthPages/DownloadPage";
 
-function BulkSideMenu({ collapsed, setCollapsed }) {
+function OtherSideMenu({ collapsed, setCollapsed }) {
     const [selectedLocation, setSelectedLocation] = useState('/');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -56,19 +59,14 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
 
     const items = [
         {
-            label: "Admin Overview",
-            key: "/",
-            icon: <ProjectOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-        },
+            label: "Download CSV",
+        key: "/",
+        icon: <DownloadOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+      },
         {
-            label: "Devices List",
-            key: "/devices-list",
-            icon: <HeatMapOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-        },
-        {
-            label: "View Location",
-            key: "/locations",
-            icon: <EnvironmentOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+            label: "Clients",
+            key: "/clients",
+            icon: <UserOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
         },
         {
             type: 'divider',
@@ -78,11 +76,6 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
             key: '/log-out',
             onClick: logOut,
             icon: <LoginOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-        },
-        {
-            label: "Support",
-            key: "/support",
-            icon: <MailOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
         },
         {
             type: 'divider',
@@ -212,6 +205,6 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
     );
 }
 
-export default BulkSideMenu;
+export default OtherSideMenu;
     
     

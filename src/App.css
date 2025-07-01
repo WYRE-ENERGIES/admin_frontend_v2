@@ -1454,9 +1454,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 }
 
 @media (max-width: 1280px) {
-  .calender-and-button {
-    margin-bottom: -7px;
-  }
   .top-card {
     width: 270px;
   }
@@ -1650,9 +1647,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   .Admin-heading {
     /* font-size: 10px; */
   }
-  .calender-and-button {
-    margin-bottom: -10px;
-  }
   .monitoring-calender {
     width: 200px;
   }
@@ -1676,9 +1670,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 @media (max-width: 1000px) {
   .Admin-heading {
     /* font-size: 10px; */
-  }
-  .calender-and-button {
-    margin-bottom: -10px;
   }
   .monitoring-calender {
     width: 200px;
@@ -1759,10 +1750,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
     font-size: xx-large;
   }
   .monitoring-calender {
-    width: 240px;
+  width: 100%;
   }
   .download-button {
-    width: 240px;
+  width: 100%;
     font-size: large;
   }
   .top-cards-container {
@@ -1781,10 +1772,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
     margin: 20px;
   }
   .monitoring-calender {
-    width: 217px;
+   width: 100%;
   }
   .download-button {
-    width: 217px;
+   width: 100%;
     font-size: large;
   }
   .top-cards-container {
@@ -1807,7 +1798,9 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
     margin-bottom: 5px;
   }
   .calender-and-button {
-    /* display: flex; */
+    display: flex;
+    flex-direction: column;
+    width: 100%;
   }
   .top-cards-container {
     display: grid;

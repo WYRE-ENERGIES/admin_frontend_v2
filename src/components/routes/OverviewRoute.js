@@ -8,6 +8,7 @@ import AuthRoute from "./AuthRoute";
 import LogOut from "../../Pages/OverviewPages/LogOut";
 import ViewLocations from "../../Pages/OverviewPages/ViewLocations";
 import Support from "../../Pages/OverviewPages/support/Support";
+import ForceLoginAdminHandler from "../../Pages/AuthPages/ForceLoginAdminHandler";
 import BranchDetails from "../../Pages/OverviewPages/BranchDetails";
 
 function OverviewRoute() {
@@ -16,7 +17,8 @@ function OverviewRoute() {
     <div>
       <Routes>
         <Route path="/" element={<AdminOverview />}></Route>
-        <Route path="/client-user" element={<ClientUsers />}></Route>
+          <Route path="/client-user" element={<ClientUsers />}></Route>
+          <Route path='/force-login-admin' element={<ForceLoginAdminHandler />} />
         <Route path="/set-target" element={<SetTarget />}></Route>
         <Route path="/diesel" element={<DieselOverview />}></Route>
         <Route path="/locations" element={<ViewLocations />}></Route>
