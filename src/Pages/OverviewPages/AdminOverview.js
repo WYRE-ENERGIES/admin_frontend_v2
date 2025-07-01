@@ -1,19 +1,10 @@
-<<<<<<< HEAD
 import { Button, DatePicker, Image, Input, Space, Spin, Table, Select, Typography, message } from "antd";
-=======
-import { Button, DatePicker, message, Image, Input, Space, Spin, Table, Typography } from "antd";
->>>>>>> dev
 import { SearchOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined } from "@ant-design/icons";
-<<<<<<< HEAD
-import { useEffect, useState } from "react";
-import { getKeyMetricsData, getTotalCostTopCard, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
-=======
 import { useEffect, useState, useRef } from "react";
-import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
->>>>>>> dev
+import { getKeyMetricsData, getTotalCostTopCard, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import moment, { months } from "moment";
@@ -36,13 +27,10 @@ import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
 import { PiLightningDuotone } from "react-icons/pi";
-<<<<<<< HEAD
 import { getLocationsData } from "../../redux/actions/location/location.action";
-=======
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
->>>>>>> dev
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -101,7 +89,6 @@ function AdminOverview(props) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [holdSearchData, setHoldSearchData] = useState('')
   const [isSelectChart, setIsSelectChart] = useState(0)
-<<<<<<< HEAD
   const [keyMetricsData, setkeyMetricsData] = useState([])
   const [pageDataHolder, setPageDataHolder] = useState([])
   const [holdLocationData, setHoldLocationData] = useState([]);
@@ -126,12 +113,9 @@ function AdminOverview(props) {
   console.log('Check IDs-------> ', selectedIds);
 
   const { Search } = Input;
-=======
-  const [keyMetricsData, setkeyMetricsData] = useState({})
     const [downloading, setDownloading] = useState(false);
     const reportRef = useRef(null);
 
-  const { Search } = Input;
     const handleDownloadPdf = async () => {
     if (!reportRef.current) return;
 
@@ -185,7 +169,6 @@ function AdminOverview(props) {
     };
   
   const handleDateSearch = (e) => setDateSearch(e.target.value)
->>>>>>> dev
   
   dayjs.extend(customParseFormat);
   const dateFormat = 'MM/YYYY';
