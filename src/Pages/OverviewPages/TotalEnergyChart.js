@@ -90,9 +90,11 @@ function TotalEnergyChart(props) {
       },
     ]
   };
+  console.log('USE-ENERGY-DATA----------:', useEnergyData);
   console.log('displayedData == ', displayedData);
   console.log('Chart-data == ', chartJsData);
   console.log('seleted id == ', selectedIds);
+  console.log('DATA  == ', props.overviewPage.fetchedTotalEnergyBarChart);
   
   const handleCompareBranch = (Ids) => {
     console.log('id == ', Ids);
@@ -210,19 +212,19 @@ function TotalEnergyChart(props) {
   useEffect(() => {
 
     if (props.overviewPage.fetchedTotalEnergyBarChart) {
-      const labels = props.overviewPage.fetchedTotalEnergyBarChart.results?.map(chart => {
+      const labels = props.overviewPage.fetchedTotalEnergyBarChart?.map(chart => {
         return chart.name
         })
       const breakLabels = labels.map(label => label.split(' '))
-      const data1 = props.overviewPage.fetchedTotalEnergyBarChart?.results.map(chart => {
+      const data1 = props.overviewPage.fetchedTotalEnergyBarChart?.map(chart => {
         return chart.utility_energy
       })
 
-      const data2 = props.overviewPage.fetchedTotalEnergyBarChart?.results.map(chart => {
+      const data2 = props.overviewPage.fetchedTotalEnergyBarChart?.map(chart => {
         return chart.generators_energy
       })
       setPaginationData(props.overviewPage.fetchedTotalEnergyBarChart)
-      setuseEnergyData(props.overviewPage.fetchedTotalEnergyBarChart.results)
+      setuseEnergyData(props.overviewPage.fetchedTotalEnergyBarChart)
       // setuseEnergyData()
 
       const energyDataSource = {

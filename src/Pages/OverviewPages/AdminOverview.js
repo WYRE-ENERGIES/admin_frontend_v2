@@ -168,7 +168,7 @@ function AdminOverview(props) {
     }
     };
   
-  const handleDateSearch = (e) => setDateSearch(e.target.value)
+  // const handleDateSearch = (e) => setDateSearch(e.target.value)
   
   dayjs.extend(customParseFormat);
   const dateFormat = 'MM/YYYY';
@@ -213,8 +213,8 @@ function AdminOverview(props) {
   useEffect(() => {
     const handleBranch = async () => {
       const requestBranchesData = await props.getLocationsData(clientId)
-      if (requestBranchesData.fulfilled) {
-        setHoldLocationData(requestBranchesData.data.results)
+      if (requestBranchesData?.fulfilled) {
+        setHoldLocationData(requestBranchesData?.data?.results)
       }
     }
     handleBranch()

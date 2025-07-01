@@ -80,7 +80,7 @@ function SideMenu({collapsed, setCollapsed}) {
     
     const items = [
       {
-        label: "Admin Overview",
+        label: "Overview",
         key: "/",
         icon: <ProjectOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },

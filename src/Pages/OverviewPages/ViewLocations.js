@@ -4,10 +4,14 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { getLocationsData } from "../../redux/actions/location/location.action";
-import { PlusOutlined } from "@ant-design/icons";
+import { EditOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
+import { BsThreeDots } from "react-icons/bs";
 
 function ViewLocations(props) {
   const [dieselDataTable, setDieselDataTable] = useState({})
+  const [showEditForm, setShowEditForm] = useState(false)
+  const [showLocationModal, setShowLocationModal] = useState(false)
+  const [locationTableData, setlocationTableData] = useState(false)
 
   const { Search } = Input;
   
@@ -54,6 +58,72 @@ function ViewLocations(props) {
       props.getLocationsData(clientId, paginationQuery);
     }
   };
+
+  const handleMenuClick = () => {
+      setShowLocationModal(true)
+      setShowEditForm(false)
+    }
+
+  const items = [
+    {
+      label: ' Suspend',
+      key: '1',
+      icon: <UserOutlined />,
+      onClick: () => {
+        // setClientUserTableData()
+        handleMenuClick()
+      }
+    },
+    {
+      label: 'Edit',
+      key: '2',
+      icon: <EditOutlined />,
+      onClick: () => {
+        setShowEditForm(true);
+      }
+    },
+  ];
+
+  const menuProps = {
+    items,
+    // onClick: handleMenuClick,
+  };
+
+  const actionColumn = () => ({
+    key: 'action',
+    title: 'Action',
+    width: '10%',
+    dataIndex: 'action',
+    render: (_, record) => {
+      return (
+        <a
+          target="_blank"
+          onClick={(e) => {
+            e.preventDefault();
+            // setShowUserBranches(true);
+            setlocationTableData(record);
+          }}
+          rel="noopener noreferrer"
+        >
+          <Dropdown
+            menu={menuProps}
+          >
+            <Button
+              style={{
+                color: "#5C12A7",
+                width: 44,
+                height: 25,
+                backgroundColor: "rgba(92, 18, 167, 0.1)",
+                borderRadius: 12,
+              }}
+            >
+              <BsThreeDots />
+            </Button>
+          </Dropdown>
+        </a>
+      );
+    }
+  });
   
   const columns = [
     {
@@ -93,12 +163,7 @@ function ViewLocations(props) {
       render: (value) => <>{}</>,
       key: "remaining_diesel_litres",
     },
-    {
-      title: "Action",
-      dataIndex: "previous_day_consumption_in_litres",
-      render: (value) => <>{}</>,
-      key: "previous_day_consumption_in_litres",
-    },
+    actionColumn()
   ];
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -146,11 +211,11 @@ function ViewLocations(props) {
         <section className="total-energy-bar-chart">
           <Table
             className="custom-row-hover"
-            onRow={(record, index) => ({
-              onClick: (event) => {
-                window.location.href = `${window.location.href}/branch?ee=${record.id}`;
-              },
-            })}
+            // onRow={(record, index) => ({
+            //   onClick: (event) => {
+            //     window.location.href = `${window.location.href}/branch?ee=${record.id}`;
+            //   },
+            // })}
             // rowKey="id"
             rowKey={(record) => record.id}
             loading={props.locationPage.fetchLocationLoading}
@@ -167,6 +232,23 @@ function ViewLocations(props) {
               <Button onClick={fetchNextPage}>Next</Button>
             </div>
           </div>
+          {/* <Modal
+            visible={showLocationModal}
+            title="Edit Location Data"
+            onCancel={() => setShowLocationModal(false)}
+            footer={null}
+            width={557}
+            height={594}
+          >
+            <div className="table-responsive-wrapper">
+              <Table
+                // dataSource={seletedBranches}
+                // columns={modalColumns}
+                pagination={false}
+                scroll={{ x: true }}
+              />
+            </div>
+          </Modal> */}
         </section>
       </div>
     </>
