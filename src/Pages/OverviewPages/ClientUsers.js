@@ -195,6 +195,16 @@ function ClientUsers(props) {
         key: "name",
       },
       {
+        title: "Role",
+        dataIndex: "role",
+        key: "role",
+      },
+      {
+        title: "Region",
+        dataIndex: "region",
+        key: "region",
+      },
+      {
         title: 'Action',
         key: 'action',
         render: (_, record) => (
@@ -204,7 +214,8 @@ function ClientUsers(props) {
             okText="Yes"
             cancelText="No"
           >
-            <CloseOutlined style={{ color: 'red', cursor: 'pointer' }} />
+            {/* <CloseOutlined style={{ color: 'red', cursor: 'pointer' }} /> */}
+            <Button style={{ background:'red', color: 'white', cursor: 'pointer' }}>delete</Button>
           </Popconfirm>
         ),
       },

@@ -219,7 +219,7 @@ function EditClientUserForm(props) {
                   </Form.Item>
                   <Form.Item
                     name="location"
-                    label="Updat Location"
+                    label="Update Location"
                   // rules={[
                   //   {
                   //     required: true,
@@ -227,6 +227,30 @@ function EditClientUserForm(props) {
                   // ]}
                   >
                     <SelectBranch branches={props.ClientUserTableData.branches} />
+                  </Form.Item>
+                  <Form.Item
+                    name="role"
+                    label="Update Role"
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //   },
+                  // ]}
+                  >
+                    <Select
+                    mode="single"
+                    allowClear
+                    style={
+                      {
+                        // width: "100%",
+                        background: "#F2F2F8"
+                      }
+                    }
+                    placeholder="Change Role"
+                    // defaultValue={["AdeolaHopewell", "Agodi"]}
+                    onChange={handleChange}
+                    options={[]}
+                  />
                   </Form.Item>
                   <Form.Item>
                     <SubmitButton form={form} />

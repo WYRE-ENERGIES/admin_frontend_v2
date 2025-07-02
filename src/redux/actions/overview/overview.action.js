@@ -1,5 +1,5 @@
 import { APIService } from "../../../config/Api/apiServices";
-import { getDieselCostBarChartLoading, getDieselCostBarChartSuccess, getDieselLitresBarChartLoading, getDieselLitresBarChartSuccess, getKeyMetricsLoading, getKeyMetricsSuccess, getTotalCostBarChartLoading, getTotalCostBarChartSuccess, getTotalEnergyBarChartLoading, getTotalEnergyTopCardLoading, getTotalEnergyTopCardSuccess, getUtilityEnergyBarChartLoading, getUtilityEnergyBarChartSuccess, gettTotalEnergyBarChartSuccess, getUtilityCostPerBranchLoading, getUtilityCostPerBranchSuccess, getUtilityEnergyPerBranchLoading, getUtilityEnergyPerBranchSuccess, getDieselCostPerBranchLoading, getDieselCostPerBranchSuccess, getDieselLitresPerBranchLoading, getDieselLitresPerBranchSuccess } from "./overview.creator";
+import { getDieselCostBarChartLoading, getDieselCostBarChartSuccess, getDieselLitresBarChartLoading, getDieselLitresBarChartSuccess, getKeyMetricsLoading, getKeyMetricsSuccess, getTotalCostBarChartLoading, getTotalCostBarChartSuccess, getTotalCostTopCardLoading, getTotalCostTopCardSuccess, getTotalEnergyBarChartLoading, getTotalEnergyTopCardLoading, getTotalEnergyTopCardSuccess, getUtilityEnergyBarChartLoading, getUtilityEnergyBarChartSuccess, gettTotalEnergyBarChartSuccess, getUtilityCostPerBranchLoading, getUtilityCostPerBranchSuccess, getUtilityEnergyPerBranchLoading, getUtilityEnergyPerBranchSuccess, getDieselCostPerBranchLoading, getDieselCostPerBranchSuccess, getDieselLitresPerBranchLoading, getDieselLitresPerBranchSuccess } from "./overview.creator";
 
 export const getTotalEnergyTopCard = (clientId, startDate, endDate) => async (dispatch) => {
 
@@ -18,14 +18,32 @@ export const getTotalEnergyTopCard = (clientId, startDate, endDate) => async (di
       return { fulfilled: false, message: error.response.data.detail }
     }
 };
+
+export const getTotalCostTopCard = (clientId, startDate, endDate) => async (dispatch) => {
+
+    dispatch(getTotalCostTopCardLoading(true));
   
-export const getTotalEnergyBarChartData = (clientId, startDate, endDate, paginationQuery=1, branchName=null) => async (dispatch) => {
+    const requestUrl = `/api/v2/client-header-cost-endpoints/${clientId}/${startDate}/${endDate}`;
+    try {
+      const response = await APIService.get(requestUrl);
+  
+      dispatch(getTotalCostTopCardSuccess(response.data.data));
+  
+      dispatch(getTotalCostTopCardLoading(false))
+      return { fulfilled: true, message: 'successful' }
+    } catch (error) {
+      dispatch(getTotalCostTopCardLoading(false));
+      return { fulfilled: false, message: error.response.data.detail }
+    }
+};
+  
+export const getTotalEnergyBarChartData = (clientId, month, year, paginationQuery=1, branchName=null) => async (dispatch) => {
 
     dispatch(getTotalEnergyBarChartLoading(true));
   
     // const requestUrl = `/api/v2/client-branches-energy/${startDate}/${endDate}/?client_id=${clientId}${paginationQuery? paginationQuery: ''}`;
     // const requestUrl = `/api/v2/client-branches-energy/${clientId}/${startDate}/${endDate}/?page=${paginationQuery}`;
-    const initUrl = `/api/v2/client-branches-energy/${clientId}/${startDate}/${endDate}/?page=${paginationQuery}`
+    const initUrl = `/api/v2/client-branches-energy/${clientId}/?month=${month}&year=${year}&page=${paginationQuery}`
     const reqUrl = branchName ? initUrl + `&search=${branchName}` : initUrl
     try {
       const response = await APIService.get(reqUrl);
@@ -115,11 +133,11 @@ export const getClientDieselLitresData = (clientId, year=null) => async (dispatc
     }
 };
 
-export const getKeyMetricsData = (clientId, startDate, endDate, paginationQuery=1, branchName=null) => async (dispatch) => {
+export const getKeyMetricsData = (clientId, month, year, paginationQuery=1, branchName=null) => async (dispatch) => {
 
   dispatch(getKeyMetricsLoading(true));
 
-  const initUrl = `/api/v2/key-metrics/${clientId}/${startDate}/${endDate}/?page=${paginationQuery}`
+  const initUrl = `/api/v2/key-metrics/${clientId}/?month=${month}&year=${year}&page=${paginationQuery}`
   const reqUrl = branchName ? initUrl + `&search=${branchName}` : initUrl
   try {
     const response = await APIService.get(reqUrl);

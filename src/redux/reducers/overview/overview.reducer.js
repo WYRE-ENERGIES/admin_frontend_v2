@@ -3,6 +3,8 @@ import overviewTypes from "./overview.type";
 const initialState = {
     fetchTotalEnergyTopCardLoading: false,
     fetchedTotalEnergyTopCard: false,
+    fetchTotalCostTopCardLoading: false,
+    fetchedTotalCostTopCard: false,
     fetchTotalEnergyBarChartLoading: false,
     fetchedTotalEnergyBarChart: false,
     fetchTotalCostBarChartLoading: false,
@@ -36,6 +38,17 @@ const overviewReducers = (state = initialState, action) => {
             return {
                 ...state,
                 fetchedTotalEnergyTopCard: action.payload
+            }
+
+        case overviewTypes.GET_TOTAL_COST_TOP_CARD_LOADING:
+            return {
+                ...state,
+                fetchTotalCostTopCardLoading: action.payload
+            }
+        case overviewTypes.GET_TOTAL_COST_TOP_CARD_SUCCESS:
+            return {
+                ...state,
+                fetchedTotalCostTopCard: action.payload
             }
 
         case overviewTypes.GET_TOTAL_ENERGY_BARCHART_LOADING:

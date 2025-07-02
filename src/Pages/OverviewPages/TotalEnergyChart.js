@@ -1,12 +1,12 @@
-import { Button, Card, DatePicker, Image, Input, Space, Spin, Table, Typography } from "antd";
+import { Button, Card, DatePicker, Image, Input, Space, Spin, Table, Typography, Select, message } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined, PlusOutlined, SearchOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect, useSelector } from "react-redux";
-import moment from "moment";
+import moment, { months } from "moment";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,6 +18,7 @@ import {
 } from 'chart.js';
 import 'chart.js/auto'
 import { Bar } from "react-chartjs-2";
+import { getLocationsData } from "../../redux/actions/location/location.action";
 
 ChartJS.register(
   CategoryScale,
@@ -30,20 +31,106 @@ ChartJS.register(
 
 
 function TotalEnergyChart(props) {
+  // const [energyChartData, setEnergyChartData] = useState({
+  //   labels: [],
+  //   datasets: []
+  // })
+  const [energyChartData, setEnergyChartData] = useState([])
   const [searchParams, setSearchParams] = useSearchParams()
   const [paginationData, setPaginationData] = useState({})
+  const [useEnergyData, setuseEnergyData] = useState([])
+  const [holdLocationData, setHoldLocationData] = useState([]);
   const [holdSearchData, setHoldSearchData] = useState("")
   const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
-  dayjs(),])
-  const [energyChartData, setEnergyChartData] = useState({
-    labels: [],
-    datasets: []
-  })
+    dayjs(),])
+  const [totalEnergyAPIdata, settotalEnergyAPIdata] = useState([]);
+  const [pageDataHolder, setPageDataHolder] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]); // selected in Select
+  let selectOptions=[]
+  if (holdLocationData) {
+    holdLocationData.map((item) => {
+      selectOptions.push({
+        value: item.id,
+        label: item.name,
+        key: item.id
+      })
+    })
+  }
+  const selectOptionsWithDisabled = selectOptions.map(option => ({
+    ...option,
+    disabled: selectedIds.length >= 5 && !selectedIds.includes(option.id)
+  }));
+
+  const handleRegionChange = value => {
+    console.log(`selected ${value}`);
+  };
+  const displayedData = selectedIds.length === 0
+    ? useEnergyData
+    : useEnergyData.filter(item => selectedIds.includes(item.id));
+
+  const chartJsData = {
+    labels: displayedData.map(item => item.name),
+    // labels: breakLabels,
+    datasets: [
+      {
+        label: "Generator",
+        data: displayedData.map(item => item.generators_energy),
+        backgroundColor: "#43D540",
+        borderRadius: 6,
+        barThickness: 40,
+        maxBarThickness: 40,
+      },
+      {
+        label: "Utility",
+        data: displayedData.map(item => item.utility_energy),
+        backgroundColor: "#094D92",
+        borderRadius: 6,
+        barThickness: 40,
+        maxBarThickness: 40,
+      },
+    ]
+  };
+  console.log('USE-ENERGY-DATA----------:', useEnergyData);
+  console.log('displayedData == ', displayedData);
+  console.log('Chart-data == ', chartJsData);
+  console.log('seleted id == ', selectedIds);
+  console.log('DATA  == ', props.overviewPage.fetchedTotalEnergyBarChart);
+  
+  const handleCompareBranch = (Ids) => {
+    console.log('id == ', Ids);
+  if (Ids.length <= 5) {
+    setSelectedIds(Ids);
+  } else {
+    message.warning('You can only select up to 5 branches');
+  }
+
+    // setCurrentPage(1);
+    const filteredBranches = useEnergyData.filter(item => Ids.includes(item.id))
+    // setEnergyChartData(filteredBranches)
+    console.log('filteredBranches == ', filteredBranches);
+
+
+  };
+  useEffect(() => {
+    if (props.overviewPage.fetchedKeyMetrics) {
+      settotalEnergyAPIdata(props.overviewPage.fetchedKeyMetrics)
+    }
+  }, [props.overviewPage.fetchedKeyMetrics])
+  useEffect(() => {
+    setPageDataHolder(totalEnergyAPIdata)
+  }, [totalEnergyAPIdata])
+  // console.log('Branches Data === ', holdLocationData);
+  const handleDateChange = (date) => {
+    if (!date) return;
+    const month = dayjs(date).month() + 1; // JS month is 0-indexed, so add 1
+    const year = dayjs(date).year();
+    props.getTotalEnergyBarChartData(clientId, month, year);
+  };
 
   const { Search } = Input;
   
   dayjs.extend(customParseFormat);
-  const dateFormat = 'DD/MM/YYYY';
+  const monthFormat = 'MM/YYYY';
   const { RangePicker } = DatePicker;
   const totalPages = paginationData.results
 
@@ -52,9 +139,11 @@ function TotalEnergyChart(props) {
   // const endDate = moment().endOf("day").format("DD-MM-YYYY HH:mm");
   const endDate = moment().format("DD-MM-YYYY HH:mm");
 
-  const showTotalEnergyBarchart = () => {
+  const showTotalEnergyBarchart = (date) => {
     const clientId = props.auth.userData.client_id
-    props.getTotalEnergyBarChartData(clientId, startDate, endDate)
+    const month = dayjs(date).month() + 1; // JS month is 0-indexed, so add 1
+    const year = dayjs(date).year();
+    props.getTotalEnergyBarChartData(clientId, month, year)
   }
 
   const onSelectDateTotalEnergy = (date) => {
@@ -62,13 +151,40 @@ function TotalEnergyChart(props) {
     // const date2 = dayjs(date[1]).format("DD-MM-YYYY HH:mm");
     const date1 = dayjs(date[0]).startOf("date").format("DD-MM-YYYY HH:mm");
     const date2 = dayjs(date[1]).endOf("date").format("DD-MM-YYYY HH:mm");
+    const inputedDate = dayjs().month(date).format("MM-YYYY HH:mm");
     setSelectedDate([dayjs(date[0]), dayjs(date[1])])
-    props.getTotalEnergyBarChartData(clientId, date1, date2)
+    props.getTotalEnergyBarChartData(clientId, inputedDate)
   }
+
+  const handleMonthChange = (date, dateString) => {
+    // `date` is a dayjs object
+    // `dateString` is the string like '2025-06'
+    console.log('Selected month:', date);
+    console.log('Formatted string:', dateString);
+
+    // Optionally store or use the first and last days of the selected month
+    const startOfMonth = date.startOf('month').format('YYYY-MM-DD');
+    const endOfMonth = date.endOf('month').format('YYYY-MM-DD');
+
+    console.log('Start:', startOfMonth);
+    console.log('End:', endOfMonth);
+
+    setSelectedDate(date); // or set it as string if needed
+    props.getTotalEnergyBarChartData(clientId, date)
+  };
 
   useEffect(() => {
     showTotalEnergyBarchart()
   }, []);
+  useEffect(() => {
+    const handleBranch = async () => {
+      const requestBranchesData = await props.getLocationsData(clientId)
+      if (requestBranchesData.fulfilled) {
+        setHoldLocationData(requestBranchesData.data.results)
+      }
+    }
+    handleBranch()
+  },[])
 
   const fetchNextPaginatedTotalEnergy = () => {
     const clientId = props.auth.userData.client_id;
@@ -96,18 +212,20 @@ function TotalEnergyChart(props) {
   useEffect(() => {
 
     if (props.overviewPage.fetchedTotalEnergyBarChart) {
-      const labels = props.overviewPage.fetchedTotalEnergyBarChart.results?.map(chart => {
+      const labels = props.overviewPage.fetchedTotalEnergyBarChart?.map(chart => {
         return chart.name
         })
       const breakLabels = labels.map(label => label.split(' '))
-      const data1 = props.overviewPage.fetchedTotalEnergyBarChart?.results.map(chart => {
+      const data1 = props.overviewPage.fetchedTotalEnergyBarChart?.map(chart => {
         return chart.utility_energy
       })
 
-      const data2 = props.overviewPage.fetchedTotalEnergyBarChart?.results.map(chart => {
+      const data2 = props.overviewPage.fetchedTotalEnergyBarChart?.map(chart => {
         return chart.generators_energy
       })
       setPaginationData(props.overviewPage.fetchedTotalEnergyBarChart)
+      setuseEnergyData(props.overviewPage.fetchedTotalEnergyBarChart)
+      // setuseEnergyData()
 
       const energyDataSource = {
         labels: breakLabels,
@@ -141,7 +259,7 @@ function TotalEnergyChart(props) {
         ],
       };
 
-      setEnergyChartData(energyDataSource)
+      // setEnergyChartData(energyDataSource)
     }
 
   }, [props.overviewPage]);
@@ -256,7 +374,40 @@ function TotalEnergyChart(props) {
                       marginRight: 10,
                     }}
                   />
-                  <RangePicker
+                  <Select
+                    className="select-bar"
+                    mode="multiple"
+                    maxTagCount={1}
+                    maxTagTextLength={10}
+                    maxTagPlaceholder={omittedValues => `+${omittedValues.length} more`}
+                    placeholder="Select branches"
+                    onChange={handleCompareBranch}
+                    value={selectedIds}
+                    style={{ marginRight: 10, background: 'white', color: 'black' }}
+                    options={selectOptions}
+                  />
+                  {/* <Button
+                    type="default"
+                    onClick={() => setSelectedIds([])}
+                    disabled={selectedIds.length === 0}
+                    style={{ marginTop: 16 }}
+                  >
+                    Reset Selection
+                  </Button> */}
+                  <Select
+                    className="select-bar"
+                    prefix="Region"
+                    defaultValue="lucy"
+                    style={{ marginRight: 10 }}
+                    onChange={handleRegionChange}
+                    options={[
+                      { value: 'jack', label: 'North' },
+                      { value: 'lucy', label: 'South' },
+                      { value: 'Yiminghe', label: 'East' },
+                      { value: 'disabled', label: 'Disabled', disabled: true },
+                    ]}
+                  />
+                  <DatePicker
                     className="picker-date"
                     style={{
                       // height: 43
@@ -270,16 +421,21 @@ function TotalEnergyChart(props) {
                     //   // moment().endOf("month"),
                     // ]}
                     defaultValue={selectedDate}
-                    format={dateFormat}
-                    onChange={onSelectDateTotalEnergy}
+                    disabledDate={(current) => {
+                      return current && current > dayjs().endOf('month');
+                    }}
+                    picker="month"
+                    format={monthFormat}
+                    onChange={handleDateChange}
                   />
                 </div>
               </div>
-                <Bar
-                  onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
-                  options={options}
-                data={energyChartData}
-                />
+              <Bar
+                onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
+                options={options}
+                // data={energyChartData}
+                data={chartJsData}
+              />
               {/* <Pagination
               totalPosts = {chartPages.lenght} 
               postsPerPage = {postsPerPage}
@@ -323,12 +479,14 @@ function TotalEnergyChart(props) {
 const mapDispatchToProps = {
   getTotalEnergyTopCard,
   getTotalEnergyBarChartData,
+  getLocationsData,
   getKeyMetricsData,
 };
 
 const mapStateToProps = (state) => ({
   overviewPage: state.overviewPage,
   auth: state.auth,
+  clientUsersPage: state.clientUsersPage
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TotalEnergyChart);
