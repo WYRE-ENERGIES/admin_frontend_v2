@@ -132,7 +132,6 @@ function ViewLocations(props) {
       label: ' Edit',
       key: '1',
       icon: <EditOutlined />,
-      icon: <UserOutlined />,
       onClick: () => {
         // setClientUserTableData()
         handleMenuClick()
