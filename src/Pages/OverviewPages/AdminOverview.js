@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
-import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard, getUtilityCostPerBranch } from "../../redux/actions/overview/overview.action";
+import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard, getUtilityCostPerBranch, getUtilityEnergyPerBranch, getDieselCostPerBranch, getDieselLitresPerBranch } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import moment from "moment";
@@ -31,6 +31,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import UtilityCostPerBranchChart from "./UtilityCostPerBranchChart";
 import GenericBranchBarChart from "./GenericBranchBarChart";
+import { APIService } from "../../config/Api/apiServices";
 
 ChartJS.register(
   CategoryScale,
@@ -95,6 +96,9 @@ function AdminOverview(props) {
   const [keyMetricsData, setkeyMetricsData] = useState({})
     const [downloading, setDownloading] = useState(false);
     const reportRef = useRef(null);
+    const [regionOptions, setRegionOptions] = useState([]);
+    const [regionBranchMap, setRegionBranchMap] = useState({});
+    const [selectedRegion, setSelectedRegion] = useState(undefined);
 
   const { Search } = Input;
     const handleDownloadPdf = async () => {
@@ -425,7 +429,11 @@ function AdminOverview(props) {
   const handleUtilityCostSearch = (e) => setGenericTabSearch(e.target.value);
 
   const getUtilityCostPerBranchData = () => {
-    const branches = props.overviewPage.fetchedUtilityCostPerBranch?.branches || [];
+    let branches = props.overviewPage.fetchedUtilityCostPerBranch?.branches || [];
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      const allowed = new Set(regionBranchMap[selectedRegion]);
+      branches = branches.filter(branch => allowed.has(branch.branch_name));
+    }
     return branches
       .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
       .map(branch => ({
@@ -433,6 +441,131 @@ function AdminOverview(props) {
         utility_cost: branch.average_cost,
       }));
   };
+
+  const [utilityEnergyMonth, setUtilityEnergyMonth] = useState(dayjs().month() + 1);
+  const [utilityEnergyYear, setUtilityEnergyYear] = useState(dayjs().year());
+
+  useEffect(() => {
+    if (isSelectChart === 2) {
+      props.getUtilityEnergyPerBranch(clientId, utilityEnergyMonth, utilityEnergyYear);
+    }
+  }, [isSelectChart, utilityEnergyMonth, utilityEnergyYear, clientId]);
+
+  const handleUtilityEnergyMonthChange = (date) => {
+    if (date) {
+      setUtilityEnergyMonth(date.month() + 1);
+      setUtilityEnergyYear(date.year());
+    } else {
+      setUtilityEnergyMonth(dayjs().month() + 1);
+      setUtilityEnergyYear(dayjs().year());
+    }
+  };
+  const handleUtilityEnergySearch = (e) => setGenericTabSearch(e.target.value);
+
+  const getUtilityEnergyPerBranchData = () => {
+    let branches = props.overviewPage.fetchedUtilityEnergyPerBranch?.monthly_utility_energy || [];
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      const allowed = new Set(regionBranchMap[selectedRegion]);
+      branches = branches.filter(branch => allowed.has(branch.branch_name));
+    }
+    return branches
+      .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
+      .map(branch => ({
+        name: branch.branch_name,
+        value: branch.utility_energy,
+      }));
+  };
+
+  const [dieselCostMonth, setDieselCostMonth] = useState(dayjs().month() + 1);
+  const [dieselCostYear, setDieselCostYear] = useState(dayjs().year());
+
+  useEffect(() => {
+    if (isSelectChart === 3) {
+      props.getDieselCostPerBranch(clientId, dieselCostMonth, dieselCostYear);
+    }
+  }, [isSelectChart, dieselCostMonth, dieselCostYear, clientId]);
+
+  const handleDieselCostMonthChange = (date) => {
+    if (date) {
+      setDieselCostMonth(date.month() + 1);
+      setDieselCostYear(date.year());
+    } else {
+      setDieselCostMonth(dayjs().month() + 1);
+      setDieselCostYear(dayjs().year());
+    }
+  };
+  const handleDieselCostSearch = (e) => setGenericTabSearch(e.target.value);
+
+  const getDieselCostPerBranchData = () => {
+    let branches = props.overviewPage.fetchedDieselCostPerBranch?.monthly_diesel_costs || [];
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      const allowed = new Set(regionBranchMap[selectedRegion]);
+      branches = branches.filter(branch => allowed.has(branch.branch_name));
+    }
+    return branches
+      .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
+      .map(branch => ({
+        name: branch.branch_name,
+        value: branch.wyre_cost,
+      }));
+  };
+
+  const [dieselLitresMonth, setDieselLitresMonth] = useState(dayjs().month() + 1);
+  const [dieselLitresYear, setDieselLitresYear] = useState(dayjs().year());
+
+  useEffect(() => {
+    if (isSelectChart === 4) {
+      props.getDieselLitresPerBranch(clientId, dieselLitresMonth, dieselLitresYear);
+    }
+  }, [isSelectChart, dieselLitresMonth, dieselLitresYear, clientId]);
+
+  const handleDieselLitresMonthChange = (date) => {
+    if (date) {
+      setDieselLitresMonth(date.month() + 1);
+      setDieselLitresYear(date.year());
+    } else {
+      setDieselLitresMonth(dayjs().month() + 1);
+      setDieselLitresYear(dayjs().year());
+    }
+  };
+  const handleDieselLitresSearch = (e) => setGenericTabSearch(e.target.value);
+
+  const getDieselLitresPerBranchData = () => {
+    let branches = props.overviewPage.fetchedDieselLitresPerBranch?.monthly_diesel_litres || [];
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      const allowed = new Set(regionBranchMap[selectedRegion]);
+      branches = branches.filter(branch => allowed.has(branch.branch_name));
+    }
+    return branches
+      .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
+      .map(branch => ({
+        name: branch.branch_name,
+        value: branch.diesel_litres,
+      }));
+  };
+
+  useEffect(() => {
+    async function fetchRegions() {
+      if (!clientId) return;
+      try {
+        const res = await APIService.get(`/api/v1/accounts/client/${clientId}/regions-branches/`);
+        const regions = res.data.regions || [];
+        setRegionOptions(regions.map(r => r.region));
+        // Mapping region name to branch names for fast lookup
+        const map = {};
+        regions.forEach(r => {
+          map[r.region] = (r.branches || []).map(b => b.branch_name);
+        });
+        setRegionBranchMap(map);
+      } catch (e) {
+        setRegionOptions([]);
+        setRegionBranchMap({});
+      }
+    }
+    fetchRegions();
+  }, [clientId]);
+
+  const handleRegionChange = (region) => setSelectedRegion(region);
 
   return (
     <main ref={reportRef}>
@@ -772,6 +905,9 @@ function AdminOverview(props) {
             <UtilityCostPerBranchChart
               data={getUtilityCostPerBranchData()}
               onSearch={handleUtilityCostSearch}
+              onRegionChange={handleRegionChange}
+              regionOptions={regionOptions}
+              selectedRegion={selectedRegion}
               onDateChange={handleUtilityCostMonthChange}
               selectedDate={dayjs(`${utilityCostYear}-${utilityCostMonth}`, "YYYY-M")}
               loading={props.overviewPage.fetchUtilityCostPerBranchLoading}
@@ -780,43 +916,46 @@ function AdminOverview(props) {
         ) : isSelectChart === 2 ? (
           <section className="total-energy-bar-chart">
             <GenericBranchBarChart
-                  tabIndex={isSelectChart}
+              tabIndex={isSelectChart}
               chartLabel="Utility Energy Per Branch"
-              data={getGenericTabData()}
-              onSearch={handleGenericTabSearch}
-              onRegionChange={handleGenericTabRegion}
-              onDateChange={handleGenericTabDate}
-              regionOptions={getRegionOptions()}
-              selectedRegion={genericTabRegion}
-              selectedDate={genericTabDate}
+              data={getUtilityEnergyPerBranchData()}
+              onSearch={handleUtilityEnergySearch}
+              onRegionChange={handleRegionChange}
+              regionOptions={regionOptions}
+              selectedRegion={selectedRegion}
+              onDateChange={handleUtilityEnergyMonthChange}
+              selectedDate={dayjs(`${utilityEnergyYear}-${utilityEnergyMonth}`, "YYYY-M")}
+              loading={props.overviewPage.fetchUtilityEnergyPerBranchLoading}
             />
           </section>
         ) : isSelectChart === 3 ? (
           <section className="total-energy-bar-chart">
             <GenericBranchBarChart
-                    tabIndex={isSelectChart}
+              tabIndex={isSelectChart}
               chartLabel="Diesel Cost Per Branch"
-              data={getGenericTabData()}
-              onSearch={handleGenericTabSearch}
-              onRegionChange={handleGenericTabRegion}
-              onDateChange={handleGenericTabDate}
-              regionOptions={getRegionOptions()}
-              selectedRegion={genericTabRegion}
-              selectedDate={genericTabDate}
+              data={getDieselCostPerBranchData()}
+              onSearch={handleDieselCostSearch}
+              onRegionChange={handleRegionChange}
+              regionOptions={regionOptions}
+              selectedRegion={selectedRegion}
+              onDateChange={handleDieselCostMonthChange}
+              selectedDate={dayjs(`${dieselCostYear}-${dieselCostMonth}`, "YYYY-M")}
+              loading={props.overviewPage.fetchDieselCostPerBranchLoading}
             />
           </section>
         ) : isSelectChart === 4 ? (
           <section className="total-energy-bar-chart">
-                    <GenericBranchBarChart
+            <GenericBranchBarChart
               chartLabel="Diesel Liters Per Branch"
               tabIndex={isSelectChart}
-              data={getGenericTabData()}
-              onSearch={handleGenericTabSearch}
-              onRegionChange={handleGenericTabRegion}
-              onDateChange={handleGenericTabDate}
-              regionOptions={getRegionOptions()}
-              selectedRegion={genericTabRegion}
-              selectedDate={genericTabDate}
+              data={getDieselLitresPerBranchData()}
+              onSearch={handleDieselLitresSearch}
+              onRegionChange={handleRegionChange}
+              regionOptions={regionOptions}
+              selectedRegion={selectedRegion}
+              onDateChange={handleDieselLitresMonthChange}
+              selectedDate={dayjs(`${dieselLitresYear}-${dieselLitresMonth}`, "YYYY-M")}
+              loading={props.overviewPage.fetchDieselLitresPerBranchLoading}
             />
           </section>
         ) : (
@@ -843,6 +982,9 @@ const mapDispatchToProps = {
   getTotalEnergyBarChartData,
   getKeyMetricsData,
   getUtilityCostPerBranch,
+  getUtilityEnergyPerBranch,
+  getDieselCostPerBranch,
+  getDieselLitresPerBranch,
 };
 
 const mapStateToProps = (state) => ({
