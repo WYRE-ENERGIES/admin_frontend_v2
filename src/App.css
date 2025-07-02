@@ -812,6 +812,11 @@ a.header-short-button--auth {
   /* margin-top: 15px; */
 }
 
+.regions-table {
+  /* width: 40%; */
+  margin-top: 80px;
+}
+
 .keymetric_pagination {
   display:  flex;
   margin-top: 15px;

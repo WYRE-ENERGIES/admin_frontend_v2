@@ -1,17 +1,61 @@
-import { Button, DatePicker, Dropdown, Form, Image, Input, Modal, Space, Table, Typography, notification } from "antd";
+import { Button, DatePicker, Dropdown, Form, Image, Input, Modal, Space, Spin, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { getLocationsData } from "../../redux/actions/location/location.action";
-import { EditOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
+import { EditOutlined, EyeOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
 import { BsThreeDots } from "react-icons/bs";
+
+const SubmitButton = ({ form }) => {
+  const [submittable, setSubmittable] = useState(false);
+
+  // Watch all values
+  const values = Form.useWatch([], form);
+  useEffect(() => {
+    form
+      .validateFields({
+        validateOnly: true,
+      })
+      .then(
+        () => {
+          setSubmittable(true);
+        },
+        () => {
+          setSubmittable(false);
+        },
+      );
+  }, [values]);
+  return (
+    <>
+      <Button
+        style={{ marginRight:20, backgroundColor: "white", color: "black", height: "40px", borderRadius: "7px", width: "20%" }}
+        type="primary"
+        htmlType="submit"
+      // disabled={!submittable}
+      >
+        Done
+      </Button>
+      <Button
+        style={{ backgroundColor: "red", color: "black", height: "40px", borderRadius: "7px", width: "20%" }}
+        type="primary"
+        htmlType="submit"
+      // disabled={!submittable}
+      >
+        Remove
+      </Button>
+    </>
+  );
+};
 
 function ViewLocations(props) {
   const [dieselDataTable, setDieselDataTable] = useState({})
   const [showEditForm, setShowEditForm] = useState(false)
   const [showLocationModal, setShowLocationModal] = useState(false)
+  const [showRegionsModal, setShowRegionsModal] = useState(false)
   const [locationTableData, setlocationTableData] = useState(false)
+  const [regionsTableData, setRegionsTableData] = useState(false)
+  const [form] = Form.useForm();
 
   const { Search } = Input;
   
@@ -36,6 +80,24 @@ function ViewLocations(props) {
   }, [])
 
   const data = props.locationPage.fetchedLocation.results
+  const regionsData = [
+    {
+      region: 'North',
+      no_of_branches: 10,
+    },
+    {
+      region: 'Central',
+      no_of_branches: 15,
+    },
+    {
+      region: 'West',
+      no_of_branches: 10,
+    },
+    {
+      region: 'East',
+      no_of_branches: 15,
+    },
+  ]
 
   const viewLocationPaginate = props.locationPage.fetchedLocation
   const fetchNextPage = () => {
@@ -61,13 +123,15 @@ function ViewLocations(props) {
 
   const handleMenuClick = () => {
       setShowLocationModal(true)
+      setShowRegionsModal(true)
       setShowEditForm(false)
     }
 
   const items = [
     {
-      label: ' Suspend',
+      label: ' Edit',
       key: '1',
+      icon: <EditOutlined />,
       icon: <UserOutlined />,
       onClick: () => {
         // setClientUserTableData()
@@ -75,9 +139,9 @@ function ViewLocations(props) {
       }
     },
     {
-      label: 'Edit',
+      label: 'View',
       key: '2',
-      icon: <EditOutlined />,
+      icon: <EyeOutlined />,
       onClick: () => {
         setShowEditForm(true);
       }
@@ -91,7 +155,7 @@ function ViewLocations(props) {
 
   const actionColumn = () => ({
     key: 'action',
-    title: 'Action',
+    title: 'Actions',
     width: '10%',
     dataIndex: 'action',
     render: (_, record) => {
@@ -166,6 +230,35 @@ function ViewLocations(props) {
     actionColumn()
   ];
 
+  const regiosColumns = [
+    {
+      title: "Region",
+      dataIndex: "region",
+      width: "200px",
+      render: (text) => {
+        return (
+          <span
+            style={{
+              fontWeight: 'bold',
+            }}
+          >
+            {text}
+          </span>
+        )
+      },
+      key: "region",
+      // sorter: (a, b) => a.name.length - b.name.length,
+      // sortDirections: ["descend"],
+    },
+    {
+      title: "Number of branches",
+      dataIndex: "no_of_branches",
+      render: (value) => <>{value}</>,
+      key: "no_of_branches",
+    },
+    actionColumn()
+  ];
+
   const onChange = (pagination, filters, sorter, extra) => {
     console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
@@ -232,23 +325,155 @@ function ViewLocations(props) {
               <Button onClick={fetchNextPage}>Next</Button>
             </div>
           </div>
-          {/* <Modal
+          <Modal
+            // style={{borderRadius: '40px'}}
             visible={showLocationModal}
             title="Edit Location Data"
             onCancel={() => setShowLocationModal(false)}
             footer={null}
-            width={557}
+            width={857}
             height={594}
           >
-            <div className="table-responsive-wrapper">
+            {/* <div className="table-responsive-wrapper">
               <Table
                 // dataSource={seletedBranches}
                 // columns={modalColumns}
                 pagination={false}
                 scroll={{ x: true }}
               />
-            </div>
-          </Modal> */}
+            </div> */}
+            <Spin
+              // spinning={props.clientUsersPage.newClientUserLoading}
+            >
+              <Form
+                form={form}
+                // name="validateOnly"
+                name="basic"
+                layout="vertical"
+                autoComplete="off"
+                // onFinish={submitNewClientUsers}
+              >
+                <Form.Item
+                  name="branch_name"
+                  label="Branch Name"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="Head Office" />
+                </Form.Item>
+                <Form.Item
+                  name="region"
+                  label="Region"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="Central" />
+                </Form.Item>
+                <Form.Item
+                  name="city"
+                  label="City"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="Ebute meta" />
+                </Form.Item>
+                <Form.Item
+                  name="address"
+                  label="Address"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="Ebute meta, Lagos-Island" />
+                </Form.Item>
+                <Form.Item>
+                  <SubmitButton form={form} />
+                </Form.Item>
+              </Form>
+            </Spin>
+          </Modal>
+          <Table
+            className="regions-table"
+            // onRow={(record, index) => ({
+            //   onClick: (event) => {
+            //     window.location.href = `${window.location.href}/branch?ee=${record.id}`;
+            //   },
+            // })}
+            // rowKey="id"
+            rowKey={(record) => record.id}
+            loading={props.locationPage.fetchLocationLoading}
+            dataSource={regionsData}
+            columns={regiosColumns}
+            onChange={onChange}
+            pagination={false}
+          />
+          <Modal
+            // style={{borderRadius: '40px'}}
+            visible={showRegionsModal}
+            title="Edit Region"
+            onCancel={() => setShowRegionsModal(false)}
+            footer={null}
+            width={557}
+            height={594}
+          >
+            {/* <div className="table-responsive-wrapper">
+              <Table
+                // dataSource={seletedBranches}
+                // columns={modalColumns}
+                pagination={false}
+                scroll={{ x: true }}
+              />
+            </div> */}
+            <Spin
+              // spinning={props.clientUsersPage.newClientUserLoading}
+            >
+              <Form
+                form={form}
+                // name="validateOnly"
+                name="basic"
+                layout="vertical"
+                autoComplete="off"
+                // onFinish={submitNewClientUsers}
+              >
+                <Form.Item
+                  name="branch_name"
+                  label="Region"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="Head Office" />
+                </Form.Item>
+                <Form.Item
+                  name="no_of_region"
+                  label="Number of Regions"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="10" />
+                </Form.Item>
+                <Form.Item>
+                  <SubmitButton form={form} />
+                </Form.Item>
+              </Form>
+            </Spin>
+          </Modal>
         </section>
       </div>
     </>
