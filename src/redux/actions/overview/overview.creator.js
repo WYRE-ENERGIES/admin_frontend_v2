@@ -62,3 +62,12 @@ export const getKeyMetricsSuccess = (payload = true) => ({
     type: overviewTypes.GET_KEY_METRICS_SUCCESS,
     payload,
 });
+
+export const getUtilityCostPerBranchLoading = (payload = true) => ({
+    type: overviewTypes.GET_UTILITY_COST_PER_BRANCH_LOADING,
+    payload,
+});
+export const getUtilityCostPerBranchSuccess = (payload = true) => ({
+    type: overviewTypes.GET_UTILITY_COST_PER_BRANCH_SUCCESS,
+    payload,
+});

@@ -14,7 +14,9 @@ const initialState = {
     fetchDieselLitresBarChartLoading: false,
     fetchedDieselLitresBarChart: false,
     fetchKeyMetricsLoading: false,
-    fetchedKeyMetrics: false
+    fetchedKeyMetrics: false,
+    fetchUtilityCostPerBranchLoading: false,
+    fetchedUtilityCostPerBranch: false, 
 }
 
 const overviewReducers = (state = initialState, action) => {
@@ -94,6 +96,17 @@ const overviewReducers = (state = initialState, action) => {
             return {
                 ...state,
                 fetchedKeyMetrics: action.payload
+            }
+
+        case overviewTypes.GET_UTILITY_COST_PER_BRANCH_LOADING:
+            return {
+                ...state,
+                fetchUtilityCostPerBranchLoading: action.payload
+            }
+        case overviewTypes.GET_UTILITY_COST_PER_BRANCH_SUCCESS:
+            return {
+                ...state,
+                fetchedUtilityCostPerBranch: action.payload
             }
     
         default: return state;

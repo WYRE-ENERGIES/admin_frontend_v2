@@ -1,5 +1,5 @@
 import { APIService } from "../../../config/Api/apiServices";
-import { getDieselCostBarChartLoading, getDieselCostBarChartSuccess, getDieselLitresBarChartLoading, getDieselLitresBarChartSuccess, getKeyMetricsLoading, getKeyMetricsSuccess, getTotalCostBarChartLoading, getTotalCostBarChartSuccess, getTotalEnergyBarChartLoading, getTotalEnergyTopCardLoading, getTotalEnergyTopCardSuccess, getUtilityEnergyBarChartLoading, getUtilityEnergyBarChartSuccess, gettTotalEnergyBarChartSuccess } from "./overview.creator";
+import { getDieselCostBarChartLoading, getDieselCostBarChartSuccess, getDieselLitresBarChartLoading, getDieselLitresBarChartSuccess, getKeyMetricsLoading, getKeyMetricsSuccess, getTotalCostBarChartLoading, getTotalCostBarChartSuccess, getTotalEnergyBarChartLoading, getTotalEnergyTopCardLoading, getTotalEnergyTopCardSuccess, getUtilityEnergyBarChartLoading, getUtilityEnergyBarChartSuccess, gettTotalEnergyBarChartSuccess, getUtilityCostPerBranchLoading, getUtilityCostPerBranchSuccess } from "./overview.creator";
 
 export const getTotalEnergyTopCard = (clientId, startDate, endDate) => async (dispatch) => {
 
@@ -131,5 +131,19 @@ export const getKeyMetricsData = (clientId, startDate, endDate, paginationQuery=
   } catch (error) {
     dispatch(getKeyMetricsLoading(false));
     return { fulfilled: false, message: error.response.data.detail }
+  }
+};
+
+export const getUtilityCostPerBranch = (clientId, month, year) => async (dispatch) => {
+  dispatch(getUtilityCostPerBranchLoading(true));
+  const requestUrl = `/api/v2/client/${clientId}/monthly-utility-cost/?month=${month}&year=${year}`;
+  try {
+    const response = await APIService.get(requestUrl);
+    dispatch(getUtilityCostPerBranchSuccess(response.data));
+    dispatch(getUtilityCostPerBranchLoading(false));
+    return { fulfilled: true, message: 'successful' }
+  } catch (error) {
+    dispatch(getUtilityCostPerBranchLoading(false));
+    return { fulfilled: false, message: error.response?.data?.detail || "Error" }
   }
 };
