@@ -29,7 +29,7 @@ const SubmitButton = ({ form }) => {
   return (
     <>
       <Button
-        style={{ marginRight:20, backgroundColor: "white", color: "black", height: "40px", borderRadius: "7px", width: "20%" }}
+        style={{ marginRight:20, backgroundColor: "white", color: "black", height: "40px", borderRadius: "7px", width: "47%" }}
         type="primary"
         htmlType="submit"
       // disabled={!submittable}
@@ -37,7 +37,7 @@ const SubmitButton = ({ form }) => {
         Done
       </Button>
       <Button
-        style={{ backgroundColor: "red", color: "black", height: "40px", borderRadius: "7px", width: "20%" }}
+        style={{ backgroundColor: "red", color: "black", height: "40px", borderRadius: "7px", width: "47%" }}
         type="primary"
         htmlType="submit"
       // disabled={!submittable}
@@ -330,7 +330,7 @@ function ViewLocations(props) {
             title="Edit Location Data"
             onCancel={() => setShowLocationModal(false)}
             footer={null}
-            width={857}
+            // maxWidth={457}
             height={594}
           >
             {/* <div className="table-responsive-wrapper">
@@ -342,7 +342,7 @@ function ViewLocations(props) {
               />
             </div> */}
             <Spin
-              // spinning={props.clientUsersPage.newClientUserLoading}
+              spinning={false}
             >
               <Form
                 form={form}
@@ -372,7 +372,11 @@ function ViewLocations(props) {
                     },
                   ]}
                 >
-                  <Input placeholder="Central" />
+                  {/* <Input 
+                    placeholder="Central" 
+                    style={{width: 20%}} 
+                  /> */}
+                  <Input style={{ fontSize: 16 }} placeholder="Enter email" />
                 </Form.Item>
                 <Form.Item
                   name="city"
@@ -435,7 +439,7 @@ function ViewLocations(props) {
               />
             </div> */}
             <Spin
-              // spinning={props.clientUsersPage.newClientUserLoading}
+              spinning={false}
             >
               <Form
                 form={form}
