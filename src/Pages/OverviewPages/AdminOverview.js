@@ -33,6 +33,7 @@ import jsPDF from 'jspdf';
 import UtilityCostPerBranchChart from "./UtilityCostPerBranchChart";
 import GenericBranchBarChart from "./GenericBranchBarChart";
 import { APIService } from "../../config/Api/apiServices";
+import React, { useMemo } from "react";
 
 ChartJS.register(
   CategoryScale,
@@ -646,6 +647,9 @@ function AdminOverview(props) {
     fetchRegions();
   }, [clientId]);
 
+  const [selectedBranches, setSelectedBranches] = useState([]);
+
+  const handleBranchSelect = (branches) => setSelectedBranches(branches);
 
   return (
     <main ref={reportRef}>
@@ -1041,6 +1045,8 @@ function AdminOverview(props) {
           <section className="total-energy-bar-chart">
             <UtilityCostPerBranchChart
               data={getUtilityCostPerBranchData()}
+              onBranchSelect={handleBranchSelect}
+              selectedBranches={selectedBranches}
               onSearch={handleUtilityCostSearch}
               onRegionChange={handleRegionChange}
               regionOptions={regionOptions}
@@ -1063,6 +1069,8 @@ function AdminOverview(props) {
               onDateChange={handleUtilityEnergyMonthChange}
               selectedDate={dayjs(`${utilityEnergyYear}-${utilityEnergyMonth}`, "YYYY-M")}
               loading={props.overviewPage.fetchUtilityEnergyPerBranchLoading}
+              onBranchSelect={handleBranchSelect}
+              selectedBranches={selectedBranches}
             />
           </section>
         ) : isSelectChart === 3 ? (
@@ -1078,6 +1086,8 @@ function AdminOverview(props) {
               onDateChange={handleDieselCostMonthChange}
               selectedDate={dayjs(`${dieselCostYear}-${dieselCostMonth}`, "YYYY-M")}
               loading={props.overviewPage.fetchDieselCostPerBranchLoading}
+              onBranchSelect={handleBranchSelect}
+              selectedBranches={selectedBranches}
             />
           </section>
         ) : isSelectChart === 4 ? (
@@ -1093,6 +1103,8 @@ function AdminOverview(props) {
               onDateChange={handleDieselLitresMonthChange}
               selectedDate={dayjs(`${dieselLitresYear}-${dieselLitresMonth}`, "YYYY-M")}
               loading={props.overviewPage.fetchDieselLitresPerBranchLoading}
+              onBranchSelect={handleBranchSelect}
+              selectedBranches={selectedBranches}
             />
           </section>
         ) : (
@@ -1106,6 +1118,8 @@ function AdminOverview(props) {
               regionOptions={getRegionOptions()}
               selectedRegion={genericTabRegion}
               selectedDate={genericTabDate}
+              onBranchSelect={handleBranchSelect}
+              selectedBranches={selectedBranches}
             />
           </section>
         )}

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import { Card, Input, DatePicker, Select, Space, Spin } from "antd";
 
@@ -7,7 +7,8 @@ const { Option } = Select;
 
 const UtilityCostPerBranchChart = ({
   data,
-  onSearch,
+  onBranchSelect,
+  selectedBranches = [],
   onRegionChange,
   onDateChange,
   regionOptions = [],
@@ -15,10 +16,20 @@ const UtilityCostPerBranchChart = ({
   selectedDate,
   loading = false,
 }) => {
-  // Fallback to empty arrays if no data
-  console.log("data", data);
-  const labels = data?.map(item => item.name) || [];
-  const costs = data?.map(item => item.utility_cost) || [];
+  // Generate branch options from data
+  const branchOptions = useMemo(
+    () => data?.map(item => ({ label: item.name, value: item.name })) || [],
+    [data]
+  );
+
+  // Filter data based on selected branches
+  const filteredData = useMemo(() => {
+    if (!selectedBranches.length) return data;
+    return data.filter(item => selectedBranches.includes(item.name));
+  }, [data, selectedBranches]);
+
+  const labels = filteredData?.map(item => item.name) || [];
+  const costs = filteredData?.map(item => item.utility_cost) || [];
 
   const chartData = {
     labels,
@@ -58,15 +69,20 @@ const UtilityCostPerBranchChart = ({
         >
           <h1 style={{ fontSize: "17px", margin: 0 }}>Utility Cost Per Branch</h1>
           <Space>
-            <Search
-              placeholder="Search by name"
+            <Select
+              mode="multiple"
+              showSearch
               allowClear
-              enterButton
-              className="search-bar"
-              onChange={onSearch}
-              style={{ width: 180 }}
+              placeholder="Search & select branches"
+              value={selectedBranches}
+              onChange={onBranchSelect}
+              style={{ width: 250 }}
+              options={branchOptions}
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
             />
-  
             <Select
               placeholder="Search by Region"
               allowClear

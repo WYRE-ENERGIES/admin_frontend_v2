@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import { Card, Input, DatePicker, Select, Space, Spin } from "antd";
 
@@ -7,7 +7,8 @@ const { Option } = Select;
 
 const GenericBranchBarChart = ({
   data,
-  onSearch,
+  onBranchSelect,
+  selectedBranches = [],
   onRegionChange,
   onDateChange,
   regionOptions = [],
@@ -17,8 +18,18 @@ const GenericBranchBarChart = ({
   chartLabel,
   loading = false,
 }) => {
-  const labels = data?.map(item => item.name) || [];
-  const values = data?.map(item => item.value) || [];
+  const branchOptions = useMemo(
+    () => data?.map(item => ({ label: item.name, value: item.name })) || [],
+    [data]
+  );
+
+  const filteredData = useMemo(() => {
+    if (!selectedBranches.length) return data;
+    return data.filter(item => selectedBranches.includes(item.name));
+  }, [data, selectedBranches]);
+
+  const labels = filteredData?.map(item => item.name) || [];
+  const values = filteredData?.map(item => item.value) || [];
 
   return (
     <Card style={{ borderRadius: 22 }}>
@@ -37,13 +48,19 @@ const GenericBranchBarChart = ({
             {chartLabel}
           </h1>
           <Space>
-            <Search
-              placeholder="Search by name"
+            <Select
+              mode="multiple"
+              showSearch
               allowClear
-              enterButton
-              className="search-bar"
-              onChange={onSearch}
-              style={{ width: 180 }}
+              placeholder="Search & select branches"
+              value={selectedBranches}
+              onChange={onBranchSelect}
+              style={{ width: 250 }}
+              options={branchOptions}
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
+              }
             />
             <Select
               placeholder="Search by Region"
