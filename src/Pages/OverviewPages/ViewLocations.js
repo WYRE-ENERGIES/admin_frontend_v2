@@ -1,4 +1,4 @@
-import { Button, DatePicker, Dropdown, Form, Image, Input, Modal, Space, Spin, Table, Typography, notification } from "antd";
+import { Button, DatePicker, Dropdown, Form, Image, Input, Modal, Select, Space, Spin, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect, useState } from "react";
@@ -30,14 +30,14 @@ const SubmitButton = ({ form }) => {
     <>
       <Button
         style={{ marginRight:20, backgroundColor: "white", color: "black", height: "40px", borderRadius: "7px", width: "47%" }}
-        type="primary"
+        // type="primary"
         htmlType="submit"
       // disabled={!submittable}
       >
         Done
       </Button>
       <Button
-        style={{ backgroundColor: "red", color: "black", height: "40px", borderRadius: "7px", width: "47%" }}
+        style={{ backgroundColor: "#C72525", color: "#fff", height: "40px", borderRadius: "7px", width: "47%" }}
         type="primary"
         htmlType="submit"
       // disabled={!submittable}
@@ -50,9 +50,12 @@ const SubmitButton = ({ form }) => {
 
 function ViewLocations(props) {
   const [dieselDataTable, setDieselDataTable] = useState({})
-  const [showEditForm, setShowEditForm] = useState(false)
-  const [showLocationModal, setShowLocationModal] = useState(false)
-  const [showRegionsModal, setShowRegionsModal] = useState(false)
+  const [viewLocationModal, setviewLocationModal] = useState(false)
+  const [addLocationModal, setAddLocationModal] = useState(false)
+  const [addRegionsModal, setAddRegionsModal] = useState(false)
+  const [viewRegionsModal, setviewRegionsModal] = useState(false)
+  const [editLocationModal, setEditLocationModal] = useState(false)
+  const [editRegionsModal, setEditRegionsModal] = useState(false)
   const [locationTableData, setlocationTableData] = useState(false)
   const [regionsTableData, setRegionsTableData] = useState(false)
   const [form] = Form.useForm();
@@ -122,10 +125,15 @@ function ViewLocations(props) {
   };
 
   const handleMenuClick = () => {
-      setShowLocationModal(true)
-      setShowRegionsModal(true)
-      setShowEditForm(false)
-    }
+    // setEditLocationModal(true)
+    // setviewLocationModal(false)
+    setEditRegionsModal(true)
+    // setviewRegionsModal(true)
+  }
+  const handleRegionsMenuClick = () => {
+    setEditRegionsModal(true)
+    setviewRegionsModal(false)
+  }
 
   const items = [
     {
@@ -134,7 +142,8 @@ function ViewLocations(props) {
       icon: <EditOutlined />,
       onClick: () => {
         // setClientUserTableData()
-        handleMenuClick()
+        // handleMenuClick()
+        setEditRegionsModal(true)
       }
     },
     {
@@ -142,13 +151,36 @@ function ViewLocations(props) {
       key: '2',
       icon: <EyeOutlined />,
       onClick: () => {
-        setShowEditForm(true);
+        setviewRegionsModal(true);
+      }
+    },
+  ];
+  const itemsRegion = [
+    {
+      label: ' Edit',
+      key: '1',
+      icon: <EditOutlined />,
+      onClick: () => {
+        // setClientUserTableData()
+        handleRegionsMenuClick()
+      }
+    },
+    {
+      label: 'View',
+      key: '2',
+      icon: <EyeOutlined />,
+      onClick: () => {
+        setviewRegionsModal(true);
       }
     },
   ];
 
   const menuProps = {
     items,
+    // onClick: handleMenuClick,
+  };
+  const menuPropsRegions = {
+    itemsRegion,
     // onClick: handleMenuClick,
   };
 
@@ -165,6 +197,43 @@ function ViewLocations(props) {
             e.preventDefault();
             // setShowUserBranches(true);
             setlocationTableData(record);
+            setEditLocationModal(true)
+          }}
+          rel="noopener noreferrer"
+        >
+          {/* <Dropdown
+            menu={menuProps}
+          >
+            <Button
+              style={{
+                color: "#5C12A7",
+                width: 44,
+                height: 25,
+                backgroundColor: "rgba(92, 18, 167, 0.1)",
+                borderRadius: 12,
+              }}
+            >
+              <BsThreeDots />
+            </Button>
+          </Dropdown> */}
+          <EditOutlined /> Edit
+        </a>
+      );
+    }
+  });
+  const regionActionsColumn = () => ({
+    key: 'action',
+    title: 'Actions',
+    width: '10%',
+    dataIndex: 'action',
+    render: (_, record) => {
+      return (
+        <a
+          target="_blank"
+          onClick={(e) => {
+            e.preventDefault();
+            // setShowUserBranches(true);
+            setRegionsTableData(record);
           }}
           rel="noopener noreferrer"
         >
@@ -231,7 +300,7 @@ function ViewLocations(props) {
 
   const regiosColumns = [
     {
-      title: "Region",
+      title: "Name of regions",
       dataIndex: "region",
       width: "200px",
       render: (text) => {
@@ -255,7 +324,7 @@ function ViewLocations(props) {
       render: (value) => <>{value}</>,
       key: "no_of_branches",
     },
-    actionColumn()
+    regionActionsColumn()
   ];
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -289,26 +358,127 @@ function ViewLocations(props) {
               style={{ width: "183.68px", height: "46.96px", fontWeight: "bold", borderRadius: "12px", backgroundColor: "#5C12A7", color: "white" }}
               onClick={(e) => {
                 e.preventDefault();
-                // setShowAddButton(true);
-                // setShowEditForm(false);
+                setAddLocationModal(true);
               }}
             >
               <PlusOutlined />
-              Add
+              Add Location
             </Button>
           </div>
         </Space>
+        <Modal
+          // style={{borderRadius: '40px'}}
+          visible={addLocationModal}
+          title="Add new Location"
+          onCancel={() => setAddLocationModal(false)}
+          footer={null}
+          // maxWidth={457}
+          height={594}
+        >
+          <Spin
+            spinning={false}
+          >
+            <Form
+              form={form}
+              // name="validateOnly"
+              name="basic"
+              layout="vertical"
+              autoComplete="off"
+            // onFinish={submitNewRegion}
+            >
+              <Form.Item
+                name="branch_name"
+                label="Branch Name"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input placeholder="Head Office" />
+              </Form.Item>
+              <Form.Item
+                name="region"
+                label="Region"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                {/* <Input 
+                    placeholder="Central" 
+                    style={{width: 20%}} 
+                  /> */}
+                <Select
+                  mode="single"
+                  allowClear
+                  style={
+                    {
+                      // width: "100%",
+                      background: "#F2F2F8"
+                    }
+                  }
+                  placeholder="Select Region"
+                // defaultValue={["AdeolaHopewell", "Agodi"]}
+                // onChange={handleChange}
+                // options={options}
+                />
+              </Form.Item>
+              <Form.Item
+                name="city"
+                label="City"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Select
+                  mode="single"
+                  allowClear
+                  style={
+                    {
+                      // width: "100%",
+                      background: "#F2F2F8"
+                    }
+                  }
+                  placeholder="Select City"
+                // defaultValue={["AdeolaHopewell", "Agodi"]}
+                // onChange={handleChange}
+                // options={options}
+                />
+              </Form.Item>
+              <Form.Item
+                name="address"
+                label="Address"
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
+              >
+                <Input.TextArea placeholder="Ebute metaaaa, Lagos-Island" />
+              </Form.Item>
+              <Form.Item>
+                {/* <SubmitButton form={form} /> */}
+                <Button
+                  style={{ marginRight: 20, backgroundColor: "#5C12A7", color: "white", height: "40px", borderRadius: "7px", width: "47%" }}
+                  // type="primary"
+                  htmlType="submit"
+                // disabled={!submittable}
+                >
+                  Submit
+                </Button>
+              </Form.Item>
+            </Form>
+          </Spin>
+        </Modal>
       </div>
       <div className="##########">
         <section className="total-energy-bar-chart">
           <Table
             className="custom-row-hover"
-            // onRow={(record, index) => ({
-            //   onClick: (event) => {
-            //     window.location.href = `${window.location.href}/branch?ee=${record.id}`;
-            //   },
-            // })}
-            // rowKey="id"
             rowKey={(record) => record.id}
             loading={props.locationPage.fetchLocationLoading}
             dataSource={data}
@@ -316,19 +486,11 @@ function ViewLocations(props) {
             onChange={onChange}
             pagination={false}
           />
-          <div className="pagination">
-            <div>
-              <Button onClick={fetchPrevPage}>Previous</Button>
-            </div>
-            <div>
-              <Button onClick={fetchNextPage}>Next</Button>
-            </div>
-          </div>
           <Modal
             // style={{borderRadius: '40px'}}
-            visible={showLocationModal}
+            visible={editLocationModal}
             title="Edit Location Data"
-            onCancel={() => setShowLocationModal(false)}
+            onCancel={() => setEditLocationModal(false)}
             footer={null}
             // maxWidth={457}
             height={594}
@@ -372,11 +534,21 @@ function ViewLocations(props) {
                     },
                   ]}
                 >
-                  {/* <Input 
-                    placeholder="Central" 
-                    style={{width: 20%}} 
-                  /> */}
-                  <Input style={{ fontSize: 16 }} placeholder="Enter email" />
+                  {/* <Input style={{ fontSize: 16 }} placeholder="Enter email" /> */}
+                  <Select
+                  mode="single"
+                  allowClear
+                  style={
+                    {
+                      // width: "100%",
+                      background: "#F2F2F8"
+                    }
+                  }
+                  placeholder="Region"
+                // defaultValue={["AdeolaHopewell", "Agodi"]}
+                // onChange={handleChange}
+                // options={options}
+                />
                 </Form.Item>
                 <Form.Item
                   name="city"
@@ -387,7 +559,21 @@ function ViewLocations(props) {
                     },
                   ]}
                 >
-                  <Input placeholder="Ebute meta" />
+                  {/* <Input placeholder="Ebute meta" /> */}
+                  <Select
+                  mode="single"
+                  allowClear
+                  style={
+                    {
+                      // width: "100%",
+                      background: "#F2F2F8"
+                    }
+                  }
+                  placeholder="City"
+                // defaultValue={["AdeolaHopewell", "Agodi"]}
+                // onChange={handleChange}
+                // options={options}
+                />
                 </Form.Item>
                 <Form.Item
                   name="address"
@@ -398,7 +584,7 @@ function ViewLocations(props) {
                     },
                   ]}
                 >
-                  <Input placeholder="Ebute meta, Lagos-Island" />
+                  <Input.TextArea placeholder="Ebute meta, Lagos-Island" />
                 </Form.Item>
                 <Form.Item>
                   <SubmitButton form={form} />
@@ -406,14 +592,116 @@ function ViewLocations(props) {
               </Form>
             </Spin>
           </Modal>
+          <div className="pagination">
+            <div>
+              <Button onClick={fetchPrevPage}>Previous</Button>
+            </div>
+            <div>
+              <Button onClick={fetchNextPage}>Next</Button>
+            </div>
+          </div>
+          
+        </section>
+        <div className="AppHeader">
+          <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
+            Regions
+          </Typography.Title>
+          <Space>
+            <div>
+              <Button
+                style={{ width: "183.68px", height: "46.96px", fontWeight: "bold", borderRadius: "12px", backgroundColor: "#5C12A7", color: "white" }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setAddRegionsModal(true);
+                }}
+              >
+                <PlusOutlined />
+                Add Region
+              </Button>
+            </div>
+          </Space>
+          <Modal
+            // style={{borderRadius: '40px'}}
+            visible={addRegionsModal}
+            title="Add new Region"
+            onCancel={() => setAddRegionsModal(false)}
+            footer={null}
+            // maxWidth={457}
+            height={594}
+          >
+            <Spin
+              spinning={false}
+            >
+              <Form
+                form={form}
+                // name="validateOnly"
+                name="basic"
+                layout="vertical"
+                autoComplete="off"
+                // onFinish={submitNewRegion}
+              >
+                {/* <Form.Item
+                  name="branch_name"
+                  label="Branch Name"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="Head Office" />
+                </Form.Item> */}
+                <Form.Item
+                  name="region"
+                  label="Region"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input style={{ fontSize: 16 }} placeholder="Enter region" />
+                </Form.Item>
+                {/* <Form.Item
+                  name="city"
+                  label="City"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="Ebute meta" />
+                </Form.Item> */}
+                {/* <Form.Item
+                  name="address"
+                  label="Address"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="Ebute meta, Lagos-Island" />
+                </Form.Item> */}
+                <Form.Item>
+                  {/* <SubmitButton form={form} /> */}
+                  <Button
+                  style={{ marginRight: 20, backgroundColor: "#5C12A7", color: "white", height: "40px", borderRadius: "7px", width: "47%" }}
+                  // type="primary"
+                  htmlType="submit"
+                // disabled={!submittable}
+                >
+                  Submit
+                </Button>
+                </Form.Item>
+              </Form>
+            </Spin>
+          </Modal>
+        </div>
+        <section className="total-energy-bar-chart">
           <Table
             className="regions-table"
-            // onRow={(record, index) => ({
-            //   onClick: (event) => {
-            //     window.location.href = `${window.location.href}/branch?ee=${record.id}`;
-            //   },
-            // })}
-            // rowKey="id"
             rowKey={(record) => record.id}
             loading={props.locationPage.fetchLocationLoading}
             dataSource={regionsData}
@@ -423,9 +711,9 @@ function ViewLocations(props) {
           />
           <Modal
             // style={{borderRadius: '40px'}}
-            visible={showRegionsModal}
+            visible={editRegionsModal}
             title="Edit Region"
-            onCancel={() => setShowRegionsModal(false)}
+            onCancel={() => setEditRegionsModal(false)}
             footer={null}
             width={557}
             height={594}
@@ -447,7 +735,7 @@ function ViewLocations(props) {
                 name="basic"
                 layout="vertical"
                 autoComplete="off"
-                // onFinish={submitNewClientUsers}
+              // onFinish={submitNewClientUsers}
               >
                 <Form.Item
                   name="branch_name"
@@ -460,7 +748,7 @@ function ViewLocations(props) {
                 >
                   <Input placeholder="Head Office" />
                 </Form.Item>
-                <Form.Item
+                {/* <Form.Item
                   name="no_of_region"
                   label="Number of Regions"
                   rules={[
@@ -470,12 +758,30 @@ function ViewLocations(props) {
                   ]}
                 >
                   <Input placeholder="10" />
-                </Form.Item>
+                </Form.Item> */}
                 <Form.Item>
                   <SubmitButton form={form} />
                 </Form.Item>
               </Form>
             </Spin>
+          </Modal>
+          <Modal
+            // style={{borderRadius: '40px'}}
+            visible={viewRegionsModal}
+            title="Branches per Region"
+            onCancel={() => setviewRegionsModal(false)}
+            footer={null}
+            width={557}
+            height={594}
+          >
+            <div className="table-responsive-wrapper">
+              <Table
+                // dataSource={seletedBranches}
+                // columns={modalColumns}
+                pagination={false}
+                scroll={{ x: true }}
+              />
+            </div>
           </Modal>
         </section>
       </div>

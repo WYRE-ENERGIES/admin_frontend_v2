@@ -223,6 +223,9 @@ function DieselOverview(props) {
 
   const procurementDataSource = props.dieselPage.fetchedDieselProcurement
   const consumptionDataSource = props.dieselPage.fetchedDieselConsumption
+  const naira = '\u20A6'
+  console.log('Naira == ', naira);
+  
   const procurementModal = [
     {
       title: "Date",
@@ -230,16 +233,28 @@ function DieselOverview(props) {
       key: "date",
     },
     {
-      title: "Price",
+      title: "Price Per Month (\u20A6)",
       dataIndex: "price_per_litre",
-      // render: (value) => <>{value + 'L'}</>,
+      render: (value) => <>{value.toLocaleString(
+        undefined,
+        { maximumFractionDigits: 2 })}</>,
       key: "price_per_litre",
     },
     {
       title: "Liters",
       dataIndex: "quantity",
-      render: (value) => <>{value + 'L'}</>,
+      render: (value) => <>{value.toLocaleString(
+        undefined,
+        { maximumFractionDigits: 2 }) + 'L'}</>,
       key: "quantity",
+    },
+    {
+      title: "Amount (\u20A6)",
+      dataIndex: "amount",
+      render: (value) => <>{value.toLocaleString(
+        undefined,
+        { maximumFractionDigits: 2 })}</>,
+      key: "amount",
     },
   ];
 
@@ -250,7 +265,7 @@ function DieselOverview(props) {
       key: "date",
     },
     {
-      title: "Consumed",
+      title: "Daily Consumption",
       dataIndex: "consumption",
       render: (value) => <>{value + 'L'}</>,
       key: "consumption",

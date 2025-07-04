@@ -186,7 +186,7 @@ function EditClientUserForm(props) {
                 >
                   <Form.Item
                     name="username"
-                    label="Name"
+                    label="Username"
                     rules={[
                       {
                         required: true,

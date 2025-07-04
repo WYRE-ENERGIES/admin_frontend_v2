@@ -145,14 +145,14 @@ function AddClientUserForm(props) {
               >
                 <Form.Item
                   name="username"
-                  label="Name"
+                  label="Username"
                   rules={[
                     {
                       required: true,
                     },
                   ]}
                 >
-                  <Input placeholder="John Doe" />
+                  <Input placeholder="JohnDoe" />
                 </Form.Item>
                 <Form.Item
                   name="email"
@@ -179,11 +179,11 @@ function AddClientUserForm(props) {
                 <Form.Item
                   name="location"
                   label="Assign Location"
-                // rules={[
-                //   {
-                //     required: true,
-                //   },
-                // ]}
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
                 >
                   {/* <Input /> */}
                   {/* <SelectBranch /> */}
@@ -205,11 +205,11 @@ function AddClientUserForm(props) {
                 <Form.Item
                   name="role"
                   label="Assign Role"
-                // rules={[
-                //   {
-                //     required: true,
-                //   },
-                // ]}
+                rules={[
+                  {
+                    required: true,
+                  },
+                ]}
                 >
                   {/* <Input /> */}
                   {/* <SelectBranch /> */}
@@ -225,7 +225,11 @@ function AddClientUserForm(props) {
                     placeholder="Add Role"
                     // defaultValue={["AdeolaHopewell", "Agodi"]}
                     onChange={handleChange}
-                    options={[]}
+                    options={[
+                      { value: 'Admin', label: 'Admin' },
+                      { value: 'Operator', label: 'Operator' },
+                      { value: 'Viewer', label: 'Viewer' },
+                    ]}
                   />
                 </Form.Item>
                 <Form.Item>
