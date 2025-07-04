@@ -52,7 +52,7 @@ const USER_ROLES = [
 
 // --- Initial Form Structures ---
 const initialDeviceForm = { name: '', type: null, provider: null, deviceId: '', isLoad: false, isSource: false, genSize: null, fuelType: null };
-const initialBranchForm = { name: '', address: '', email: '', region: null, copyEmail: '', devices: [initialDeviceForm] };
+const initialBranchForm = { name: '', address: '', city: '', email: '', region: null, copyEmail: '', devices: [initialDeviceForm] };
 const initialUserForm = { username: '', firstName: '', lastName: '', email: '', phoneNumber: '', password: '', role: null };
 const initialEmailForm = { email: '' };
 const initialRegionForm = { region: '' };
@@ -119,6 +119,7 @@ const createBranches = async (clientId, branchesData) => {
   const payload = branchesData.map(branch => ({
     name: branch.name,
     address: branch.address || null,
+    city: branch.city || null,
     email: branch.email || null,
     region: branch.region || null,
     copy_email: branch.copyEmail || null,
@@ -648,9 +649,10 @@ const CreateClient = () => {
       openNotification({
         type: 'success',
         message: 'Client Setup Complete',
-        description: `Client "${stepData.clientInfo?.name || 'N/A'}" has been successfully created with all components.`
+        description: `Client has been successfully created with all components.`
       });
       
+
       // Clear all localStorage and redirect
       localStorage.removeItem(LOCAL_STORAGE_KEY);
       localStorage.removeItem(CLIENT_PROGRESS_KEY);
@@ -1011,7 +1013,7 @@ const CreateClient = () => {
                       <Form.Item {...branchRestField} label="Branch Address" name={[branchName, 'address']}>
                         <Input placeholder="Branch Address" />
                       </Form.Item>
-                    </Col> 
+                    </Col>
                   </Row>
                   <Row gutter={16}>
                     <Col xs={24} md={8}>
@@ -1052,6 +1054,11 @@ const CreateClient = () => {
                     <Col xs={24} md={8}>
                       <Form.Item {...branchRestField} label="Copy Email" name={[branchName, 'copyEmail']}>
                         <Input placeholder="Copy Email (optional)" />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} md={8}>
+                      <Form.Item {...branchRestField} label="City" name={[branchName, 'city']}>
+                        <Input placeholder="City" />
                       </Form.Item>
                     </Col>
                   </Row>
