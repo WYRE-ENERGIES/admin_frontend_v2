@@ -152,16 +152,6 @@ const EditAdditionalUsersModal = ({ visible, onCancel, users, clientId, onUserUp
           >
             Edit
           </Button>
-          <Popconfirm
-            title="Are you sure you want to delete this user?"
-            onConfirm={() => handleDeleteUser(record.username)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button size="small" danger icon={<DeleteOutlined />}>
-              Delete
-            </Button>
-          </Popconfirm>
         </Space>
       ),
     },

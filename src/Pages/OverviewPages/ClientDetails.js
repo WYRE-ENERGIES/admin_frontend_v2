@@ -13,11 +13,15 @@ import {
   Col,
   Table
 } from 'antd';
-import { EditOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { EditOutlined, ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
 import { APIService } from '../../config/Api/apiServices';
+import { createMainUser, createBranches, createAdditionalUsers } from './CreateClient';
 import EnvData from '../../config/EnvData';
 import EditClientModal from './EditClientModal';
 import EditBranchModal from './EditBranchModal';
+import AddMainUserModal from './AddMainUserModal';
+import AddAdditionalUsersModal from './AddAdditionalUsersModal';
+import AddBranchModal from './AddBranchModal';
 import EditMainUserModal from './EditMainUserModal';
 import EditAdditionalUsersModal from './EditAdditionalUsersModal';
 
@@ -37,8 +41,63 @@ const ClientDetails = () => {
   const [mainUser, setMainUser] = useState(null);
   const [mainUserLoading, setMainUserLoading] = useState(false);
 
+  // Helper functions to check if sections have data
+  const hasMainUserData = () => mainUser !== null;
+  const hasBranchesData = () => branches.length > 0;
+  const hasAdditionalUsersData = () => additionalUsers.length > 0;
+
+  // Handlers for adding new sections
+  const handleAddMainUser = async (userData) => {
+    try {
+      await createMainUser(clientId, userData);
+      notification.success({
+        message: 'Success',
+        description: 'Main user has been created successfully'
+      });
+      fetchMainUser();
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: error?.response?.data?.message || error.message || 'Failed to create main user'
+      });
+    }
+  };
+
+  const handleAddBranches = async (branchesData) => {
+    try {
+      await createBranches(clientId, branchesData);
+      notification.success({
+        message: 'Success',
+        description: 'Branches have been created successfully'
+      });
+      fetchBranches();
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: error?.response?.data?.message || error.message || 'Failed to create branches'
+      });
+    }
+  };
+
+  const handleAddAdditionalUsers = async (usersData) => {
+    try {
+      await createAdditionalUsers(clientId, usersData);
+      notification.success({
+        message: 'Success',
+        description: 'Additional users have been created successfully'
+      });
+      fetchAdditionalUsers();
+    } catch (error) {
+      notification.error({
+        message: 'Error',
+        description: error?.response?.data?.message || error.message || 'Failed to create additional users'
+      });
+    }
+  };
+
   // Modal states
   const [editingSection, setEditingSection] = useState(null);
+  const [addingSection, setAddingSection] = useState(null);
   const [editingBranch, setEditingBranch] = useState(null);
 
   const fetchClientDetails = useCallback(async () => {
@@ -411,7 +470,13 @@ const ClientDetails = () => {
       {/* Main User Section */}
       <Card 
         title="Main User (Client Admin)" 
-        extra={<Button type="text" icon={<EditOutlined />} onClick={() => setEditingSection('mainUser')}>Edit</Button>}
+        extra={
+          hasMainUserData() ? (
+            <Button type="text" icon={<EditOutlined />} onClick={() => setEditingSection('mainUser')}>Edit</Button>
+          ) : (
+            <Button type="text" icon={<PlusOutlined />} onClick={() => setAddingSection('mainUser')}>Add</Button>
+          )
+        }
         style={{ marginBottom: '20px' }}
       >
         <Spin spinning={mainUserLoading}>
@@ -434,7 +499,7 @@ const ClientDetails = () => {
             </Col>
             <Col xs={24} sm={12} md={8}>
               <Text strong>Role:</Text>
-              <div>{mainUser?.roles?.name || 'Client Admin'}</div>
+              <div>{mainUser?.roles?.name || '---'}</div>
             </Col>
           </Row>
         </Spin>
@@ -443,7 +508,9 @@ const ClientDetails = () => {
       {/* Branches & Devices Section */}
       <Card 
         title="Branches & Devices" 
-        // extra={<Button type="text" icon={<EditOutlined />} onClick={() => setEditingSection('branches')}>Edit</Button>}
+        extra={
+            <Button type="text" icon={<PlusOutlined />} onClick={() => setAddingSection('branches')}>Add</Button>
+        }
         style={{ marginBottom: '20px' }}
       >
         <Table 
@@ -458,7 +525,13 @@ const ClientDetails = () => {
       {/* Additional Users Section */}
       <Card 
         title="Additional Users" 
-        extra={<Button type="text" icon={<EditOutlined />} onClick={() => setEditingSection('additionalUsers')}>Edit</Button>}
+        extra={
+          hasAdditionalUsersData() ? (
+            <Button type="text" icon={<EditOutlined />} onClick={() => setEditingSection('additionalUsers')}>Edit</Button>
+          ) : (
+            <Button type="text" icon={<PlusOutlined />} onClick={() => setAddingSection('additionalUsers')}>Add</Button>
+          )
+        }
       >
         <Table 
           dataSource={additionalUsers} 
@@ -475,6 +548,7 @@ const ClientDetails = () => {
         client={client}
         onClientUpdated={handleClientUpdated}
       />
+      
       <EditMainUserModal
         visible={editingSection === 'mainUser'}
         onCancel={() => setEditingSection(null)}
@@ -482,6 +556,50 @@ const ClientDetails = () => {
         clientId={clientId}
         onUserUpdated={fetchMainUser}
       />
+
+      <AddMainUserModal
+        visible={addingSection === 'mainUser' && !hasMainUserData()}
+        clientId={clientId}
+        onCancel={() => setAddingSection(null)}
+        onUserAdded={fetchMainUser}
+      />
+
+      <AddAdditionalUsersModal
+        visible={addingSection === 'additionalUsers' && !hasAdditionalUsersData()}
+        clientId={clientId}
+        onCancel={() => setAddingSection(null)}
+        onUserAdded={fetchAdditionalUsers}
+      />
+
+      <AddBranchModal
+        visible={addingSection === 'branches'}
+        clientId={clientId}
+        onCancel={() => setAddingSection(null)}
+        onBranchAdded={fetchBranches}
+      />
+      
+      <EditBranchModal
+        visible={editingSection === 'branches'}
+        clientId={clientId}
+        onCancel={() => setEditingSection(null)}
+        onBranchUpdated={handleAddBranches}
+      />
+      
+      <EditAdditionalUsersModal
+        visible={editingSection === 'additionalUsers' && !hasAdditionalUsersData()}
+        onCancel={() => setEditingSection(null)}
+        clientId={clientId}
+        onUserUpdated={handleAddAdditionalUsers}
+      />
+      
+      <EditBranchModal
+        visible={editingSection === 'branches' && hasBranchesData() && editingBranch}
+        clientId={clientId}
+        onCancel={() => setEditingSection(null)}
+        branch={editingBranch}
+        onBranchUpdated={handleBranchUpdated}
+      />
+      
       <EditAdditionalUsersModal
         visible={editingSection === 'additionalUsers'}
         onCancel={() => setEditingSection(null)}
