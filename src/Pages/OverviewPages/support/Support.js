@@ -1,154 +1,95 @@
-import React, { Suspense, lazy, useState, useTransition } from 'react'
+import React, { useState } from 'react'
+import { Form, Input, Button, Typography, message, Row, Col, Card, Collapse } from 'antd'
 
-import { Button, Space, Typography } from 'antd'
-// import { ReactComponent as Logo } from '../../../assets/icon.svg'
-import { MdNorthEast } from 'react-icons/md'
-// import PageBreadcrumb from '../../../components/PageBreadcrumb/PageBreadcrumb'
-// import PageLayout from '../../../components/Layout/PageLayout'
-// import TableFooter from '../../../components/TableFooter/TableFooter'
-// import TicketTable from './TicketTable/TicketTable'
-// import from './Support.module.scss'
-import TableFooter from './TableFooter'
-import TicketTable from './TicketTable'
-// import { useGetClientSupportTicketsQuery } from '../../../features/slices/supportSlice'
+const { Title } = Typography
+const { TextArea } = Input
+const { Panel } = Collapse
 
-const TicketForm = lazy(() => import('./TicketForm'))
-const data = [
-  { title: 'Contact Us', description: 'Wyre Support Mediums', icon: false },
-  { title: 'Phone Number', description: '070-----***', icon: true },
-  { title: 'Email', description: 'hello@wyreng.com', icon: true },
+const CONTACTS = [
+  { label: 'Email', value: 'hello@wyreng.com' },
+  { label: 'Phone', value: '070-----***' },
+  { label: 'Address', value: '123 Wyre Street, Lagos, Nigeria' },
 ]
 
-const InnerCard = ({ title, description, icon }) => (
-  <div className={''}>
-    <p className={''}>{title}</p>
-    <p className={''}>
-      {/* {!icon && <Logo className={classes.Support__logo} />} */}
-      {description}
-      {icon && <MdNorthEast className={''} size={12} />}
-    </p>
-  </div>
-)
+const FAQS = [
+  {
+    question: 'How do I contact support?',
+    answer: 'You can fill out the form or email us at hello@wyreng.com.'
+  },
+  {
+    question: 'How long does it take to get a response?',
+    answer: 'We aim to respond to all queries within 24 hours.'
+  },
+  {
+    question: 'Can I call support?',
+    answer: 'Yes, you can call us at 070-----***.'
+  }
+]
 
 const Support = () => {
-  const [openModal, setOpenModal] = useState(false)
-  const [ticketData, setTicketData] = useState({})
-  const [isPending, startTransition] = useTransition()
-  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(false)
 
-  const toggleModal = () => setOpenModal(!openModal)
-
-  const handleEditTicket = (data) => {
-    startTransition(() => {
-      setTicketData((prev) => ({ ...prev, ...data }))
-      toggleModal()
-    })
+  const onFinish = (values) => {
+    setLoading(true)
+    setTimeout(() => {
+      setLoading(false)
+      message.success('Your message has been sent!')
+    }, 1000)
   }
-  const { data: supportData, isFetching } =
-    // useGetClientSupportTicketsQuery(page)
-    ''
 
   return (
-    <div className='total-energy-bar-chart'>
-      {/* <div className="AppHeader">
-        <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
-          Suppport
-        </Typography.Title>
-      </div>
-      <Space>
-          <div>
-            <Button
-              style={{ backgroundColor: "#5C12A7", color: "white" }}
-              onClick={(e) => {
-                e.preventDefault();
-                setShowAddButton(true);
-                setShowEditForm(false);
-                console.log("This button is expecting Actions");
-              }}
-            >
-              <PlusOutlined />
-              Create Ticket
-            </Button>
-          </div>
-      </Space> */}
-      <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div>
-                <h1
-                  style={{
-                    fontSize: "22Px",
-                  }}
-                >
-                  Support
-                  {/* {moveLegend} */}
-                </h1>
+    <div style={{ margin: '0 auto', padding: 24 }}>
+      <Title level={2} style={{ marginBottom: 32 }}>Support</Title>
+      <Row gutter={[32, 32]} justify="center" align="top">
+        <Col xs={24} md={10}>
+          <Card title="Contact Details" bordered={false} style={{ minHeight: 220 }}>
+            {CONTACTS.map((item, idx) => (
+              <div key={idx} style={{ marginBottom: 16 }}>
+                <strong>{item.label}:</strong>
+                <div style={{ color: '#555', marginTop: 2 }}>{item.value}</div>
               </div>
-              <div>
-                <Button
-                  style={{
-                    width: 150,
-                    background: '#5C12A7',
-                    color: 'white',
-                    marginRight: 10,
-                    // height: 43
-                  }}
-                >Create Ticket</Button>
-              </div>
-            </div>
-      <div className={Support} style={{ backgroundColor: '#FCFCFD' }}>
-        <section className={''}>
-          {/* <PageBreadcrumb title="Support" items={['Support']} /> */}
-          {/* <Button
-            className={''}
-            onClick={() => {
-              startTransition(() => {
-                setTicketData({})
-                toggleModal()
-              })
-            }}
-          >
-            Create Ticket
-          </Button> */}
-        </section>
-        <section className={''}>
-          <TicketTable
-            onEditTicket={handleEditTicket}
-            loading={isFetching}
-            data={supportData?.results}
-            footer={() => (
-              <TableFooter
-                pageNo={supportData?.page}
-                totalPages={supportData?.total_pages}
-                handleClick={setPage}
-                hasNext={supportData?.page === supportData?.total_pages}
-                hasPrev={!supportData?.total_pages || supportData?.page === 1}
-              />
-            )}
-          />
-        </section>
-        <section className="support_bottomSection">
-          {data.map((item, index) => (
-            <InnerCard
-              key={`${item.title} ${index}`}
-              title={item.title}
-              description={item.description}
-              icon={item.icon}
-            />
+            ))}
+          </Card>
+        </Col>
+        <Col xs={24} md={14}>
+          <Card bordered={false} style={{ minHeight: 220 }}>
+            <Form layout="vertical" onFinish={onFinish}>
+              <Form.Item
+                label="Subject"
+                name="subject"
+                rules={[{ required: true, message: 'Please enter a subject' }]}
+              >
+                <Input placeholder="Enter subject" />
+              </Form.Item>
+              <Form.Item
+                label="Message"
+                name="message"
+                rules={[{ required: true, message: 'Please enter your message' }]}
+              >
+                <TextArea rows={5} placeholder="Enter your message" />
+              </Form.Item>
+              <Form.Item>
+                <Button type="primary" htmlType="submit" loading={loading} block>
+                  Send
+                </Button>
+              </Form.Item>
+            </Form>
+          </Card>
+        </Col>
+      </Row>
+      <div style={{ marginTop: 48, marginLeft: 'auto', marginRight: 'auto' }}>
+           <Title level={3} style={{ marginBottom: 32 }}>Frequently Asked Questions</Title>
+        <Collapse accordion>
+          {FAQS.map((faq, idx) => (
+            <Panel header={faq.question} key={idx}>
+              <div style={{ color: '#555' }}>{faq.answer}</div>
+            </Panel>
           ))}
-        </section>
+        </Collapse>
       </div>
-      <Suspense fallback="loading">
-        {openModal && (
-          <TicketForm
-            title="Create Ticket"
-            isOpen={openModal}
-            toggleModal={toggleModal}
-            ticketData={ticketData}
-            isAdmin={false}
-          />
-        )}
-      </Suspense>
     </div>
   )
 }
 
 export default Support
+
