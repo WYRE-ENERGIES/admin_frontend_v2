@@ -15,6 +15,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   ArrowLeftOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import { Button, Image, Menu, Space, theme, Drawer } from "antd";
 import Form from "antd/es/form/Form";
@@ -104,6 +105,11 @@ function SideMenu({collapsed, setCollapsed}) {
         key: "/diesel",
         icon: <HeatMapOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
+      {
+        label: "Settings",
+        key: "/settings",
+        icon: <SettingOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+      },
       // {
       //   label: "Regions Activities",
       //   key: "/regions-activities",
@@ -116,13 +122,6 @@ function SideMenu({collapsed, setCollapsed}) {
       // },
       {
         type: 'divider',
-      },
-      {
-        label: "Log out",
-        key: '/log-out',
-        // key: {onclick:() => logOut()},
-        onclick:{logOut},
-        icon: <LoginOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
         label: "Support",
@@ -305,5 +304,3 @@ function SideMenu({collapsed, setCollapsed}) {
 }
 
 export default SideMenu;
-  
-  
