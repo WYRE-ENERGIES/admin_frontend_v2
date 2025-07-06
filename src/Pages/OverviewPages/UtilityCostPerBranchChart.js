@@ -16,13 +16,11 @@ const UtilityCostPerBranchChart = ({
   selectedDate,
   loading = false,
 }) => {
-  // Generate branch options from data
   const branchOptions = useMemo(
     () => data?.map(item => ({ label: item.name, value: item.name })) || [],
     [data]
   );
 
-  // Filter data based on selected branches
   const filteredData = useMemo(() => {
     if (!selectedBranches.length) return data;
     return data.filter(item => selectedBranches.includes(item.name));

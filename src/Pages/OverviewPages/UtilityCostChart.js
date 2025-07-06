@@ -72,13 +72,13 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
         return reducer.month;
       });
       const clientCost = costReducerStates.cost_overview.map((reducer) => {
-        return reducer.client_cost;
+        return reducer.phcn_cost;
       });
       const wyreCost = costReducerStates.cost_overview.map((reducer) => {
         return reducer.wyre_cost;
       });
       const historicalAverage = costReducerStates.cost_overview.map((reducer) => {
-        return reducer.historic_average;
+        return reducer.average_cost;
       });
 
       const costDataSource = {
@@ -101,7 +101,7 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
             maxBarThickness: 30,
           },
           {
-            label: "Historic Average",
+            label: "Average Cost",
             data: historicalAverage,
             backgroundColor: "#EF0000",
             type: "line",

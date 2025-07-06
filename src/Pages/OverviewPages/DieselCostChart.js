@@ -66,9 +66,12 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
       const labels = utilityEnergyReducerStates.cost_overview.map((reducer) => {
         return reducer.month;
       });
-      const averageCost = utilityEnergyReducerStates.average_diesel_purchase
-      const dieselCost = utilityEnergyReducerStates.cost_overview.map((reducer) => {
-        return reducer.diesel_cost;
+      const averageCost = utilityEnergyReducerStates.historical_avg
+      const clientCost = utilityEnergyReducerStates.cost_overview.map((reducer) => {
+        return reducer.client_cost;
+      });
+      const wyreCost = utilityEnergyReducerStates.cost_overview.map((reducer) => {
+        return reducer.wyre_cost;
       });
 
       const averagecostLine = Array.from({ length: 12 }, (_, i) => averageCost)
@@ -77,16 +80,7 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
         labels,
         datasets: [
           {
-            label: "Diesel Purchase Currently",
-            data: dieselCost,
-            fontWeight: "bold",
-            backgroundColor: "#5C12A7",
-            borderRadius: 6,
-            barThickness: 40,
-            maxBarThickness: 40,
-          },
-          {
-            label: "Average diesel purchase last year",
+            label: "Historical Average",
             data: averagecostLine,
             fontWeight: "bold",
             backgroundColor: "#EF0000",
@@ -95,6 +89,24 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
             // borderWidth: 1,
             fill: false,
             // xAxisID: "axis-bar",
+          },
+          {
+            label: "Wyre Cost",
+            data: wyreCost,
+            fontWeight: "bold",
+            backgroundColor: "#5C12A7",
+            borderRadius: 6,
+            barThickness: 40,
+            maxBarThickness: 40,
+          },
+          {
+            label: "Client Cost",
+            data: clientCost,
+            fontWeight: "bold",
+            backgroundColor: "#F9CF40",
+            borderRadius: 6,
+            barThickness: 40,
+            maxBarThickness: 40,
           },
         ],
       };
