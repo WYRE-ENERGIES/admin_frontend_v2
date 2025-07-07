@@ -1,5 +1,4 @@
-import React from "react"
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Layout, Card, Form, Input, Button, Avatar, Typography, Space, Menu, Upload, message } from "antd"
 import {
   UserOutlined,
@@ -13,6 +12,10 @@ import {
   BarChartOutlined,
   QuestionCircleOutlined,
 } from "@ant-design/icons"
+import { useNavigate } from "react-router-dom"
+import { APIService } from "../../config/Api/apiServices"
+import { useDispatch } from "react-redux"
+import { logUserOut } from "../../redux/actions/auth/auth.action"
 
 const { Sider, Content } = Layout
 const { Title, Text } = Typography
@@ -22,14 +25,71 @@ const SettingsPage = () => {
   const [activeView, setActiveView] = useState("overview") // 'overview' or 'detailed'
   const [profileForm] = Form.useForm()
   const [passwordForm] = Form.useForm()
-
   const [userProfile, setUserProfile] = useState({
-    firstName: "Obi",
-    lastName: "Nathaniel",
+    firstName: "",
+    lastName: "",
     phoneNumber: "",
-    email: "h***o@designdrops.op",
-    avatar: "/placeholder.svg?height=80&width=80",
+    email: "",
+    avatar: "",
+    username: "",
+    roles: 0,
+    branch_id: []
   })
+
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  useEffect(() => {
+    fetchUserProfile()
+  }, [])
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await APIService.get(`/api/v2/clients/${localStorage.getItem('clientId')}/users/${localStorage.getItem('userId')}/`)
+      setUserProfile(response.data)
+      profileForm.setFieldsValue(response.data)
+    } catch (error) {
+      message.error("Failed to fetch user profile")
+    }
+  }
+
+  const handleProfileSave = async (values) => {
+    try {
+      const response = await APIService.put(
+        `/api/v2/clients/${localStorage.getItem('clientId')}/users/${localStorage.getItem('userId')}/`,
+        {
+          username: values.username || userProfile.username,
+          phone_number: values.phoneNumber,
+          email: values.email,
+          roles: values.roles || userProfile.roles,
+          branch_id: values.branch_id || userProfile.branch_id
+        }
+      )
+      setUserProfile(response.data)
+      message.success("Profile updated successfully")
+      setIsEditing(false)
+    } catch (error) {
+      message.error("Failed to update profile")
+    }
+  }
+
+  const handleLogout = () => {
+    dispatch(logUserOut())
+    navigate('/login')
+  }
+
+  const handlePasswordChange = (values) => {
+    message.success("Password changed successfully")
+    passwordForm.resetFields()
+  }
+
+  const handleAvatarUpload = (info) => {
+    if (info.file.status === "done") {
+      message.success("Avatar uploaded successfully")
+      // Update user profile with new avatar URL
+      setUserProfile({ ...userProfile, avatar: info.file.response.url })
+    }
+  }
 
   const sidebarItems = [
     { key: "admin-overview", icon: <DashboardOutlined />, label: "Admin Overview" },
@@ -41,26 +101,9 @@ const SettingsPage = () => {
     { key: "support", icon: <QuestionCircleOutlined />, label: "Support" },
   ]
 
-  const handleProfileSave = (values) => {
-    setUserProfile({ ...userProfile, ...values })
-    message.success("Profile updated successfully")
-    setIsEditing(false)
-  }
-
-  const handlePasswordChange = (values) => {
-    message.success("Password changed successfully")
-    passwordForm.resetFields()
-  }
-
-  const handleAvatarUpload = (info) => {
-    if (info.file.status === "done") {
-      message.success("Avatar uploaded successfully")
-    }
-  }
-
   const DetailedView = () => (
-    <div style={{ padding: "24px", backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-      <div style={{ maxWidth: "600px" }}>
+    <div style={{ padding: "24px", backgroundColor: "#f5f5f5", minHeight: "100vh", maxWidth: "800px" }}>
+      <div style={{  marginInline: "auto", width: "100%" }}>
         {/* Profile Info Section */}
         <Card
           style={{
@@ -148,14 +191,12 @@ const SettingsPage = () => {
                 type="primary"
                 htmlType="submit"
                 style={{
-                  backgroundColor: "#9333ea",
-                  borderColor: "#9333ea",
-                  borderRadius: "20px",
-                  padding: "8px 32px",
-                  height: "auto",
+                  width: "100%",
+                  height: "40px",
+                  borderRadius: "8px",
                 }}
               >
-                SAVE CHANGES
+                Save Changes
               </Button>
             </div>
           </Form>
@@ -164,6 +205,7 @@ const SettingsPage = () => {
         {/* Change Password Section */}
         <Card
           style={{
+            marginTop: "24px",
             borderRadius: "12px",
             backgroundColor: "rgba(255, 255, 255, 0.9)",
           }}
@@ -171,25 +213,28 @@ const SettingsPage = () => {
           <Title level={3} style={{ marginBottom: "24px", color: "#333" }}>
             Change Password
           </Title>
-
-          <Form form={passwordForm} layout="vertical" onFinish={handlePasswordChange}>
-            <Form.Item
-              label={
-                <Text strong style={{ fontSize: "12px", color: "#666" }}>
-                  CURRENT PASSWORD
-                </Text>
-              }
-              name="currentPassword"
-              rules={[{ required: true, message: "Current password is required" }]}
-            >
-              <Input.Password placeholder="CURRENT PASSWORD" style={{ height: "40px" }} />
-            </Form.Item>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+          <Form
+            form={passwordForm}
+            layout="vertical"
+            onFinish={handlePasswordChange}
+          >
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "16px" }}>
               <Form.Item
                 label={
                   <Text strong style={{ fontSize: "12px", color: "#666" }}>
-                    NEW PASSWORD
+                    CURRENT PASSWORD*
+                  </Text>
+                }
+                name="currentPassword"
+                rules={[{ required: true, message: "Current password is required" }]}
+              >
+                <Input.Password placeholder="CURRENT PASSWORD" style={{ height: "40px" }} />
+              </Form.Item>
+
+              <Form.Item
+                label={
+                  <Text strong style={{ fontSize: "12px", color: "#666" }}>
+                    NEW PASSWORD*
                   </Text>
                 }
                 name="newPassword"
@@ -201,23 +246,13 @@ const SettingsPage = () => {
               <Form.Item
                 label={
                   <Text strong style={{ fontSize: "12px", color: "#666" }}>
-                    CONFIRM PASSWORD
+                    CONFIRM NEW PASSWORD*
                   </Text>
                 }
                 name="confirmPassword"
-                rules={[
-                  { required: true, message: "Please confirm your password" },
-                  ({ getFieldValue }) => ({
-                    validator(_, value) {
-                      if (!value || getFieldValue("newPassword") === value) {
-                        return Promise.resolve()
-                      }
-                      return Promise.reject(new Error("Passwords do not match"))
-                    },
-                  }),
-                ]}
+                rules={[{ required: true, message: "Confirm new password" }]}
               >
-                <Input.Password placeholder="CONFIRM PASSWORD" style={{ height: "40px" }} />
+                <Input.Password placeholder="CONFIRM NEW PASSWORD" style={{ height: "40px" }} />
               </Form.Item>
             </div>
 
@@ -226,35 +261,54 @@ const SettingsPage = () => {
                 type="primary"
                 htmlType="submit"
                 style={{
-                  backgroundColor: "#9333ea",
-                  borderColor: "#9333ea",
-                  borderRadius: "20px",
-                  padding: "8px 32px",
-                  height: "auto",
+                  width: "100%",
+                  height: "40px",
+                  borderRadius: "8px",
                 }}
               >
-                SAVE CHANGES
+                Change Password
               </Button>
             </div>
-
-            <div style={{ textAlign: "center", marginTop: "16px" }}>
-              <Text style={{ fontSize: "12px", color: "#666" }}>
-                YOU WILL BE ASKED TO LOG IN AGAIN WITH YOUR NEW PASSWORD AFTER YOU SAVE YOUR CHANGES.
-              </Text>
-            </div>
           </Form>
+        </Card>
+
+        {/* Logout Section */}
+        <Card
+          style={{
+            marginTop: "24px",
+            borderRadius: "12px",
+            backgroundColor: "rgba(255, 255, 255, 0.9)",
+          }}
+        >
+          <Title level={3} style={{ marginBottom: "24px", color: "#333" }}>
+            Account Actions
+          </Title>
+          <div style={{ textAlign: "center" }}>
+            <Button
+              type="primary"
+              danger
+              onClick={handleLogout}
+              style={{
+                width: "100%",
+                height: "40px",
+                borderRadius: "8px",
+              }}
+            >
+              Logout
+            </Button>
+          </div>
         </Card>
       </div>
     </div>
   )
 
   const OverviewView = () => (
-    <div style={{ padding: "24px", backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
+    <div style={{ padding: "24px", backgroundColor: "#f8f9fa", minHeight: "100vh", marginInline: "auto", minWidth: "800px" }}>
       <Title level={2} style={{ marginBottom: "32px", color: "#333" }}>
         Settings
       </Title>
 
-      <Space direction="vertical" size="large" style={{ width: "100%", maxWidth: "800px" }}>
+      <Space direction="vertical" size="large" style={{ width: "100%"}}>
         {/* Profile Info Card */}
         <Card
           style={{
@@ -355,15 +409,14 @@ const SettingsPage = () => {
         <Button type="text" icon={<LogoutOutlined />} style={{ color: "#666", textAlign: "right" }}>
           LOG OUT
         </Button>
-        <Button type="text" icon={<DeleteOutlined />} style={{ color: "#ff4d4f", textAlign: "right" }}>
-          DEACTIVATE MY ACCOUNT
-        </Button>
       </div>
     </div>
   )
 
   return (
-        <Content>{activeView === "detailed" ? <DetailedView /> : <OverviewView />}</Content>
+    <Content style={{ display: "flex", justifyContent: "center", alignItems: "center", width: "100%"}}>
+      {activeView === "detailed" ? <DetailedView /> : <OverviewView />}
+    </Content>
   )
 }
 
