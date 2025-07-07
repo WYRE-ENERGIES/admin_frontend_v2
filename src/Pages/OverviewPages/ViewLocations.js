@@ -1,11 +1,12 @@
-import { Button, DatePicker, Dropdown, Form, Image, Input, Modal, Select, Space, Spin, Table, Typography, notification } from "antd";
+import { Button, DatePicker, Dropdown, Form, Image, Input, Modal, Select, Space, Spin, Table, Typography, message, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
-import { getLocationsData } from "../../redux/actions/location/location.action";
+import { addARegion, getLocationsData, getRegionsListData } from "../../redux/actions/location/location.action";
 import { EditOutlined, EyeOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
 import { BsThreeDots } from "react-icons/bs";
+import axios from "axios";
 
 const SubmitButton = ({ form }) => {
   const [submittable, setSubmittable] = useState(false);
@@ -59,6 +60,7 @@ function ViewLocations(props) {
   const [locationTableData, setlocationTableData] = useState(false)
   const [regionsTableData, setRegionsTableData] = useState(false)
   const [form] = Form.useForm();
+  const [addRegionform] = Form.useForm();
 
   const { Search } = Input;
   
@@ -66,9 +68,13 @@ function ViewLocations(props) {
   const dateFormat = 'DD/MM/YYYY';
   const { RangePicker } = DatePicker;
 
+  const clientId = props.auth.userData.client_id
   const showLocationList = () => {
-    const clientId = props.auth.userData.client_id
     props.getLocationsData(clientId);
+  }
+
+  const showRegionLists = () => {
+    props.getRegionsListData(clientId);
   }
 
   const onSelectDateLocation = (date) => {
@@ -80,26 +86,29 @@ function ViewLocations(props) {
 
   useEffect(() => {
     showLocationList()
+    showRegionLists()
   }, [])
 
   const data = props.locationPage.fetchedLocation.results
+  const regionData = props.locationPage.fetchedRegion
+  
   const regionsData = [
-    {
-      region: 'North',
-      no_of_branches: 10,
-    },
-    {
-      region: 'Central',
-      no_of_branches: 15,
-    },
-    {
-      region: 'West',
-      no_of_branches: 10,
-    },
-    {
-      region: 'East',
-      no_of_branches: 15,
-    },
+    // {
+    //   region: 'North',
+    //   no_of_branches: 10,
+    // },
+    // {
+    //   region: 'Central',
+    //   no_of_branches: 15,
+    // },
+    // {
+    //   region: 'West',
+    //   no_of_branches: 10,
+    // },
+    // {
+    //   region: 'East',
+    //   no_of_branches: 15,
+    // },
   ]
 
   const viewLocationPaginate = props.locationPage.fetchedLocation
@@ -326,6 +335,46 @@ function ViewLocations(props) {
     },
     regionActionsColumn()
   ];
+
+  const onRegionSubmit = async (values) => {
+    try {
+      const response = await axios.post(
+        `https://api/v1/accounts/client/${clientId}/add-regions/`, // replace with your actual API
+        {
+          region: values.region, // sending the form value as request body
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      message.success("Region data submitted successfully!");
+      console.log("Response--------:", response.data);
+    } catch (error) {
+      console.error("Submission error:", error);
+      message.error("Something went wrong while submitting!");
+    }
+  };
+  const handleRegionSubmit = async (values) => {
+    console.log('1---------values =', values);
+      const request = await props.addARegion(clientId,
+        {
+          region: values.region
+        }
+      );
+  
+      if (request.fulfilled) {
+        console.log('values =', values);
+        
+        // return notification.error({
+        //   message: 'Failed',
+        //   description: request.message,
+        // });
+        return message.error();
+      }
+    };
 
   const onChange = (pagination, filters, sorter, extra) => {
     console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
@@ -633,12 +682,12 @@ function ViewLocations(props) {
               spinning={false}
             >
               <Form
-                form={form}
+                form={addRegionform}
                 // name="validateOnly"
                 name="basic"
                 layout="vertical"
                 autoComplete="off"
-                // onFinish={submitNewRegion}
+                onFinish={onRegionSubmit}
               >
                 {/* <Form.Item
                   name="branch_name"
@@ -688,7 +737,7 @@ function ViewLocations(props) {
                   {/* <SubmitButton form={form} /> */}
                   <Button
                   style={{ marginRight: 20, backgroundColor: "#5C12A7", color: "white", height: "40px", borderRadius: "7px", width: "47%" }}
-                  // type="primary"
+                  type="primary"
                   htmlType="submit"
                 // disabled={!submittable}
                 >
@@ -790,7 +839,9 @@ function ViewLocations(props) {
 }
 
 const mapDispatchToProps = {
-  getLocationsData
+  getLocationsData,
+  getRegionsListData,
+  addARegion
 };
 
 const mapStateToProps = (state) => ({
