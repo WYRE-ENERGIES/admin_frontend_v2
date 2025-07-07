@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined } from "@ant-design/icons";
 import { useEffect, useState, useRef } from "react";
-import { getKeyMetricsData, getTotalCostTopCard, getTotalEnergyBarChartData, getTotalEnergyTopCard } from "../../redux/actions/overview/overview.action";
+import { getKeyMetricsData, getTotalCostTopCard, getTotalEnergyBarChartData, getTotalEnergyTopCard, getUtilityCostPerBranch, getUtilityEnergyPerBranch, getDieselCostPerBranch, getDieselLitresPerBranch } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
 import moment, { months } from "moment";
@@ -30,6 +30,10 @@ import { PiLightningDuotone } from "react-icons/pi";
 import { getLocationsData } from "../../redux/actions/location/location.action";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import UtilityCostPerBranchChart from "./UtilityCostPerBranchChart";
+import GenericBranchBarChart from "./GenericBranchBarChart";
+import { APIService } from "../../config/Api/apiServices";
+import React, { useMemo } from "react";
 
 ChartJS.register(
   CategoryScale,
@@ -115,6 +119,9 @@ function AdminOverview(props) {
   const { Search } = Input;
     const [downloading, setDownloading] = useState(false);
     const reportRef = useRef(null);
+    const [regionOptions, setRegionOptions] = useState([]);
+    const [regionBranchMap, setRegionBranchMap] = useState({});
+    const [selectedRegion, setSelectedRegion] = useState(undefined);
 
     const handleDownloadPdf = async () => {
     if (!reportRef.current) return;
@@ -424,6 +431,226 @@ function AdminOverview(props) {
     console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
 
+  const getUtilityCostData = () => {
+    return props.overviewPage.fetchedKeyMetrics?.results?.map(branch => ({
+      name: branch.name,
+      utility_cost: branch.utility_cost || 0, // fallback to 0 if not present
+    })) || [];
+  };
+
+  // State for generic tab filters
+  const [genericTabSearch, setGenericTabSearch] = useState('');
+  const [genericTabRegion, setGenericTabRegion] = useState(undefined);
+  const [genericTabDate, setGenericTabDate] = useState(null);
+
+  const handleGenericTabSearch = (e) => setGenericTabSearch(e.target.value);
+  const handleGenericTabRegion = (value) => setGenericTabRegion(value);
+  const handleGenericTabDate = (date) => setGenericTabDate(date);
+
+  // Get unique region options from your data
+  const getRegionOptions = () => {
+    const allRegions = props.overviewPage.fetchedKeyMetrics?.results?.map(branch => branch.region).filter(Boolean) || [];
+    return Array.from(new Set(allRegions));
+  };
+
+  // Filter data for the chart for the current tab
+  const getGenericTabData = () => {
+    let branches = props.overviewPage.fetchedKeyMetrics?.results || [];
+    if (genericTabSearch) {
+      branches = branches.filter(branch =>
+        branch.name.toLowerCase().includes(genericTabSearch.toLowerCase())
+      );
+    }
+    if (genericTabRegion) {
+      branches = branches.filter(branch => branch.region === genericTabRegion);
+    }
+    if (genericTabDate) {
+      const month = genericTabDate.month() + 1;
+      const year = genericTabDate.year();
+      branches = branches.filter(branch => {
+        if (!branch.date) return true;
+        const branchDate = new Date(branch.date);
+        return branchDate.getMonth() + 1 === month && branchDate.getFullYear() === year;
+      });
+    }
+    // Pick the correct field based on the tab
+    let field = "utility_energy";
+    let label = "Utility Energy (kWh)";
+    if (isSelectChart === 3) {
+      field = "diesel_cost";
+      label = "Diesel Cost (naira)";
+    } else if (isSelectChart === 4) {
+      field = "diesel_liters";
+      label = "Diesel Liters";
+    }
+    return branches.map(branch => ({
+      name: branch.name,
+      value: branch[field] || 0,
+      chartLabel: label,
+    }));
+  };
+
+  const [utilityCostMonth, setUtilityCostMonth] = useState(dayjs().month() + 1);
+  const [utilityCostYear, setUtilityCostYear] = useState(dayjs().year());
+
+  useEffect(() => {
+    if (isSelectChart === 1) {
+      props.getUtilityCostPerBranch(clientId, utilityCostMonth, utilityCostYear);
+    }
+  }, [isSelectChart, utilityCostMonth, utilityCostYear, clientId]);
+
+  const handleUtilityCostMonthChange = (date) => {
+    if (date) {
+      setUtilityCostMonth(date.month() + 1);
+      setUtilityCostYear(date.year());
+    } else {
+      setUtilityCostMonth(dayjs().month() + 1);
+      setUtilityCostYear(dayjs().year());
+    }
+  };
+  const handleUtilityCostSearch = (e) => setGenericTabSearch(e.target.value);
+
+  const getUtilityCostPerBranchData = () => {
+    let branches = props.overviewPage.fetchedUtilityCostPerBranch?.branches || [];
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      const allowed = new Set(regionBranchMap[selectedRegion]);
+      branches = branches.filter(branch => allowed.has(branch.branch_name));
+    }
+    return branches
+      .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
+      .map(branch => ({
+        name: branch.branch_name,
+        utility_cost: branch.average_cost,
+      }));
+  };
+
+  const [utilityEnergyMonth, setUtilityEnergyMonth] = useState(dayjs().month() + 1);
+  const [utilityEnergyYear, setUtilityEnergyYear] = useState(dayjs().year());
+
+  useEffect(() => {
+    if (isSelectChart === 2) {
+      props.getUtilityEnergyPerBranch(clientId, utilityEnergyMonth, utilityEnergyYear);
+    }
+  }, [isSelectChart, utilityEnergyMonth, utilityEnergyYear, clientId]);
+
+  const handleUtilityEnergyMonthChange = (date) => {
+    if (date) {
+      setUtilityEnergyMonth(date.month() + 1);
+      setUtilityEnergyYear(date.year());
+    } else {
+      setUtilityEnergyMonth(dayjs().month() + 1);
+      setUtilityEnergyYear(dayjs().year());
+    }
+  };
+  const handleUtilityEnergySearch = (e) => setGenericTabSearch(e.target.value);
+
+  const getUtilityEnergyPerBranchData = () => {
+    let branches = props.overviewPage.fetchedUtilityEnergyPerBranch?.monthly_utility_energy || [];
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      const allowed = new Set(regionBranchMap[selectedRegion]);
+      branches = branches.filter(branch => allowed.has(branch.branch_name));
+    }
+    return branches
+      .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
+      .map(branch => ({
+        name: branch.branch_name,
+        value: branch.utility_energy,
+      }));
+  };
+
+  const [dieselCostMonth, setDieselCostMonth] = useState(dayjs().month() + 1);
+  const [dieselCostYear, setDieselCostYear] = useState(dayjs().year());
+
+  useEffect(() => {
+    if (isSelectChart === 3) {
+      props.getDieselCostPerBranch(clientId, dieselCostMonth, dieselCostYear);
+    }
+  }, [isSelectChart, dieselCostMonth, dieselCostYear, clientId]);
+
+  const handleDieselCostMonthChange = (date) => {
+    if (date) {
+      setDieselCostMonth(date.month() + 1);
+      setDieselCostYear(date.year());
+    } else {
+      setDieselCostMonth(dayjs().month() + 1);
+      setDieselCostYear(dayjs().year());
+    }
+  };
+  const handleDieselCostSearch = (e) => setGenericTabSearch(e.target.value);
+
+  const getDieselCostPerBranchData = () => {
+    let branches = props.overviewPage.fetchedDieselCostPerBranch?.monthly_diesel_costs || [];
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      const allowed = new Set(regionBranchMap[selectedRegion]);
+      branches = branches.filter(branch => allowed.has(branch.branch_name));
+    }
+    return branches
+      .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
+      .map(branch => ({
+        name: branch.branch_name,
+        value: branch.wyre_cost,
+      }));
+  };
+
+  const [dieselLitresMonth, setDieselLitresMonth] = useState(dayjs().month() + 1);
+  const [dieselLitresYear, setDieselLitresYear] = useState(dayjs().year());
+
+  useEffect(() => {
+    if (isSelectChart === 4) {
+      props.getDieselLitresPerBranch(clientId, dieselLitresMonth, dieselLitresYear);
+    }
+  }, [isSelectChart, dieselLitresMonth, dieselLitresYear, clientId]);
+
+  const handleDieselLitresMonthChange = (date) => {
+    if (date) {
+      setDieselLitresMonth(date.month() + 1);
+      setDieselLitresYear(date.year());
+    } else {
+      setDieselLitresMonth(dayjs().month() + 1);
+      setDieselLitresYear(dayjs().year());
+    }
+  };
+  const handleDieselLitresSearch = (e) => setGenericTabSearch(e.target.value);
+
+  const getDieselLitresPerBranchData = () => {
+    let branches = props.overviewPage.fetchedDieselLitresPerBranch?.monthly_diesel_litres || [];
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      const allowed = new Set(regionBranchMap[selectedRegion]);
+      branches = branches.filter(branch => allowed.has(branch.branch_name));
+    }
+    return branches
+      .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
+      .map(branch => ({
+        name: branch.branch_name,
+        value: branch.diesel_litres,
+      }));
+  };
+
+  useEffect(() => {
+    async function fetchRegions() {
+      if (!clientId) return;
+      try {
+        const res = await APIService.get(`/api/v1/accounts/client/${clientId}/regions-branches/`);
+        const regions = res.data.regions || [];
+        setRegionOptions(regions.map(r => r.region));
+        // Mapping region name to branch names for fast lookup
+        const map = {};
+        regions.forEach(r => {
+          map[r.region] = (r.branches || []).map(b => b.branch_name);
+        });
+        setRegionBranchMap(map);
+      } catch (e) {
+        setRegionOptions([]);
+        setRegionBranchMap({});
+      }
+    }
+    fetchRegions();
+  }, [clientId]);
+
+  const [selectedBranches, setSelectedBranches] = useState([]);
+
+  const handleBranchSelect = (branches) => setSelectedBranches(branches);
+
   return (
     <main ref={reportRef}>
       <div className="AppHeader" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -565,32 +792,33 @@ function AdminOverview(props) {
         </section>
          )}
         <RendeChartsComponents index={isSelectChart} />
-        <section className="total-energy-bar-chart">
-          <div
-            style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}
-          >
-            <div>
-              <h1
-                style={{
-                  fontSize: "17Px",
-                }}
-              >
-                Key Metrics
-              </h1>
-            </div>
-            <div className="search-bar-date-picker">
-              <Search
-                placeholder="Search by name"
-                enterButton
-                className="search-bar"
-                onChange={onSearchKeyMetrics}
-                allowClear
-                style={{
-                  marginRight: 15,
-                  // height: 43.5
-                }}
-              />
-              <Select
+          {isSelectChart === 0 ? (
+          <section className="total-energy-bar-chart">
+            <div
+              style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}
+            >
+              <div>
+                <h1
+                  style={{
+                    fontSize: "17Px",
+                  }}
+                >
+                  Key Metrics
+                </h1>
+              </div>
+              <div className="search-bar-date-picker">
+                <Search
+                  placeholder="Search by name"
+                  enterButton
+                  className="search-bar"
+                  onChange={onSearchKeyMetrics}
+                  allowClear
+                  style={{
+                    marginRight: 15,
+                    // height: 43.5
+                  }}
+                />
+                <Select
                 className="select-bar"
                 mode="multiple"
                 placeholder="Select branches"
@@ -616,231 +844,285 @@ function AdminOverview(props) {
                 ]}
               />
               <DatePicker
-                className="picker-date"
-                style={{
-                  // height: 43.5
-                }}
-                defaultValue={[
-                  dayjs().startOf("month"),
-                  dayjs(),
-                ]}
-                picker="month"
+                  className="picker-date"
+                  style={{
+                    // height: 43.5
+                  }}
+                  defaultValue={[
+                    dayjs().startOf("month"),
+                    dayjs(),
+                  ]}
+                  picker="month"
                 format={dateFormat}
-                onChange={handleDateChange}
+                  onChange={handleDateChange}
                 disabledDate={(current) => {
                   return current && current > dayjs().endOf('month');
                 }}
-              />
+                />
+              </div>
             </div>
-          </div>
-          <div style={{overflowX: 'auto'}}>
-            <Table
-              className="custom-row-hover"
-              rowClassName={(record, index) => {
-                if (index === 0) return "first-row";
-              }}
-              onRow={(record) => ({
-                style: {
-                  color: record === checkData ? "#5C12A7" : "",
-                  backgroundColor: record === checkData ? "#F2F2F8" : "",
-                  fontWeight: record === checkData ? "bold" : ""
-                },
-                // onClick: () => handleRowClick(record)
-                onClick: (event) => {
-                  window.location.href = `${window.location.href}branch?ee=${record.id}`;
-                },
-                // onMouseEnter: () => console.log('Mouse entered row:', record),
-              })}
-              // rowKey="id"
-              rowKey={(record) => record.id}
-              // scroll={{ x: 'max-content' }}
-              loading={props.overviewPage.fetchKeyMetricsLoading}
-              dataSource={displayedData}
-              onChange={onChange}
-              pagination={false}
-            >
-              <Column
-                title="Branch Name"
-                dataIndex="name"
-                key="name"
-                width="120px"
-                ellipsis={true}
-                render= {
-                  (text) => (
-                    <span style={{ fontWeight: "bold" }}>{text}</span>
-                  )
-                }
-              />
-              <Column
-                width={90}
-                title="Baseline Energy (kWh)"
-                dataIndex="baseline_energy_used"
-                key="baseline_energy_used"
-                ellipsis={true}
-                render={(value) => (
-                  <>
-                    {value
-                      ? value.toLocaleString(undefined, {
-                          maximumFractionDigits: 2,
-                        })
-                      : 0}
-                  </>
-                )}
-              />
-              <Column
-                width={90}
-                title="Blended Cost of Energy"
-                dataIndex="blended_cost_of_energy"
-                key="blended_cost_of_energy"
-                ellipsis={true}
-                render={(value) => (
-                  <>
-                    {value.toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
-                    })}
-                  </>
-                )}
-              />
-              <Column
-                width={100}
-                title="Deviation Hours"
-                dataIndex="deviation_hours"
-                key="deviation_hours"
-                ellipsis={true}
-              />
-              <Column
-                width={70}
-                title="PAPR"
-                dataIndex="papr"
-                key="papr"
-                ellipsis={true}
-              />
-              <Column
-                width={100}
-                title="Fuel Efficiency"
-                dataIndex="fuel_efficiency"
-                key="fuel_efficiency"
-                ellipsis={true}
-                render={(value) => (
-                  <>
-                    {value.toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
-                    })}
-                  </>
-                )}
-              />
-              <Column
-                width={90}
-                title="Diesel Usage Accuracy"
-                dataIndex="diesel_usage_accuracy"
-                key="diesel_usage_accuracy"
-                ellipsis={true}
-                render={(value, record, index) => (
-                  <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
-                    {value.toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
-                    })}
-                  </div>
-                )}
-              />
-              <Column
-                width={90}
-                title="Utility Usage Accuracy"
-                dataIndex="utility_usage_accuracy"
-                key="utility_usage_accuracy"
-                ellipsis={true}
-                render={(value, record, index) => (
-                  <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
-                    {value.toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
-                    })}
-                  </div>
-                )}
-              />
-              {/* <Column
-                width={90}
-                title="Diesel Usage Accuracy"
-                dataIndex="diesel_usage_accuracy"
-                key="diesel_usage_accuracy"
-                ellipsis={true}
-                render={(value, record, index) => (
-                  <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
-                    {value.toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
-                    })}
-                  </div>
-                )}
-              /> */}
-              {/* <Column
-                width={90}
-                title="Utility Usage Accuracy"
-                dataIndex="utility_usage_accuracy"
-                key="utility_usage_accuracy"
-                ellipsis={true}
-                render={(value, record, index) => (
-                  <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
-                    {value.toLocaleString(undefined, {
-                      maximumFractionDigits: 2,
-                    })}
-                  </div>
-                )}
-              /> */}
-              <ColumnGroup
-                width="100px"
-                ellipsis={true}
-                title="Generator Efficiency"
+            <div style={{overflowX: 'auto'}}>
+              <Table
+                className="custom-row-hover"
+                rowClassName={(record, index) => {
+                  if (index === 0) return "first-row";
+                }}
+                onRow={(record) => ({
+                  style: {
+                    color: record === checkData ? "#5C12A7" : "",
+                    backgroundColor: record === checkData ? "#F2F2F8" : "",
+                    fontWeight: record === checkData ? "bold" : ""
+                  },
+                  // onClick: () => handleRowClick(record)
+                  onClick: (event) => {
+                    window.location.href = `${window.location.href}branch?ee=${record.id}`;
+                  },
+                  // onMouseEnter: () => console.log('Mouse entered row:', record),
+                })}
+                // rowKey="id"
+                rowKey={(record) => record.id}
+                // scroll={{ x: 'max-content' }}
+                loading={props.overviewPage.fetchKeyMetricsLoading}
+                dataSource={displayedData}
+                onChange={onChange}
+                pagination={false}
               >
                 <Column
-                  width={70}
-                  // title="Gen1"
-                  dataIndex="generator_size_efficiency_1"
-                  key="generator_size_efficiency_1"
+                  title="Branch Name"
+                  dataIndex="name"
+                  key="name"
+                  width="120px"
+                  ellipsis={true}
                   render= {
-                    (value) => (
-                      <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
+                    (text) => (
+                      <span style={{ fontWeight: "bold" }}>{text}</span>
                     )
                   }
+                />
+                <Column
+                  width={90}
+                  title="Baseline Energy (kWh)"
+                  dataIndex="baseline_energy_used"
+                  key="baseline_energy_used"
+                  ellipsis={true}
+                  render={(value) => (
+                    <>
+                      {value
+                        ? value.toLocaleString(undefined, {
+                            maximumFractionDigits: 2,
+                          })
+                        : 0}
+                    </>
+                  )}
+                />
+                <Column
+                  width={90}
+                  title="Blended Cost of Energy"
+                  dataIndex="blended_cost_of_energy"
+                  key="blended_cost_of_energy"
+                  ellipsis={true}
+                  render={(value) => (
+                    <>
+                      {value.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                    </>
+                  )}
+                />
+                <Column
+                  width={100}
+                  title="Deviation Hours"
+                  dataIndex="deviation_hours"
+                  key="deviation_hours"
                   ellipsis={true}
                 />
                 <Column
                   width={70}
-                  // title="Gen2"
-                  dataIndex="generator_size_efficiency_2"
-                  key="generator_size_efficiency_2"
-                  render= {
-                    (value) => (
-                      <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
-                    )
-                  }
+                  title="PAPR"
+                  dataIndex="papr"
+                  key="papr"
                   ellipsis={true}
                 />
                 <Column
-                  width={70}
-                  // title="Gen3"
-                  dataIndex="generator_size_efficiency_3"
-                  key="generator_size_efficiency_3"
-                  render= {
-                    (value) => (
-                      <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
-                    )
-                  }
+                  width={100}
+                  title="Fuel Efficiency"
+                  dataIndex="fuel_efficiency"
+                  key="fuel_efficiency"
                   ellipsis={true}
+                  render={(value) => (
+                    <>
+                      {value.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                    </>
+                  )}
                 />
-              </ColumnGroup>
-            </Table>
-          </div>
-          <div className="keymetric_pagination">
-            <div>
-              <Button onClick={fetchPrevPaginatedKeyMetric} disabled={keyMetricsData.page===1}>Previous</Button>
+                <Column
+                  width={90}
+                  title="Diesel Usage Accuracy"
+                  dataIndex="diesel_usage_accuracy"
+                  key="diesel_usage_accuracy"
+                  ellipsis={true}
+                  render={(value, record, index) => (
+                    <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
+                      {value.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
+                  )}
+                />
+                <Column
+                  width={90}
+                  title="Utility Usage Accuracy"
+                  dataIndex="utility_usage_accuracy"
+                  key="utility_usage_accuracy"
+                  ellipsis={true}
+                  render={(value, record, index) => (
+                    <div style={{ color: getUsageAccuracy(value, record, index), fontWeight: "bold" }} >
+                      {value.toLocaleString(undefined, {
+                        maximumFractionDigits: 2,
+                      })}
+                    </div>
+                  )}
+                />
+                <ColumnGroup
+                  width="100px"
+                  ellipsis={true}
+                  title="Generator Efficiency"
+                >
+                  <Column
+                    width={70}
+                    // title="Gen1"
+                    dataIndex="generator_size_efficiency_1"
+                    key="generator_size_efficiency_1"
+                    render= {
+                      (value) => (
+                        <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
+                      )
+                    }
+                    ellipsis={true}
+                  />
+                  <Column
+                    width={70}
+                    // title="Gen2"
+                    dataIndex="generator_size_efficiency_2"
+                    key="generator_size_efficiency_2"
+                    render= {
+                      (value) => (
+                        <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
+                      )
+                    }
+                    ellipsis={true}
+                  />
+                  <Column
+                    width={70}
+                    // title="Gen3"
+                    dataIndex="generator_size_efficiency_3"
+                    key="generator_size_efficiency_3"
+                    render= {
+                      (value) => (
+                        <span style={{ color: getGenEfficiency(value), fontWeight: "bold" }}>{value}</span>
+                      )
+                    }
+                    ellipsis={true}
+                  />
+                </ColumnGroup>
+              </Table>
             </div>
-            <span style={{ margin: '0 8px' }}>
-              Page {keyMetricsData.page} of {keyMetricsData.total_pages}
-            </span>
-            <div>
-              <Button onClick={fetchNextPaginatedKeyMetric} disabled={keyMetricsData.page*keyMetricsData.count >= keyMetricsData.count*keyMetricsData.total_pages}>Next</Button>
+            <div className="keymetric_pagination">
+              <div>
+                <Button onClick={fetchPrevPaginatedKeyMetric} disabled={keyMetricsData.page===1}>Previous</Button>
+              </div>
+              <span style={{ margin: '0 8px' }}>
+                Page {keyMetricsData.page} of {keyMetricsData.total_pages}
+              </span>
+              <div>
+                <Button onClick={fetchNextPaginatedKeyMetric} disabled={keyMetricsData.page*keyMetricsData.count >= keyMetricsData.count*keyMetricsData.total_pages}>Next</Button>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : isSelectChart === 1 ? (
+          <section className="total-energy-bar-chart">
+            <UtilityCostPerBranchChart
+              data={getUtilityCostPerBranchData()}
+              onBranchSelect={handleBranchSelect}
+              selectedBranches={selectedBranches}
+              onSearch={handleUtilityCostSearch}
+              onRegionChange={handleRegionChange}
+              regionOptions={regionOptions}
+              selectedRegion={selectedRegion}
+              onDateChange={handleUtilityCostMonthChange}
+              selectedDate={dayjs(`${utilityCostYear}-${utilityCostMonth}`, "YYYY-M")}
+              loading={props.overviewPage.fetchUtilityCostPerBranchLoading}
+            />
+          </section>
+        ) : isSelectChart === 2 ? (
+          <section className="total-energy-bar-chart">
+            <GenericBranchBarChart
+              tabIndex={isSelectChart}
+              chartLabel="Utility Energy Per Branch"
+              data={getUtilityEnergyPerBranchData()}
+              onSearch={handleUtilityEnergySearch}
+              onRegionChange={handleRegionChange}
+              regionOptions={regionOptions}
+              selectedRegion={selectedRegion}
+              onDateChange={handleUtilityEnergyMonthChange}
+              selectedDate={dayjs(`${utilityEnergyYear}-${utilityEnergyMonth}`, "YYYY-M")}
+              loading={props.overviewPage.fetchUtilityEnergyPerBranchLoading}
+              onBranchSelect={handleBranchSelect}
+              selectedBranches={selectedBranches}
+            />
+          </section>
+        ) : isSelectChart === 3 ? (
+          <section className="total-energy-bar-chart">
+            <GenericBranchBarChart
+              tabIndex={isSelectChart}
+              chartLabel="Diesel Cost Per Branch"
+              data={getDieselCostPerBranchData()}
+              onSearch={handleDieselCostSearch}
+              onRegionChange={handleRegionChange}
+              regionOptions={regionOptions}
+              selectedRegion={selectedRegion}
+              onDateChange={handleDieselCostMonthChange}
+              selectedDate={dayjs(`${dieselCostYear}-${dieselCostMonth}`, "YYYY-M")}
+              loading={props.overviewPage.fetchDieselCostPerBranchLoading}
+              onBranchSelect={handleBranchSelect}
+              selectedBranches={selectedBranches}
+            />
+          </section>
+        ) : isSelectChart === 4 ? (
+          <section className="total-energy-bar-chart">
+            <GenericBranchBarChart
+              chartLabel="Diesel Liters Per Branch"
+              tabIndex={isSelectChart}
+              data={getDieselLitresPerBranchData()}
+              onSearch={handleDieselLitresSearch}
+              onRegionChange={handleRegionChange}
+              regionOptions={regionOptions}
+              selectedRegion={selectedRegion}
+              onDateChange={handleDieselLitresMonthChange}
+              selectedDate={dayjs(`${dieselLitresYear}-${dieselLitresMonth}`, "YYYY-M")}
+              loading={props.overviewPage.fetchDieselLitresPerBranchLoading}
+              onBranchSelect={handleBranchSelect}
+              selectedBranches={selectedBranches}
+            />
+          </section>
+        ) : (
+          <section className="total-energy-bar-chart">
+            <GenericBranchBarChart
+              tabIndex={isSelectChart}
+              data={getGenericTabData()}
+              onSearch={handleGenericTabSearch}
+              onRegionChange={handleGenericTabRegion}
+              onDateChange={handleGenericTabDate}
+              regionOptions={getRegionOptions()}
+              selectedRegion={genericTabRegion}
+              selectedDate={genericTabDate}
+              onBranchSelect={handleBranchSelect}
+              selectedBranches={selectedBranches}
+            />
+          </section>
+        )}
       </div>
     </main>
   );
@@ -852,6 +1134,10 @@ const mapDispatchToProps = {
   getLocationsData,
   getTotalEnergyBarChartData,
   getKeyMetricsData,
+  getUtilityCostPerBranch,
+  getUtilityEnergyPerBranch,
+  getDieselCostPerBranch,
+  getDieselLitresPerBranch,
 };
 
 const mapStateToProps = (state) => ({
