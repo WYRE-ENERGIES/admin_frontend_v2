@@ -90,7 +90,9 @@ function ViewLocations(props) {
   }, [])
 
   const data = props.locationPage.fetchedLocation.results
-  const regionData = props.locationPage.fetchedRegion
+  const regionData = props.locationPage.fetchedRegion.regions
+  console.log('regionData-----> ', regionData);
+  
   
   const regionsData = [
     // {
@@ -265,6 +267,7 @@ function ViewLocations(props) {
       );
     }
   });
+  console.log('regionsTableData --> ', regionsTableData.id);
   
   const columns = [
     {
@@ -328,11 +331,17 @@ function ViewLocations(props) {
       // sortDirections: ["descend"],
     },
     {
-      title: "Number of branches",
-      dataIndex: "no_of_branches",
-      render: (value) => <>{value}</>,
-      key: "no_of_branches",
+      title: 'Number of Branches',
+      dataIndex: 'branches',
+      key: 'branches',
+      render: branches => branches.length // or JSON.stringify(branches) if needed
     },
+    // {
+    //   title: "Number of branches",
+    //   dataIndex: "no_of_branches",
+    //   render: (value) => <>{value}</>,
+    //   key: "no_of_branches",
+    // },
     regionActionsColumn()
   ];
 
@@ -351,7 +360,7 @@ function ViewLocations(props) {
       );
 
       message.success("Region data submitted successfully!");
-      console.log("Response--------:", response.data);
+      console.log("Response:", response.data);
     } catch (error) {
       console.error("Submission error:", error);
       message.error("Something went wrong while submitting!");
@@ -753,7 +762,7 @@ function ViewLocations(props) {
             className="regions-table"
             rowKey={(record) => record.id}
             loading={props.locationPage.fetchLocationLoading}
-            dataSource={regionsData}
+            dataSource={regionData}
             columns={regiosColumns}
             onChange={onChange}
             pagination={false}
