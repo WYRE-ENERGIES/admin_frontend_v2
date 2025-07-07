@@ -8,3 +8,21 @@ export const getLocationSuccess = (payload = true) => ({
     type: locationTypes.GET_LOCATION_SUCCESS,
     payload,
 });
+
+export const getRegionLoading = (payload = true) => ({
+    type: locationTypes.GET_REGION_LOADING,
+    payload,
+});
+export const getRegionSuccess = (payload = true) => ({
+    type: locationTypes.GET_REGION_SUCCESS,
+    payload,
+});
+
+export const addRegionLoading = (payload = true) => ({
+    type: locationTypes.ADD_REGION_LOADING,
+    payload,
+});
+export const addRegionSuccess = (payload = true) => ({
+    type: locationTypes.ADD_REGION_SUCCESS,
+    payload,
+});

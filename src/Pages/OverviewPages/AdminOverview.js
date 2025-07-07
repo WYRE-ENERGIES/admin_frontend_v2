@@ -44,27 +44,27 @@ const buttons = [
   {
     label: "Total Energy",
     // key: "/",
-    icon: <Image preview={false} src="/Images/total-energy-icon.jpeg" alt="" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/admin-icons/total-energy-chart.png" alt="" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Utility Cost",
     // key: "/",
-    icon: <Image preview={false} src="/Images/cost-icon.jpeg" alt="" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/admin-icons/Utility Costs.png" alt="" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Utility Energy",
     // key: "/",
-    icon: <Image preview={false} src="/Images/utility-energy-icon.jpeg" alt="" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/admin-icons/Utility energy.png" alt="" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Diesel Cost",
     // key: "/",
-    icon: <Image preview={false} src="/Images/cost-icon.jpeg" alt="" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/admin-icons/Diesel cost.png" alt="" style={{ width: 20, height: 20 }} />,
   },
   {
     label: "Diesel Liters",
     // key: "/",
-    icon: <Image preview={false} src="/Images/diesel-litre-icon.jpeg" alt="" style={{ width: 20, height: 20 }} />,
+    icon: <Image preview={false} src="/admin-icons/Diesel liter.png" alt="" style={{ width: 20, height: 20 }} />,
   },
 ]
 
@@ -464,7 +464,7 @@ function AdminOverview(props) {
               <Space>
                 <div className="card-content">
                   <Image style={{ height: 30, width: 30 }} className="amount-icon"
-                    src="/Images/naira-cost-icon.jpeg"
+                    src="/admin-icons/Total Cost Naira.png"
                     preview={false}
                   />
                 </div>
@@ -493,7 +493,7 @@ function AdminOverview(props) {
                     preview={false}
                     // style={{ marginLeft: "0px",cursor: "default"  }}
                     style={{ height: 30, width: 30 }}
-                    src="/Images/total-energy-topCard.jpeg"
+                    src="/admin-icons/energy-card.png"
                   />
                 </div>
                 <div className="card-content">
@@ -521,7 +521,7 @@ function AdminOverview(props) {
                     preview={false}
                     // style={{ marginLeft: "0px" }}
                     style={{ height: 30, width: 30 }}
-                    src="/Images/co2-icon.jpeg"
+                    src="/admin-icons/CO2 Emission.png"
                   />
                 </div>
                 <div className="card-content">
