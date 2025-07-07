@@ -578,26 +578,11 @@ const ClientDetails = () => {
         onBranchAdded={fetchBranches}
       />
       
-      <EditBranchModal
-        visible={editingSection === 'branches'}
-        clientId={clientId}
-        onCancel={() => setEditingSection(null)}
-        onBranchUpdated={handleAddBranches}
-      />
-      
       <EditAdditionalUsersModal
         visible={editingSection === 'additionalUsers' && !hasAdditionalUsersData()}
         onCancel={() => setEditingSection(null)}
         clientId={clientId}
         onUserUpdated={handleAddAdditionalUsers}
-      />
-      
-      <EditBranchModal
-        visible={editingSection === 'branches' && hasBranchesData() && editingBranch}
-        clientId={clientId}
-        onCancel={() => setEditingSection(null)}
-        branch={editingBranch}
-        onBranchUpdated={handleBranchUpdated}
       />
       
       <EditAdditionalUsersModal

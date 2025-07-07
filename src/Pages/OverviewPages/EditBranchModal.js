@@ -6,6 +6,19 @@ import { APIService } from '../../config/Api/apiServices';
 const { Option } = Select;
 const { Text } = Typography;
 
+const DEVICE_TYPES = [
+  { id: 1, name: 'GENERATOR' },
+  { id: 2, name: 'UTILITY' },
+  { id: 3, name: 'IPP' },
+  { id: 4, name: 'LOAD' },
+  { id: 5, name: 'IPP2' },
+  { id: 6, name: 'Water Area' },
+  { id: 7, name: 'Swimming Pool' },
+  { id: 8, name: 'FEEDER' },
+];
+
+const DEVICE_PROVIDERS = ["ACCRELL", "SATEC", "ACREL-ACB"];
+
 const EditBranchModal = ({ visible, onCancel, clientId, branch, onBranchUpdated }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -18,8 +31,8 @@ const EditBranchModal = ({ visible, onCancel, clientId, branch, onBranchUpdated 
         name: branch.name,
         email: branch.email,
         address: branch.address,
-        copy_email: branch.copy_email,
-        region: branch.region,
+        copy_email: branch.copy_email || '',
+        region: branch.regions?.[0]?.id || null,
       });
       setDevices(branch.devices || []);
     }
@@ -33,7 +46,6 @@ const EditBranchModal = ({ visible, onCancel, clientId, branch, onBranchUpdated 
 
   const fetchRegions = async () => {
     try {
-      // You might need to adjust this endpoint to get all available regions
       const response = await APIService.get(`api/v1/accounts/client/${clientId}/regions/`);
       setRegions(response.data.regions || []);
     } catch (error) {
@@ -46,6 +58,8 @@ const EditBranchModal = ({ visible, onCancel, clientId, branch, onBranchUpdated 
       id: Date.now(),
       device_name: '',
       device_type: 'UTILITY',
+      provider: 'ACCRELL',
+      device_id: '',
     };
     setDevices([...devices, newDevice]);
   };
@@ -63,10 +77,22 @@ const EditBranchModal = ({ visible, onCancel, clientId, branch, onBranchUpdated 
 
   const handleFinish = async (values) => {
     setLoading(true);
+
     try {
       const payload = {
-        ...values,
-        devices: devices.filter(device => device.device_name.trim() !== ''), // Only include devices with names
+        name: values.name,
+        address: values.address,
+        email: values.email,
+        region: values.region,
+        copy_email: values.copy_email,
+        devices: devices.map(device => ({
+          name: device.device_name,
+          type: device.device_type,
+          is_load: device.device_type === 4, // Automatically set based on device type
+          provider: device.provider || 'ACCRELL',
+          device_id: device.device_id,
+          is_source: device.device_type !== 4 // Automatically set based on device type
+        }))
       };
       
       await APIService.put(`/api/v1/accounts/update-branch/${branch.branch_id}/`, payload);
@@ -124,22 +150,60 @@ const EditBranchModal = ({ visible, onCancel, clientId, branch, onBranchUpdated 
             <div key={device.id || index} style={{ marginBottom: 16, padding: 12, border: '1px solid #d9d9d9', borderRadius: 6 }}>
               <Space direction="vertical" style={{ width: '100%' }}>
                 <Space>
-                  <Input
-                    placeholder="Device Name"
-                    value={device.device_name}
-                    onChange={(e) => updateDevice(index, 'device_name', e.target.value)}
-                    style={{ width: 200 }}
-                  />
-                  <Select
-                    value={device.device_type}
-                    onChange={(value) => updateDevice(index, 'device_type', value)}
-                    style={{ width: 150 }}
+                  <Form.Item
+                    name={`devices.${index}.device_name`}
+                    rules={[{ required: true, message: 'Device name is required' }]}
                   >
-                    <Option value="UTILITY">UTILITY</Option>
-                    <Option value="GENERATOR">GENERATOR</Option>
-                    <Option value="SOLAR">SOLAR</Option>
-                    <Option value="BATTERY">BATTERY</Option>
-                  </Select>
+                    <Input
+                      placeholder="Device Name"
+                      value={device.device_name}
+                      onChange={(e) => updateDevice(index, 'device_name', e.target.value)}
+                      style={{ width: 200 }}
+                    />
+                  </Form.Item>
+                  <Form.Item
+                    name={`devices.${index}.device_type`}
+                    rules={[{ required: true, message: 'Device type is required' }]}
+                  >
+                    <Select
+                      value={device.device_type}
+                      onChange={(value) => updateDevice(index, 'device_type', value)}
+                      style={{ width: 150 }}
+                    >
+                      {DEVICE_TYPES.map(dt => (
+                        <Option key={dt.id} value={dt.id.toString()}>
+                          {dt.name}
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                  <Form.Item
+                    name={`devices.${index}.provider`}
+                    rules={[{ required: true, message: 'Provider is required' }]}
+                  >
+                    <Select
+                      value={device.provider}
+                      onChange={(value) => updateDevice(index, 'provider', value)}
+                      style={{ width: 150 }}
+                    >
+                      {DEVICE_PROVIDERS.map(p => (
+                        <Option key={p} value={p}>
+                          {p}
+                        </Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                  <Form.Item
+                    name={`devices.${index}.device_id`}
+                    rules={[{ required: true, message: 'Device ID is required' }]}
+                  >
+                    <Input
+                      placeholder="Device ID"
+                      value={device.device_id}
+                      onChange={(e) => updateDevice(index, 'device_id', e.target.value)}
+                      style={{ width: 200 }}
+                    />
+                  </Form.Item>
                   <Button
                     type="text"
                     danger
@@ -159,4 +223,4 @@ const EditBranchModal = ({ visible, onCancel, clientId, branch, onBranchUpdated 
   );
 };
 
-export default EditBranchModal; 
+export default EditBranchModal;
