@@ -26,7 +26,6 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 const { Step } = Steps;
 
-// --- Constants for Select Options ---
 const LOCAL_STORAGE_KEY = 'createClientFormData_Raw';
 const CLIENT_PROGRESS_KEY = 'createClientProgress';
 const CLIENT_ID_KEY = 'createClientId';
@@ -50,14 +49,12 @@ const USER_ROLES = [
   { id: 5, name: 'VIEWER' },
 ];
 
-// --- Initial Form Structures ---
 const initialDeviceForm = { name: '', type: null, provider: null, deviceId: '', isLoad: false, isSource: false, genSize: null, fuelType: null };
 const initialBranchForm = { name: '', address: '', city: '', email: '', region: null, copyEmail: '', devices: [initialDeviceForm] };
 const initialUserForm = { username: '', firstName: '', lastName: '', email: '', phoneNumber: '', password: '', role: null };
 const initialEmailForm = { email: '' };
 const initialRegionForm = { region: '' };
 
-// --- API Service Functions ---
 const createClientWithRegions = async (clientData) => {
   const formData = new FormData();
   formData.append('name', clientData.clientName);
@@ -76,7 +73,6 @@ const createClientWithRegions = async (clientData) => {
     formData.append('logo', clientData.logoFile);
   }
   
-  // Add additional emails
   if (clientData.additionalEmails && clientData.additionalEmails.length > 0) {
     clientData.additionalEmails.forEach((item, index) => {
       if (item?.email) {
@@ -85,7 +81,6 @@ const createClientWithRegions = async (clientData) => {
     });
   }
   
-  // Add regions
   if (clientData.regions && clientData.regions.length > 0) {
     clientData.regions.forEach((item, index) => {
       if (item?.region) {
@@ -102,7 +97,7 @@ const createClientWithRegions = async (clientData) => {
   return await instanceMultipart.post('/api/v1/accounts/create-client-with-regions/', formData);
 };
 
-const createMainUser = async (clientId, userData) => {
+export const createMainUser = async (clientId, userData) => {
   const payload = {
     username: userData.mainUsername,
     password: userData.mainPassword,
@@ -115,7 +110,7 @@ const createMainUser = async (clientId, userData) => {
   return await APIService.post(`/api/v1/accounts/client/${clientId}/main-user/`, payload);
 };
 
-const createBranches = async (clientId, branchesData) => {
+export const createBranches = async (clientId, branchesData) => {
   const payload = branchesData.map(branch => ({
     name: branch.name,
     address: branch.address || null,
@@ -140,7 +135,7 @@ const createBranches = async (clientId, branchesData) => {
   return await APIService.post(`/api/v1/accounts/client/${clientId}/branches/`, payload);
 };
 
-const createAdditionalUsers = async (clientId, usersData) => {
+export const createAdditionalUsers = async (clientId, usersData) => {
   const payload = usersData.map(user => ({
     username: user.username,
     password: user.password,
@@ -158,7 +153,6 @@ const getClientRegions = async (clientId) => {
   return await APIService.get(`/api/v1/accounts/client/${clientId}/regions/`);
 };
 
-// --- DeviceFields Component ---
 const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form }) => {
   const deviceType = Form.useWatch(['branches', branchName, 'devices', deviceName, 'type'], form);
 
@@ -280,7 +274,6 @@ const CreateClient = () => {
   const [regionsLoading, setRegionsLoading] = useState(false);
   const navigate = useNavigate();
 
-  // --- Load from LocalStorage on Mount ---
   useEffect(() => {
     const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
     const savedProgress = localStorage.getItem(CLIENT_PROGRESS_KEY);
@@ -364,7 +357,6 @@ const CreateClient = () => {
     }
   }, [form]);
 
-  // --- Watch for clientId changes and load regions when needed ---
   useEffect(() => {
     if (clientId && currentStep >= 2 && clientRegions.length === 0 && !regionsLoading) {
       console.log('Client ID changed, loading regions for step:', currentStep);
@@ -372,7 +364,6 @@ const CreateClient = () => {
     }
   }, [clientId, currentStep]);
 
-  // --- Save to LocalStorage on Change ---
   const handleValuesChange = (changedValues, allValues) => {
      if (!initialDataLoaded) {
         return;
@@ -389,7 +380,6 @@ const CreateClient = () => {
     }
   };
 
-  // --- Helper for Notifications ---
   const openNotification = ({ type, message, description }) => {
     notification[type]({
       message,
@@ -399,7 +389,6 @@ const CreateClient = () => {
     });
   };
 
-  // --- Load Client Regions ---
   const loadClientRegions = async () => {
     if (!clientId) {
       console.log('No client ID available for loading regions');
@@ -441,7 +430,6 @@ const CreateClient = () => {
     }
   };
 
-  // --- Step Submission Functions ---
   const submitClientInfo = async (values) => {
     setIsSubmitting(true);
     message.loading({ content: 'Creating client...', key: 'createClient', duration: 0 });
@@ -687,7 +675,6 @@ const CreateClient = () => {
     }
   };
 
-  // --- Step Navigation with API Calls ---
   const handleNext = async () => {
     const currentValues = form.getFieldsValue();
     console.log('Current step:', currentStep, 'Current values:', currentValues);
@@ -784,7 +771,6 @@ const CreateClient = () => {
     localStorage.setItem(CLIENT_STEP_KEY, prevStep.toString());
   };
 
-  // --- Steps Definition ---
   const steps = [
     {
       title: 'Client Info',
@@ -1164,7 +1150,6 @@ const CreateClient = () => {
     },
   ];
 
-  // --- Clear All Progress ---
   const clearAllProgress = () => {
     localStorage.removeItem(LOCAL_STORAGE_KEY);
     localStorage.removeItem(CLIENT_PROGRESS_KEY);
