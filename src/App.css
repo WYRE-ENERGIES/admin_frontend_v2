@@ -164,6 +164,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   /* min-width: none; */
   height: 60px;
   width: 198px;
+  overflow: 'hidden',
   /* margin-top: 20px; */
 }
 .top-card-2 {
@@ -177,11 +178,13 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   /* min-width: none; */
   height: 60px;
   width: 198px;
+  overflow: 'hidden',
   /* margin-top: 20px; */
 }
 
 .card-content {
   margin-top: 10px;
+  overflow: 'hidden',
   /* margin-left: 5px; */
   /* margin-right: 5px; */
 }

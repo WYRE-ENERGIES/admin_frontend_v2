@@ -1,5 +1,5 @@
 import { APIService } from "../../../config/Api/apiServices";
-import { addRegionLoading, addRegionSuccess, getLocationLoading, getLocationSuccess, getRegionLoading, getRegionSuccess } from "./location.creator";
+import { addRegionLoading, addRegionSuccess, editRegionLoading, editRegionSuccess, getLocationLoading, getLocationSuccess, getRegionLoading, getRegionSuccess } from "./location.creator";
 
 export const getLocationsData = (clientId, paginationQuery=1) => async (dispatch) => {
     dispatch(getLocationLoading(true));
@@ -34,7 +34,7 @@ export const getRegionsListData = (clientId) => async (dispatch) => {
     }
 };
 
-export const addARegion = (clientId) => async (dispatch) => {
+export const addARegionssssssss = (clientId) => async (dispatch) => {
     dispatch(addRegionLoading(true));
     const requestUrl = `/api/v1/accounts/client/${clientId}/add-regions/`;
     try {
@@ -46,6 +46,42 @@ export const addARegion = (clientId) => async (dispatch) => {
       return { fulfilled: true, message: 'successful', data: response.data }
     } catch (error) {
       dispatch(addRegionLoading(false));
+      return { fulfilled: false, message: error.response.data.detail }
+    }
+};
+
+export const addARegion = (clientId, values) => async (dispatch) => {
+
+    dispatch(addRegionLoading(true));
+  
+    const requestUrl = `/api/v1/accounts/client/${clientId}/add-regions/`;
+    try {
+      const response = await APIService.post(requestUrl, values);
+  
+      dispatch(addRegionSuccess(response.data));
+  
+      dispatch(addRegionLoading(false))
+      return { fulfilled: true, message: 'successful', data: response.data }
+    } catch (error) {
+      dispatch(addRegionLoading(false));
+      return { fulfilled: false, message: error.response.data.detail }
+    }
+};
+
+export const updateARegion = (regionId, values) => async (dispatch) => {
+
+    dispatch(editRegionLoading(true));
+  
+    const requestUrl = `/api/v1/accounts/region/${regionId}/`;
+    try {
+      const response = await APIService.put(requestUrl, values);
+  
+      dispatch(editRegionSuccess(response.data));
+  
+      dispatch(editRegionLoading(false))
+      return { fulfilled: true, message: 'successful', data: response.data }
+    } catch (error) {
+      dispatch(editRegionLoading(false));     
       return { fulfilled: false, message: error.response.data.detail }
     }
 };

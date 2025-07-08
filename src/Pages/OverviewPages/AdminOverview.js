@@ -460,7 +460,7 @@ function AdminOverview(props) {
       <div className="##########">
         <section className="co2 & total-energy-card">
           <Space>
-            <div className="top-card-2">
+            <div className="top-card-2" style={{overflow: 'hidden',}}>
               <Space>
                 <div className="card-content">
                   <Image style={{ height: 30, width: 30 }} className="amount-icon"
