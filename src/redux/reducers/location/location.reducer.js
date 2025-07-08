@@ -4,11 +4,17 @@ const initialState = {
     fetchLocationLoading: false,
     fetchedLocation: false,
 
+    updateLocationLoading: false,
+    updatedLocation: false,
+
     fetchRegionLoading: false,
     fetchedRegion: false,
 
     addNewRegionLoading: false,
     newRegion: false,
+    
+    updateRegionLoading: false,
+    updatedRegion: false,
 }
 
 const locationReducers = (state = initialState, action) => {
@@ -22,6 +28,17 @@ const locationReducers = (state = initialState, action) => {
             return {
                 ...state,
                 fetchedLocation: action.payload
+            }
+
+        case locationTypes.EDIT_LOCATION_LOADING:
+            return {
+                ...state,
+                updateLocationLoading: action.payload
+            }
+        case locationTypes.EDIT_LOCATION_SUCCESS:
+            return {
+                ...state,
+                updatedLocation: action.payload
             }
 
         case locationTypes.GET_REGION_LOADING:
@@ -44,6 +61,17 @@ const locationReducers = (state = initialState, action) => {
             return {
                 ...state,
                 newRegion: action.payload
+            }
+
+        case locationTypes.EDIT_REGION_LOADING:
+            return {
+                ...state,
+                updateRegionLoading: action.payload
+            }
+        case locationTypes.EDIT_REGION_SUCCESS:
+            return {
+                ...state,
+                updatedRegion: action.payload
             }
     
         default: return state;

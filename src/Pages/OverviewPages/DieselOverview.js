@@ -10,11 +10,14 @@ function DieselOverview(props) {
   const [showprocurementsModal, setShowprocurementsModal] = useState(false)
   const [showConsumptionsModal, setShowConsumptionsModal] = useState(false)
   const [dieselDataTable, setDieselDataTable] = useState({})
+  const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
+      dayjs(),])
   const [dieselProcureDataTable, setDieselProcureDataTable] = useState({})
 
   const { Search } = Input;
   
   dayjs.extend(customParseFormat);
+  const monthFormat = 'MM/YYYY';
   const dateFormat = 'DD/MM/YYYY';
   const { RangePicker } = DatePicker;
 
@@ -289,7 +292,7 @@ function DieselOverview(props) {
           Diesel Overview
         </Typography.Title>
         <Space>
-          <RangePicker
+          {/* <RangePicker
             style={{
               width: 264.29,
               height: 41.19,
@@ -298,6 +301,27 @@ function DieselOverview(props) {
             defaultValue={[dayjs().startOf("month"), dayjs()]}
             format={dateFormat}
             onChange={onSelectDateDieselOverview}
+          /> */}
+          <DatePicker
+            className="picker-date"
+            style={{
+              // height: 43
+            }}
+            // defaultValue={[
+            //   // dayjs("01/05/2024", dateFormat),
+            //   // dayjs("31/05/2024", dateFormat),
+            //   dayjs().startOf('month'),
+            //   dayjs(),
+            //   // moment().startOf("month"),
+            //   // moment().endOf("month"),
+            // ]}
+            defaultValue={selectedDate}
+            disabledDate={(current) => {
+              return current && current > dayjs().endOf('month');
+            }}
+            picker="month"
+            format={monthFormat}
+            // onChange={handleDateChange}
           />
         </Space>
       </div>

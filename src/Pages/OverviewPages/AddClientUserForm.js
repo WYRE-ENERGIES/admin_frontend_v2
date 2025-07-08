@@ -58,6 +58,7 @@ const SubmitButton = ({ form }) => {
 function AddClientUserForm(props) {
   const [form] = Form.useForm();
   const [holdLocationData, setHoldLocationData] = useState([]);
+  const [holdRolesData, setHoldRolesData] = useState([]);
   const clientId = props.auth.userData.client_id
 
   useEffect(() => {
