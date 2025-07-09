@@ -9,6 +9,15 @@ export const getLocationSuccess = (payload = true) => ({
     payload,
 });
 
+export const addLocationLoading = (payload = true) => ({
+    type: locationTypes.ADD_LOCATION_LOADING,
+    payload,
+});
+export const addLocationSuccess = (payload = true) => ({
+    type: locationTypes.ADD_LOCATION_SUCCESS,
+    payload,
+});
+
 export const editLocationLoading = (payload = true) => ({
     type: locationTypes.EDIT_LOCATION_LOADING,
     payload,
@@ -42,5 +51,14 @@ export const editRegionLoading = (payload = true) => ({
 });
 export const editRegionSuccess = (payload = true) => ({
     type: locationTypes.EDIT_REGION_SUCCESS,
+    payload,
+});
+
+export const deleteRegionLoading = (payload = true) => ({
+    type: locationTypes.DELETE_REGION_LOADING,
+    payload,
+});
+export const deleteRegionSuccess = (payload = true) => ({
+    type: locationTypes.DELETE_REGION_SUCCESS,
     payload,
 });

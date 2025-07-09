@@ -1,9 +1,13 @@
+import { addLocationLoading } from "../../actions/location/location.creator"
 import locationTypes from "./location.type"
 
 const initialState = {
     fetchLocationLoading: false,
     fetchedLocation: false,
 
+    newLocationLoading: false,
+    newLocation: false,
+    
     updateLocationLoading: false,
     updatedLocation: false,
 
@@ -15,6 +19,9 @@ const initialState = {
     
     updateRegionLoading: false,
     updatedRegion: false,
+
+    removeRegionLoading: false,
+    removedRegion: false,
 }
 
 const locationReducers = (state = initialState, action) => {
@@ -30,6 +37,17 @@ const locationReducers = (state = initialState, action) => {
                 fetchedLocation: action.payload
             }
 
+        case locationTypes.ADD_LOCATION_LOADING:
+            return {
+                ...state,
+                addLocationLoading: action.payload
+            }
+        case locationTypes.ADD_LOCATION_SUCCESS:
+            return {
+                ...state,
+                newLocation: action.payload
+            }
+            
         case locationTypes.EDIT_LOCATION_LOADING:
             return {
                 ...state,
@@ -72,6 +90,17 @@ const locationReducers = (state = initialState, action) => {
             return {
                 ...state,
                 updatedRegion: action.payload
+            }
+
+        case locationTypes.DELETE_REGION_LOADING:
+            return {
+                ...state,
+                removeRegionLoading: action.payload
+            }
+        case locationTypes.DELETE_REGION_SUCCESS:
+            return {
+                ...state,
+                removedRegion: action.payload
             }
     
         default: return state;

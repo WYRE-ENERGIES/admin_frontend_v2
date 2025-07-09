@@ -15,7 +15,8 @@ export const addClientUsersData = (clientId, values) => async (dispatch) => {
       return { fulfilled: true, message: 'successful', data: response.data }
     } catch (error) {
       dispatch(addClientUserLoading(false));
-      return { fulfilled: false, message: error.response.data.detail }
+      console.log('Error message === ', error.response.data.username); 
+      return { fulfilled: false, message: error.response.detail }
     }
 };
 

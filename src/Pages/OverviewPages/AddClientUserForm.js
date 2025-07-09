@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData } from "../../redux/actions/clientUser/clientUser.action"; 
 import { getLocationsData } from "../../redux/actions/location/location.action";
+import { getAllRoles } from "../../redux/actions/auth/auth.action";
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
@@ -61,6 +62,11 @@ function AddClientUserForm(props) {
   const [holdRolesData, setHoldRolesData] = useState([]);
   const clientId = props.auth.userData.client_id
 
+  const authData = useSelector((state) => state.auth);
+  console.log('User auth-data -> ', authData);
+  console.log('holdRolesData -> ', holdRolesData);
+  console.log('fetchedRoles -> ', props.auth.fetchedRoles);
+
   useEffect(() => {
     const handleBranch = async () => {
       const requestBranchesData = await props.getLocationsData(clientId)
@@ -70,6 +76,20 @@ function AddClientUserForm(props) {
     }
     handleBranch()
   },[])
+  useEffect(() => {
+    const handleRoles = async () => {
+      const requestRolesData = await props.getAllRoles()
+      if (requestRolesData.fulfilled) {
+        // setHoldRolesData(requestRolesData.data)
+      }
+    }
+    handleRoles()
+  },[])
+  useEffect(() => {
+    if (props.auth.fetchedRoles) {
+      setHoldRolesData(props.auth.fetchedRoles)
+    }
+  },[props.auth.fetchedRoles])
 
   const options = [];
   if (holdLocationData) {
@@ -81,9 +101,11 @@ function AddClientUserForm(props) {
       });
     })
   }
-
-  useEffect(() => {
-  },[])
+  const options_roles = Object.entries(holdRolesData).map(([label, value]) => ({
+    label,
+    value
+  }));
+  // console.log('options_roles----> ', options_roles);
 
   const assignLocationToUser = async (value) => {
     const userId = clientId
@@ -99,24 +121,30 @@ function AddClientUserForm(props) {
     const clientId = props.auth.userData.client_id
     props.getClientUsersData(clientId);
   }
-  const submitNewClientUsers = async (values) => {
+  const submitNewClientUsers = async (values) => {  
     const {location, ...others } = values;
     const createUserRequest = await props.addClientUsersData(clientId, others);
-
     if (createUserRequest.fulfilled) {
       const assignLocationRequest = await props.assignLocation(
         createUserRequest.data.id,
-        {user: createUserRequest.data.id, add: location}
+        { user: createUserRequest.data.id, add: location }
       );
       if (assignLocationRequest.fulfilled) {
-        successNotificationPopUp("success", "client user page");
+        // successNotificationPopUp("success", "client user page");
+        notification.success({
+          message: "Success",
+          description: createUserRequest.data?.message,
+        });
         form.resetFields();
         return showclientUsersList();
       }
-
-      
     }
-    return errorNotificationPopUp('error', 'client user page')  
+    // return errorNotificationPopUp('error', 'client user page')  
+    return notification.error({
+      message: "Error",
+      description:
+        createUserRequest?.message?.username,
+    });
   };
   
 
@@ -204,7 +232,7 @@ function AddClientUserForm(props) {
                   />
                 </Form.Item>
                 <Form.Item
-                  name="role"
+                  name="roles"
                   label="Assign Role"
                 rules={[
                   {
@@ -226,11 +254,7 @@ function AddClientUserForm(props) {
                     placeholder="Add Role"
                     // defaultValue={["AdeolaHopewell", "Agodi"]}
                     onChange={handleChange}
-                    options={[
-                      { value: 'Admin', label: 'Admin' },
-                      { value: 'Operator', label: 'Operator' },
-                      { value: 'Viewer', label: 'Viewer' },
-                    ]}
+                    options={options_roles}
                   />
                 </Form.Item>
                 <Form.Item>
@@ -250,7 +274,8 @@ const mapDispatchToProps = {
   getClientUsersData,
   getUserBranchesData,
   getLocationsData,
-  assignLocation
+  assignLocation,
+  getAllRoles
 };
 
 const mapStateToProps = (state) => ({

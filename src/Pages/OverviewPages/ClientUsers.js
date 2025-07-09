@@ -10,6 +10,7 @@ import EditClientUserForm from "./EditClientUserForm";
 import AddClientUserForm from "./AddClientUserForm";
 import { BsThreeDots } from "react-icons/bs";
 import { getLocationsData } from "../../redux/actions/location/location.action";
+import { getAllRoles } from "../../redux/actions/auth/auth.action";
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
@@ -39,6 +40,8 @@ function ClientUsers(props) {
   const isNextLoadable = currentPage*pageSize < pageDataHolder.length;
 
   const { Search } = Input;
+  const authData = useSelector((state) => state.auth);
+  console.log('auth-data -> ', authData);
   
   dayjs.extend(customParseFormat);
 
@@ -215,7 +218,7 @@ function ClientUsers(props) {
             cancelText="No"
           >
             {/* <CloseOutlined style={{ color: 'red', cursor: 'pointer' }} /> */}
-            <Button style={{ background:'red', color: 'white', cursor: 'pointer' }}>delete</Button>
+            <Button style={{ background:'#C72525', color: 'white', cursor: 'pointer' }}>delete</Button>
           </Popconfirm>
         ),
       },
@@ -349,6 +352,7 @@ const mapDispatchToProps = {
   getViewUserBranchesData,
   updateClientUsersData,
   removeClientUsersData,
+  getAllRoles,
 };
 
 const mapStateToProps = (state) => ({

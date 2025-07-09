@@ -1,10 +1,10 @@
-import { Button, DatePicker, Dropdown, Form, Image, Input, List, Menu, Modal, Select, Space, Spin, Table, Typography, message, notification } from "antd";
+import { Button, DatePicker, Dropdown, Form, Image, Input, List, Menu, Modal, Popconfirm, Select, Space, Spin, Table, Typography, message, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
-import { addARegion, getLocationsData, getRegionsListData, updateARegion } from "../../redux/actions/location/location.action";
-import { EditOutlined, EyeOutlined, MoreOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
+import { addALocation, addARegion, deleteARegion, getLocationsData, getRegionsListData, updateALocation, updateARegion } from "../../redux/actions/location/location.action";
+import { DeleteOutlined, EditOutlined, EyeOutlined, MoreOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
 import { BsThreeDots } from "react-icons/bs";
 import axios from "axios";
 
@@ -49,14 +49,6 @@ const SubmitButton = ({ form }) => {
       // disabled={!submittable}
       >
         Done
-      </Button>
-      <Button
-        style={{ backgroundColor: "#C72525", color: "#fff", height: "40px", borderRadius: "7px", width: "47%" }}
-        type="primary"
-        htmlType="submit"
-      // disabled={!submittable}
-      >
-        Remove
       </Button>
     </>
   );
@@ -109,29 +101,45 @@ function ViewLocations(props) {
     showRegionLists()
   }, [])
 
-  const handleEdit = (record) => {
+  const handleEditRegion = (record) => {
     setSelectedRegion(record);
     form.setFieldsValue({ region: record.region });
     setEditModalVisible(true);
   };
 
-  const handleClickEditLocation = (record) => {
-    console.log('record data = ', record);
-    
+  const handleClickEditLocation = (record) => {    
     setlocationTableData(record);
     editLocationform.setFieldsValue({ 
       name: record.name,
       region: record.region,
       address: record.address,
       city: record.city,
-
     });
     setEditLocationModal(true);
   };
 
-  const handleView = (record) => {
+  const handleViewRegion = (record) => {
     setSelectedRegion(record);
     setViewModalVisible(true);
+  };
+
+  const handleDeleteRegion = async (record) => {
+    console.log('delete-id === ', record);
+    
+    setSelectedRegion(record);
+    const request = await props.deleteARegion(record);
+    if (request.fulfilled) {
+      notification.success({
+        message: "Success",
+        description: request.data?.message,
+      });
+      showRegionLists()
+    }
+    return notification.error({
+      message: "Error",
+      description:
+        request?.message,
+    });
   };
 
   const data = props.locationPage.fetchedLocation.results
@@ -181,19 +189,32 @@ function ViewLocations(props) {
         const menu = (
           <Menu>
             <Menu.Item
+              key="view"
+              icon={<EyeOutlined />}
+              onClick={() => handleViewRegion(record)}
+            >
+              View
+            </Menu.Item>
+            <Menu.Item
               key="edit"
               icon={<EditOutlined />}
-              onClick={() => handleEdit(record)}
+              onClick={() => handleEditRegion(record)}
             >
               Edit
             </Menu.Item>
             <Menu.Item
-              key="view"
-              icon={<EyeOutlined />}
-              onClick={() => handleView(record)}
+              key="delete"
+              icon={<DeleteOutlined/>}
             >
-              View
-            </Menu.Item>
+              <Popconfirm
+                title="Are you sure to delete this region?"
+                onConfirm={() => handleDeleteRegion(record.id)}
+                okText="Yes"
+                cancelText="No"
+              >
+                Delete
+              </Popconfirm>
+            </Menu.Item>            
           </Menu>
         );
 
@@ -365,7 +386,6 @@ function ViewLocations(props) {
       );
     }
   });
-  console.log('regionsTableData --> ', regionsTableData);
   
   const columns = [
     {
@@ -434,15 +454,8 @@ function ViewLocations(props) {
       key: 'branches',
       render: branches => branches.length // or JSON.stringify(branches) if needed
     },
-    // {
-    //   title: "Number of branches",
-    //   dataIndex: "no_of_branches",
-    //   render: (value) => <>{value}</>,
-    //   key: "no_of_branches",
-    // },
     regionActionsColumn()
   ];
-  const regionsBranches = ''
   const regionTotalsColumns = [
     {
       title: "Branch Name",
@@ -469,37 +482,25 @@ function ViewLocations(props) {
       key: 'branches',
       render: branches => branches.length // or JSON.stringify(branches) if needed
     },
-    // {
-    //   title: "Number of branches",
-    //   dataIndex: "no_of_branches",
-    //   render: (value) => <>{value}</>,
-    //   key: "no_of_branches",
-    // },
     regionActionsColumn()
   ];
-  console.log('regionsTableData.branches---> ', regionsTableData);
-  
 
-  const onRegionSubmit = async (values) => {
-    try {
-      const response = await axios.post(
-        `https://api/v1/accounts/client/${clientId}/add-regions/`, // replace with your actual API
-        {
-          region: values.region, // sending the form value as request body
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+  const submitNewLocation = async (values) => {
+    const request = await props.addALocation(clientId, values);
 
-      message.success("Region data submitted successfully!");
-      console.log("Response:", response.data);
-    } catch (error) {
-      console.error("Submission error:", error);
-      message.error("Something went wrong while submitting!");
+    if (request.fulfilled) {
+      notification.success({
+        message: "Success",
+        description: request.data?.message,
+      });
+      addLocationform.resetFields();
+      showLocationList()
     }
+    return notification.error({
+      message: "Error",
+      description:
+        request?.message,
+    });
   };
   const submitNewRegion = async (values) => {
     const request = await props.addARegion(clientId,
@@ -523,6 +524,24 @@ function ViewLocations(props) {
     });
   };
 
+  const handleUpdateLocation = async (values) => {
+    const request = await props.updateALocation(locationTableData.id,values
+    );
+
+    if (request.fulfilled) {
+      notification.success({
+      message: "Success",
+      description: request.data?.message,
+    });
+      editLocationform.resetFields();
+      showLocationList()
+    }
+    return notification.error({
+      message: "Error",
+      description:
+        request?.message || 'Your request can not be completed now, please try again later',
+    });
+  };
   const handleUpdateRegion = async (values) => {
     const request = await props.updateARegion(selectedRegion.id,
       {
@@ -555,21 +574,6 @@ function ViewLocations(props) {
         <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
           Location
         </Typography.Title>
-        {/* <Space>
-          <RangePicker
-            style={{
-              width: 264.29,
-              height: 41.19,
-              borderRadius: 11,
-            }}
-            defaultValue={[
-              dayjs().startOf('month'),
-              dayjs()
-            ]}
-            format={dateFormat}
-            // onChange={onSelectDateDieselOverview}
-          />
-        </Space> */}
         <Space>
           <div>
             <Button
@@ -602,10 +606,10 @@ function ViewLocations(props) {
               name="basic"
               layout="vertical"
               autoComplete="off"
-            // onFinish={submitNewRegion}
+            onFinish={submitNewLocation}
             >
               <Form.Item
-                name="branch_name"
+                name="name"
                 label="Branch Name"
                 rules={[
                   {
@@ -613,16 +617,16 @@ function ViewLocations(props) {
                   },
                 ]}
               >
-                <Input placeholder="Head Office" />
+                <Input placeholder="eg; Head Office" />
               </Form.Item>
               <Form.Item
                 name="region"
                 label="Region"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
+                // rules={[
+                //   {
+                //     required: true,
+                //   },
+                // ]}
               >
                 {/* <Input 
                     placeholder="Central" 
@@ -646,11 +650,11 @@ function ViewLocations(props) {
               <Form.Item
                 name="city"
                 label="City"
-                rules={[
-                  {
-                    required: true,
-                  },
-                ]}
+                // rules={[
+                //   {
+                //     required: true,
+                //   },
+                // ]}
               >
                 <Select
                   mode="single"
@@ -676,7 +680,7 @@ function ViewLocations(props) {
                   },
                 ]}
               >
-                <Input.TextArea placeholder="Ebute metaaaa, Lagos-Island" />
+                <Input.TextArea placeholder="eg; Ebute metaaaa, Lagos-Island" />
               </Form.Item>
               <Form.Item>
                 {/* <SubmitButton form={form} /> */}
@@ -709,6 +713,10 @@ function ViewLocations(props) {
             visible={editLocationModal}
             title="Edit Location Data"
             onCancel={() => setEditLocationModal(false)}
+            onOk={() => {
+            // perform update action here
+            setEditLocationModal(false);
+          }}
             footer={null}
             // maxWidth={457}
             height={594}
@@ -730,7 +738,7 @@ function ViewLocations(props) {
                 name="basic"
                 layout="vertical"
                 autoComplete="off"
-                // onFinish={submitNewClientUsers}
+                onFinish={handleUpdateLocation}
               >
                 <Form.Item
                   name="name"
@@ -746,11 +754,11 @@ function ViewLocations(props) {
                 <Form.Item
                   name="region"
                   label="Region"
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //   },
+                  // ]}
                 >
                   {/* <Input style={{ fontSize: 16 }} placeholder="Enter email" /> */}
                   <Select
@@ -771,11 +779,11 @@ function ViewLocations(props) {
                 <Form.Item
                   name="city"
                   label="City"
-                  rules={[
-                    {
-                      required: true,
-                    },
-                  ]}
+                  // rules={[
+                  //   {
+                  //     required: true,
+                  //   },
+                  // ]}
                 >
                   {/* <Input placeholder="Ebute meta" /> */}
                   <Select
@@ -805,7 +813,15 @@ function ViewLocations(props) {
                   <Input.TextArea placeholder="Ebute meta, Lagos-Island" />
                 </Form.Item>
                 <Form.Item>
-                  <SubmitButton form={form} />
+                  <SubmitButton form={form} /> <Button
+                    style={{ backgroundColor: "#C72525", color: "#fff", height: "40px", borderRadius: "7px", width: "47%" }}
+                    type="primary"
+                    // htmlType="council"
+                    // disabled={!submittable}
+                    onClick={() => setEditLocationModal(false)}
+                  >
+                    Cancel
+                  </Button>
                 </Form.Item>
               </Form>
             </Spin>
@@ -1058,9 +1074,12 @@ function ViewLocations(props) {
 
 const mapDispatchToProps = {
   getLocationsData,
+  addALocation,
+  updateALocation,
   getRegionsListData,
   addARegion,
-  updateARegion
+  updateARegion,
+  deleteARegion,
 };
 
 const mapStateToProps = (state) => ({
