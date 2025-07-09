@@ -36,6 +36,11 @@ const UtilityCostPerBranchChart = ({
         label: "Utility Cost (naira)",
         data: costs,
         backgroundColor: "#5C12A7",
+        borderRadius: {
+          topLeft: 6,
+          topRight: 6
+        },
+        borderSkipped: false
       },
     ],
   };
@@ -47,9 +52,19 @@ const UtilityCostPerBranchChart = ({
       title: { display: false },
     },
     scales: {
-      y: { beginAtZero: true, title: { display: true, text: "Amount (naira)" } },
-      x: { title: { display: true, text: "Branches" } },
+      x: { 
+        title: { display: true, text: "Branches" },
+        grid: { display: false }
+      },
     },
+    layout: {
+      padding: {
+        top: 10,
+        bottom: 10,
+        left: 10,
+        right: 10
+      }
+    }
   };
 
   return (

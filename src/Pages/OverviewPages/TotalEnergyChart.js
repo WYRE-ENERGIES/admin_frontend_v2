@@ -83,7 +83,7 @@ function TotalEnergyChart(props) {
       {
         label: "Utility",
         data: displayedData.map(item => item.utility_energy),
-        backgroundColor: "#094D92",
+        backgroundColor: "#F9CF40",
         borderRadius: 6,
         barThickness: 40,
         maxBarThickness: 40,
