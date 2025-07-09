@@ -79,8 +79,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
       });
       const historicalAverage = Array.from({ length: 12 }, (_, i) => costReducerStates.historic_average)
 
-      console.log('historicalAverage', historicalAverage)
-
       const costDataSource = {
         labels,
         datasets: [
