@@ -123,9 +123,7 @@ function ViewLocations(props) {
     setViewModalVisible(true);
   };
 
-  const handleDeleteRegion = async (record) => {
-    console.log('delete-id === ', record);
-    
+  const handleDeleteRegion = async (record) => {   
     setSelectedRegion(record);
     const request = await props.deleteARegion(record);
     if (request.fulfilled) {
@@ -565,7 +563,6 @@ function ViewLocations(props) {
   };
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
 
   return (

@@ -62,7 +62,6 @@ function TotalEnergyChart(props) {
   }));
 
   const handleRegionChange = value => {
-    console.log(`selected ${value}`);
   };
   const displayedData = selectedIds.length === 0
     ? useEnergyData
@@ -90,14 +89,8 @@ function TotalEnergyChart(props) {
       },
     ]
   };
-  console.log('USE-ENERGY-DATA----------:', useEnergyData);
-  console.log('displayedData == ', displayedData);
-  console.log('Chart-data == ', chartJsData);
-  console.log('seleted id == ', selectedIds);
-  console.log('DATA  == ', props.overviewPage.fetchedTotalEnergyBarChart);
   
   const handleCompareBranch = (Ids) => {
-    console.log('id == ', Ids);
   if (Ids.length <= 5) {
     setSelectedIds(Ids);
   } else {
@@ -107,7 +100,6 @@ function TotalEnergyChart(props) {
     // setCurrentPage(1);
     const filteredBranches = useEnergyData.filter(item => Ids.includes(item.id))
     // setEnergyChartData(filteredBranches)
-    console.log('filteredBranches == ', filteredBranches);
 
 
   };
@@ -119,7 +111,6 @@ function TotalEnergyChart(props) {
   useEffect(() => {
     setPageDataHolder(totalEnergyAPIdata)
   }, [totalEnergyAPIdata])
-  // console.log('Branches Data === ', holdLocationData);
   const handleDateChange = (date) => {
     if (!date) return;
     const month = dayjs(date).month() + 1; // JS month is 0-indexed, so add 1
@@ -159,15 +150,9 @@ function TotalEnergyChart(props) {
   const handleMonthChange = (date, dateString) => {
     // `date` is a dayjs object
     // `dateString` is the string like '2025-06'
-    console.log('Selected month:', date);
-    console.log('Formatted string:', dateString);
-
     // Optionally store or use the first and last days of the selected month
     const startOfMonth = date.startOf('month').format('YYYY-MM-DD');
     const endOfMonth = date.endOf('month').format('YYYY-MM-DD');
-
-    console.log('Start:', startOfMonth);
-    console.log('End:', endOfMonth);
 
     setSelectedDate(date); // or set it as string if needed
     props.getTotalEnergyBarChartData(clientId, date)
@@ -320,7 +305,6 @@ function TotalEnergyChart(props) {
   }
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
   const suffix = (
     <SearchOutlined
@@ -400,12 +384,7 @@ function TotalEnergyChart(props) {
                     defaultValue="lucy"
                     style={{ marginRight: 10 }}
                     onChange={handleRegionChange}
-                    options={[
-                      { value: 'jack', label: 'North' },
-                      { value: 'lucy', label: 'South' },
-                      { value: 'Yiminghe', label: 'East' },
-                      { value: 'disabled', label: 'Disabled', disabled: true },
-                    ]}
+                    options={[]}
                   />
                   <DatePicker
                     className="picker-date"
