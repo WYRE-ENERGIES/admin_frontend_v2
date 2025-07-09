@@ -4,6 +4,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { BsThreeDots } from 'react-icons/bs'
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
+import { APIService} from "../../config/Api/apiServices";
 import { getDieselConsumptionData, getDieselData, getDieselProcurementData } from "../../redux/actions/diesel/diesel.action"; 
 
 function DieselOverview(props) {
@@ -13,6 +14,19 @@ function DieselOverview(props) {
   const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
       dayjs(),])
   const [dieselProcureDataTable, setDieselProcureDataTable] = useState({})
+  const [dieselSummary, setDieselSummary] = useState({
+    monthly_usage: {
+      litres: 0,
+      cost: 0,
+      avg_price_per_litre: 0
+    },
+    stock_balance: {
+      litres: 0,
+      cost: 0,
+      current_price_per_litre: 0
+    },
+    branch_count: 0
+  });
 
   const { Search } = Input;
   
@@ -285,6 +299,30 @@ function DieselOverview(props) {
     console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
 
+  const fetchDieselSummary = async () => {
+    try {
+      const clientId = props.auth.userData.client_id;
+      const selectedDate = selectedDate[0];
+      const month = selectedDate.month() + 1;
+      const year = selectedDate.year();
+      
+      const response = await APIService.instance.get(
+        `/api/v2/client-cumulative-diesel-data/${clientId}/?month=7&year=2025`
+      );
+      setDieselSummary(response.data);
+    } catch (error) {
+      console.error('Error fetching diesel summary:', error);
+      notification.error({
+        message: 'Error',
+        description: 'Failed to fetch diesel summary data',
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchDieselSummary();
+  }, [selectedDate]);
+
   return (
     <>
       <div className="AppHeader">
@@ -292,38 +330,82 @@ function DieselOverview(props) {
           Diesel Overview
         </Typography.Title>
         <Space>
-          {/* <RangePicker
+          <RangePicker
             style={{
               width: 264.29,
               height: 41.19,
               borderRadius: 11,
             }}
-            defaultValue={[dayjs().startOf("month"), dayjs()]}
+            defaultValue={[dayjs().startOf("month"), dayjs()]} 
             format={dateFormat}
             onChange={onSelectDateDieselOverview}
-          /> */}
-          <DatePicker
-            className="picker-date"
-            style={{
-              // height: 43
-            }}
-            // defaultValue={[
-            //   // dayjs("01/05/2024", dateFormat),
-            //   // dayjs("31/05/2024", dateFormat),
-            //   dayjs().startOf('month'),
-            //   dayjs(),
-            //   // moment().startOf("month"),
-            //   // moment().endOf("month"),
-            // ]}
-            defaultValue={selectedDate}
-            disabledDate={(current) => {
-              return current && current > dayjs().endOf('month');
-            }}
-            picker="month"
-            format={monthFormat}
-            // onChange={handleDateChange}
           />
         </Space>
+      </div>
+
+      <div style={{ display: 'flex', gap: '24px', marginBottom: '24px', marginTop: '24px', paddingInline: '24px' }}>
+        <div style={{
+          flex: 1,
+          paddingInline: '24px',
+          borderRadius: '12px',
+          backgroundColor: '#F5F7FA',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <Typography.Title level={4}>Monthly Usage</Typography.Title>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Litres</span>
+              <span>{dieselSummary.monthly_usage.litres.toLocaleString()}L</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Cost</span>
+              <span>₦{dieselSummary.monthly_usage.cost.toLocaleString()}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Avg Price/L</span>
+              <span>₦{dieselSummary.monthly_usage.avg_price_per_litre.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{
+          flex: 1,
+          paddingInline: '24px',
+          borderRadius: '12px',
+          backgroundColor: '#F5F7FA',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <Typography.Title level={4}>Stock Balance</Typography.Title>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Litres</span>
+              <span>{dieselSummary.stock_balance.litres.toLocaleString()}L</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Cost</span>
+              <span>₦{dieselSummary.stock_balance.cost.toLocaleString()}</span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <span>Current Price/L</span>
+              <span>₦{dieselSummary.stock_balance.current_price_per_litre.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        <div style={{
+          flex: 1,
+          paddingInline: '24px',
+          borderRadius: '12px',
+          backgroundColor: '#F5F7FA',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <Typography.Title level={4}>Branches</Typography.Title>
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
+            <Typography.Title level={2} style={{ color: '#5C12A7' }}>
+              {dieselSummary.branch_count}
+            </Typography.Title>
+          </div>
+        </div>
       </div>
       <div className="##########">
         <section className="total-energy-bar-chart diesel-overview-table">

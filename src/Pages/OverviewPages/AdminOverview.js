@@ -108,9 +108,6 @@ function AdminOverview(props) {
   })
   }
   // const selectRegion = OPTIONS.map((o) => !selectedItems.includes(o));
-  const handleRegionChange = value => {
-    console.log(`selected ${value}`);
-  };
   
   console.log('pageDataHolder-------> ', pageDataHolder);
   console.log('keyMetricsData-------> ', keyMetricsData);
@@ -185,6 +182,30 @@ function AdminOverview(props) {
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
   // const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().format("DD-MM-YYYY HH:mm");
+
+
+   useEffect(() => {
+    async function fetchRegions() {
+      if (!clientId) return;
+      try {
+        const res = await APIService.get(`/api/v1/accounts/client/${clientId}/regions-branches/`);
+        const regions = res.data.regions || [];
+        setRegionOptions(regions.map(r => r.region));
+        // Mapping region name to branch names for fast lookup
+        const map = {};
+        regions.forEach(r => {
+          map[r.region] = (r.branches || []).map(b => b.branch_name);
+        });
+        setRegionBranchMap(map);
+      } catch (e) {
+        setRegionOptions([]);
+        setRegionBranchMap({});
+      }
+    }
+    fetchRegions();
+  }, [clientId]);
+
+  const handleRegionChange = (region) => setSelectedRegion(region);
 
   // const showKeyMetricsTable = () => {
   //   const clientId = props.auth.userData.client_id
