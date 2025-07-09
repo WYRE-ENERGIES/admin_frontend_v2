@@ -1,21 +1,14 @@
 "use client"
 
 import { useState } from "react"
-import { Layout, Menu, Avatar, Card, Input, Button, Select, Upload, Form, Typography, Space, Divider } from "antd"
+import { Layout, Avatar, Card, Input, Button, Select, Upload, Form, Typography, Space, Divider } from "antd"
 import {
-  DashboardOutlined,
   UserOutlined,
-  EnvironmentOutlined,
-  AimOutlined,
-  CarOutlined,
-  SettingOutlined,
-  QuestionCircleOutlined,
   EditOutlined,
   UploadOutlined,
-  MenuOutlined,
 } from "@ant-design/icons"
 
-const { Sider, Content } = Layout
+const { Content } = Layout
 const { Title, Text } = Typography
 const { Option } = Select
 
@@ -23,12 +16,11 @@ export default function SettingsPage() {
   const [editingPersonal, setEditingPersonal] = useState(false)
   const [editingPassword, setEditingPassword] = useState(false)
 
-  // Get user data from localStorage
-  const userData = JSON.parse(localStorage.getItem('loggedWyreUserAdmin')) || {}
-  const decodedUserData = userData.decodedUserData || {}
+  const userData = JSON.parse(localStorage.getItem('currentUser')) || {}
 
   const logOut = () => {
     window.localStorage.removeItem("loggedWyreUserAdmin");
+    window.localStorage.removeItem("currentUser");
     window.location.href = "/";
   };
 
@@ -53,19 +45,19 @@ export default function SettingsPage() {
             }}
           >
             <Avatar 
-            size={120}
-            style={{ backgroundColor: "#b9b9b9", border: "4px solid #fff" }}
-            shape="square"
-              src={decodedUserData.client_image ? `/media/${decodedUserData.client_image}` : undefined}
+              size={120}
+              style={{ backgroundColor: "#b9b9b9", border: "4px solid #fff" }}
+              shape="square"
+              src={userData.client_image}
               icon={<UserOutlined />}
             />
             <div>
-              <Title level={2} style={{ margin: 0 }}>
-                {decodedUserData.first_name || "Asake. U. Way "} {decodedUserData.last_name}
+              <Title level={2} style={{ marginTop: 1 }}>
+                {userData.first_name || "---"} {userData.last_name}
               </Title>
               <Text type="secondary">
-                {decodedUserData.email || "asake@wyre.com"}
-              </Text>
+                {userData.username}
+            </Text>
             </div>
           </div>
         </div>
@@ -105,26 +97,25 @@ export default function SettingsPage() {
                     <Text type="secondary">Full Name</Text>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
                       <UserOutlined />
-                      <Text>{decodedUserData.first_name} {decodedUserData.last_name}</Text>
+                      <Text>{userData.first_name} {userData.last_name}</Text>
                     </div>
                   </div>
                   <div>
                     <Text type="secondary">Email Address</Text>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
-                      <Text>{decodedUserData.email}</Text>
+                      <Text>{userData.email}</Text>
                     </div>
                   </div>
                   <div>
                     <Text type="secondary">Phone Number</Text>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
-                      <span style={{ color: "#00C851" }}>🇳🇬</span>
-                      <Text>{decodedUserData.phone_number}</Text>
+                      <Text>{userData.phone_number || "---"}</Text>
                     </div>
                   </div>
                   <div>
                     <Text type="secondary">Account Type</Text>
                     <div style={{ marginTop: "4px" }}>
-                      <Text>{decodedUserData.role_text}</Text>
+                      <Text>{userData.client_type}</Text>
                     </div>
                   </div>
                 </div>
@@ -132,10 +123,10 @@ export default function SettingsPage() {
                 <Form layout="vertical">
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
                     <Form.Item label="Full Name">
-                      <Input prefix={<UserOutlined />} defaultValue={`${decodedUserData.first_name} ${decodedUserData.last_name}`} style={{ borderRadius: "8px" }} />
+                      <Input prefix={<UserOutlined />} defaultValue={`${userData.first_name} ${userData.last_name}`} style={{ borderRadius: "8px" }} />
                     </Form.Item>
                     <Form.Item label="Email Address">
-                      <Input defaultValue={decodedUserData.email} style={{ borderRadius: "8px" }} />
+                      <Input defaultValue={userData.email} style={{ borderRadius: "8px" }} />
                     </Form.Item>
                     <Form.Item label="Phone Number">
                       <Input.Group compact>
@@ -143,13 +134,13 @@ export default function SettingsPage() {
                           <Option value="+234">🇳🇬 +234</Option>
                         </Select>
                         <Input
-                          defaultValue={decodedUserData.phone_number}
+                          defaultValue={userData.phone_number}
                           style={{ width: "calc(100% - 80px)", borderRadius: "0 8px 8px 0" }}
                         />
                       </Input.Group>
                     </Form.Item>
                     <Form.Item label="Account Type">
-                      <Input defaultValue={decodedUserData.role_text} style={{ borderRadius: "8px" }} />
+                      <Input defaultValue={userData.client_type} style={{ borderRadius: "8px" }} />
                     </Form.Item>
                   </div>
 
@@ -159,7 +150,7 @@ export default function SettingsPage() {
                     <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
                       <Avatar
                         size={64}
-                        src={decodedUserData.client_image ? `/media/${decodedUserData.client_image}` : undefined}
+                        src={userData.client_image}
                         icon={<UserOutlined />}
                       />
                       <Upload>
@@ -214,7 +205,7 @@ export default function SettingsPage() {
                 <div>
                   <Text type="secondary">Password</Text>
                   <div style={{ marginTop: "4px" }}>
-                    <Text>Godis****</Text>
+                    <Text>********</Text>
                   </div>
                 </div>
               ) : (

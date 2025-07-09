@@ -1,27 +1,28 @@
 import moment from "moment";
 import { addUserBranchLoading, addUserBranchSuccess, addUsersLoading, addUsersSuccess, editUserLoading, editUserSuccess, getAllDevicesLoading, getAllDevicesSuccess, getDeviceConsumptionLoading, getDeviceConsumptionSuccess, getDeviceReadingsLoading, getDeviceReadingsSuccess, getDeviceSwitchLoading, getDeviceSwitchSuccess, getRolesLoading,  getRolesSuccess, loginUserLoading } from "./auth.creator";
 import { APIService, APIServiceNoAuth } from "../../../config/Api/apiServices";
-
-
+import jwt_decode from 'jwt-decode';
 
 export const loginAUser = (parameters) => async (dispatch) => {
   dispatch(loginUserLoading(true));
-  const requestUrl = `/token/`;
+  const requestUrl = '/api/v1/auth/';
   try {
     const response = await APIServiceNoAuth.post(requestUrl, parameters);
-
-    // dispatch(loginUserSuccess(response.data));
-    window.localStorage.setItem('loggedWyreUserAdmin', JSON.stringify(response.data));
-    window.localStorage.setItem('loggedWyreUserData', JSON.stringify(response.data.user));
-    window.localStorage.setItem('loggedWyreUserClient', JSON.stringify(response.data.data));
-    dispatch(loginUserLoading(false))
-    return { fulfilled: true, message: 'successful' }
-  } catch (error) {
+    
+    // Decode the access token to get user details
+    const decodedToken = jwt_decode(response.data.data.token.access);
+    
+    window.localStorage.setItem('loggedWyreUserAdmin', JSON.stringify(response.data?.data.token));
+    window.localStorage.setItem('currentUser', JSON.stringify(decodedToken));
+    
     dispatch(loginUserLoading(false));
-    return { fulfilled: false, message: error.response.data.detail }
+    return { fulfilled: true, message: 'successful' };
+  } catch (error) {
+    console.error('Login error:', error);
+    dispatch(loginUserLoading(false));
+    return { fulfilled: false, message: error.response?.data?.detail || 'An error occurred during login' };
   }
 };
-
 
 /**
  * @description method to sign out a user
