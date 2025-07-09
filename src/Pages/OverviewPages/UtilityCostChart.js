@@ -85,7 +85,7 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
           {
             label: "PHCN Cost",
             data: clientCost,
-            backgroundColor: "#094D92",
+            backgroundColor: "#F9CF40",
             borderRadius: 6,
             barThickness: 30,
             maxBarThickness: 30,
