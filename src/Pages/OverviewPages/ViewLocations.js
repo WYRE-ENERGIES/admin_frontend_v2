@@ -144,6 +144,17 @@ function ViewLocations(props) {
 
   const data = props.locationPage.fetchedLocation.results
   const regionData = props.locationPage.fetchedRegion.regions
+  // const regionOptions = regionData.map((item) => ({
+  //   label: item.region,
+  //   value: item.id,
+  // }));
+  const regionOptions = (regionData || []).map((item) => ({
+  label: item.region,
+  value: item.id,
+}));
+  // console.log('Checking Regions -----> ', regionData);
+  console.log('select Option -----> ', regionOptions);
+  
   const regionColumns = [
     {
       title: "Region",
@@ -644,32 +655,18 @@ function ViewLocations(props) {
                   placeholder="Select Region"
                 // defaultValue={["AdeolaHopewell", "Agodi"]}
                 // onChange={handleChange}
-                // options={options}
+                options={regionOptions}
                 />
               </Form.Item>
               <Form.Item
                 name="city"
                 label="City"
-                // rules={[
-                //   {
-                //     required: true,
-                //   },
-                // ]}
-              >
-                <Select
-                  mode="single"
-                  allowClear
-                  style={
-                    {
-                      // width: "100%",
-                      background: "#F2F2F8"
-                    }
-                  }
-                  placeholder="Select City"
-                // defaultValue={["AdeolaHopewell", "Agodi"]}
-                // onChange={handleChange}
-                // options={options}
-                />
+              // rules={[
+              //   {
+              //     required: true,
+              //   },
+              // ]}
+              ><Input.TextArea placeholder="eg; Ikeja" />
               </Form.Item>
               <Form.Item
                 name="address"
@@ -762,19 +759,19 @@ function ViewLocations(props) {
                 >
                   {/* <Input style={{ fontSize: 16 }} placeholder="Enter email" /> */}
                   <Select
-                  mode="single"
-                  allowClear
-                  style={
-                    {
-                      // width: "100%",
-                      background: "#F2F2F8"
+                    mode="single"
+                    allowClear
+                    style={
+                      {
+                        // width: "100%",
+                        background: "#F2F2F8"
+                      }
                     }
-                  }
-                  placeholder="Region"
-                // defaultValue={["AdeolaHopewell", "Agodi"]}
-                // onChange={handleChange}
-                // options={options}
-                />
+                    placeholder="Region"
+                    defaultValue={["AdeolaHopewell", "Agodi"]}
+                    // onChange={handleChange}
+                    options={regionOptions}
+                  />
                 </Form.Item>
                 <Form.Item
                   name="city"
@@ -785,21 +782,7 @@ function ViewLocations(props) {
                   //   },
                   // ]}
                 >
-                  {/* <Input placeholder="Ebute meta" /> */}
-                  <Select
-                  mode="single"
-                  allowClear
-                  style={
-                    {
-                      // width: "100%",
-                      background: "#F2F2F8"
-                    }
-                  }
-                  placeholder="City"
-                // defaultValue={["AdeolaHopewell", "Agodi"]}
-                // onChange={handleChange}
-                // options={options}
-                />
+                  <Input placeholder="eg; Ikeja" />
                 </Form.Item>
                 <Form.Item
                   name="address"
