@@ -453,7 +453,7 @@ function AdminOverview(props) {
           <Space>
             <div 
               className="top-card-2" 
-              style={{minWidth: 250, overflow: 'hidden',}}
+              // style={{minWidth: 245, overflow: 'hidden',}}
             >
               <Space>
                 <div className="card-content">
@@ -464,7 +464,7 @@ function AdminOverview(props) {
                 </div>
                 <div 
                   className="card-content"
-                  style={{minWidth: 198, overflow: 'hidden',}}
+                  // style={{minWidth: 198, overflow: 'hidden',}}
                 >
                   <Spin
                     spinning={

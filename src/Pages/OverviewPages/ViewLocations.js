@@ -219,9 +219,10 @@ function ViewLocations(props) {
         return (
           <Dropdown overlay={menu} trigger={["click"]}>
             <Button
-              shape="round"
+              shape="none"
+              type="text"
               icon={<MoreOutlined />}
-              style={{ borderColor: "#a855f7", color: "#a855f7" }} // Optional purple styling
+              // style={{ borderColor: "#a855f7", color: "#a855f7" }}
             />
           </Dropdown>
         );
@@ -328,6 +329,7 @@ function ViewLocations(props) {
             handleClickEditLocation(record)
           }}
           rel="noopener noreferrer"
+          style={{ color: 'black' }}
         >
           {/* <Dropdown
             menu={menuProps}
