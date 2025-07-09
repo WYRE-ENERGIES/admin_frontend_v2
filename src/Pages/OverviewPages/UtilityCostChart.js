@@ -77,9 +77,9 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
       const wyreCost = costReducerStates.cost_overview.map((reducer) => {
         return reducer.wyre_cost;
       });
-      const historicalAverage = costReducerStates.cost_overview.map((reducer) => {
-        return reducer.average_cost;
-      });
+      const historicalAverage = Array.from({ length: 12 }, (_, i) => costReducerStates.historic_average)
+
+      console.log('historicalAverage', historicalAverage)
 
       const costDataSource = {
         labels,
@@ -95,13 +95,13 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
           {
             label: "Wyre Cost",
             data: wyreCost,
-            backgroundColor: "#F9CF40",
+            backgroundColor: "#5C12A7",
             borderRadius: 6,
             barThickness: 30,
             maxBarThickness: 30,
           },
           {
-            label: "Average Cost",
+            label: "historical Average",
             data: historicalAverage,
             backgroundColor: "#EF0000",
             type: "line",
