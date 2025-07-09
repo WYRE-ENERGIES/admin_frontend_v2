@@ -12,6 +12,8 @@ export const loginAUser = (parameters) => async (dispatch) => {
 
     // dispatch(loginUserSuccess(response.data));
     window.localStorage.setItem('loggedWyreUserAdmin', JSON.stringify(response.data));
+    window.localStorage.setItem('loggedWyreUserData', JSON.stringify(response.data.user));
+    window.localStorage.setItem('loggedWyreUserClient', JSON.stringify(response.data.data));
     dispatch(loginUserLoading(false))
     return { fulfilled: true, message: 'successful' }
   } catch (error) {
