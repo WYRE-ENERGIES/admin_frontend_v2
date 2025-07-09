@@ -154,6 +154,7 @@ function ViewLocations(props) {
 }));
   // console.log('Checking Regions -----> ', regionData);
   console.log('select Option -----> ', regionOptions);
+  console.log('Selected region -----> ', selectedRegion);
   
   const regionColumns = [
     {
@@ -934,7 +935,7 @@ function ViewLocations(props) {
             {selectedRegion?.branches?.length > 0 ? (
               <ul>
                 {selectedRegion.branches.map((branch, idx) => (
-                  <li key={idx}>{branch}</li>
+                  <li key={idx}>{branch.branch_name}</li>
                 ))}
               </ul>
             ) : (
