@@ -687,7 +687,10 @@ function AdminOverview(props) {
       <div className="##########">
         <section className="co2 & total-energy-card">
           <Space>
-            <div className="top-card-2" style={{overflow: 'hidden',}}>
+            <div 
+              className="top-card-2" 
+              style={{minWidth: 250, overflow: 'hidden',}}
+            >
               <Space>
                 <div className="card-content">
                   <Image style={{ height: 30, width: 30 }} className="amount-icon"
@@ -695,17 +698,20 @@ function AdminOverview(props) {
                     preview={false}
                   />
                 </div>
-                <div className="card-content">
+                <div 
+                  className="card-content"
+                  style={{minWidth: 198, overflow: 'hidden',}}
+                >
                   <Spin
                     spinning={
                       props.overviewPage?.fetchTotalCostTopCardLoading
                     }
                   >
                     <header style={{ fontWeight: "bold" }}>
-                      {props.overviewPage?.fetchedTotalCostTopCard.total_calculated_cost?.toLocaleString(
+                      {/* {props.overviewPage?.fetchedTotalCostTopCard.total_calculated_cost?.toLocaleString(
                         undefined,
                         { maximumFractionDigits: 2 }
-                      )}{" "}
+                      )}{" "} */}40,100,292,443.00
                       Naira
                     </header>
                   </Spin>
