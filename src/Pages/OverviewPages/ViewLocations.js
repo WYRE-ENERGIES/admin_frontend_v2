@@ -123,9 +123,7 @@ function ViewLocations(props) {
     setViewModalVisible(true);
   };
 
-  const handleDeleteRegion = async (record) => {
-    console.log('delete-id === ', record);
-    
+  const handleDeleteRegion = async (record) => {   
     setSelectedRegion(record);
     const request = await props.deleteARegion(record);
     if (request.fulfilled) {
@@ -221,9 +219,10 @@ function ViewLocations(props) {
         return (
           <Dropdown overlay={menu} trigger={["click"]}>
             <Button
-              shape="round"
+              shape="none"
+              type="text"
               icon={<MoreOutlined />}
-              style={{ borderColor: "#a855f7", color: "#a855f7" }} // Optional purple styling
+              // style={{ borderColor: "#a855f7", color: "#a855f7" }}
             />
           </Dropdown>
         );
@@ -330,6 +329,7 @@ function ViewLocations(props) {
             handleClickEditLocation(record)
           }}
           rel="noopener noreferrer"
+          style={{ color: 'black' }}
         >
           {/* <Dropdown
             menu={menuProps}
@@ -565,7 +565,6 @@ function ViewLocations(props) {
   };
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
 
   return (

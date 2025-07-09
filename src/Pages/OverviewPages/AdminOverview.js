@@ -109,12 +109,7 @@ function AdminOverview(props) {
   }
   // const selectRegion = OPTIONS.map((o) => !selectedItems.includes(o));
   const handleRegionChange = value => {
-    console.log(`selected ${value}`);
   };
-  
-  console.log('pageDataHolder-------> ', pageDataHolder);
-  console.log('keyMetricsData-------> ', keyMetricsData);
-  console.log('Check IDs-------> ', selectedIds);
 
   const { Search } = Input;
     const [downloading, setDownloading] = useState(false);
@@ -156,7 +151,6 @@ function AdminOverview(props) {
 
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-      console.log("props:", props)
       const branchName = props?.auth?.userData?.client_name || 'branch';
       const month = new Date().getMonth();
       const year = new Date().getFullYear();
@@ -255,7 +249,6 @@ function AdminOverview(props) {
   // };
 
   const handleCompareBranches = (Ids) => {
-    console.log('id == ', Ids);
   if (Ids.length <= 5) {
     setSelectedIds(Ids);
   } else {
@@ -265,7 +258,6 @@ function AdminOverview(props) {
     // setCurrentPage(1);
     const filteredBranches = keyMetricsData.filter(item => Ids.includes(item.id))
     // setEnergyChartData(filteredBranches)
-    console.log('filteredBranches == ', filteredBranches);
     // setkeyMetricsData(filteredBranches)
 
 
@@ -428,7 +420,6 @@ function AdminOverview(props) {
 
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
 
   const getUtilityCostData = () => {
@@ -689,7 +680,7 @@ function AdminOverview(props) {
           <Space>
             <div 
               className="top-card-2" 
-              style={{minWidth: 250, overflow: 'hidden',}}
+              // style={{minWidth: 245, overflow: 'hidden',}}
             >
               <Space>
                 <div className="card-content">
@@ -700,7 +691,7 @@ function AdminOverview(props) {
                 </div>
                 <div 
                   className="card-content"
-                  style={{minWidth: 198, overflow: 'hidden',}}
+                  // style={{minWidth: 198, overflow: 'hidden',}}
                 >
                   <Spin
                     spinning={
@@ -708,10 +699,10 @@ function AdminOverview(props) {
                     }
                   >
                     <header style={{ fontWeight: "bold" }}>
-                      {/* {props.overviewPage?.fetchedTotalCostTopCard.total_calculated_cost?.toLocaleString(
+                      {props.overviewPage?.fetchedTotalCostTopCard.total_calculated_cost?.toLocaleString(
                         undefined,
                         { maximumFractionDigits: 2 }
-                      )}{" "} */}40,100,292,443.00
+                      )}{" "}
                       Naira
                     </header>
                   </Spin>
