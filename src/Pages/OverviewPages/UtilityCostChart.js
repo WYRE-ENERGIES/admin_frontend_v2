@@ -72,14 +72,12 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
         return reducer.month;
       });
       const clientCost = costReducerStates.cost_overview.map((reducer) => {
-        return reducer.client_cost;
+        return reducer.phcn_cost;
       });
       const wyreCost = costReducerStates.cost_overview.map((reducer) => {
         return reducer.wyre_cost;
       });
-      const historicalAverage = costReducerStates.cost_overview.map((reducer) => {
-        return reducer.historic_average;
-      });
+      const historicalAverage = Array.from({ length: 12 }, (_, i) => costReducerStates.historic_average)
 
       const costDataSource = {
         labels,
@@ -95,13 +93,13 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
           {
             label: "Wyre Cost",
             data: wyreCost,
-            backgroundColor: "#F9CF40",
+            backgroundColor: "#5C12A7",
             borderRadius: 6,
             barThickness: 30,
             maxBarThickness: 30,
           },
           {
-            label: "Historic Average",
+            label: "historical Average",
             data: historicalAverage,
             backgroundColor: "#EF0000",
             type: "line",
@@ -161,9 +159,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
     },
   };
 
-  const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
-  };
 
   return (
     <>

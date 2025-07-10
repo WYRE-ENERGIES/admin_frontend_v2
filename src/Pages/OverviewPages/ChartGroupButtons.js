@@ -44,9 +44,18 @@ function ChartGroupButtons({ buttons, isSelectChart, setIsSelectChart }) {
         <Button
           key={index}
           className="chart_buttons"
+          style={{
+            backgroundColor: index === isSelectChart && '#F1E4FF',
+          }}
           onClick={() => {
             setIsSelectChart(index);
           }}
+          // style={{
+          //     backgroundColor: isSelectChart ? '#f4e8ff' : 'none',
+          //     color: isSelectChart ? '#7a1fa2' : 'none',
+          //     boxShadow: isSelectChart ? '0 0 0 1px #d6b3ff' : 'none',
+          //     fontWeight: isSelectChart ? 600 : 'none',
+          //   }}
         >
           {text.icon}
           {text.label}

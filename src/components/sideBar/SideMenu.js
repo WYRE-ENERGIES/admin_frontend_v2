@@ -239,6 +239,7 @@ function SideMenu({collapsed, setCollapsed}) {
             style={{ padding: 0 }}
             src={require('../../Logos/polaris-logo/polarisSvg.svg').default}
             alt='Clients Logo'
+            preview={false}
           />
           <p style={{
             fontSize: '12px',

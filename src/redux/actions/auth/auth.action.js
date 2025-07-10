@@ -41,7 +41,7 @@ export const loginAUser = (parameters) => async (dispatch) => {
 export const getAllRoles = () => async (dispatch) => {
 
   dispatch(getRolesLoading(true));
-  const requestUrl = `/cadmin/roles`;
+  const requestUrl = `/api/v1/roles`;
   try {
     const response = await APIService.get(requestUrl);
 

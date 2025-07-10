@@ -8,6 +8,7 @@ import { connect, useSelector } from "react-redux";
 import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData, getViewUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action";
 import AddClientUserForm from "./AddClientUserForm";
 import { getLocationsData } from "../../redux/actions/location/location.action";
+import { getAllRoles } from "../../redux/actions/auth/auth.action";
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
@@ -63,8 +64,11 @@ const SubmitButton = ({ form }) => {
 function EditClientUserForm(props) {
   const [form] = Form.useForm();
   const [holdLocationData, setHoldLocationData] = useState([])
+  const [holdRolesData, setHoldRolesData] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState([]);
+  const [selectedRoles, setSelectedRoles] = useState([]);
   const [newLocation, setNewLocation] = useState([]);
+  const [newRolesField, setNewRolesField] = useState([]);
   const [addedLocations, setAddedLocations] = useState([]);
   const [removedLocations, setRemovedLocations] = useState([]);
 
@@ -76,6 +80,8 @@ function EditClientUserForm(props) {
     })
     setSelectedLocation(props.ClientUserTableData.branches)
     setNewLocation(props.ClientUserTableData.branches)
+    setSelectedRoles(props.ClientUserTableData.roles)
+    setNewRolesField(props.ClientUserTableData.roles)
   }, [props.ClientUserTableData])
 
   const options = [];
@@ -89,6 +95,20 @@ function EditClientUserForm(props) {
     }
     handleBranch()
   }, [props.ClientUserTableData.id])
+  useEffect(() => {
+    const handleRoles = async () => {
+      const requestRolesData = await props.getAllRoles()
+      if (requestRolesData.fulfilled) {
+        // setHoldRolesData(requestRolesData.data)
+      }
+    }
+    handleRoles()
+  },[])
+  useEffect(() => {
+    if (props.auth.fetchedRoles) {
+      setHoldRolesData(props.auth.fetchedRoles)
+    }
+  },[props.auth.fetchedRoles])
 
   if (holdLocationData) {
     // options = branches[eachBranch];
@@ -99,8 +119,12 @@ function EditClientUserForm(props) {
         key: location.id,
       })
     })
-
   }
+
+  const options_roles = Object.entries(holdRolesData).map(([label, value]) => ({
+    label,
+    value
+  }));
 
   const handleChange = (value) => {
     const newSelections = value.filter(branch => !selectedLocation.includes(branch));
@@ -151,6 +175,7 @@ function EditClientUserForm(props) {
         successNotificationPopUp("success", "client user page");
         form.resetFields(); 
         setNewLocation(null)
+        setSelectedRoles(null)
         props.getViewUserBranchesData(props.ClientUserTableData.id)
         return showclientUsersList();
       }else{
@@ -186,7 +211,7 @@ function EditClientUserForm(props) {
                 >
                   <Form.Item
                     name="username"
-                    label="Name"
+                    label="Username"
                     rules={[
                       {
                         required: true,
@@ -229,7 +254,7 @@ function EditClientUserForm(props) {
                     <SelectBranch branches={props.ClientUserTableData.branches} />
                   </Form.Item>
                   <Form.Item
-                    name="role"
+                    name="roles"
                     label="Update Role"
                   // rules={[
                   //   {
@@ -238,19 +263,19 @@ function EditClientUserForm(props) {
                   // ]}
                   >
                     <Select
-                    mode="single"
-                    allowClear
-                    style={
-                      {
-                        // width: "100%",
-                        background: "#F2F2F8"
+                      mode="single"
+                      allowClear
+                      style={
+                        {
+                          // width: "100%",
+                          background: "#F2F2F8"
+                        }
                       }
-                    }
-                    placeholder="Change Role"
-                    // defaultValue={["AdeolaHopewell", "Agodi"]}
-                    onChange={handleChange}
-                    options={[]}
-                  />
+                      placeholder="Change Role"
+                      defaultValue={selectedRoles}
+                      // onChange={selectedRoles}
+                      options={options_roles}
+                    />
                   </Form.Item>
                   <Form.Item>
                     <SubmitButton form={form} />
@@ -273,7 +298,8 @@ const mapDispatchToProps = {
   getUserBranchesData,
   updateClientUsersData,
   assignLocation,
-  getViewUserBranchesData
+  getViewUserBranchesData,
+  getAllRoles
 };
 
 const mapStateToProps = (state) => ({

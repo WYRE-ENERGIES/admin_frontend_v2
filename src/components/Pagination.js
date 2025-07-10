@@ -9,7 +9,6 @@ const Pagination = ({totalPosts, postsPerPage, setCurrentPage}) => {
         pages.push(i);     
      }
 
-     console.log("Pages==============", pages);
 
   return (
     <div className="pagination">

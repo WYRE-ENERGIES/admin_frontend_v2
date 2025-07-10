@@ -1,8 +1,27 @@
+import { addLocationLoading } from "../../actions/location/location.creator"
 import locationTypes from "./location.type"
 
 const initialState = {
     fetchLocationLoading: false,
     fetchedLocation: false,
+
+    newLocationLoading: false,
+    newLocation: false,
+    
+    updateLocationLoading: false,
+    updatedLocation: false,
+
+    fetchRegionLoading: false,
+    fetchedRegion: false,
+
+    addNewRegionLoading: false,
+    newRegion: false,
+    
+    updateRegionLoading: false,
+    updatedRegion: false,
+
+    removeRegionLoading: false,
+    removedRegion: false,
 }
 
 const locationReducers = (state = initialState, action) => {
@@ -16,6 +35,72 @@ const locationReducers = (state = initialState, action) => {
             return {
                 ...state,
                 fetchedLocation: action.payload
+            }
+
+        case locationTypes.ADD_LOCATION_LOADING:
+            return {
+                ...state,
+                addLocationLoading: action.payload
+            }
+        case locationTypes.ADD_LOCATION_SUCCESS:
+            return {
+                ...state,
+                newLocation: action.payload
+            }
+            
+        case locationTypes.EDIT_LOCATION_LOADING:
+            return {
+                ...state,
+                updateLocationLoading: action.payload
+            }
+        case locationTypes.EDIT_LOCATION_SUCCESS:
+            return {
+                ...state,
+                updatedLocation: action.payload
+            }
+
+        case locationTypes.GET_REGION_LOADING:
+            return {
+                ...state,
+                fetchRegionLoading: action.payload
+            }
+        case locationTypes.GET_REGION_SUCCESS:
+            return {
+                ...state,
+                fetchedRegion: action.payload
+            }
+
+        case locationTypes.ADD_REGION_LOADING:
+            return {
+                ...state,
+                addNewRegionLoading: action.payload
+            }
+        case locationTypes.ADD_REGION_SUCCESS:
+            return {
+                ...state,
+                newRegion: action.payload
+            }
+
+        case locationTypes.EDIT_REGION_LOADING:
+            return {
+                ...state,
+                updateRegionLoading: action.payload
+            }
+        case locationTypes.EDIT_REGION_SUCCESS:
+            return {
+                ...state,
+                updatedRegion: action.payload
+            }
+
+        case locationTypes.DELETE_REGION_LOADING:
+            return {
+                ...state,
+                removeRegionLoading: action.payload
+            }
+        case locationTypes.DELETE_REGION_SUCCESS:
+            return {
+                ...state,
+                removedRegion: action.payload
             }
     
         default: return state;

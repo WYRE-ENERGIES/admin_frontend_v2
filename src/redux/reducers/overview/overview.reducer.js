@@ -15,8 +15,16 @@ const initialState = {
     fetchedDieselCostBarChart: false,
     fetchDieselLitresBarChartLoading: false,
     fetchedDieselLitresBarChart: false,
+    fetchDieselLitresPerBranchLoading: false,
+    fetchedDieselLitresPerBranch: false,
     fetchKeyMetricsLoading: false,
-    fetchedKeyMetrics: false
+    fetchedKeyMetrics: false,
+    fetchUtilityCostPerBranchLoading: false,
+    fetchedUtilityCostPerBranch: false,
+    fetchUtilityEnergyPerBranchLoading: false,
+    fetchedUtilityEnergyPerBranch: false,
+    fetchDieselCostPerBranchLoading: false,
+    fetchedDieselCostPerBranch: false,
 }
 
 const overviewReducers = (state = initialState, action) => {
@@ -97,6 +105,17 @@ const overviewReducers = (state = initialState, action) => {
                 ...state,
                 fetchedDieselLitresBarChart: action.payload
             }
+
+        case overviewTypes.GET_DIESEL_LITRES_PER_BRANCH_LOADING:
+            return {
+                ...state,
+                fetchDieselLitresPerBranchLoading: action.payload
+            }
+        case overviewTypes.GET_DIESEL_LITRES_PER_BRANCH_SUCCESS:
+            return {
+                ...state,
+                fetchedDieselLitresPerBranch: action.payload
+            }
             
         case overviewTypes.GET_KEY_METRICS_LOADING:
             return {
@@ -107,6 +126,39 @@ const overviewReducers = (state = initialState, action) => {
             return {
                 ...state,
                 fetchedKeyMetrics: action.payload
+            }
+
+        case overviewTypes.GET_UTILITY_COST_PER_BRANCH_LOADING:
+            return {
+                ...state,
+                fetchUtilityCostPerBranchLoading: action.payload
+            }
+        case overviewTypes.GET_UTILITY_COST_PER_BRANCH_SUCCESS:
+            return {
+                ...state,
+                fetchedUtilityCostPerBranch: action.payload
+            }
+
+        case overviewTypes.GET_UTILITY_ENERGY_PER_BRANCH_LOADING:
+            return {
+                ...state,
+                fetchUtilityEnergyPerBranchLoading: action.payload
+            }
+        case overviewTypes.GET_UTILITY_ENERGY_PER_BRANCH_SUCCESS:
+            return {
+                ...state,
+                fetchedUtilityEnergyPerBranch: action.payload
+            }
+
+        case overviewTypes.GET_DIESEL_COST_PER_BRANCH_LOADING:
+            return {
+                ...state,
+                fetchDieselCostPerBranchLoading: action.payload
+            }
+        case overviewTypes.GET_DIESEL_COST_PER_BRANCH_SUCCESS:
+            return {
+                ...state,
+                fetchedDieselCostPerBranch: action.payload
             }
     
         default: return state;

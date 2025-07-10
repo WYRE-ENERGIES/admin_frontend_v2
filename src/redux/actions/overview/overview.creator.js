@@ -63,11 +63,47 @@ export const getDieselLitresBarChartSuccess = (payload = true) => ({
     payload,
 });
 
+export const getDieselLitresPerBranchLoading = (payload = true) => ({
+    type: overviewTypes.GET_DIESEL_LITRES_PER_BRANCH_LOADING,
+    payload,
+});
+export const getDieselLitresPerBranchSuccess = (payload = true) => ({
+    type: overviewTypes.GET_DIESEL_LITRES_PER_BRANCH_SUCCESS,
+    payload,
+});
+
 export const getKeyMetricsLoading = (payload = true) => ({
     type: overviewTypes.GET_KEY_METRICS_LOADING,
     payload,
 });
 export const getKeyMetricsSuccess = (payload = true) => ({
     type: overviewTypes.GET_KEY_METRICS_SUCCESS,
+    payload,
+});
+
+export const getUtilityCostPerBranchLoading = (payload = true) => ({
+    type: overviewTypes.GET_UTILITY_COST_PER_BRANCH_LOADING,
+    payload,
+});
+export const getUtilityCostPerBranchSuccess = (payload = true) => ({
+    type: overviewTypes.GET_UTILITY_COST_PER_BRANCH_SUCCESS,
+    payload,
+});
+
+export const getUtilityEnergyPerBranchLoading = (payload = true) => ({
+    type: overviewTypes.GET_UTILITY_ENERGY_PER_BRANCH_LOADING,
+    payload,
+});
+export const getUtilityEnergyPerBranchSuccess = (payload = true) => ({
+    type: overviewTypes.GET_UTILITY_ENERGY_PER_BRANCH_SUCCESS,
+    payload,
+});
+
+export const getDieselCostPerBranchLoading = (payload = true) => ({
+    type: overviewTypes.GET_DIESEL_COST_PER_BRANCH_LOADING,
+    payload,
+});
+export const getDieselCostPerBranchSuccess = (payload = true) => ({
+    type: overviewTypes.GET_DIESEL_COST_PER_BRANCH_SUCCESS,
     payload,
 });
