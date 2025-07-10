@@ -169,9 +169,7 @@ function DieselCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
     props.getClientDieselCostData(clientId, getYear(useYear))
   }
 
-  const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
-  };
+
 
   return (
     <>

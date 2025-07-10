@@ -135,7 +135,7 @@ const ClientDetails = () => {
     try {
       const response = await APIService.get(`/api/v1/accounts/client/${clientId}/additional-user/`);
       setAdditionalUsers(response.data.users || []);
-      console.log(response.data)
+
     } catch (error) {
       notification.error({
         message: 'Error',

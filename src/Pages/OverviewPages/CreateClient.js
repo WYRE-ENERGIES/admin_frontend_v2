@@ -89,9 +89,9 @@ const createClientWithRegions = async (clientData) => {
     });
   }
   
-  console.log('FormData entries:');
+
   for (let [key, value] of formData.entries()) {
-    console.log(key, value);
+
   }
   
   return await instanceMultipart.post('/api/v1/accounts/create-client-with-regions/', formData);
@@ -286,7 +286,7 @@ const CreateClient = () => {
     if (savedData) {
       try {
         loadedFormValues = JSON.parse(savedData);
-        console.log('Loaded RAW form data from localStorage:', loadedFormValues);
+
       } catch (error) {
         localStorage.removeItem(LOCAL_STORAGE_KEY);
       }
@@ -295,7 +295,6 @@ const CreateClient = () => {
     if (savedProgress) {
       try {
         loadedProgress = JSON.parse(savedProgress);
-        console.log('Loaded progress from localStorage:', loadedProgress);
       } catch (error) {
         localStorage.removeItem(CLIENT_PROGRESS_KEY);
       }
@@ -304,14 +303,12 @@ const CreateClient = () => {
     // Load saved client ID and step
     if (savedClientId) {
       setClientId(savedClientId);
-      console.log('Loaded client ID from localStorage:', savedClientId);
     }
     
     if (savedStep) {
       const stepNumber = parseInt(savedStep, 10);
       if (stepNumber >= 0 && stepNumber <= 3) {
         setCurrentStep(stepNumber);
-        console.log('Loaded current step from localStorage:', stepNumber);
       }
     }
     
@@ -359,7 +356,6 @@ const CreateClient = () => {
 
   useEffect(() => {
     if (clientId && currentStep >= 2 && clientRegions.length === 0 && !regionsLoading) {
-      console.log('Client ID changed, loading regions for step:', currentStep);
       loadClientRegions();
     }
   }, [clientId, currentStep]);
@@ -391,16 +387,13 @@ const CreateClient = () => {
 
   const loadClientRegions = async () => {
     if (!clientId) {
-      console.log('No client ID available for loading regions');
       return;
     }
     
-    console.log('Loading regions for client ID:', clientId);
     setRegionsLoading(true);
     try {
       const response = await getClientRegions(clientId);
-      console.log('Regions API response:', response);
-      console.log('Regions data:', response.data);
+
       
       // Ensure we always set an array
       let regionsData = [];
@@ -417,9 +410,9 @@ const CreateClient = () => {
         }
       }
       
-      console.log('Processed regions data:', regionsData);
+
       setClientRegions(regionsData);
-      console.log('Set client regions:', regionsData);
+
     } catch (error) {
       console.error('Failed to load client regions:', error);
       console.error('Error response:', error.response);
@@ -437,12 +430,8 @@ const CreateClient = () => {
     try {
       // Combine form values with logoFile state
       const submitData = { ...values, logoFile };
-      console.log('Submitting client info with values:', submitData);
       const response = await createClientWithRegions(submitData);
-      console.log('Client created response:', response);
-      console.log('Client created data:', response.data);
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
+
       
       // Check for different possible response structures
       let clientId = null;
@@ -456,11 +445,9 @@ const CreateClient = () => {
         clientId = response.data.data.client_id;
       }
       
-      console.log('Extracted client ID:', clientId);
-      console.log('Full response data structure:', JSON.stringify(response.data, null, 2));
       
       if (clientId) {
-        console.log('Setting client ID to:', clientId);
+
         setClientId(clientId);
         setStepData(prev => ({ ...prev, clientInfo: response.data }));
         
@@ -472,11 +459,11 @@ const CreateClient = () => {
         message.success({ content: 'Client created successfully!', key: 'createClient', duration: 2 });
         return { success: true, data: response.data };
       } else {
-        console.log('No client ID found in response structure:', response.data);
+
         // If the API call was successful but we can't find the ID, still consider it a success
         // and try to extract any useful information
         if (response.status >= 200 && response.status < 300) {
-          console.log('API call was successful, treating as success');
+
           setStepData(prev => ({ ...prev, clientInfo: response.data }));
           
           // Try to extract client ID from response data
@@ -535,7 +522,6 @@ const CreateClient = () => {
     
     try {
       const response = await createMainUser(clientId, values);
-      console.log('Main user created:', response.data);
       
       setStepData(prev => ({ ...prev, mainUser: response.data }));
       
@@ -579,7 +565,6 @@ const CreateClient = () => {
     
     try {
       const response = await createBranches(clientId, values.branches);
-      console.log('Branches created:', response.data);
       
       setStepData(prev => ({ ...prev, branches: response.data }));
       
@@ -623,7 +608,6 @@ const CreateClient = () => {
     
     try {
       const response = await createAdditionalUsers(clientId, values.additionalUsers);
-      console.log('Additional users created:', response.data);
       
       setStepData(prev => ({ ...prev, additionalUsers: response.data }));
       
@@ -677,7 +661,6 @@ const CreateClient = () => {
 
   const handleNext = async () => {
     const currentValues = form.getFieldsValue();
-    console.log('Current step:', currentStep, 'Current values:', currentValues);
     
     // Validate current step fields
     let fieldsToValidatePaths = steps[currentStep].fieldsToValidate;
@@ -721,29 +704,23 @@ const CreateClient = () => {
 
     try {
       await form.validateFields(fieldsToValidatePaths);
-      console.log('Validation passed for step:', currentStep);
       
       // Submit current step data to API
       let result = { success: true };
       
       if (currentStep === 0) {
-        console.log('Submitting client info...');
         result = await submitClientInfo(currentValues);
       } else if (currentStep === 1) {
-        console.log('Submitting main user...');
         result = await submitMainUser(currentValues);
       } else if (currentStep === 2) {
-        console.log('Submitting branches...');
         result = await submitBranches(currentValues);
       } else if (currentStep === 3) {
-        console.log('Submitting additional users...');
         result = await submitAdditionalUsers(currentValues);
       }
       
-      console.log('API result:', result);
       
       if (result.success) {
-        console.log('Moving to next step from', currentStep, 'to', currentStep + 1);
+
         const nextStep = currentStep + 1;
         setCurrentStep(nextStep);
         
@@ -752,14 +729,13 @@ const CreateClient = () => {
         
         // Load regions for branch step after main user creation
         if (currentStep === 1 && clientId) {
-          console.log('Loading client regions for client ID:', clientId);
           await loadClientRegions();
         }
       } else {
         console.log('API call failed, not moving to next step');
       }
     } catch (info) {
-      console.log('Validate Failed:', info);
+
       const firstErrorField = info.errorFields?.[0]?.name?.join('.') || 'fields';
       message.warning(`Please complete the required ${firstErrorField} for this step.`);
     }
@@ -818,7 +794,6 @@ const CreateClient = () => {
                   onChange={(e) => {
                     const file = e.target.files[0];
                     if (file) {
-                      console.log('Logo file selected:', file);
                       if (file.size > 2 * 1024 * 1024) {
                         message.error('Logo file size must be less than 2MB!');
                         e.target.value = '';
@@ -1025,7 +1000,6 @@ const CreateClient = () => {
                                 type="link" 
                                 size="small" 
                                 onClick={() => {
-                                  console.log('Manually triggering regions load for client ID:', clientId);
                                   loadClientRegions();
                                 }}
                                 style={{ padding: 0, marginTop: '4px' }}

@@ -49,7 +49,7 @@ const AddAdditionalUsersModal = ({ visible, clientId, onCancel, onUsersAdded }) 
     
     try {
       const response = await createAdditionalUsers(clientId, values.additionalUsers);
-      console.log('Additional users created:', response.data);
+
       
       notification.success({ message: 'Additional users created successfully!' });
       

@@ -83,7 +83,6 @@ function EditClientUserForm(props) {
     setSelectedRoles(props.ClientUserTableData.roles)
     setNewRolesField(props.ClientUserTableData.roles)
   }, [props.ClientUserTableData])
-console.log(' ClientUserTableData == ', props.ClientUserTableData);
 
   const options = [];
   useEffect(() => {

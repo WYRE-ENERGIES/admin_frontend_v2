@@ -150,9 +150,7 @@ function ViewLocations(props) {
   label: item.region,
   value: item.id,
 }));
-  // console.log('Checking Regions -----> ', regionData);
-  console.log('select Option -----> ', regionOptions);
-  console.log('Selected region -----> ', selectedRegion);
+
   
   const regionColumns = [
     {
@@ -956,7 +954,6 @@ function ViewLocations(props) {
             initialValues={{ region: selectedRegion?.region }}
             onFinish={(values) => {
               // Call API or update state with new region name
-              console.log("Updated region:", values);
               setEditModalVisible(false);
             }}
           >
