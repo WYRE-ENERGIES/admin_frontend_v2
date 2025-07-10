@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Layout, Avatar, Card, Input, Button, Select, Upload, Form, Typography, Space, Divider, notification } from "antd"
 import {
   UserOutlined,
@@ -15,6 +15,10 @@ const { Title, Text } = Typography
 const { Option } = Select
 
 export default function SettingsPage() {
+  // Use state for userData
+  const [userData, setUserData] = useState(() => {
+    return JSON.parse(localStorage.getItem('currentUser')) || {}
+  })
   const [editingPersonal, setEditingPersonal] = useState(false)
   const [editingPassword, setEditingPassword] = useState(false)
   const [form] = Form.useForm()
@@ -25,105 +29,129 @@ export default function SettingsPage() {
   const [imagePreview, setImagePreview] = useState(null);
   const [pendingLogo, setPendingLogo] = useState(null);
 
-  const userData = JSON.parse(localStorage.getItem('currentUser')) || {}
+  useEffect(() => {
+    const handleStorage = () => {
+      const updatedUser = JSON.parse(localStorage.getItem('currentUser')) || {}
+      setUserData(updatedUser)
+    }
+    window.addEventListener('storage', handleStorage)
+    return () => window.removeEventListener('storage', handleStorage)
+  }, [])
+
+  const updateUserData = (newUserData) => {
+    setUserData(newUserData)
+    localStorage.setItem('currentUser', JSON.stringify(newUserData))
+  }
+
+
+  useEffect(() => {
+    form.setFieldsValue({
+      username: userData.username,
+      email: userData.email,
+      phone_number: userData.phone_number,
+      roles: userData.client_type
+    })
+  }, [userData, form])
+
   const clientId = userData.client_id
-  const userId = userData.id
 
   const handleSubmit = async (values) => {
     try {
-      setIsLoading(true)
-      
-      // Prepare user data update
+      setIsLoading(true);
+
       const updatedUserData = {
         username: values.username || userData.username,
-        phone_number: values.phone_number || userData.phone_number,
+        phone_number: values.phone_number || userData.phone_number || userData.phone,
         email: values.email || userData.email,
         roles: userData.roles,
         branch_id: userData.branch_id
-      }
+      };
 
-      // If there's a pending logo, include it in the update
+      const userUpdateResponse = await APIService.put(
+        `/api/v2/clients/${userData.client_id}/users/${userData.id}/`,
+        updatedUserData
+      );
+      const updatedUser = userUpdateResponse.data;
+
       if (pendingLogo) {
-        const formData = new FormData()
-        formData.append('logo', pendingLogo, pendingLogo.name)
-        
-        // Set proper headers for multipart form data
+        const formData = new FormData();
+        formData.append('logo', pendingLogo, pendingLogo.name);
+
         const config = {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
-        }
-        
-        // Update client with logo
-        await APIService.putMultipart(`/api/v1/accounts/view-update-client/${clientId}/`, formData, config)
-        
-        // Reset pending logo state
-        setPendingLogo(null)
-        setImagePreview(null)
+        };
+
+        await APIService.putMultipart(
+          `/api/v1/accounts/view-update-client/${userData.client_id}/`,
+          formData,
+          config
+        );
+
+        setPendingLogo(null);
+        setImagePreview(null);
       }
 
-      // Update user data
-      await APIService.put(`/api/v2/clients/${clientId}/users/${userId}/`, updatedUserData)
-      
-      // Get the updated client data to get the new logo URL
-      const clientResponse = await APIService.get(`/api/v1/accounts/view-update-client/${clientId}/`)
-      const clientData = clientResponse.data.client
-      
-      // Get the updated user data from the list endpoint
-      const userListResponse = await APIService.get(`/api/v2/clients/${clientId}/users/`)
-      const updatedUser = userListResponse.data.find(user => user.id === userId)
-      
-      if (!updatedUser || !clientData) {
-        throw new Error('User or client data not found in response')
-      }
-      
-      // Merge the updated user data with the client logo URL
+      const clientResponse = await APIService.get(
+        `/api/v1/accounts/view-update-client/${userData.client_id}/`
+      );
+      const clientData = clientResponse.data.client;
+
       const completeUserData = {
-        ...updatedUser,
-        client_image: clientData.logo
-      }
-      
-      // Update localStorage with the complete data
-      localStorage.setItem('currentUser', JSON.stringify(completeUserData))
-      
+        ...userData,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        phone: updatedUser.phone_number || updatedUser.phone,
+        first_name: updatedUser.first_name ? updatedUser.first_name : userData.first_name,
+        last_name: updatedUser.last_name ? updatedUser.last_name : userData.last_name,
+        client_image: clientData.logo,
+        client_type: clientData.client_type || userData.client_type,
+        // Optionally we can update other fields if we want, e.g. address, etc.
+      };
+
+      updateUserData(completeUserData);
+
       notification.success({
         message: 'Success',
         description: 'Profile updated successfully!',
         duration: 3
-      })
-      
-      // Reset form and editing state
-      setEditingPersonal(false)
-      form.resetFields()
+      });
+
+      setEditingPersonal(false);
+      form.setFieldsValue({
+        username: completeUserData.username,
+        email: completeUserData.email,
+        phone_number: completeUserData.phone,
+        roles: completeUserData.client_type
+      });
     } catch (error) {
-      console.error('Error updating profile:', error)
+      console.error('Error updating profile:', error);
       notification.error({
         message: 'Error',
         description: error.message || 'Failed to update profile. Please try again.',
         duration: 3
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleLogoUpload = async (file) => {
     try {
       setIsLogoLoading(true)
-      
-      // Get the actual file from the upload event
+
       const fileObj = file.originFileObj || file.file
-      
+
       if (!fileObj) {
         throw new Error('No file selected')
       }
-      
-      // Convert file to base64 for preview
+
       const dataUrl = await toBase64(fileObj)
       setImagePreview(dataUrl)
       setUploadedFile(fileObj)
       setPendingLogo(fileObj)
-      
+
       notification.success({
         message: 'Success',
         description: 'Logo preview updated successfully!',
@@ -174,7 +202,7 @@ export default function SettingsPage() {
   const handlePasswordSubmit = async (values) => {
     try {
       setIsLoading(true)
-      
+
       // Prepare password update payload
       const updatePayload = {
         current_password: values.current_password,
@@ -183,13 +211,13 @@ export default function SettingsPage() {
 
       // Update client with password
       await APIService.put(`/api/v1/accounts/view-update-client/${clientId}/`, updatePayload)
-      
+
       notification.success({
         message: 'Success',
         description: 'Password updated successfully!',
         duration: 3
       })
-      
+
       // Reset form and editing state
       setEditingPassword(false)
       passwordForm.resetFields()
@@ -240,7 +268,7 @@ export default function SettingsPage() {
             height: "200px",
             backgroundSize: "cover",
             backgroundPosition: "center",
-            backgroundRepeat: "no-repeat", 
+            backgroundRepeat: "no-repeat",
             position: "relative",
           }}
         >
@@ -252,11 +280,11 @@ export default function SettingsPage() {
               gap: "20px",
             }}
           >
-            <Avatar 
+            <Avatar
               size={120}
               style={{ backgroundColor: "#b9b9b9", border: "4px solid #fff" }}
               shape="square"
-              src={imagePreview || EnvData.REACT_APP_API_URL + userData.client_image}
+              src={EnvData.REACT_APP_API_URL + userData.client_image}
               icon={<UserOutlined />}
           />
             <div>
@@ -369,7 +397,6 @@ export default function SettingsPage() {
                         <Form.Item
                           name="phone_number"
                           noStyle
-                          rules={[{ required: true, message: 'Please enter your phone number' }]}
                           validateTrigger={"onChange"}
                         >
                           <Input
