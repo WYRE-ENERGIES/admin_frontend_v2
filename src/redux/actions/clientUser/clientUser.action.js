@@ -15,7 +15,6 @@ export const addClientUsersData = (clientId, values) => async (dispatch) => {
       return { fulfilled: true, message: 'successful', data: response.data }
     } catch (error) {
       dispatch(addClientUserLoading(false));
-      console.log('Error message === ', error.response.data.username); 
       return { fulfilled: false, message: error.response.detail }
     }
 };
@@ -85,7 +84,6 @@ export const getUserBranchesData = (userId) => async (dispatch) => {
       const response = await APIService.get(requestUrl);
   
       dispatch(getUserBranchSuccess(response.data));
-      // console.log('request-data =>>>>> ', response.data);
   
       dispatch(getUserBranchLoading(false))
       return { fulfilled: true, message: 'successful', data: response.data }

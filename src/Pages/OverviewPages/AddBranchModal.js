@@ -48,15 +48,12 @@ const AddBranchModal = ({ visible, clientId, onCancel, onBranchAdded }) => {
 
   const loadClientRegions = async () => {
     if (!clientId) {
-      console.log('No client ID available for loading regions');
       return;
     }
     
-    console.log('Loading regions for client ID:', clientId);
     setRegionsLoading(true);
     try {
       const response = await APIService.get(`/api/v1/accounts/client/${clientId}/regions/`);
-      console.log('Regions API response:', response);
       
       // Ensure we always set an array
       let regionsData = [];
@@ -72,12 +69,9 @@ const AddBranchModal = ({ visible, clientId, onCancel, onBranchAdded }) => {
           regionsData = [];
         }
       }
-      
-      console.log('Processed regions data:', regionsData);
+    
       setClientRegions(regionsData);
-      console.log('Set client regions:', regionsData);
     } catch (error) {
-      console.error('Failed to load client regions:', error);
       message.error('Failed to load client regions');
       setClientRegions([]); // Set empty array on error
     } finally {

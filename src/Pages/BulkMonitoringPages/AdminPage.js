@@ -177,8 +177,7 @@ function AdminPage(props) {
   ];
   
   const handleRowClick = (record) => {
-    // navigate('/detail', { state: { data: record } });
-    console.log('This Row is Clicked', record);
+
     return (
       <a
         rel="noopener noreferrer"
@@ -192,7 +191,7 @@ function AdminPage(props) {
 
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
+
   };
 
   return (
@@ -411,7 +410,6 @@ function AdminPage(props) {
               //   onClick: (event) => {
               //     window.location.href = `${window.location.href}branch?ee=${record.id}`;
               //   },
-              //   // onMouseEnter: () => console.log('Mouse entered row:', record),
               // })}
               rowKey={(record) => record.id}
               // scroll={{ x: 'max-content' }}
