@@ -17,7 +17,8 @@ import {
     HeatMapOutlined,
     LoginOutlined,
     MailOutlined,
-    DownloadOutlined,
+  DownloadOutlined,
+    SettingOutlined,
     ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { Button, Image, Menu, theme, Drawer, Space } from "antd";
@@ -71,12 +72,11 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
         {
             type: 'divider',
         },
-        {
-            label: "Log out",
-            key: '/log-out',
-            onClick: logOut,
-            icon: <LoginOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-        },
+            {
+        label: "Settings",
+        key: "/settings",
+        icon: <SettingOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+      },
         {
             type: 'divider',
         },

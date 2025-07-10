@@ -15,6 +15,7 @@ import ClientOverview from "../../Pages/OverviewPages/ClientOverview";
 import CreateClient from "../../Pages/OverviewPages/CreateClient";
 import ForceLoginHandler from "../../Pages/AuthPages/ForceLoginHandler";
 import DownloadPage from "../../Pages/AuthPages/DownloadPage";
+import Settings from "../../Pages/OverviewPages/Settings";
 
 function BulkMonitoringRoute() {
   return (
@@ -28,7 +29,7 @@ function BulkMonitoringRoute() {
         <Route path="/locations" element={<ViewLocations />}></Route>
         <Route path="/force-login" element={<ForceLoginHandler />}></Route>
         <Route path="/locations/branch" element={<BranchDetails />}></Route>
-        <Route path="/log-out" element={<LogOut />}></Route>
+        <Route path="/settings" element={<Settings />}></Route>
         <Route path="/support" element={<Support />}></Route>
           <Route path="/branch" element={<BranchDetails />}></Route>
             <Route exact path='/download-csv' element={<DownloadPage />} />
