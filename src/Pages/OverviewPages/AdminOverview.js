@@ -108,8 +108,9 @@ function AdminOverview(props) {
   })
   }
   // const selectRegion = OPTIONS.map((o) => !selectedItems.includes(o));
-  const handleRegionChange = value => {
-  };
+const handleRegionChange = value => {
+  setSelectedRegion(value);
+};
 
   const { Search } = Input;
     const [downloading, setDownloading] = useState(false);
@@ -826,19 +827,6 @@ function AdminOverview(props) {
                 value={selectedIds}
                 style={{ marginRight: 10 }}
                 options={options}
-              />
-              <Select
-                className="select-bar"
-                prefix="Region"
-                defaultValue="lucy"
-                style={{ marginRight: 10 }}
-                onChange={handleRegionChange}
-                options={[
-                  { value: 'jack', label: 'North' },
-                  { value: 'lucy', label: 'South' },
-                  { value: 'Yiminghe', label: 'East' },
-                  { value: 'disabled', label: 'Disabled', disabled: true },
-                ]}
               />
               <DatePicker
                   className="picker-date"
