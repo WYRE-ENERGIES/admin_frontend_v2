@@ -163,7 +163,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   margin-left: 30px;
   /* min-width: none; */
   height: 60px;
-  width: 198px;
+  min-width: 198px;
   overflow: 'hidden',
   /* margin-top: 20px; */
 }
@@ -177,7 +177,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   margin-left: 10px;
   /* min-width: none; */
   height: 60px;
-  width: 198px;
+  min-width: 198px;
   overflow: 'hidden',
   /* margin-top: 20px; */
 }

@@ -229,9 +229,6 @@ function DieselOverview(props) {
 
   const procurementDataSource = props.dieselPage.fetchedDieselProcurement
   const consumptionDataSource = props.dieselPage.fetchedDieselConsumption
-  const naira = '\u20A6'
-  console.log('Naira == ', naira);
-  
   const procurementModal = [
     {
       title: "Date",
@@ -285,7 +282,6 @@ function DieselOverview(props) {
   ];
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
 
   const fetchDieselCardData = async (month, year) => {

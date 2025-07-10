@@ -98,11 +98,9 @@ function DownloadPage(props) {
 
   const onChange = (_, inputedTime) => {
     setOperationTime(inputedTime)
-    console.log('onChange:', inputedTime);
   };
 
   const onDeviceSelection = (selected, _) => {
-    console.log(selected, _);
     setDeviceName(selected);
     setDeviceId(_.key);
   };

@@ -123,9 +123,7 @@ function ViewLocations(props) {
     setViewModalVisible(true);
   };
 
-  const handleDeleteRegion = async (record) => {
-    console.log('delete-id === ', record);
-    
+  const handleDeleteRegion = async (record) => {   
     setSelectedRegion(record);
     const request = await props.deleteARegion(record);
     if (request.fulfilled) {
@@ -144,6 +142,16 @@ function ViewLocations(props) {
 
   const data = props.locationPage.fetchedLocation.results
   const regionData = props.locationPage.fetchedRegion.regions
+  // const regionOptions = regionData.map((item) => ({
+  //   label: item.region,
+  //   value: item.id,
+  // }));
+  const regionOptions = (regionData || []).map((item) => ({
+  label: item.region,
+  value: item.id,
+}));
+
+  
   const regionColumns = [
     {
       title: "Region",
@@ -221,9 +229,10 @@ function ViewLocations(props) {
         return (
           <Dropdown overlay={menu} trigger={["click"]}>
             <Button
-              shape="round"
+              shape="none"
+              type="text"
               icon={<MoreOutlined />}
-              style={{ borderColor: "#a855f7", color: "#a855f7" }} // Optional purple styling
+              // style={{ borderColor: "#a855f7", color: "#a855f7" }}
             />
           </Dropdown>
         );
@@ -330,6 +339,7 @@ function ViewLocations(props) {
             handleClickEditLocation(record)
           }}
           rel="noopener noreferrer"
+          style={{ color: 'black' }}
         >
           {/* <Dropdown
             menu={menuProps}
@@ -565,7 +575,6 @@ function ViewLocations(props) {
   };
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
   };
 
   return (
@@ -644,32 +653,18 @@ function ViewLocations(props) {
                   placeholder="Select Region"
                 // defaultValue={["AdeolaHopewell", "Agodi"]}
                 // onChange={handleChange}
-                // options={options}
+                options={regionOptions}
                 />
               </Form.Item>
               <Form.Item
                 name="city"
                 label="City"
-                // rules={[
-                //   {
-                //     required: true,
-                //   },
-                // ]}
-              >
-                <Select
-                  mode="single"
-                  allowClear
-                  style={
-                    {
-                      // width: "100%",
-                      background: "#F2F2F8"
-                    }
-                  }
-                  placeholder="Select City"
-                // defaultValue={["AdeolaHopewell", "Agodi"]}
-                // onChange={handleChange}
-                // options={options}
-                />
+              // rules={[
+              //   {
+              //     required: true,
+              //   },
+              // ]}
+              ><Input.TextArea placeholder="eg; Ikeja" />
               </Form.Item>
               <Form.Item
                 name="address"
@@ -762,19 +757,19 @@ function ViewLocations(props) {
                 >
                   {/* <Input style={{ fontSize: 16 }} placeholder="Enter email" /> */}
                   <Select
-                  mode="single"
-                  allowClear
-                  style={
-                    {
-                      // width: "100%",
-                      background: "#F2F2F8"
+                    mode="single"
+                    allowClear
+                    style={
+                      {
+                        // width: "100%",
+                        background: "#F2F2F8"
+                      }
                     }
-                  }
-                  placeholder="Region"
-                // defaultValue={["AdeolaHopewell", "Agodi"]}
-                // onChange={handleChange}
-                // options={options}
-                />
+                    placeholder="Region"
+                    defaultValue={["AdeolaHopewell", "Agodi"]}
+                    // onChange={handleChange}
+                    options={regionOptions}
+                  />
                 </Form.Item>
                 <Form.Item
                   name="city"
@@ -785,21 +780,7 @@ function ViewLocations(props) {
                   //   },
                   // ]}
                 >
-                  {/* <Input placeholder="Ebute meta" /> */}
-                  <Select
-                  mode="single"
-                  allowClear
-                  style={
-                    {
-                      // width: "100%",
-                      background: "#F2F2F8"
-                    }
-                  }
-                  placeholder="City"
-                // defaultValue={["AdeolaHopewell", "Agodi"]}
-                // onChange={handleChange}
-                // options={options}
-                />
+                  <Input placeholder="eg; Ikeja" />
                 </Form.Item>
                 <Form.Item
                   name="address"
@@ -951,7 +932,7 @@ function ViewLocations(props) {
             {selectedRegion?.branches?.length > 0 ? (
               <ul>
                 {selectedRegion.branches.map((branch, idx) => (
-                  <li key={idx}>{branch}</li>
+                  <li key={idx}>{branch.branch_name}</li>
                 ))}
               </ul>
             ) : (
@@ -973,7 +954,6 @@ function ViewLocations(props) {
             initialValues={{ region: selectedRegion?.region }}
             onFinish={(values) => {
               // Call API or update state with new region name
-              console.log("Updated region:", values);
               setEditModalVisible(false);
             }}
           >
