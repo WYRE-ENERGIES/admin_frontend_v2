@@ -1,13 +1,12 @@
 // Formats Numbers which are greater than three digits with necessary commas
 export const numberFormatter = (x) => {
-    if (!x) return;
-  
-    if (typeof(x) == "number"){
-      x = x.toFixed(2)
-    }
-  
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  };
+    if (x === undefined || x === null) return;
+    
+    // Convert to number and round to nearest integer
+    const num = Math.round(Number(x));
+    
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
 
 export const convertDecimalTimeToMinutes = (d) => {
     var h = Math.floor(d);
