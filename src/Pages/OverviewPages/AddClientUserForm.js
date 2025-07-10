@@ -63,9 +63,6 @@ function AddClientUserForm(props) {
   const clientId = props.auth.userData.client_id
 
   const authData = useSelector((state) => state.auth);
-  console.log('User auth-data -> ', authData);
-  console.log('holdRolesData -> ', holdRolesData);
-  console.log('fetchedRoles -> ', props.auth.fetchedRoles);
 
   useEffect(() => {
     const handleBranch = async () => {
@@ -105,7 +102,7 @@ function AddClientUserForm(props) {
     label,
     value
   }));
-  // console.log('options_roles----> ', options_roles);
+
 
   const assignLocationToUser = async (value) => {
     const userId = clientId
@@ -148,9 +145,6 @@ function AddClientUserForm(props) {
   };
   
 
-  const onChange = (pagination, filters, sorter, extra) => {
-    // console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
-  };
 
   return (
     <>

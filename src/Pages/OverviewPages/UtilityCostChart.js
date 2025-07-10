@@ -314,9 +314,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
     },
   };
 
-  const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
-  };
 
   return (
     <>

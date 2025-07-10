@@ -244,7 +244,6 @@ const handleRegionChange = value => {
   //     item
   //   );
   //   setPageDataHolder(filtered)
-  //   console.log('id-Value--------> ', filtered.e)
   //   return filtered.e
   //   setCurrentPage(1);
   // };
@@ -858,11 +857,9 @@ const handleRegionChange = value => {
                     backgroundColor: record === checkData ? "#F2F2F8" : "",
                     fontWeight: record === checkData ? "bold" : ""
                   },
-                  // onClick: () => handleRowClick(record)
                   onClick: (event) => {
                     window.location.href = `${window.location.href}branch?ee=${record.id}`;
                   },
-                  // onMouseEnter: () => console.log('Mouse entered row:', record),
                 })}
                 // rowKey="id"
                 rowKey={(record) => record.id}

@@ -41,7 +41,7 @@ function ClientUsers(props) {
 
   const { Search } = Input;
   const authData = useSelector((state) => state.auth);
-  console.log('auth-data -> ', authData);
+
   
   dayjs.extend(customParseFormat);
 
@@ -244,7 +244,7 @@ function ClientUsers(props) {
     ];
 
     const onChange = (pagination, filters, sorter, extra) => {
-      console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
+
     };
 
     return (

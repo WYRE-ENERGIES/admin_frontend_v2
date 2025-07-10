@@ -61,15 +61,12 @@ const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated 
 
   const loadClientRegions = async () => {
     if (!clientId) {
-      console.log('No client ID available for loading regions');
       return;
     }
     
-    console.log('Loading regions for client ID:', clientId);
     setRegionsLoading(true);
     try {
       const response = await APIService.get(`/api/v1/accounts/client/${clientId}/regions/`);
-      console.log('Regions API response:', response);
       
       let regionsData = [];
       if (response.data) {
@@ -82,7 +79,7 @@ const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated 
         }
       }
       
-      console.log('Processed regions data:', regionsData);
+
       setClientRegions(regionsData);
       
       // If we have a branch and regions data, try to pre-fill the region

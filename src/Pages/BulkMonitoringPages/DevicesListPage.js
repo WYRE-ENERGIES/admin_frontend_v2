@@ -132,7 +132,7 @@ function DevicesListPage(props) {
   ];
 
   const onChange = (pagination, filters, sorter, extra) => {
-    console.log('paramssssssssssssssssss->>>>>>>', pagination, filters, sorter, extra);
+
   };
 
   return (
