@@ -197,16 +197,16 @@ function ClientUsers(props) {
         dataIndex: "name",
         key: "name",
       },
-      {
-        title: "Role",
-        dataIndex: "role",
-        key: "role",
-      },
-      {
-        title: "Region",
-        dataIndex: "region",
-        key: "region",
-      },
+      // {
+      //   title: "Role",
+      //   dataIndex: "role",
+      //   key: "role",
+      // },
+      // {
+      //   title: "Region",
+      //   dataIndex: "region",
+      //   key: "region",
+      // },
       {
         title: 'Action',
         key: 'action',
