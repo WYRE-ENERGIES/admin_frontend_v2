@@ -16,9 +16,6 @@ function DieselOverview(props) {
   const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
       dayjs(),])
   const [dieselProcureDataTable, setDieselProcureDataTable] = useState({})
-  // Remove local dieselCardData and loading state
-  // const [dieselCardData, setDieselCardData] = useState(null)
-  // const [loading, setLoading] = useState(false)
 
   const { Search } = Input;
   
