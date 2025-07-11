@@ -18,7 +18,6 @@ export const loginAUser = (parameters) => async (dispatch) => {
     dispatch(loginUserLoading(false));
     return { fulfilled: true, message: 'successful' };
   } catch (error) {
-    console.error('Login error:', error);
     dispatch(loginUserLoading(false));
     return { fulfilled: false, message: error.response?.data?.detail || 'An error occurred during login' };
   }
