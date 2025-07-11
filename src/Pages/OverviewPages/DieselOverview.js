@@ -361,12 +361,17 @@ function DieselOverview(props) {
             <div style={{
               flex: 1,
               paddingInline: '24px',
+              paddingBottom: "10px",
               borderRadius: '12px',
               backgroundColor: '#fff',
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
-              <Typography.Title level={4}>Monthly Usage</Typography.Title>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+              <Typography.Title level={4} style={{display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px"}}>
+               <img src="/icon/monthly-usage.svg" alt="Monthly Usage" style={{height: "30px", width: "30px"}} /> 
+               
+                Monthly Usage
+              </Typography.Title>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Litres</span>
                   <span style={{fontWeight: "550", color: "#5C12A7"}}>{numberFormatter(dieselCardData?.monthly_usage?.litres) || 0}L</span>
@@ -385,12 +390,16 @@ function DieselOverview(props) {
             <div style={{
               flex: 1,
               paddingInline: '24px',
+              paddingBottom: "10px",
               borderRadius: '12px',
               backgroundColor: '#fff',
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
-              <Typography.Title level={4}>Stock Balance</Typography.Title>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '16px' }}>
+               <Typography.Title level={4} style={{display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px"}}>
+               <img src="/icon/stock-balance.svg" alt="Monthly Usage" style={{height: "30px", width: "30px"}} /> 
+                Stock Balance
+              </Typography.Title>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Litres</span>
                   <span style={{fontWeight: "550", color: "#5C12A7"}}>{numberFormatter(dieselCardData?.stock_balance?.litres) || 0}L</span>
@@ -409,11 +418,15 @@ function DieselOverview(props) {
             <div style={{
               flex: 1,
               paddingInline: '24px',
+              paddingBottom: "10px",
               borderRadius: '12px',
               backgroundColor: '#fff',
               boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
             }}>
-              <Typography.Title level={4}>Branches</Typography.Title>
+            <Typography.Title level={4} style={{display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px"}}>
+               <img src="/icon/branch.svg" alt="Monthly Usage" style={{height: "30px", width: "30px"}} /> 
+                Branches
+              </Typography.Title>
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
                 <Typography.Title level={2} style={{fontWeight: "550", color: "#5C12A7"}}>
                   {numberFormatter(dieselCardData?.branch_count) || 0}
