@@ -204,7 +204,6 @@ const handleRegionChange = value => {
     fetchRegions();
   }, [clientId]);
 
-  const handleRegionChange = (region) => setSelectedRegion(region);
 
   // const showKeyMetricsTable = () => {
   //   const clientId = props.auth.userData.client_id
