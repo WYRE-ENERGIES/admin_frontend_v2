@@ -95,3 +95,20 @@ export const editUserSuccess = (payload = true) => ({
   type: authTypes.EDIT_USER_SUCCESS,
   payload,
 });
+
+export const updateProfileLoading = (payload = true) => ({
+  type: authTypes.UPDATE_PROFILE_LOADING,
+  payload,
+});
+export const updateProfileSuccess = (payload = true) => ({
+  type: authTypes.UPDATE_PROFILE_SUCCESS,
+  payload,
+});
+export const updatePasswordLoading = (payload = true) => ({
+  type: authTypes.UPDATE_PASSWORD_LOADING,
+  payload,
+});
+export const updatePasswordSuccess = (payload = true) => ({
+  type: authTypes.UPDATE_PASSWORD_SUCCESS,
+  payload,
+});

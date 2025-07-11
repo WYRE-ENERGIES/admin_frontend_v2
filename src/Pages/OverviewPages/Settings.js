@@ -9,12 +9,18 @@ import {
 } from "@ant-design/icons"
 import EnvData from '../../config/EnvData';
 import {APIService} from '../../config/Api/apiServices';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateUserProfile, updateUserPassword } from '../../redux/actions/auth/auth.action';
 
 const { Content } = Layout
 const { Title, Text } = Typography
 const { Option } = Select
 
 export default function SettingsPage() {
+  const dispatch = useDispatch();
+  const auth = useSelector(state => state.auth);
+  const updateProfileLoading = auth.updateProfileLoading;
+  const updatePasswordLoading = auth.updatePasswordLoading;
   // Use state for userData
   const [userData, setUserData] = useState(() => {
     return JSON.parse(localStorage.getItem('currentUser')) || {}
@@ -56,84 +62,40 @@ export default function SettingsPage() {
   const clientId = userData.client_id
 
   const handleSubmit = async (values) => {
-    try {
-      setIsLoading(true);
-
-      const updatedUserData = {
-        username: values.username || userData.username,
-        phone_number: values.phone_number || userData.phone_number || userData.phone,
-        email: values.email || userData.email,
-        roles: userData.roles,
-        branch_id: userData.branch_id
-      };
-
-      const userUpdateResponse = await APIService.put(
-        `/api/v2/clients/${userData.client_id}/users/${userData.id}/`,
-        updatedUserData
-      );
-      const updatedUser = userUpdateResponse.data;
-
-      if (pendingLogo) {
-        const formData = new FormData();
-        formData.append('logo', pendingLogo, pendingLogo.name);
-
-        const config = {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        };
-
-        await APIService.putMultipart(
-          `/api/v1/accounts/view-update-client/${userData.client_id}/`,
-          formData,
-          config
-        );
-
-        setPendingLogo(null);
-        setImagePreview(null);
-      }
-
-      const clientResponse = await APIService.get(
-        `/api/v1/accounts/view-update-client/${userData.client_id}/`
-      );
-      const clientData = clientResponse.data.client;
-
-      const completeUserData = {
-        ...userData,
-        username: updatedUser.username,
-        email: updatedUser.email,
-        phone: updatedUser.phone_number || updatedUser.phone,
-        first_name: updatedUser.first_name ? updatedUser.first_name : userData.first_name,
-        last_name: updatedUser.last_name ? updatedUser.last_name : userData.last_name,
-        client_image: clientData.logo,
-        client_type: clientData.client_type || userData.client_type,
-        // Optionally we can update other fields if we want, e.g. address, etc.
-      };
-
-      updateUserData(completeUserData);
-
+    const updatedUserData = {
+      username: values.username || userData.username,
+      phone_number: values.phone_number || userData.phone_number || userData.phone,
+      email: values.email || userData.email,
+      roles: userData.roles,
+      branch_id: userData.branch_id
+    };
+    const result = await dispatch(updateUserProfile(userData.client_id, userData.id, updatedUserData, pendingLogo));
+    if (result && result.fulfilled) {
       notification.success({
         message: 'Success',
         description: 'Profile updated successfully!',
         duration: 3
       });
-
       setEditingPersonal(false);
+      // Update localStorage and userData with new data
+      const newUserData = {
+        ...userData,
+        ...result.data
+      };
+      setUserData(newUserData);
+      localStorage.setItem('currentUser', JSON.stringify(newUserData));
       form.setFieldsValue({
-        username: completeUserData.username,
-        email: completeUserData.email,
-        phone_number: completeUserData.phone,
-        roles: completeUserData.client_type
+        username: result.data.username,
+        email: result.data.email,
+        phone_number: result.data.phone,
+        roles: result.data.client_type
       });
-    } catch (error) {
-      console.error('Error updating profile:', error);
+    } else {
       notification.error({
         message: 'Error',
-        description: error.message || 'Failed to update profile. Please try again.',
+        description: result?.message || 'Failed to update profile. Please try again.',
         duration: 3
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -200,38 +162,27 @@ export default function SettingsPage() {
   }
 
   const handlePasswordSubmit = async (values) => {
-    try {
-      setIsLoading(true)
-
-      // Prepare password update payload
-      const updatePayload = {
-        current_password: values.current_password,
-        new_password: values.new_password,
-      }
-
-      // Update client with password
-      await APIService.put(`/api/v1/accounts/view-update-client/${clientId}/`, updatePayload)
-
+    const updatePayload = {
+      current_password: values.current_password,
+      new_password: values.new_password,
+    };
+    const result = await dispatch(updateUserPassword(userData.client_id, updatePayload));
+    if (result && result.fulfilled) {
       notification.success({
         message: 'Success',
         description: 'Password updated successfully!',
         duration: 3
-      })
-
-      // Reset form and editing state
-      setEditingPassword(false)
-      passwordForm.resetFields()
-    } catch (error) {
-      console.error('Error updating password:', error)
+      });
+      setEditingPassword(false);
+      passwordForm.resetFields();
+    } else {
       notification.error({
         message: 'Error',
-        description: error.message || 'Failed to update password. Please try again.',
+        description: result?.message || 'Failed to update password. Please try again.',
         duration: 3
-      })
-    } finally {
-      setIsLoading(false)
+      });
     }
-  }
+  };
 
   const validatePassword = (_, value) => {
     if (!value) {
@@ -464,7 +415,7 @@ export default function SettingsPage() {
 
                   <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
                     <Button onClick={() => setEditingPersonal(false)}>Cancel</Button>
-                    <Button type="primary" htmlType="submit" loading={isLoading}>
+                    <Button type="primary" htmlType="submit" loading={updateProfileLoading}>
                       Save
                     </Button>
                   </div>
@@ -531,7 +482,7 @@ export default function SettingsPage() {
 
                   <div style={{ display: "flex", gap: "12px", justifyContent: "flex-end" }}>
                     <Button onClick={() => setEditingPassword(false)}>Cancel</Button>
-                    <Button type="primary" htmlType="submit" loading={isLoading}>
+                    <Button type="primary" htmlType="submit" loading={updatePasswordLoading}>
                       Save
                     </Button>
                   </div>

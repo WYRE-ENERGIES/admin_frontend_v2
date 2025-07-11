@@ -15,6 +15,10 @@ const INITIAL_STATE = {
     newUserBranch: false,
     deviceSwitchLoading: false,
     deviceSwitchSuccess: false,
+    updateProfileLoading: false,
+    updatedProfile: false,
+    updatePasswordLoading: false,
+    updatedPassword: false,
 };
 
 const authReducer = (state = INITIAL_STATE, action) => {
@@ -141,6 +145,27 @@ const authReducer = (state = INITIAL_STATE, action) => {
             return {
                 ...state,
                 deviceSwitchSuccess: action.payload,
+            };
+
+        case authTypes.UPDATE_PROFILE_LOADING:
+            return {
+                ...state,
+                updateProfileLoading: action.payload
+            };
+        case authTypes.UPDATE_PROFILE_SUCCESS:
+            return {
+                ...state,
+                updatedProfile: action.payload
+            };
+        case authTypes.UPDATE_PASSWORD_LOADING:
+            return {
+                ...state,
+                updatePasswordLoading: action.payload
+            };
+        case authTypes.UPDATE_PASSWORD_SUCCESS:
+            return {
+                ...state,
+                updatedPassword: action.payload
             };
 
         default: return state;
