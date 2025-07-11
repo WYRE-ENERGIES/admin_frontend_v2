@@ -19,7 +19,7 @@ import {
 } from 'chart.js';
 import 'chart.js/auto'
 import { Bar } from "react-chartjs-2";
-import { getLocationsData } from "../../redux/actions/location/location.action";
+import { getLocationsData, getRegionsListData } from "../../redux/actions/location/location.action";
 
 ChartJS.register(
   CategoryScale,
@@ -150,26 +150,27 @@ function TotalEnergyChart(props) {
   // const endDate = moment().endOf("day").format("DD-MM-YYYY HH:mm");
   const endDate = moment().format("DD-MM-YYYY HH:mm");
 
-      useEffect(() => {
-    async function fetchRegions() {
-      if (!clientId) return;
-      try {
-        const res = await APIService.get(`/api/v1/accounts/client/${clientId}/regions-branches/`);
-        const regions = res.data.regions || [];
-        setRegionOptions(regions.map(r => r.region));
-        // Mapping region name to branch names for fast lookup
-        const map = {};
-        regions.forEach(r => {
-          map[r.region] = (r.branches || []).map(b => b.branch_name);
-        });
-        setRegionBranchMap(map);
-      } catch (e) {
-        setRegionOptions([]);
-        setRegionBranchMap({});
-      }
-    }
-    fetchRegions();
+  const fetchRegionLoading = useSelector(state => state.locationPage.fetchRegionLoading);
+  const fetchedRegion = useSelector(state => state.locationPage.fetchedRegion);
+
+  useEffect(() => {
+    if (!clientId) return;
+    props.getRegionsListData(clientId);
   }, [clientId]);
+
+  useEffect(() => {
+    if (fetchedRegion && fetchedRegion.regions) {
+      setRegionOptions(fetchedRegion.regions.map(r => r.region));
+      const map = {};
+      fetchedRegion.regions.forEach(r => {
+        map[r.region] = (r.branches || []).map(b => b.branch_name);
+      });
+      setRegionBranchMap(map);
+    } else {
+      setRegionOptions([]);
+      setRegionBranchMap({});
+    }
+  }, [fetchedRegion]);
 
   const showTotalEnergyBarchart = (date) => {
     const clientId = props.auth.userData.client_id
@@ -504,12 +505,14 @@ const mapDispatchToProps = {
   getTotalEnergyBarChartData,
   getLocationsData,
   getKeyMetricsData,
+  getRegionsListData,
 };
 
 const mapStateToProps = (state) => ({
   overviewPage: state.overviewPage,
   auth: state.auth,
-  clientUsersPage: state.clientUsersPage
+  clientUsersPage: state.clientUsersPage,
+  locationPage: state.locationPage,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TotalEnergyChart);

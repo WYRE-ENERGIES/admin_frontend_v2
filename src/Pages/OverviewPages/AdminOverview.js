@@ -27,13 +27,14 @@ import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
 import { PiLightningDuotone } from "react-icons/pi";
-import { getLocationsData } from "../../redux/actions/location/location.action";
+import { getLocationsData, getRegionsListData } from "../../redux/actions/location/location.action";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import UtilityCostPerBranchChart from "./UtilityCostPerBranchChart";
 import GenericBranchBarChart from "./GenericBranchBarChart";
 import { APIService } from "../../config/Api/apiServices";
 import React, { useMemo } from "react";
+import { useSelector } from 'react-redux';
 
 ChartJS.register(
   CategoryScale,
@@ -617,26 +618,27 @@ const handleRegionChange = value => {
       }));
   };
 
+  const fetchRegionLoading = useSelector(state => state.locationPage.fetchRegionLoading);
+  const fetchedRegion = useSelector(state => state.locationPage.fetchedRegion);
+
   useEffect(() => {
-    async function fetchRegions() {
-      if (!clientId) return;
-      try {
-        const res = await APIService.get(`/api/v1/accounts/client/${clientId}/regions-branches/`);
-        const regions = res.data.regions || [];
-        setRegionOptions(regions.map(r => r.region));
-        // Mapping region name to branch names for fast lookup
-        const map = {};
-        regions.forEach(r => {
-          map[r.region] = (r.branches || []).map(b => b.branch_name);
-        });
-        setRegionBranchMap(map);
-      } catch (e) {
-        setRegionOptions([]);
-        setRegionBranchMap({});
-      }
-    }
-    fetchRegions();
+    if (!clientId) return;
+    props.getRegionsListData(clientId);
   }, [clientId]);
+
+  useEffect(() => {
+    if (fetchedRegion && fetchedRegion.regions) {
+      setRegionOptions(fetchedRegion.regions.map(r => r.region));
+      const map = {};
+      fetchedRegion.regions.forEach(r => {
+        map[r.region] = (r.branches || []).map(b => b.branch_name);
+      });
+      setRegionBranchMap(map);
+    } else {
+      setRegionOptions([]);
+      setRegionBranchMap({});
+    }
+  }, [fetchedRegion]);
 
   const [selectedBranches, setSelectedBranches] = useState([]);
 
@@ -1120,11 +1122,13 @@ const mapDispatchToProps = {
   getUtilityEnergyPerBranch,
   getDieselCostPerBranch,
   getDieselLitresPerBranch,
+  getRegionsListData,
 };
 
 const mapStateToProps = (state) => ({
   overviewPage: state.overviewPage,
   auth: state.auth,
+  locationPage: state.locationPage,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminOverview);
