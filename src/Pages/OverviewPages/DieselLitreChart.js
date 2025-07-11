@@ -1,11 +1,9 @@
-import { Button, Card, DatePicker, Image, Input, Select, Space, Table, Typography } from "antd";
+import { Button, Card, DatePicker, Select } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { getClientDieselLitresData, getClientUtilityEnergyData, getTotalCostBarChartData } from "../../redux/actions/overview/overview.action";
-import { useSearchParams } from "react-router-dom";
-import { connect, useSelector } from "react-redux";
+import { getClientDieselLitresData } from "../../redux/actions/overview/overview.action";
+import { connect } from "react-redux";
 import moment from "moment";
 import {
   Chart as ChartJS,
@@ -18,11 +16,6 @@ import {
 } from 'chart.js';
 import 'chart.js/auto'
 import { Bar } from "react-chartjs-2";
-import Pagination from "../../components/Pagination";
-import ColumnGroup from "antd/es/table/ColumnGroup";
-import Column from "antd/es/table/Column";
-import Search from "antd/es/input/Search";
-import TotalEnergyChart from "./TotalEnergyChart";
 import { getYear } from "date-fns";
 
 ChartJS.register(
@@ -36,7 +29,6 @@ ChartJS.register(
 
 
 function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
-  const [dateSearch, setDateSearch] = useState('')
   const [selectedDate, setSelectedDate] = useState()
   const [loading, setLoading] = useState('')
   const [costChartData, setCostChartData] = useState({
@@ -45,15 +37,9 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   })
   
   dayjs.extend(customParseFormat);
-  const dateFormat = 'YYYY';
-  const { RangePicker } = DatePicker;
-
-  const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
-  const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
 
   const showDieselLitresBarchart = () => {
     const clientId = props.auth.userData.client_id
-    const year = new Date().getFullYear();
     props.getClientDieselLitresData(clientId);
   }
   
@@ -204,18 +190,6 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                 </h1>
               </div>
               <div className="">
-                <Select
-                  className="select-bar"
-                  mode="multiple"
-                  maxTagCount={1}
-                  maxTagTextLength={10}
-                  maxTagPlaceholder={omittedValues => `+${omittedValues.length} more`}
-                  placeholder="Select branches"
-                  // onChange={handleCompareBranch}
-                  // value={selectedIds}
-                  style={{ width:165, marginRight: 10 }}
-                  // options={selectOptions}
-                />
                 {/* <Button
                   type="default"
                   onClick={() => setSelectedIds([])}
@@ -224,20 +198,6 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                 >
                   Reset Selection
                 </Button> */}
-                <Select
-                  className="select-bar"
-                  // prefix="Region"
-                  placeholder="Search by Region"
-                  // defaultValue="lucy"
-                  style={{ marginRight: 10, width:165 }}
-                  // onChange={handleRegionChange}
-                  options={[
-                    { value: 'jack', label: 'North' },
-                    { value: 'lucy', label: 'South' },
-                    { value: 'Yiminghe', label: 'East' },
-                    { value: 'disabled', label: 'Disabled', disabled: true },
-                  ]}
-                />
                 <DatePicker
                   defaultValue={selectedDate}
                   picker="year"

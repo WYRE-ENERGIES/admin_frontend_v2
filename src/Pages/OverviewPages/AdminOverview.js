@@ -820,7 +820,7 @@ const handleRegionChange = value => {
                 mode="multiple"
                 placeholder="Select branches"
                 maxTagCount={1}
-                maxTagTextLength={10}
+                  maxTagTextLength={10}
                 maxTagPlaceholder={omittedValues => `+${omittedValues.length} more`}
                 onChange={handleCompareBranches}
                 value={selectedIds}
