@@ -121,10 +121,13 @@ function EditClientUserForm(props) {
     })
   }
 
-  const options_roles = Object.entries(holdRolesData).map(([label, value]) => ({
-    label,
-    value
-  }));
+  const excludedRoles = ['SUPERADMIN', 'CLIENT_ADMIN'];
+  const options_roles = Object.entries(holdRolesData)
+    .filter(([key]) => !excludedRoles.includes(key))
+    .map(([label, value]) => ({
+      label,
+      value
+    }));
 
   const handleChange = (value) => {
     const newSelections = value.filter(branch => !selectedLocation.includes(branch));

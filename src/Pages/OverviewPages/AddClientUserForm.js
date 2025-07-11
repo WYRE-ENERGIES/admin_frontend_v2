@@ -62,8 +62,6 @@ function AddClientUserForm(props) {
   const [holdRolesData, setHoldRolesData] = useState([]);
   const clientId = props.auth.userData.client_id
 
-  const authData = useSelector((state) => state.auth);
-
   useEffect(() => {
     const handleBranch = async () => {
       const requestBranchesData = await props.getLocationsData(clientId)
@@ -98,11 +96,18 @@ function AddClientUserForm(props) {
       });
     })
   }
-  const options_roles = Object.entries(holdRolesData).map(([label, value]) => ({
-    label,
-    value
-  }));
 
+  const excludedRoles = ['SUPERADMIN', 'CLIENT_ADMIN'];
+  const options_roles = Object.entries(holdRolesData)
+    .filter(([key]) => !excludedRoles.includes(key))
+    .map(([label, value]) => ({
+      label,
+      value
+    }));
+  // const options_roles = Object.entries(holdRolesData).map(([label, value]) => ({
+  //   label,
+  //   value
+  // }));
 
   const assignLocationToUser = async (value) => {
     const userId = clientId
@@ -135,13 +140,14 @@ function AddClientUserForm(props) {
         form.resetFields();
         return showclientUsersList();
       }
+    } else {
+      notification.error({
+        message: "Error",
+        description:
+          createUserRequest?.message?.username || 'please try again later'
+      });
     }
     // return errorNotificationPopUp('error', 'client user page')  
-    return notification.error({
-      message: "Error",
-      description:
-        createUserRequest?.message?.username,
-    });
   };
   
 
