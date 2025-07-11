@@ -129,15 +129,16 @@ function ViewLocations(props) {
     if (request.fulfilled) {
       notification.success({
         message: "Success",
-        description: request.data?.message,
+        description: request.data?.message || 'Region deleted successfully',
       });
       showRegionLists()
-    }
-    return notification.error({
+    }else{
+      notification.error({
       message: "Error",
       description:
-        request?.message,
+        request?.message || 'please try again later'
     });
+    }
   };
 
   const data = props.locationPage.fetchedLocation.results
@@ -150,7 +151,6 @@ function ViewLocations(props) {
   label: item.region,
   value: item.id,
 }));
-
   
   const regionColumns = [
     {
@@ -505,12 +505,13 @@ function ViewLocations(props) {
       });
       addLocationform.resetFields();
       showLocationList()
+    } else {
+      notification.error({
+        message: "Error",
+        description:
+          request?.message || 'please try again later'
+      });
     }
-    return notification.error({
-      message: "Error",
-      description:
-        request?.message,
-    });
   };
   const submitNewRegion = async (values) => {
     const request = await props.addARegion(clientId,
@@ -525,13 +526,15 @@ function ViewLocations(props) {
         description: request.data?.message,
       });
       addRegionform.resetFields();
-      showRegionLists()
+      showRegionLists();
+      setAddRegionsModal(false)
+    } else {
+      notification.error({
+        message: "Error",
+        description:
+          request?.message || 'please try again later'
+      });
     }
-    return notification.error({
-      message: "Error",
-      description:
-        request?.message,
-    });
   };
 
   const handleUpdateLocation = async (values) => {
@@ -545,12 +548,15 @@ function ViewLocations(props) {
     });
       editLocationform.resetFields();
       showLocationList()
+      showRegionLists()
+      setEditLocationModal(false)
+    } else {
+      notification.error({
+        message: "Error",
+        description:
+          request?.message || 'please try again later'
+      });
     }
-    return notification.error({
-      message: "Error",
-      description:
-        request?.message || 'Your request can not be completed now, please try again later',
-    });
   };
   const handleUpdateRegion = async (values) => {
     const request = await props.updateARegion(selectedRegion.id,
@@ -565,13 +571,16 @@ function ViewLocations(props) {
       description: request.data?.message,
     });
       addRegionform.resetFields();
+      setEditModalVisible(false)
       showRegionLists()
+      showLocationList()
+    } else {
+      notification.error({
+        message: "Error",
+        description:
+          request?.message || 'please try again later'
+      });
     }
-    return notification.error({
-      message: "Error",
-      description:
-        request?.message,
-    });
   };
 
   const onChange = (pagination, filters, sorter, extra) => {
@@ -583,7 +592,8 @@ function ViewLocations(props) {
         <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
           Location
         </Typography.Title>
-        <Space>
+        {/* Location Button */}
+        {/* <Space>
           <div>
             <Button
               style={{ width: "183.68px", height: "46.96px", fontWeight: "bold", borderRadius: "12px", backgroundColor: "#5C12A7", color: "white" }}
@@ -596,14 +606,12 @@ function ViewLocations(props) {
               Add Location
             </Button>
           </div>
-        </Space>
-        <Modal
-          // style={{borderRadius: '40px'}}
+        </Space> */}
+        {/* <Modal
           visible={addLocationModal}
           title="Add new Location"
           onCancel={() => setAddLocationModal(false)}
           footer={null}
-          // maxWidth={457}
           height={594}
         >
           <Spin
@@ -611,7 +619,6 @@ function ViewLocations(props) {
           >
             <Form
               form={addLocationform}
-              // name="validateOnly"
               name="basic"
               layout="vertical"
               autoComplete="off"
@@ -631,39 +638,24 @@ function ViewLocations(props) {
               <Form.Item
                 name="region"
                 label="Region"
-                // rules={[
-                //   {
-                //     required: true,
-                //   },
-                // ]}
               >
-                {/* <Input 
-                    placeholder="Central" 
-                    style={{width: 20%}} 
-                  /> */}
                 <Select
                   mode="single"
                   allowClear
                   style={
                     {
-                      // width: "100%",
                       background: "#F2F2F8"
                     }
                   }
                   placeholder="Select Region"
-                // defaultValue={["AdeolaHopewell", "Agodi"]}
-                // onChange={handleChange}
-                options={regionOptions}
+                  defaultValue={''}
+                  onChange={''}
+                  options={regionOptions}
                 />
               </Form.Item>
               <Form.Item
                 name="city"
                 label="City"
-              // rules={[
-              //   {
-              //     required: true,
-              //   },
-              // ]}
               ><Input.TextArea placeholder="eg; Ikeja" />
               </Form.Item>
               <Form.Item
@@ -678,7 +670,6 @@ function ViewLocations(props) {
                 <Input.TextArea placeholder="eg; Ebute metaaaa, Lagos-Island" />
               </Form.Item>
               <Form.Item>
-                {/* <SubmitButton form={form} /> */}
                 <Button
                   style={{ marginRight: 20, backgroundColor: "#5C12A7", color: "white", height: "40px", borderRadius: "7px", width: "47%" }}
                   // type="primary"
@@ -690,7 +681,7 @@ function ViewLocations(props) {
               </Form.Item>
             </Form>
           </Spin>
-        </Modal>
+        </Modal> */}
       </div>
       <div className="##########">
         <section className="total-energy-bar-chart">
@@ -706,7 +697,7 @@ function ViewLocations(props) {
           <Modal
             // style={{borderRadius: '40px'}}
             visible={editLocationModal}
-            title="Edit Location Data"
+            title="Edit Location"
             onCancel={() => setEditLocationModal(false)}
             onOk={() => {
             // perform update action here
@@ -725,7 +716,7 @@ function ViewLocations(props) {
               />
             </div> */}
             <Spin
-              spinning={false}
+              spinning={props.locationPage.updateLocationLoading}
             >
               <Form
                 form={editLocationform}
@@ -749,11 +740,11 @@ function ViewLocations(props) {
                 <Form.Item
                   name="region"
                   label="Region"
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //   },
-                  // ]}
+                // rules={[
+                //   {
+                //     required: true,
+                //   },
+                // ]}
                 >
                   {/* <Input style={{ fontSize: 16 }} placeholder="Enter email" /> */}
                   <Select
@@ -765,8 +756,8 @@ function ViewLocations(props) {
                         background: "#F2F2F8"
                       }
                     }
-                    placeholder="Region"
-                    defaultValue={["AdeolaHopewell", "Agodi"]}
+                    placeholder="None"
+                    // defaultValue={[]}
                     // onChange={handleChange}
                     options={regionOptions}
                   />
@@ -774,11 +765,11 @@ function ViewLocations(props) {
                 <Form.Item
                   name="city"
                   label="City"
-                  // rules={[
-                  //   {
-                  //     required: true,
-                  //   },
-                  // ]}
+                // rules={[
+                //   {
+                //     required: true,
+                //   },
+                // ]}
                 >
                   <Input placeholder="eg; Ikeja" />
                 </Form.Item>
@@ -845,7 +836,7 @@ function ViewLocations(props) {
             height={594}
           >
             <Spin
-              spinning={false}
+              spinning={props.locationPage.addNewRegionLoading}
             >
               <Form
                 form={addRegionform}
@@ -906,20 +897,24 @@ function ViewLocations(props) {
             onCancel={() => setEditModalVisible(false)}
             footer={null}
           >
-            <Form form={form} layout="vertical" onFinish={handleUpdateRegion}>
-              <Form.Item
-                name="region"
-                label="Region Name"
-                rules={[{ required: true, message: "Region name is required" }]}
-              >
-                <Input />
-              </Form.Item>
-              <Form.Item>
-                <Button htmlType="submit" type="primary" block>
-                  Save Changes
-                </Button>
-              </Form.Item>
-            </Form>
+            <Spin
+              spinning={props.locationPage.updateRegionLoading}
+            >
+              <Form form={form} layout="vertical" onFinish={handleUpdateRegion}>
+                <Form.Item
+                  name="region"
+                  label="Region Name"
+                  rules={[{ required: true, message: "Region name is required" }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item>
+                  <Button htmlType="submit" type="primary" block>
+                    Save Changes
+                  </Button>
+                </Form.Item>
+              </Form>
+            </Spin>
           </Modal>
 
           {/* View Branches Modal */}
