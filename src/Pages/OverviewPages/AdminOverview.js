@@ -32,7 +32,6 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import UtilityCostPerBranchChart from "./UtilityCostPerBranchChart";
 import GenericBranchBarChart from "./GenericBranchBarChart";
-import { APIService } from "../../config/Api/apiServices";
 import React, { useMemo } from "react";
 import { useSelector } from 'react-redux';
 
@@ -96,11 +95,13 @@ function AdminOverview(props) {
   const [isSelectChart, setIsSelectChart] = useState(0)
   const [keyMetricsData, setkeyMetricsData] = useState([])
   const [pageDataHolder, setPageDataHolder] = useState([])
-  const [holdLocationData, setHoldLocationData] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   let options=[]
-  if (holdLocationData) {
-    holdLocationData.map((item) => {
+  const fetchRegionLoading = useSelector(state => state.locationPage.fetchRegionLoading);
+  const fetchedRegion = useSelector(state => state.locationPage.fetchedRegion);
+  const locationData = useSelector(state => state.locationPage.fetchedLocation);
+  if (locationData && locationData.results) {
+    locationData.results.map((item) => {
     options.push({
       value: item.id,
       label: item.name,
@@ -182,6 +183,27 @@ const handleRegionChange = value => {
   // const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().format("DD-MM-YYYY HH:mm");
 
+  // All useSelector hooks are now at the top
+  useEffect(() => {
+    if (!clientId) return;
+    props.getRegionsListData(clientId);
+  }, [clientId]);
+
+  useEffect(() => {
+    if (fetchedRegion && fetchedRegion.regions) {
+      setRegionOptions(fetchedRegion.regions.map(r => r.region));
+      const map = {};
+      fetchedRegion.regions.forEach(r => {
+        map[r.region] = (r.branches || []).map(b => b.branch_name);
+      });
+      setRegionBranchMap(map);
+    } else {
+      setRegionOptions([]);
+      setRegionBranchMap({});
+    }
+  }, [fetchedRegion]);
+
+
   // const showKeyMetricsTable = () => {
   //   const clientId = props.auth.userData.client_id
   //   props.getKeyMetricsData(clientId, startDate, endDate);
@@ -214,14 +236,10 @@ const handleRegionChange = value => {
     showKeyMetricsTable()
   }, [])
   useEffect(() => {
-    const handleBranch = async () => {
-      const requestBranchesData = await props.getLocationsData(clientId)
-      if (requestBranchesData?.fulfilled) {
-        setHoldLocationData(requestBranchesData?.data?.results)
-      }
+    if (clientId) {
+      props.getLocationsData(clientId);
     }
-    handleBranch()
-  },[])
+  }, [clientId])
   useEffect(() => {
     if (props.overviewPage.fetchedKeyMetrics) {
       setkeyMetricsData(props.overviewPage.fetchedKeyMetrics.results)
@@ -617,28 +635,6 @@ const handleRegionChange = value => {
         value: branch.diesel_litres,
       }));
   };
-
-  const fetchRegionLoading = useSelector(state => state.locationPage.fetchRegionLoading);
-  const fetchedRegion = useSelector(state => state.locationPage.fetchedRegion);
-
-  useEffect(() => {
-    if (!clientId) return;
-    props.getRegionsListData(clientId);
-  }, [clientId]);
-
-  useEffect(() => {
-    if (fetchedRegion && fetchedRegion.regions) {
-      setRegionOptions(fetchedRegion.regions.map(r => r.region));
-      const map = {};
-      fetchedRegion.regions.forEach(r => {
-        map[r.region] = (r.branches || []).map(b => b.branch_name);
-      });
-      setRegionBranchMap(map);
-    } else {
-      setRegionOptions([]);
-      setRegionBranchMap({});
-    }
-  }, [fetchedRegion]);
 
   const [selectedBranches, setSelectedBranches] = useState([]);
 
