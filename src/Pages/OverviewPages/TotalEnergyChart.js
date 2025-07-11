@@ -7,6 +7,7 @@ import { getKeyMetricsData, getTotalEnergyBarChartData, getTotalEnergyTopCard } 
 import { useSearchParams } from "react-router-dom";
 import { connect, useSelector } from "react-redux";
 import moment, { months } from "moment";
+import {APIService} from "../../config/Api/apiServices"
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,7 +19,7 @@ import {
 } from 'chart.js';
 import 'chart.js/auto'
 import { Bar } from "react-chartjs-2";
-import { getLocationsData } from "../../redux/actions/location/location.action";
+import { getLocationsData, getRegionsListData } from "../../redux/actions/location/location.action";
 
 ChartJS.register(
   CategoryScale,
@@ -29,6 +30,8 @@ ChartJS.register(
   Legend
 );
 
+
+const { Option } = Select;
 
 function TotalEnergyChart(props) {
   // const [energyChartData, setEnergyChartData] = useState({
@@ -41,12 +44,15 @@ function TotalEnergyChart(props) {
   const [useEnergyData, setuseEnergyData] = useState([])
   const [holdLocationData, setHoldLocationData] = useState([]);
   const [holdSearchData, setHoldSearchData] = useState("")
+  const [regionOptions, setRegionOptions] = useState([]);
+  const [selectedRegion, setSelectedRegion] = useState(undefined);
+    const [regionBranchMap, setRegionBranchMap] = useState({});
   const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
     dayjs(),])
   const [totalEnergyAPIdata, settotalEnergyAPIdata] = useState([]);
   const [pageDataHolder, setPageDataHolder] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]); // selected in Select
-  let selectOptions=[]
+  let selectOptions = [];
   if (holdLocationData) {
     holdLocationData.map((item) => {
       selectOptions.push({
@@ -56,16 +62,30 @@ function TotalEnergyChart(props) {
       })
     })
   }
-  const selectOptionsWithDisabled = selectOptions.map(option => ({
-    ...option,
-    disabled: selectedIds.length >= 5 && !selectedIds.includes(option.id)
-  }));
+
+  // Filter branch options by selected region
+  const filteredSelectOptions = useMemo(() => {
+    if (!selectedRegion) return selectOptions;
+    const regionBranches = regionBranchMap[selectedRegion] || [];
+    return selectOptions.filter(option => regionBranches.includes(option.label));
+  }, [selectOptions, selectedRegion, regionBranchMap]);
+
+  // Filter displayedData by selected region and selectedIds
+  const displayedData = useMemo(() => {
+    let data = useEnergyData;
+    if (selectedRegion) {
+      const regionBranches = regionBranchMap[selectedRegion] || [];
+      data = data.filter(item => regionBranches.includes(item.name));
+    }
+    if (selectedIds.length > 0) {
+      data = data.filter(item => selectedIds.includes(item.id));
+    }
+    return data;
+  }, [useEnergyData, selectedRegion, selectedIds, regionBranchMap]);
 
   const handleRegionChange = value => {
+  setSelectedRegion(value);
   };
-  const displayedData = selectedIds.length === 0
-    ? useEnergyData
-    : useEnergyData.filter(item => selectedIds.includes(item.id));
 
   const chartJsData = {
     labels: displayedData.map(item => item.name),
@@ -129,6 +149,28 @@ function TotalEnergyChart(props) {
   const startDate = moment().startOf("month").format("DD-MM-YYYY HH:mm");
   // const endDate = moment().endOf("day").format("DD-MM-YYYY HH:mm");
   const endDate = moment().format("DD-MM-YYYY HH:mm");
+
+  const fetchRegionLoading = useSelector(state => state.locationPage.fetchRegionLoading);
+  const fetchedRegion = useSelector(state => state.locationPage.fetchedRegion);
+
+  useEffect(() => {
+    if (!clientId) return;
+    props.getRegionsListData(clientId);
+  }, [clientId]);
+
+  useEffect(() => {
+    if (fetchedRegion && fetchedRegion.regions) {
+      setRegionOptions(fetchedRegion.regions.map(r => r.region));
+      const map = {};
+      fetchedRegion.regions.forEach(r => {
+        map[r.region] = (r.branches || []).map(b => b.branch_name);
+      });
+      setRegionBranchMap(map);
+    } else {
+      setRegionOptions([]);
+      setRegionBranchMap({});
+    }
+  }, [fetchedRegion]);
 
   const showTotalEnergyBarchart = (date) => {
     const clientId = props.auth.userData.client_id
@@ -368,7 +410,7 @@ function TotalEnergyChart(props) {
                     onChange={handleCompareBranch}
                     value={selectedIds}
                     style={{ marginRight: 10, background: 'white', color: 'black' }}
-                    options={selectOptions}
+                    options={filteredSelectOptions}
                   />
                   {/* <Button
                     type="default"
@@ -379,13 +421,16 @@ function TotalEnergyChart(props) {
                     Reset Selection
                   </Button> */}
                   <Select
-                    className="select-bar"
-                    prefix="Region"
-                    defaultValue="lucy"
-                    style={{ marginRight: 10 }}
-                    onChange={handleRegionChange}
-                    options={[]}
-                  />
+              placeholder="Search by Region"
+              allowClear
+              onChange={handleRegionChange}
+              value={selectedRegion}
+              style={{ width: 180 }}
+            >
+              {regionOptions.map(region => (
+                <Option key={region} value={region}>{region}</Option>
+              ))}
+            </Select>
                   <DatePicker
                     className="picker-date"
                     style={{
@@ -460,12 +505,14 @@ const mapDispatchToProps = {
   getTotalEnergyBarChartData,
   getLocationsData,
   getKeyMetricsData,
+  getRegionsListData,
 };
 
 const mapStateToProps = (state) => ({
   overviewPage: state.overviewPage,
   auth: state.auth,
-  clientUsersPage: state.clientUsersPage
+  clientUsersPage: state.clientUsersPage,
+  locationPage: state.locationPage,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(TotalEnergyChart);

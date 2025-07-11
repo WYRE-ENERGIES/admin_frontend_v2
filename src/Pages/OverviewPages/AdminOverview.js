@@ -27,13 +27,14 @@ import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
 import { PiLightningDuotone } from "react-icons/pi";
-import { getLocationsData } from "../../redux/actions/location/location.action";
+import { getLocationsData, getRegionsListData } from "../../redux/actions/location/location.action";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import UtilityCostPerBranchChart from "./UtilityCostPerBranchChart";
 import GenericBranchBarChart from "./GenericBranchBarChart";
 import { APIService } from "../../config/Api/apiServices";
 import React, { useMemo } from "react";
+import { useSelector } from 'react-redux';
 
 ChartJS.register(
   CategoryScale,
@@ -108,8 +109,9 @@ function AdminOverview(props) {
   })
   }
   // const selectRegion = OPTIONS.map((o) => !selectedItems.includes(o));
-  const handleRegionChange = value => {
-  };
+const handleRegionChange = value => {
+  setSelectedRegion(value);
+};
 
   const { Search } = Input;
     const [downloading, setDownloading] = useState(false);
@@ -616,26 +618,27 @@ function AdminOverview(props) {
       }));
   };
 
+  const fetchRegionLoading = useSelector(state => state.locationPage.fetchRegionLoading);
+  const fetchedRegion = useSelector(state => state.locationPage.fetchedRegion);
+
   useEffect(() => {
-    async function fetchRegions() {
-      if (!clientId) return;
-      try {
-        const res = await APIService.get(`/api/v1/accounts/client/${clientId}/regions-branches/`);
-        const regions = res.data.regions || [];
-        setRegionOptions(regions.map(r => r.region));
-        // Mapping region name to branch names for fast lookup
-        const map = {};
-        regions.forEach(r => {
-          map[r.region] = (r.branches || []).map(b => b.branch_name);
-        });
-        setRegionBranchMap(map);
-      } catch (e) {
-        setRegionOptions([]);
-        setRegionBranchMap({});
-      }
-    }
-    fetchRegions();
+    if (!clientId) return;
+    props.getRegionsListData(clientId);
   }, [clientId]);
+
+  useEffect(() => {
+    if (fetchedRegion && fetchedRegion.regions) {
+      setRegionOptions(fetchedRegion.regions.map(r => r.region));
+      const map = {};
+      fetchedRegion.regions.forEach(r => {
+        map[r.region] = (r.branches || []).map(b => b.branch_name);
+      });
+      setRegionBranchMap(map);
+    } else {
+      setRegionOptions([]);
+      setRegionBranchMap({});
+    }
+  }, [fetchedRegion]);
 
   const [selectedBranches, setSelectedBranches] = useState([]);
 
@@ -819,25 +822,12 @@ function AdminOverview(props) {
                 mode="multiple"
                 placeholder="Select branches"
                 maxTagCount={1}
-                maxTagTextLength={10}
+                  maxTagTextLength={10}
                 maxTagPlaceholder={omittedValues => `+${omittedValues.length} more`}
                 onChange={handleCompareBranches}
                 value={selectedIds}
                 style={{ marginRight: 10 }}
                 options={options}
-              />
-              <Select
-                className="select-bar"
-                prefix="Region"
-                defaultValue="lucy"
-                style={{ marginRight: 10 }}
-                onChange={handleRegionChange}
-                options={[
-                  { value: 'jack', label: 'North' },
-                  { value: 'lucy', label: 'South' },
-                  { value: 'Yiminghe', label: 'East' },
-                  { value: 'disabled', label: 'Disabled', disabled: true },
-                ]}
               />
               <DatePicker
                   className="picker-date"
@@ -1132,11 +1122,13 @@ const mapDispatchToProps = {
   getUtilityEnergyPerBranch,
   getDieselCostPerBranch,
   getDieselLitresPerBranch,
+  getRegionsListData,
 };
 
 const mapStateToProps = (state) => ({
   overviewPage: state.overviewPage,
   auth: state.auth,
+  locationPage: state.locationPage,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminOverview);

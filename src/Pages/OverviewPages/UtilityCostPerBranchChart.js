@@ -40,7 +40,9 @@ const UtilityCostPerBranchChart = ({
           topLeft: 6,
           topRight: 6
         },
-        borderSkipped: false
+        borderSkipped: false,
+        barThickness: 40,
+        maxBarThickness: 60
       },
     ],
   };
