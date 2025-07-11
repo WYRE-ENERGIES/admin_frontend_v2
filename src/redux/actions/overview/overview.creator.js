@@ -107,3 +107,12 @@ export const getDieselCostPerBranchSuccess = (payload = true) => ({
     type: overviewTypes.GET_DIESEL_COST_PER_BRANCH_SUCCESS,
     payload,
 });
+
+export const getDieselCardLoading = (payload = true) => ({
+    type: overviewTypes.GET_DIESEL_CARD_LOADING,
+    payload,
+});
+export const getDieselCardSuccess = (payload = true) => ({
+    type: overviewTypes.GET_DIESEL_CARD_SUCCESS,
+    payload,
+});

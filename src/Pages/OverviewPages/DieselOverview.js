@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
 import { APIService } from "../../config/Api/apiServices";
 import { getDieselConsumptionData, getDieselData, getDieselProcurementData } from "../../redux/actions/diesel/diesel.action"; 
+import { getDieselCardData } from '../../redux/actions/overview/overview.action';
 import { numberFormatter } from '../../helpers/genericHelpers';
 
 function DieselOverview(props) {
@@ -15,8 +16,9 @@ function DieselOverview(props) {
   const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
       dayjs(),])
   const [dieselProcureDataTable, setDieselProcureDataTable] = useState({})
-  const [dieselCardData, setDieselCardData] = useState(null)
-  const [loading, setLoading] = useState(false)
+  // Remove local dieselCardData and loading state
+  // const [dieselCardData, setDieselCardData] = useState(null)
+  // const [loading, setLoading] = useState(false)
 
   const { Search } = Input;
   
@@ -285,33 +287,17 @@ function DieselOverview(props) {
   const onChange = (pagination, filters, sorter, extra) => {
   };
 
-  const fetchDieselCardData = async (month, year) => {
-    try {
-      setLoading(true);
-      const clientId = props.auth.userData.client_id;
-      const response = await APIService.get(`/api/v2/client-cumulative-diesel-data/${clientId}/?month=${month}&year=${year}`);
-      setDieselCardData(response.data);
-    } catch (error) {
-      notification.error({
-        message: 'Error fetching diesel card data',
-        description: error.response?.data?.detail || 'Failed to fetch diesel card data'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleMonthChange = (date) => {
     setSelectedDate(date);
     if (date) {
-      fetchDieselCardData(date.month() + 1, date.year());
+      props.getDieselCardData(props.auth.userData.client_id, date.month() + 1, date.year());
     }
   };
 
   useEffect(() => {
     // Fetch initial data for current month/year
     const now = dayjs();
-    fetchDieselCardData(now.month() + 1, now.year());
+    props.getDieselCardData(props.auth.userData.client_id, now.month() + 1, now.year());
   }, []);
 
   return (
@@ -356,7 +342,7 @@ function DieselOverview(props) {
         </Space>
       </div>
       <div className="##########">
-        <Spin spinning={loading}>
+        <Spin spinning={props.dieselCardLoading}>
           <div style={{ display: 'flex', gap: '24px', paddingInline: "24px" }}>
             <div style={{
               flex: 1,
@@ -368,21 +354,20 @@ function DieselOverview(props) {
             }}>
               <Typography.Title level={4} style={{display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px"}}>
                <img src="/icon/monthly-usage.svg" alt="Monthly Usage" style={{height: "30px", width: "30px"}} /> 
-               
                 Monthly Usage
               </Typography.Title>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Litres</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>{numberFormatter(dieselCardData?.monthly_usage?.litres) || 0}L</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>{numberFormatter(props.dieselCardData?.monthly_usage?.litres) || 0}L</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Cost</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(dieselCardData?.monthly_usage?.cost) || 0}</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.monthly_usage?.cost) || 0}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Avg Price/L</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(dieselCardData?.monthly_usage?.avg_price_per_litre) || 0}</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.monthly_usage?.avg_price_per_litre) || 0}</span>
                 </div>
               </div>
             </div>
@@ -402,15 +387,15 @@ function DieselOverview(props) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Litres</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>{numberFormatter(dieselCardData?.stock_balance?.litres) || 0}L</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>{numberFormatter(props.dieselCardData?.stock_balance?.litres) || 0}L</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Cost</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(dieselCardData?.stock_balance?.cost) || 0}</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.stock_balance?.cost) || 0}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span>Current Price/L</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(dieselCardData?.stock_balance?.current_price_per_litre) || 0}</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.stock_balance?.current_price_per_litre) || 0}</span>
                 </div>
               </div>
             </div>
@@ -429,7 +414,7 @@ function DieselOverview(props) {
               </Typography.Title>
               <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
                 <Typography.Title level={2} style={{fontWeight: "550", color: "#5C12A7"}}>
-                  {numberFormatter(dieselCardData?.branch_count) || 0}
+                  {numberFormatter(props.dieselCardData?.branch_count) || 0}
                 </Typography.Title>
               </div>
             </div>
@@ -513,13 +498,16 @@ function DieselOverview(props) {
 const mapDispatchToProps = {
   getDieselData,
   getDieselProcurementData,
-  getDieselConsumptionData
+  getDieselConsumptionData,
+  getDieselCardData
 };
 
 const mapStateToProps = (state) => ({
   overviewPage: state.overviewPage,
   auth: state.auth,
-  dieselPage: state.dieselPage
+  dieselPage: state.dieselPage,
+  dieselCardData: state.overviewPage.fetchedDieselCard,
+  dieselCardLoading: state.overviewPage.fetchDieselCardLoading
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DieselOverview);
