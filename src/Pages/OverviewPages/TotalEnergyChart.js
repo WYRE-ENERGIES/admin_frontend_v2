@@ -425,7 +425,7 @@ function TotalEnergyChart(props) {
               allowClear
               onChange={handleRegionChange}
               value={selectedRegion}
-              style={{ width: 180 }}
+              style={{ width: 180, marginRight: 10 }}
             >
               {regionOptions.map(region => (
                 <Option key={region} value={region}>{region}</Option>
