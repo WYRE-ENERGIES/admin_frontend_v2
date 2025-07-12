@@ -258,6 +258,14 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   height: 40px;
 }
 
+.metrics-branch .ant-select-selector {
+    background-color: #fff !important;
+}
+
+.metrics-region .ant-select-selector {
+    background-color: #fff !important;
+}
+
 .ant-select-selector {
   background: #F2F2F8 !important;
   height: 40px;

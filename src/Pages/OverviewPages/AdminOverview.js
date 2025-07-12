@@ -3,7 +3,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined } from "@ant-design/icons";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { getKeyMetricsData, getTotalCostTopCard, getTotalEnergyBarChartData, getTotalEnergyTopCard, getUtilityCostPerBranch, getUtilityEnergyPerBranch, getDieselCostPerBranch, getDieselLitresPerBranch } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
@@ -32,7 +32,6 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import UtilityCostPerBranchChart from "./UtilityCostPerBranchChart";
 import GenericBranchBarChart from "./GenericBranchBarChart";
-import React, { useMemo } from "react";
 import { useSelector } from 'react-redux';
 
 ChartJS.register(
@@ -254,9 +253,32 @@ const handleRegionChange = value => {
     const year = dayjs(date).year();
     props.getKeyMetricsData(clientId, month, year , 1, e.target.value)
   }
-  const displayedData = selectedIds.length === 0
-    ? keyMetricsData
-    : keyMetricsData.filter(item => selectedIds.includes(item.id));
+  // Add region filter state if not already present
+
+  // Build branch options based on selected region
+  let branchOptions = [];
+  if (locationData && locationData.results) {
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      branchOptions = locationData.results
+        .filter(item => regionBranchMap[selectedRegion].includes(item.name))
+        .map(item => ({ value: item.id, label: item.name, key: item.id }));
+    } else {
+      branchOptions = locationData.results.map(item => ({ value: item.id, label: item.name, key: item.id }));
+    }
+  }
+
+  // Filter displayedData by region and branch
+  const displayedData = useMemo(() => {
+    let data = keyMetricsData;
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      const allowed = new Set(regionBranchMap[selectedRegion]);
+      data = data.filter(item => allowed.has(item.name));
+    }
+    if (selectedIds.length > 0) {
+      data = data.filter(item => selectedIds.includes(item.id));
+    }
+    return data;
+  }, [keyMetricsData, selectedRegion, selectedIds, regionBranchMap]);
 
   // const handleCompareBranches = (e) => {
   //   const filtered = data.filter((item) =>
@@ -814,17 +836,26 @@ const handleRegionChange = value => {
                   }}
                 />
                 <Select
-                className="select-bar"
+                className="select-bar metrics-branch"
                 mode="multiple"
                 placeholder="Select branches"
                 maxTagCount={1}
                   maxTagTextLength={10}
                 maxTagPlaceholder={omittedValues => `+${omittedValues.length} more`}
-                onChange={handleCompareBranches}
+                  onChange={handleCompareBranches}
                 value={selectedIds}
                 style={{ marginRight: 10 }}
-                options={options}
+                options={branchOptions}
               />
+              <Select
+                  className="select-bar metrics-region"
+                  placeholder="Search by Region"
+                  allowClear
+                  onChange={setSelectedRegion}
+                  value={selectedRegion}
+                  style={{ marginRight: 10, width: 180 }}
+                  options={regionOptions.map(region => ({ value: region, label: region }))}
+                />
               <DatePicker
                   className="picker-date"
                   style={{
