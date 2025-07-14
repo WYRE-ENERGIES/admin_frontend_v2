@@ -157,7 +157,8 @@ function UtilityCostChart(props) {
       )} */}
           <section className="total-energy-bar-chart">
             <Card
-              style={{
+            style={{
+                overflow: "hidden",
                 borderRadius: 22,
               }}
               loading={props.overviewPage.fetchTotalCostBarChartLoading}
@@ -197,7 +198,7 @@ function UtilityCostChart(props) {
                 />
               </div>
               </div>
-              <Bar options={options2} data={costChartData} />
+              <Bar style={{maxWidth: "78vw"}} options={options2} data={costChartData} />
             </Card>
           </section>
         

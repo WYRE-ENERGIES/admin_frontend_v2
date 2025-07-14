@@ -668,7 +668,9 @@ const handleRegionChange = value => {
         <h4 className="mobile-title">
           {downloading ? "Report" : "Admin Overview"}
         </h4>
-          <div>
+        {
+          !downloading && (
+             <div>
           <Button
             onClick={handleDownloadPdf}
             disabled={downloading || props.overviewPage.fetchKeyMetricsLoading || props.overviewPage.fetchTotalEnergyTopCardLoading || props.overviewPage.fetchTotalEnergyBarChartDataLoading}
@@ -678,6 +680,8 @@ const handleRegionChange = value => {
               Download Report
             </Button>
           </div>
+          )
+         }
           {/* <div>
             <Button
               style={{
@@ -805,12 +809,12 @@ const handleRegionChange = value => {
               isSelectChart={isSelectChart}
               setIsSelectChart={setIsSelectChart}
             />
-          </div>
+            </div>
         </section>
-         )}
-        <RendeChartsComponents index={isSelectChart} />
+        )}
+            <RendeChartsComponents index={isSelectChart} />
           {isSelectChart === 0 ? (
-          <section className="total-energy-bar-chart">
+            <section className="total-energy-bar-chart">
             <div
               style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}
             >

@@ -371,6 +371,7 @@ function TotalEnergyChart(props) {
             style={{
               // width: 1070,
               // height: 650,
+              overflow: "hidden",
               borderRadius: 22,
             }}
             // loading={props.overviewPage.fetchTotalEnergyBarChartLoading}
@@ -455,6 +456,7 @@ function TotalEnergyChart(props) {
                 </div>
               </div>
               <Bar
+                style={{maxWidth: "78vw"}}
                 onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
                 options={options}
                 // data={energyChartData}

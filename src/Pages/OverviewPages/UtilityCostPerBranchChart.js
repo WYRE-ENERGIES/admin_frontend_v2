@@ -70,7 +70,7 @@ const UtilityCostPerBranchChart = ({
   };
 
   return (
-    <Card style={{ borderRadius: 22 }}>
+    <Card style={{ overflow: "hidden", borderRadius: 22 }}>
       <Spin spinning={loading} size="large">
         <div
           style={{
@@ -119,7 +119,9 @@ const UtilityCostPerBranchChart = ({
             />
           </Space>
         </div>
-        <Bar data={chartData} options={options} />
+        <Bar
+          style={{ maxWidth: "78vw" }}
+          data={chartData} options={options} />
       </Spin>
     </Card>
   );

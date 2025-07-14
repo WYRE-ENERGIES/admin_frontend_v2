@@ -32,7 +32,7 @@ const GenericBranchBarChart = ({
   const values = filteredData?.map(item => item.value) || [];
 
   return (
-    <Card style={{ borderRadius: 22 }}>
+    <Card style={{ overflow: "hidden", borderRadius: 22 }}>
       <Spin spinning={loading} size="large">
         <div
           style={{
@@ -84,6 +84,7 @@ const GenericBranchBarChart = ({
           </Space>
         </div>
         <Bar
+          style={{ maxWidth: "78vw" }}
           data={{
             labels,
             datasets: [
