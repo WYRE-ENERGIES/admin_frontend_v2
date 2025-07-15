@@ -24,8 +24,10 @@ function DieselOverview(props) {
   const dateFormat = 'DD/MM/YYYY';
   const { RangePicker } = DatePicker;
 
-  const showDieselList = () => {
+  const showDieselList = (date) => {
     const clientId = props.auth.userData.client_id
+    const month = dayjs(date).month() + 1;
+    const year = dayjs(date).year();
     props.getDieselData(clientId);
   }
 
@@ -236,27 +238,27 @@ function DieselOverview(props) {
       key: "date",
     },
     {
-      title: "Price Per Month (\u20A6)",
+      title: "Price Per Litre (\u20A6)",
       dataIndex: "price_per_litre",
-      render: (value) => <>{value.toLocaleString(
+      render: (value) => <>{value? value.toLocaleString(
         undefined,
-        { maximumFractionDigits: 2 })}</>,
+        { maximumFractionDigits: 2 }) : 0}</>,
       key: "price_per_litre",
     },
     {
-      title: "Liters",
+      title: "Litres",
       dataIndex: "quantity",
-      render: (value) => <>{value.toLocaleString(
+      render: (value) => <>{value? value.toLocaleString(
         undefined,
-        { maximumFractionDigits: 2 }) + 'L'}</>,
+        { maximumFractionDigits: 2 }) + 'L' : 0}</>,
       key: "quantity",
     },
     {
       title: "Amount (\u20A6)",
       dataIndex: "amount",
-      render: (value) => <>{value.toLocaleString(
+      render: (value) => <>{value? value.toLocaleString(
         undefined,
-        { maximumFractionDigits: 2 })}</>,
+        { maximumFractionDigits: 2 }) : 0}</>,
       key: "amount",
     },
   ];
@@ -270,7 +272,9 @@ function DieselOverview(props) {
     {
       title: "Daily Consumption",
       dataIndex: "consumption",
-      render: (value) => <>{value + 'L'}</>,
+      render: (value) => <>{value ? value.toLocaleString(
+        undefined,
+        { maximumFractionDigits: 2 }) + 'L' : 0}</>,
       key: "consumption",
     },
     {
@@ -288,6 +292,7 @@ function DieselOverview(props) {
     setSelectedDate(date);
     if (date) {
       props.getDieselCardData(props.auth.userData.client_id, date.month() + 1, date.year());
+      props.showDieselList(props.auth.userData.client_id, date.month() + 1, date.year());
     }
   };
 
