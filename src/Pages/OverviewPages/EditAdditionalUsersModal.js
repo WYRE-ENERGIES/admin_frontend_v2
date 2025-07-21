@@ -255,7 +255,7 @@ const EditAdditionalUsersModal = ({ visible, onCancel, users, clientId, onUserUp
           >
             <Select placeholder="Select role">
               {roles.map(role => (
-                 role.name !== "SUPERADMIN" &&
+                 role.name !== "SUPERADMIN" && role.name !== "CLIENT_ADMIN" &&
                     <Option key={role.id} value={role.id}>{role.name}</Option>
               ))}
             </Select>
