@@ -16,15 +16,16 @@ import {
   MenuUnfoldOutlined,
   ArrowLeftOutlined,
 } from "@ant-design/icons";
-import { Button, Image, Menu, Space, theme, Drawer } from "antd";
+import { Button, Image, Menu, Space, theme, Drawer, notification } from "antd";
 import Form from "antd/es/form/Form";
 import Sider from "antd/es/layout/Sider";
 import useToken from "antd/es/theme/useToken";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logUserOut } from "../../redux/actions/auth/auth.action";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { logoutUser } from "../../redux/actions/auth/auth.creator";
+import { fetchPermittedBranches, forceLoginBranchAction } from "../../redux/actions/branch/branch.creator";
   
 function SideMenu({collapsed, setCollapsed}) {
     const [selectedLocation, setSelectedLocation] = useState('/');
@@ -35,7 +36,9 @@ function SideMenu({collapsed, setCollapsed}) {
     const {
       token: { colorBgContainer },
     } = theme.useToken();
-    const dispatch = useDispatch;
+    const dispatch = useDispatch();
+    const permittedBranches = useSelector(state => state.branchPage.permittedBranches);
+    const permittedBranchesLoading = useSelector(state => state.branchPage.permittedBranchesLoading);
 
     // Handle window resize
     useEffect(() => {
@@ -55,6 +58,10 @@ function SideMenu({collapsed, setCollapsed}) {
         const adminBackup = localStorage.getItem('adminUserBackup');
         setIsAdminImpersonating(!!adminBackup);
     }, [location.pathname]);
+
+    useEffect(() => {
+        dispatch(fetchPermittedBranches());
+    }, [dispatch]);
 
     const onLogout = () => {
       const navigateTo = '/'
@@ -134,6 +141,19 @@ function SideMenu({collapsed, setCollapsed}) {
       },
     ]
 
+    if (permittedBranches && permittedBranches.length > 0) {
+        items.splice(1, 0, {
+            label: "Permitted Branches",
+            key: "permitted-branches",
+            children: permittedBranches.map(branch => ({
+                label: branch.name,
+                key: `branch-${branch.id}`,
+                onClick: () => handleBranchLogin(branch.id),
+            })),
+            icon: <EnvironmentOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+        });
+    }
+
     if (isAdminImpersonating) {
         // Find the last divider
         let lastDividerIdx = -1;
@@ -162,6 +182,26 @@ function SideMenu({collapsed, setCollapsed}) {
     }, [location.pathname]);
 
     const navigate = useNavigate();
+
+    const handleBranchLogin = async (branchId) => {
+        try {
+            const data = await dispatch(forceLoginBranchAction(branchId));
+            const params = new URLSearchParams({
+                access: data.token.access,
+                refresh: data.token.refresh,
+                username: data.username,
+                email: data.email,
+                first_name: data.first_name,
+                last_name: data.last_name,
+            });
+            window.open(`https://dashboard.wyreng.com/dashboard?${params.toString()}`, '_blank');
+        } catch (err) {
+            notification.error({
+                message: 'Branch Force Login Failed',
+                description: err?.response?.data?.message || err.message || 'Unable to login to branch dashboard.'
+            });
+        }
+    };
 
     const MenuContent = () => (
       <>
