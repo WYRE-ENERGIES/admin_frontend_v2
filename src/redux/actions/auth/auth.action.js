@@ -199,15 +199,16 @@ export const updateUserProfile = (clientId, userId, updatedUserData, pendingLogo
   }
 };
 
-export const updateUserPassword = (clientId, updatePayload) => async (dispatch) => {
+export const updateUserPassword = (updatePayload) => async (dispatch) => {
   dispatch(updatePasswordLoading(true));
   try {
-    await APIService.put(`/api/v1/accounts/view-update-client/${clientId}/`, updatePayload);
+    await APIService.post('/api/v1/account/user-password/', updatePayload);
     dispatch(updatePasswordSuccess(true));
     dispatch(updatePasswordLoading(false));
     return { fulfilled: true, message: 'Password updated successfully!' };
   } catch (error) {
     dispatch(updatePasswordLoading(false));
-    return { fulfilled: false, message: error.message || 'Failed to update password.' };
+    let message = error?.response?.data?.detail || error?.response?.data?.message || error.message || 'Failed to update password.';
+    return { fulfilled: false, message };
   }
 };

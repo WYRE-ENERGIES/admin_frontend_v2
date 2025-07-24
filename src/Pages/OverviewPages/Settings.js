@@ -1,5 +1,3 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { Layout, Avatar, Card, Input, Button, Select, Upload, Form, Typography, Space, Divider, notification } from "antd"
 import {
@@ -166,7 +164,7 @@ export default function SettingsPage() {
       current_password: values.current_password,
       new_password: values.new_password,
     };
-    const result = await dispatch(updateUserPassword(userData.client_id, updatePayload));
+    const result = await dispatch(updateUserPassword(updatePayload));
     if (result && result.fulfilled) {
       notification.success({
         message: 'Success',
@@ -187,9 +185,6 @@ export default function SettingsPage() {
   const validatePassword = (_, value) => {
     if (!value) {
       return Promise.reject('Please enter your password');
-    }
-    if (value.length < 8) {
-      return Promise.reject('Password must be at least 8 characters');
     }
     return Promise.resolve();
   };
