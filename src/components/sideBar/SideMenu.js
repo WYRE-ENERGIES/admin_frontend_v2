@@ -141,19 +141,6 @@ function SideMenu({collapsed, setCollapsed}) {
       },
     ]
 
-    if (permittedBranches && permittedBranches.length > 0) {
-        items.splice(1, 0, {
-            label: "Permitted Branches",
-            key: "permitted-branches",
-            children: permittedBranches.map(branch => ({
-                label: branch.name,
-                key: `branch-${branch.id}`,
-                onClick: () => handleBranchLogin(branch.id),
-            })),
-            icon: <EnvironmentOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
-        });
-    }
-
     if (isAdminImpersonating) {
         // Find the last divider
         let lastDividerIdx = -1;
@@ -183,25 +170,7 @@ function SideMenu({collapsed, setCollapsed}) {
 
     const navigate = useNavigate();
 
-    const handleBranchLogin = async (branchId) => {
-        try {
-            const data = await dispatch(forceLoginBranchAction(branchId));
-            const params = new URLSearchParams({
-                access: data.token.access,
-                refresh: data.token.refresh,
-                username: data.username,
-                email: data.email,
-                first_name: data.first_name,
-                last_name: data.last_name,
-            });
-            window.open(`https://dashboard.wyreng.com/dashboard?${params.toString()}`, '_blank');
-        } catch (err) {
-            notification.error({
-                message: 'Branch Force Login Failed',
-                description: err?.response?.data?.message || err.message || 'Unable to login to branch dashboard.'
-            });
-        }
-    };
+
 
     const MenuContent = () => (
       <>
