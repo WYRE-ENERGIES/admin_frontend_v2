@@ -28,6 +28,7 @@ ChartJS.register(
 
 
 function UtilityCostChart(props) {
+  const { downloading = false } = props;
   const [selectedDate, setSelectedDate] = useState()
   const [costChartData, setCostChartData] = useState({
     labels: [],
@@ -161,7 +162,7 @@ function UtilityCostChart(props) {
                 overflow: "hidden",
                 borderRadius: 22,
               }}
-              loading={props.overviewPage.fetchTotalCostBarChartLoading}
+              loading={props.overviewPage.fetchUtilityCostBarChartLoading}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>
@@ -198,7 +199,11 @@ function UtilityCostChart(props) {
                 />
               </div>
               </div>
-              <Bar style={{maxWidth: "78vw"}} options={options2} data={costChartData} />
+              <Bar 
+              style={{ maxWidth: downloading ? "78vw" : "" }} 
+              options={options2} 
+              data={costChartData} 
+            />
             </Card>
           </section>
         

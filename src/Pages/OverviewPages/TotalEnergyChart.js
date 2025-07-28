@@ -34,6 +34,7 @@ ChartJS.register(
 const { Option } = Select;
 
 function TotalEnergyChart(props) {
+  const { downloading = false } = props;
   // const [energyChartData, setEnergyChartData] = useState({
   //   labels: [],
   //   datasets: []
@@ -456,7 +457,7 @@ function TotalEnergyChart(props) {
                 </div>
               </div>
               <Bar
-                style={{maxWidth: "78vw"}}
+                style={{maxWidth: downloading ? "78vw" : ""}}
                 onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
                 options={options}
                 // data={energyChartData}

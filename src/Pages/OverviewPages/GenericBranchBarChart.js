@@ -17,6 +17,7 @@ const GenericBranchBarChart = ({
   tabIndex,
   chartLabel,
   loading = false,
+  downloading = false,
 }) => {
   const branchOptions = useMemo(
     () => data?.map(item => ({ label: item.name, value: item.name })) || [],
@@ -84,7 +85,7 @@ const GenericBranchBarChart = ({
           </Space>
         </div>
         <Bar
-          style={{ maxWidth: "78vw" }}
+          style={{ maxWidth: downloading ? "78vw" : "" }}
           data={{
             labels,
             datasets: [
