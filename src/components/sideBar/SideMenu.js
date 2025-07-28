@@ -134,25 +134,20 @@ function SideMenu({collapsed, setCollapsed}) {
     ]
 
     if (isAdminImpersonating) {
-        // Find the last divider
-        let lastDividerIdx = -1;
-        for (let i = items.length - 1; i >= 0; i--) {
-            if (items[i].type === 'divider') {
-                lastDividerIdx = i;
-                break;
-            }
-        }
         const backToAdminItem = {
-            label: "Back to Admin",
+        label: <span style={{ fontWeight: 'bold' }}>Back to Admin</span>,
             key: "/back-to-admin",
             onClick: goBackToAdmin,
             icon: <ArrowLeftOutlined />,
+            style: {
+                background: '#fff',
+                color: '#222',
+                fontWeight: 'bold',
+                borderRadius: 6,
+                marginBottom: 8,
+            },
         };
-        if (lastDividerIdx !== -1) {
-            items.splice(lastDividerIdx, 0, backToAdminItem);
-        } else {
-            items.push(backToAdminItem);
-        }
+        items.unshift(backToAdminItem);
     }
   
     useEffect(() => {

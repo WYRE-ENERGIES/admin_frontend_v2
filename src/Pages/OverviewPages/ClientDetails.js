@@ -232,7 +232,7 @@ const ClientDetails = () => {
     } catch (error) {
       notification.error({
         message: 'Login as Client',
-        description: error?.response?.data?.message || error.message || 'Failed to login as client.'
+        description: error?.response?.data?.detail || error.detail || 'Failed to login as client.'
       });
     }
   };
