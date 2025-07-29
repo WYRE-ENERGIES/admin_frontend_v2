@@ -30,6 +30,7 @@ ChartJS.register(
 
 
 function UtilityEnergyChart(props) {
+  const { downloading = false } = props;
   const [selectedDate, setSelectedDate] = useState()
   const [costChartData, setCostChartData] = useState({
     labels: [],
@@ -143,7 +144,8 @@ function UtilityEnergyChart(props) {
           <section className="total-energy-bar-chart">
             <Card
               style={{
-                borderRadius: 22,
+              borderRadius: 22,
+                overflow: "hidden"
               }}
               loading={props.overviewPage.fetchUtilityEnergyBarChartLoading}
             >
@@ -182,7 +184,9 @@ function UtilityEnergyChart(props) {
                 />
               </div>
               </div>
-              <Bar options={options} data={costChartData} />
+            <Bar
+              style={{ maxWidth: downloading ? "78vw" : "" }}
+              options={options} data={costChartData} />
             </Card>
           </section>
         

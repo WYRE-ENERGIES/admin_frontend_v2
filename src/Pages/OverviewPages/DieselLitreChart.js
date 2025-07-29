@@ -29,6 +29,7 @@ ChartJS.register(
 
 
 function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
+  const {downloading = false} = props
   const [selectedDate, setSelectedDate] = useState()
   const [loading, setLoading] = useState('')
   const [costChartData, setCostChartData] = useState({
@@ -206,7 +207,7 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                 />
               </div>
             </div>
-            <Bar options={options} data={costChartData} />
+            <Bar style={{maxWidth: downloading ? "78vw" : ""}} options={options} data={costChartData} />
           </Card>
         </section>
       </div>

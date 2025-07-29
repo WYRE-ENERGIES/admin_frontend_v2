@@ -33,6 +33,7 @@ function DieselCostChart(props) {
     labels: [],
     datasets: []
   })
+    const {downloading = false} = props
   dayjs.extend(customParseFormat);
 
   const showDieselCostBarchart = () => {
@@ -205,7 +206,7 @@ function DieselCostChart(props) {
                 />
               </div>
               </div>
-              <Bar options={options} data={costChartData} />
+              <Bar style={{maxWidth: downloading ? "78vw" : ""}} options={options} data={costChartData} />
             </Card>
           </section>
         
