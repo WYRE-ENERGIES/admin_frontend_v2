@@ -8,6 +8,7 @@ import { forceLoginBranchAction } from "../../redux/actions/branch/branch.creato
 import { DeleteOutlined, EditOutlined, EyeOutlined, MoreOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
 import { BsThreeDots } from "react-icons/bs";
 import axios from "axios";
+import EnvData from "../../config/EnvData";
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
@@ -87,7 +88,7 @@ function ViewLocations(props) {
         first_name: data.first_name,
         last_name: data.last_name,
       });
-      window.open(`http://localhost:3001/dashboard/force-login?${params.toString()}`, '_blank');
+      window.open(`${EnvData.REACT_APP_DASHBOARD_URL}/force-login?${params.toString()}`, '_blank');
     } catch (err) {
       // Check for specific permission error
       if (err?.response?.data?.detail === "You do not have permission for this branch") {
