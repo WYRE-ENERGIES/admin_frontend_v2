@@ -10,6 +10,7 @@ import AuthRoute from './components/routes/AuthRoute';
 import BulkSideMenu from './components/sideBar/BulkSideMenu';
 import BulkmonitoringPageView from './components/pageContent/PageViews/BulkmonitoringPageView';
 import { ConfigProvider } from 'antd';
+import AiChat from "./components/aiChat/AiChat"
 import OtherSideMenu from "./components/sideBar/OtherSideMenu";
 import OtherPageView from "./components/pageContent/PageViews/OtherPageView";
 
@@ -46,6 +47,7 @@ function App() {
               onBreakpoint={onBreakpoint}
             />
             <PageView />
+            <AiChat />
           </div>
           {/* <AppFooter /> */}
         </div> :
