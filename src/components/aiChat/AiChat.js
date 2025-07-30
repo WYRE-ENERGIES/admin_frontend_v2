@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react"
 import { Button, Input } from "antd"
-import { DownloadOutlined, SendOutlined, CloseOutlined } from "@ant-design/icons"
+import { DownloadOutlined, SendOutlined, DownOutlined, ShrinkOutlined } from "@ant-design/icons"
 
 
 
@@ -115,14 +115,14 @@ export default function AiChat() {
         onClick={() => setIsOpen(true)}
         style={{
           position: "fixed",
-          bottom: "24px",
-          right: "24px",
-          width: "56px",
-          height: "56px",
-          backgroundColor: "#722ed1",
-          borderColor: "#722ed1",
+          bottom: "20px",
+          right: "40px",
+          width: "50px",
+          height: "50px",
+          backgroundColor: "#5C12A7",
+          borderColor: "#5C12A7",
           fontSize: "18px",
-          fontWeight: "bold",
+          fontWeight: "500",
           zIndex: 40,
           transition: "all 0.3s ease",
           transform: isOpen ? "scale(0)" : "scale(1)",
@@ -130,7 +130,31 @@ export default function AiChat() {
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
         }}
       >
-        U
+        AI
+      </Button>
+      <Button
+        type="primary"
+        shape="circle"
+        size="large"
+        onClick={() => setIsOpen(false)}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "40px",
+          width: "50px",
+          height: "50px",
+          backgroundColor: "#5C12A7",
+          borderColor: "#5C12A7",
+          fontSize: "18px",
+          fontWeight: "bold",
+          zIndex: 40,
+          transition: "all 0.3s ease",
+          transform: !isOpen ? "scale(0)" : "scale(1)",
+          opacity: !isOpen ? 0 : 1,
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+        }}
+      >
+        <DownOutlined />
       </Button>
 
       {/* Chat Widget */}
@@ -139,8 +163,8 @@ export default function AiChat() {
         style={{
           position: "fixed",
           bottom: "80px",
-          right: "24px",
-          width: "320px",
+          right: "40px",
+          width: "420px",
           height: "80%",
           backgroundColor: "white",
           borderRadius: "8px",
@@ -157,7 +181,7 @@ export default function AiChat() {
         {/* Header */}
         <div
           style={{
-            backgroundColor: "#722ed1",
+            backgroundColor: "#5C12A7",
             color: "white",
             padding: "12px",
             borderRadius: "8px 8px 0 0",
@@ -170,7 +194,7 @@ export default function AiChat() {
             <Button
               type="text"
               size="small"
-              icon={<CloseOutlined />}
+              icon={<ShrinkOutlined />}
               onClick={() => setIsOpen(false)}
               style={{
                 color: "white",
@@ -216,7 +240,7 @@ export default function AiChat() {
                     style={{
                       width: "24px",
                       height: "24px",
-                      backgroundColor: "#722ed1",
+                      backgroundColor: "#5C12A7",
                       borderRadius: "50%",
                       display: "flex",
                       alignItems: "center",
@@ -273,7 +297,7 @@ export default function AiChat() {
                 style={{
                   width: "24px",
                   height: "24px",
-                  backgroundColor: "#722ed1",
+                  backgroundColor: "#5C12A7",
                   borderRadius: "50%",
                   display: "flex",
                   alignItems: "center",
@@ -331,7 +355,6 @@ export default function AiChat() {
         <div
           style={{
             padding: "8px 12px",
-            borderTop: "1px solid #f0f0f0",
             backgroundColor: "#fafafa",
             display: "flex",
             flexDirection: "column",
@@ -394,15 +417,15 @@ export default function AiChat() {
                 type="primary"
                 size="small"
                 shape="circle"
-                icon={<SendOutlined />}
+                icon={<SendOutlined size={34} />}
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim()}
                 style={{
-                  backgroundColor: "#722ed1",
-                  borderColor: "#722ed1",
-                  width: "24px",
-                  height: "24px",
-                  minWidth: "24px",
+                  // backgroundColor: "#5C12A7",
+                  // borderColor: "#5C12A7",
+                  width: "34px",
+                  height: "34px",
+                  minWidth: "34px",
                 }}
               />
             }
