@@ -1,4 +1,6 @@
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect, useRef } from "react";
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import { Button, Input } from "antd"
 import { DownloadOutlined, SendOutlined, DownOutlined, ShrinkOutlined } from "@ant-design/icons"
 
@@ -30,6 +32,8 @@ export default function AiChat() {
   ])
   const [inputValue, setInputValue] = useState("")
   const [isTyping, setIsTyping] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
+  const [downloadError, setDownloadError] = useState(null);
   const chatRef = useRef(null)
   const widgetRef = useRef(null)
   const messagesEndRef = useRef(null)
@@ -66,6 +70,43 @@ export default function AiChat() {
       document.removeEventListener("mousedown", handleClickOutside)
     }
   }, [isOpen])
+
+  const downloadChatAsPDF = async () => {
+    setIsLoading(true);
+    setDownloadError(null);
+
+    try {
+      // Prevent multiple downloads
+      if (isLoading) return;
+
+      // Create a canvas from the chat container
+      const canvas = await html2canvas(chatRef.current);
+        // Create a new PDF document
+        const pdf = new jsPDF('p', 'mm', 'a4');
+        
+        // Get the canvas data URL
+        const imgData = canvas.toDataURL('image/png');
+        
+        // Add the image to the PDF
+        pdf.addImage(imgData, 'PNG', 15, 40, 180, 0);
+        
+        // Add title
+        pdf.setFontSize(20);
+        pdf.setTextColor(0, 0, 0);
+        pdf.text('Wyre AI Chat History', 105, 30, { align: 'center' });
+        
+        // Save the PDF
+        pdf.save('wyre_ai_chat_history.pdf');
+        
+        // Reset loading state after a short delay to ensure the download completes
+        setTimeout(() => setIsLoading(false), 1000);
+    ;
+    } catch (error) {
+      setDownloadError('Failed to generate PDF. Please try again.');
+      setIsLoading(false);
+      console.error('Error generating PDF:', error);
+    }
+  };
 
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return
@@ -166,7 +207,7 @@ export default function AiChat() {
           right: "40px",
           width: "420px",
           height: "80%",
-          backgroundColor: "white",
+          // backgroundColor: "white",
           borderRadius: "8px",
           boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
           transition: "all 0.3s ease-in-out",
@@ -190,11 +231,11 @@ export default function AiChat() {
             justifyContent: "space-between",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
             <Button
               type="text"
               size="small"
-              icon={<ShrinkOutlined />}
+              icon={<ShrinkOutlined style={{ fontSize: "20px" }} />}
               onClick={() => setIsOpen(false)}
               style={{
                 color: "white",
@@ -208,7 +249,7 @@ export default function AiChat() {
             <p
               style={{
                 color: "white",
-                fontSize: "12px",
+                fontSize: "14px",
                 fontWeight: 500,
                 letterSpacing: "0.5px",
               }}
@@ -216,7 +257,16 @@ export default function AiChat() {
               BATTERY HEALTH & POWER
             </p>
           </div>
-          <DownloadOutlined style={{ fontSize: "16px" }} />
+          <DownloadOutlined 
+            style={{ fontSize: "20px", cursor: "pointer" }} 
+            onClick={downloadChatAsPDF}
+            disabled={isLoading}
+          />
+          {downloadError && (
+            <div style={{ color: 'red', fontSize: '12px', marginTop: '8px' }}>
+              {downloadError}
+            </div>
+          )}
         </div>
 
         {/* Chat Messages */}
@@ -226,7 +276,9 @@ export default function AiChat() {
             flex: 1,
             padding: "12px",
             overflowY: "auto",
-            backgroundColor: "#fafafa",
+            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            backdropFilter: "blur(15px)",
+            WebkitBackdropFilter: "blur(16px)",
             display: "flex",
             flexDirection: "column",
             gap: "12px",
@@ -248,16 +300,16 @@ export default function AiChat() {
                       flexShrink: 0,
                     }}
                   >
-                    <p style={{ color: "white", fontSize: "12px", fontWeight: "bold" }}>U</p>
+                    <p style={{ color: "white", fontSize: "12px", fontWeight: "bold" }}>AI</p>
                   </div>
                   <div
                     style={{
                       backgroundColor: "white",
                       borderRadius: "8px",
-                      padding: "8px",
+                      padding: "2px 12px",
                       maxWidth: "200px",
                       boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-                      border: "1px solid #f0f0f0",
+                      border: "1px solid #b9b9b9",
                     }}
                   >
                     <p style={{ fontSize: "12px", lineHeight: "1.4", wordBreak: "break-word" }}>
@@ -269,9 +321,10 @@ export default function AiChat() {
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                   <div
                     style={{
-                      backgroundColor: "#e6f7ff",
+                      backgroundColor: "#5C35922B",
                       borderRadius: "8px",
-                      padding: "8px 12px",
+                        padding: "2px 12px",
+                        border: "1px solid #b9b9b9",
                       maxWidth: "200px",
                     }}
                   >
@@ -305,7 +358,7 @@ export default function AiChat() {
                   flexShrink: 0,
                 }}
               >
-                <p style={{ color: "white", fontSize: "12px", fontWeight: "bold" }}>U</p>
+                <p style={{ color: "white", fontSize: "12px", fontWeight: "bold" }}>AI</p>
               </div>
               <div
                 style={{
@@ -433,6 +486,7 @@ export default function AiChat() {
               borderRadius: "20px",
               backgroundColor: "#fafafa",
               fontSize: "12px",
+              paddingRight: "4px",
             }}
           />
         </div>
