@@ -71,17 +71,17 @@ const buttons = [
   },
 ]
 
-const RendeChartsComponents = ({index}) => {
+const RendeChartsComponents = ({index, downloading}) => {
   switch (index) {
-    case 0: return <TotalEnergyChart />
+    case 0: return <TotalEnergyChart downloading={downloading} />
      break;
-    case 1: return <UtilityCostChart /> 
+    case 1: return <UtilityCostChart downloading={downloading} /> 
      break;
-    case 2: return <UtilityEnergyChart /> 
+    case 2: return <UtilityEnergyChart downloading={downloading} /> 
      break;
-    case 3: return <DieselCostChart /> 
+    case 3: return <DieselCostChart downloading={downloading} /> 
      break;
-    case 4: return <DieselLitreChart /> 
+    case 4: return <DieselLitreChart downloading={downloading} /> 
      break;
     default:
       break;
@@ -668,7 +668,9 @@ const handleRegionChange = value => {
         <h4 className="mobile-title">
           {downloading ? "Report" : "Admin Overview"}
         </h4>
-          <div>
+        {
+          !downloading && (
+             <div>
           <Button
             onClick={handleDownloadPdf}
             disabled={downloading || props.overviewPage.fetchKeyMetricsLoading || props.overviewPage.fetchTotalEnergyTopCardLoading || props.overviewPage.fetchTotalEnergyBarChartDataLoading}
@@ -678,6 +680,8 @@ const handleRegionChange = value => {
               Download Report
             </Button>
           </div>
+          )
+         }
           {/* <div>
             <Button
               style={{
@@ -805,12 +809,12 @@ const handleRegionChange = value => {
               isSelectChart={isSelectChart}
               setIsSelectChart={setIsSelectChart}
             />
-          </div>
+            </div>
         </section>
-         )}
-        <RendeChartsComponents index={isSelectChart} />
+        )}
+            <RendeChartsComponents index={isSelectChart} downloading={downloading} />
           {isSelectChart === 0 ? (
-          <section className="total-energy-bar-chart">
+            <section className="total-energy-bar-chart">
             <div
               style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}
             >
@@ -1065,6 +1069,7 @@ const handleRegionChange = value => {
               onDateChange={handleUtilityCostMonthChange}
               selectedDate={dayjs(`${utilityCostYear}-${utilityCostMonth}`, "YYYY-M")}
               loading={props.overviewPage.fetchUtilityCostPerBranchLoading}
+              downloading={downloading}
             />
           </section>
         ) : isSelectChart === 2 ? (
@@ -1082,6 +1087,7 @@ const handleRegionChange = value => {
               loading={props.overviewPage.fetchUtilityEnergyPerBranchLoading}
               onBranchSelect={handleBranchSelect}
               selectedBranches={selectedBranches}
+              downloading={downloading}
             />
           </section>
         ) : isSelectChart === 3 ? (
@@ -1099,6 +1105,7 @@ const handleRegionChange = value => {
               loading={props.overviewPage.fetchDieselCostPerBranchLoading}
               onBranchSelect={handleBranchSelect}
               selectedBranches={selectedBranches}
+              downloading={downloading}
             />
           </section>
         ) : isSelectChart === 4 ? (
@@ -1116,6 +1123,7 @@ const handleRegionChange = value => {
               loading={props.overviewPage.fetchDieselLitresPerBranchLoading}
               onBranchSelect={handleBranchSelect}
               selectedBranches={selectedBranches}
+              downloading={downloading}
             />
           </section>
         ) : (
@@ -1131,6 +1139,7 @@ const handleRegionChange = value => {
               selectedDate={genericTabDate}
               onBranchSelect={handleBranchSelect}
               selectedBranches={selectedBranches}
+              downloading={downloading}
             />
           </section>
         )}

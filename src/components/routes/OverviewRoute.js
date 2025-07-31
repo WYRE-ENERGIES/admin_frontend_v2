@@ -1,15 +1,13 @@
 import { Routes, Route } from "react-router-dom";
 import AdminOverview from "../../Pages/OverviewPages/AdminOverview";
 import ClientUsers from "../../Pages/OverviewPages/ClientUsers";
-import SetClient from "../../Pages/OverviewPages/SetTarget";
 import SetTarget from "../../Pages/OverviewPages/SetTarget";
 import DieselOverview from "../../Pages/OverviewPages/DieselOverview";
-import AuthRoute from "./AuthRoute";
-import LogOut from "../../Pages/OverviewPages/LogOut";
 import ViewLocations from "../../Pages/OverviewPages/ViewLocations";
 import Support from "../../Pages/OverviewPages/support/Support";
 import ForceLoginAdminHandler from "../../Pages/AuthPages/ForceLoginAdminHandler";
 import BranchDetails from "../../Pages/OverviewPages/BranchDetails";
+import Settings from "../../Pages/OverviewPages/Settings";
 
 function OverviewRoute() {
   return (
@@ -23,7 +21,7 @@ function OverviewRoute() {
         <Route path="/diesel" element={<DieselOverview />}></Route>
         <Route path="/locations" element={<ViewLocations />}></Route>
         <Route path="/locations/branch" element={<BranchDetails />}></Route>
-        <Route path="/log-out" element={<LogOut />}></Route>
+        <Route path="/settings" element={<Settings />}></Route>
         <Route path="/support" element={<Support />}></Route>
         <Route path="/branch" element={<BranchDetails />}></Route>
       </Routes>

@@ -105,7 +105,7 @@ const EditMainUserModal = ({ visible, onCancel, user, clientId, onUserUpdated })
         </Form.Item>
         <Form.Item name="roles" label="Role" rules={[{ required: true, message: 'Please select a role' }]}>
           <Select placeholder="Select role">
-            {roles.filter(role => role.name !== 'SUPERADMIN').map(role => (
+            {roles.filter(role => role.name !== 'SUPERADMIN' && role.name !== 'CLIENT_ADMIN').map(role => (
               <Option key={role.id} value={role.id}>{role.name}</Option>
             ))}
           </Select>
