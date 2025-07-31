@@ -187,17 +187,27 @@ export default function SettingsPage() {
       return Promise.reject('Please enter your phone number');
     }
 
-    // Remove non-numeric characters
     const numericValue = value.replace(/\D/g, '');
 
     // Check prefix
-    if (numericValue.length > 0 && !['07', '08', '09'].includes(numericValue.substring(0, 2))) {
-      return Promise.reject('Phone number must start with 07, 08, or 09');
+    const mobilePrefixes = ['07', '08', '09'];
+    const landlinePrefixes = ['01', '02', '03'];
+    const allPrefixes = [...mobilePrefixes, ...landlinePrefixes];
+
+    const prefix = numericValue.substring(0, 2);
+    if (!allPrefixes.includes(prefix)) {
+      return Promise.reject('Phone number must start with 01, 02, 03 (landline) or 07, 08, 09 (mobile)');
     }
 
-    // Check length
-    if (numericValue.length > 11) {
-      return Promise.reject('Phone number must be exactly 11 digits');
+    // Check length based on type
+    if (mobilePrefixes.includes(prefix)) {
+      if (numericValue.length !== 11) {
+        return Promise.reject('Mobile number must be exactly 11 digits');
+      }
+    } else if (landlinePrefixes.includes(prefix)) {
+      if (numericValue.length !== 8 && numericValue.length !== 10) {
+        return Promise.reject('Landline number must be either 8 or 10 digits');
+      }
     }
 
     return Promise.resolve();
