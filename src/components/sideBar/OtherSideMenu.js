@@ -1,14 +1,3 @@
-// function SideMenu() {
-//     return (
-//       <div className="SideMenu">
-//         <sidebar>Side Menu</sidebar>
-//       </div>
-//     );
-//   }
-  
-//   export default SideMenu;
-
-
 import {
     EnvironmentOutlined,
     UserOutlined,
@@ -26,8 +15,7 @@ import Sider from "antd/es/layout/Sider";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { logoutUser } from "../../redux/actions/auth/auth.creator";
-import DownloadPage from "../../Pages/AuthPages/DownloadPage";
+import { logUserOut } from "../../redux/actions/auth/auth.action";
 
 function OtherSideMenu({ collapsed, setCollapsed }) {
     const [selectedLocation, setSelectedLocation] = useState('/');
@@ -52,11 +40,9 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
         setSelectedLocation(location.pathname);
     }, [location.pathname]);
 
-    const logOut = () => {
-        dispatch(logoutUser());
-        window.localStorage.removeItem('loggedWyreUserAdmin');
-        window.location.href = '/';
-    };
+  const logOut = () => {
+    dispatch(logUserOut());
+  };
 
     const items = [
         {
@@ -79,6 +65,12 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
       },
         {
             type: 'divider',
+        },
+        {
+            label: "Log Out",
+            key: "logout",
+            icon: <LoginOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+            onClick: logOut,
         },
     ];
 

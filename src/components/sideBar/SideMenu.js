@@ -25,7 +25,6 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logUserOut } from "../../redux/actions/auth/auth.action";
 import { useDispatch } from "react-redux";
-import { logoutUser } from "../../redux/actions/auth/auth.creator";
   
 function SideMenu({collapsed, setCollapsed}) {
     const [selectedLocation, setSelectedLocation] = useState('/');
@@ -36,7 +35,7 @@ function SideMenu({collapsed, setCollapsed}) {
     const {
       token: { colorBgContainer },
     } = theme.useToken();
-    const dispatch = useDispatch;
+    const dispatch = useDispatch();
 
     // Handle window resize
     useEffect(() => {
@@ -57,12 +56,6 @@ function SideMenu({collapsed, setCollapsed}) {
         setIsAdminImpersonating(!!adminBackup);
     }, [location.pathname]);
 
-    const onLogout = () => {
-      const navigateTo = '/'
-      dispatch(logoutUser())
-      navigate(navigateTo)
-    }
-
     const goBackToAdmin = () => {
         const adminBackup = localStorage.getItem('adminUserBackup');
         if (adminBackup) {
@@ -72,12 +65,9 @@ function SideMenu({collapsed, setCollapsed}) {
         }
     };
 
-    const logOut = () => {
-      dispatch(logoutUser());
-      window.localStorage.removeItem('loggedWyreUserAdmin');
-      window.localStorage.removeItem('adminUserBackup');
-      window.location.href = '/';
-    };
+  const logOut = () => {
+    dispatch(logUserOut());
+  };
     
     const items = [
       {
@@ -101,6 +91,9 @@ function SideMenu({collapsed, setCollapsed}) {
         icon: <AimOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
+        type: 'divider',
+      },
+      {
         label: "Diesel Overview",
         key: "/diesel",
         icon: <HeatMapOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
@@ -111,23 +104,29 @@ function SideMenu({collapsed, setCollapsed}) {
         icon: <SettingOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       // {
-      //   label: "Regions Activities",
-      //   key: "/regions-activities",
-      //   icon: <CompassOutlined />,
-      // },
-      // {
-      //   label: "Top Management Report",
-      //   key: "/top-mngt",
-      //   icon: <SendOutlined />,
-      // },
-      {
-        type: 'divider',
-      },
-      {
-        label: "Support",
-        key: "/support",
-        icon: <MailOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
-      },
+        //   label: "Regions Activities",
+        //   key: "/regions-activities",
+        //   icon: <CompassOutlined />,
+        // },
+        // {
+          //   label: "Top Management Report",
+          //   key: "/top-mngt",
+          //   icon: <SendOutlined />,
+          // },
+          {
+            type: 'divider',
+          },
+          {
+            label: "Support",
+            key: "/support",
+            icon: <MailOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+          },
+          {
+            label: "Log Out",
+            key: "logout",
+            icon: <LoginOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+            onClick: logOut
+          },
       {
         type: 'divider',
       },

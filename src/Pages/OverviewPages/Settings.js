@@ -200,12 +200,6 @@ export default function SettingsPage() {
     return Promise.resolve();
   };
 
-  const logOut = () => {
-    window.localStorage.removeItem("loggedWyreUserAdmin");
-    window.localStorage.removeItem("currentUser");
-    window.location.href = "/";
-  };
-
   return (
     <section>
         <div
@@ -328,7 +322,7 @@ export default function SettingsPage() {
                       rules={[{ required: true, message: 'Please enter your email' }, { type: 'email', message: 'Please enter a valid email' }]}
                       validateTrigger={"onChange"}
                     >
-                      <Input defaultValue={userData.email} style={{ borderRadius: "8px" }} />
+                      <Input defaultValue={userData.email} style={{ borderRadius: "8px" }} disabled />
                     </Form.Item>
                     <Form.Item
                       name="phone_number"
@@ -486,24 +480,6 @@ export default function SettingsPage() {
             </Card>
           </Space>
 
-        <div
-          style={{
-            float: "right",
-            marginTop: "50px",
-          }}
-          >
-            <Button
-              danger
-              style={{
-                background: "#E74C3C",
-                borderColor: "#E74C3C",
-                color: "white",
-              }}
-            onClick={logOut}
-            >
-              Log out
-            </Button>
-          </div>
         </Content>
     </section>
   )

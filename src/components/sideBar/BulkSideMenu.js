@@ -24,7 +24,7 @@ import Sider from "antd/es/layout/Sider";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { logoutUser } from "../../redux/actions/auth/auth.creator";
+import { logUserOut } from "../../redux/actions/auth/auth.action";
 
 function BulkSideMenu({ collapsed, setCollapsed }) {
     const [selectedLocation, setSelectedLocation] = useState('/');
@@ -49,11 +49,9 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
         setSelectedLocation(location.pathname);
     }, [location.pathname]);
 
-    const logOut = () => {
-        dispatch(logoutUser());
-        window.localStorage.removeItem('loggedWyreUserAdmin');
-        window.location.href = '/';
-    };
+  const logOut = () => {
+    dispatch(logUserOut());
+  };
 
     const items = [
         {
@@ -86,6 +84,12 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
         },
         {
             type: 'divider',
+        },
+        {
+            label: "Log Out",
+            key: "logout",
+            icon: <LoginOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+            onClick: logOut,
         },
     ];
 
