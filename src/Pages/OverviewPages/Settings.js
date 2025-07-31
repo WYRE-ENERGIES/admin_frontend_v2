@@ -182,10 +182,48 @@ export default function SettingsPage() {
     }
   };
 
+  const validatePhoneNumber = (_, value) => {
+    if (!value) {
+      return Promise.reject('Please enter your phone number');
+    }
+
+    // Remove non-numeric characters
+    const numericValue = value.replace(/\D/g, '');
+
+    // Check prefix
+    if (numericValue.length > 0 && !['07', '08', '09'].includes(numericValue.substring(0, 2))) {
+      return Promise.reject('Phone number must start with 07, 08, or 09');
+    }
+
+    // Check length
+    if (numericValue.length > 11) {
+      return Promise.reject('Phone number must be exactly 11 digits');
+    }
+
+    return Promise.resolve();
+  };
+
   const validatePassword = (_, value) => {
     if (!value) {
       return Promise.reject('Please enter your password');
     }
+
+    if (value.length < 8) {
+      return Promise.reject('Password must be at least 8 characters long');
+    }
+
+    if (!/[0-9]/.test(value)) {
+      return Promise.reject('Password must contain at least one number');
+    }
+
+    if (!/[A-Z]/.test(value)) {
+      return Promise.reject('Password must contain at least one uppercase letter');
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+      return Promise.reject('Password must contain at least one special character');
+    }
+
     return Promise.resolve();
   };
 
@@ -197,6 +235,20 @@ export default function SettingsPage() {
     if (value !== new_password) {
       return Promise.reject('Passwords do not match');
     }
+    
+    if (value.length < 8) {
+      return Promise.reject('Password must be at least 8 characters long');
+    }
+    if (!/[0-9]/.test(value)) {
+      return Promise.reject('Password must contain at least one number');
+    }
+    if (!/[A-Z]/.test(value)) {
+      return Promise.reject('Password must contain at least one uppercase letter');
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+      return Promise.reject('Password must contain at least one special character');
+    }
+
     return Promise.resolve();
   };
 
@@ -327,8 +379,7 @@ export default function SettingsPage() {
                     <Form.Item
                       name="phone_number"
                       label="Phone Number"
-                      rules={[{ required: true, message: 'Please enter your phone number' }]}
-                      validateTrigger={"onChange"}
+                      validateTrigger={"onType"}
                     >
                       <Input.Group compact style={{ display: "flex", alignItems: "center" }}>
                         <Select defaultValue="+234" disabled>
@@ -337,10 +388,12 @@ export default function SettingsPage() {
                         <Form.Item
                           name="phone_number"
                           noStyle
-                          validateTrigger={"onChange"}
+                          rules={[{ required: true, validator: validatePhoneNumber }]}
                         >
                           <Input
                             defaultValue={userData.phone_number}
+                            type="number"
+                            pattern="[0-9]*"
                             style={{ width: "calc(100% - 80px)", borderRadius: "0 8px 8px 0" }}
                           />
                         </Form.Item>
