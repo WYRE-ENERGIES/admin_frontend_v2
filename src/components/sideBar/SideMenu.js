@@ -17,6 +17,7 @@ import {
   ArrowLeftOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
+import EnvData from '../../config/EnvData';
 import { Button, Image, Menu, Space, theme, Drawer } from "antd";
 import Form from "antd/es/form/Form";
 import Sider from "antd/es/layout/Sider";
@@ -237,14 +238,14 @@ function SideMenu({collapsed, setCollapsed}) {
           marginTop: '20px'
 
         }}>
-          {/* <Image
+          <img
             width={73}
             height={38}
-            style={{ padding: 0 }}
-            src={clientLogo}
+            style={{ padding: 0, objectFit: 'contain' }}
+      src={EnvData.REACT_APP_API_URL + clientLogo}
             alt='Client Logo'
             preview={false}
-          /> */}
+          />
           <p style={{
             fontSize: '12px',
             display: collapsed ? 'none' : 'block',
