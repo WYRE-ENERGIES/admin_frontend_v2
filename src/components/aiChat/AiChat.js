@@ -61,13 +61,6 @@ export default function AiChat() {
     };
   }, []);
 
-  // useEffect(() => {
-  //   const timer = setTimeout(() => {
-  //     setIsOpen(false);
-  //   }, 500);
-  //   return () => clearTimeout(timer);
-  // }, []);
-
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (widgetRef.current && !widgetRef.current.contains(event.target)) {
@@ -91,7 +84,6 @@ export default function AiChat() {
       if (isLoading) return;
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Ensure the chat container is fully scrollable
       const chatElement = chatRef.current;
       const originalStyle = {
         overflowY: chatElement.style.overflowY,
@@ -115,7 +107,6 @@ export default function AiChat() {
       chatElement.style.overflowY = originalStyle.overflowY;
       chatElement.style.height = originalStyle.height;
 
-      // Create a new PDF document
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pageWidth = 210;
       const pageHeight = 297;
@@ -167,7 +158,6 @@ export default function AiChat() {
         pageCount++;
       }
 
-      // Save the PDF
       pdf.save('wyre_ai_chat_history.pdf');
       setTimeout(() => setIsLoading(false), 1000);
     } catch (error) {
@@ -480,7 +470,7 @@ export default function AiChat() {
           <div ref={messagesEndRef} />
         </div>
 
-        <div
+        {/* <div
           style={{
             padding: "8px 12px",
             backgroundColor: "rgb(247,235,251, 0.5)",
@@ -527,7 +517,7 @@ export default function AiChat() {
           >
             Average diesel usage?
           </Button>
-        </div>
+        </div> */}
 
         <div
           style={{
