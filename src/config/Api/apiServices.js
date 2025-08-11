@@ -96,7 +96,7 @@ export const APIService = {
 
     forceLoginClientAdmin(clientId) {
         return instance.post(`/api/v2/force-login-client-admin/${clientId}/`);
-    },
+  },
 };
 
 export const APIServiceNoAuth = {

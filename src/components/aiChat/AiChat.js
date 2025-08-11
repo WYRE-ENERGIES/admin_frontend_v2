@@ -1,154 +1,223 @@
 import { useState, useEffect, useRef } from "react";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { Button, Input } from "antd"
-import { DownloadOutlined, SendOutlined, DownOutlined, ShrinkOutlined } from "@ant-design/icons"
-
-
+import { Button, Input } from "antd";
+import { DownloadOutlined, SendOutlined, DownOutlined, ShrinkOutlined, InfoCircleOutlined } from "@ant-design/icons";
+import { APIService } from "../../config/Api/apiServices";
 
 export default function AiChat() {
-  const [isOpen, setIsOpen] = useState(true)
+  const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState([
     {
       id: "1",
       type: "ai",
       content:
-        "Welcome back, chief! Just ran a quick check on your energy habits today and guess what? You're doing great, power use is smooth, no major spikes.",
-      timestamp: "12:47 pm",
+        "Hello 👋, I'm here to help you with any questions you may have on your Admin Dashboard",
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
-    {
-      id: "2",
-      type: "user",
-      content: "Is my battery fully charged?",
-      timestamp: "12:48 pm",
-    },
-    {
-      id: "3",
-      type: "ai",
-      content:
-        "Your battery is currently at 78%. However, there's a communication issue between the inverter and the battery, so the status might not update in real time.",
-      timestamp: "12:48 pm",
-    },
-  ])
-  const [inputValue, setInputValue] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
+    // {
+    //   id: "2",
+    //   type: "user",
+    //   content: "Is my battery fully charged?",
+    //   timestamp: "12:48 pm",
+    // },
+    // {
+    //   id: "3",
+    //   type: "ai",
+    //   content:
+    //     "Your battery is currently at 78%. However, there's a communication issue between the inverter and the battery, so the status might not update in real time.",
+    //   timestamp: "12:48 pm",
+    // },
+  ]);
+  const [inputValue, setInputValue] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(null);
-  const chatRef = useRef(null)
-  const widgetRef = useRef(null)
-  const messagesEndRef = useRef(null)
+  const [sessionId, setSessionId] = useState(null);
+  const chatRef = useRef(null);
+  const widgetRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
-    // Small delay to ensure smooth initial animation
-    const timer = setTimeout(() => {
-      setIsOpen(true)
-    }, 500)
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = 'Are you sure you want to leave? Your AI chat session will be lost.';
+      return 'Are you sure you want to leave? Your AI chat session will be lost.';
+    };
 
-    return () => clearTimeout(timer)
-  }, [])
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setIsOpen(false);
+  //   }, 500);
+  //   return () => clearTimeout(timer);
+  // }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (widgetRef.current && !widgetRef.current.contains(event.target)) {
-        setIsOpen(false)
+        setIsOpen(false);
       }
-    }
-
+    };
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside)
+      document.addEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside)
-    }
-  }, [isOpen])
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   const downloadChatAsPDF = async () => {
     setIsLoading(true);
+    setIsDownloading(true);
     setDownloadError(null);
-
+    
     try {
-      // Prevent multiple downloads
       if (isLoading) return;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Ensure the chat container is fully scrollable
+      const chatElement = chatRef.current;
+      const originalStyle = {
+        overflowY: chatElement.style.overflowY,
+        height: chatElement.style.height,
+      };
 
-      // Create a canvas from the chat container
-      const canvas = await html2canvas(chatRef.current);
-        // Create a new PDF document
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        
-        // Get the canvas data URL
-        const imgData = canvas.toDataURL('image/png');
-        
-        // Add the image to the PDF
-        pdf.addImage(imgData, 'PNG', 15, 40, 180, 0);
-        
-        // Add title
-        pdf.setFontSize(20);
-        pdf.setTextColor(0, 0, 0);
-        pdf.text('Wyre AI Chat History', 105, 30, { align: 'center' });
-        
-        // Save the PDF
-        pdf.save('wyre_ai_chat_history.pdf');
-        
-        // Reset loading state after a short delay to ensure the download completes
-        setTimeout(() => setIsLoading(false), 1000);
-    ;
+      // Temporarily set the chat container to display all content
+      chatElement.style.overflowY = 'visible';
+      chatElement.style.height = 'auto';
+
+      // Create canvas with full scroll height
+      const canvas = await html2canvas(chatElement, {
+        scale: 2,
+        height: chatElement.scrollHeight,
+        width: chatElement.offsetWidth,
+        scrollX: 0,
+        scrollY: 0,
+      });
+
+      // Restore original styles
+      chatElement.style.overflowY = originalStyle.overflowY;
+      chatElement.style.height = originalStyle.height;
+
+      // Create a new PDF document
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 15;
+      const titleHeight = 20;
+      const usablePageHeight = pageHeight - margin - titleHeight;
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const aspectRatio = imgWidth / usablePageHeight;
+      const pdfImgWidth = pageWidth - 2 * margin;
+      const pdfImgHeight = pdfImgWidth / aspectRatio;
+      const pixelsPerMm = imgWidth / pdfImgWidth;
+
+      // Add title on first page
+      pdf.setFontSize(20);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text('Wyre AI Chat History', pageWidth / 2, margin + 10, { align: 'center' });
+
+      // Paginate content
+      let yOffset = 0;
+      let pageCount = 1;
+
+      while (yOffset < imgHeight) {
+        if (pageCount > 1) {
+          pdf.addPage();
+          pdf.setFontSize(20);
+          pdf.setTextColor(0, 0, 0);
+        }
+
+        // Create a temporary canvas for cropping
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        tempCanvas.width = imgWidth;
+        tempCanvas.height = Math.min(usablePageHeight * pixelsPerMm, imgHeight - yOffset);
+
+        // Draw the cropped portion
+        tempCtx.drawImage(canvas, 0, yOffset, imgWidth, tempCanvas.height, 0, 0, imgWidth, tempCanvas.height);
+        const croppedImgData = tempCanvas.toDataURL('image/png');
+
+        // Add cropped image to PDF
+        const croppedImgHeight = tempCanvas.height / pixelsPerMm;
+        pdf.addImage(croppedImgData, 'PNG', margin, margin + titleHeight, pdfImgWidth, croppedImgHeight);
+
+        // Add page number
+        pdf.setFontSize(10);
+        pdf.text(`Page ${pageCount}`, pageWidth - margin - 10, pageHeight - 10);
+
+        yOffset += usablePageHeight * pixelsPerMm;
+        pageCount++;
+      }
+
+      // Save the PDF
+      pdf.save('wyre_ai_chat_history.pdf');
+      setTimeout(() => setIsLoading(false), 1000);
     } catch (error) {
       setDownloadError('Failed to generate PDF. Please try again.');
       setIsLoading(false);
       console.error('Error generating PDF:', error);
+    } finally
+    {
+      setIsDownloading(false)
     }
   };
+  
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim()) return
+    if (!inputValue.trim()) return;
 
     const newMessage = {
       id: Date.now().toString(),
       type: "user",
       content: inputValue,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-    }
+    };
 
-    setMessages((prev) => [...prev, newMessage])
-    setInputValue("")
-    setIsTyping(true)
+    setMessages((prev) => [...prev, newMessage]);
+    setInputValue("");
+    setIsTyping(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const response = await APIService.post("/api/chatbot/chat/client/", { question: inputValue, session_id: sessionId });
       const aiResponse = {
         id: (Date.now() + 1).toString(),
         type: "ai",
         content:
-          "Thanks for your question! I'm analyzing your battery and power consumption data. This is a simulated response for demonstration purposes.",
+          response.data.data.answer,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      }
-      setMessages((prev) => [...prev, aiResponse])
-      setIsTyping(false)
-    }, 1500)
-  }
+      };
+      setSessionId(response.data.data.session_id);
+      setMessages((prev) => [...prev, aiResponse]);
+      setIsTyping(false);
+    } catch (error) {
+      console.error('Error fetching AI response:', error);
+    }
+  };
 
   const handleSuggestedQuestion = (question) => {
-    setInputValue(question)
-  }
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleSendMessage()
-    }
-  }
+    setInputValue(question);
+  };
 
   return (
     <>
-      {/* Floating AI Button */}
       <Button
         type="primary"
         shape="circle"
@@ -171,7 +240,7 @@ export default function AiChat() {
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
         }}
       >
-        AI
+     <img src="/icon/wyre-ai-logo.svg" alt="Wyre Ai Logo" style={{ width: "30px", height: "30px" }} />
       </Button>
       <Button
         type="primary"
@@ -198,7 +267,6 @@ export default function AiChat() {
         <DownOutlined />
       </Button>
 
-      {/* Chat Widget */}
       <div
         ref={widgetRef}
         style={{
@@ -207,7 +275,6 @@ export default function AiChat() {
           right: "40px",
           width: "420px",
           height: "80%",
-          // backgroundColor: "white",
           borderRadius: "8px",
           boxShadow: "0 8px 24px rgba(0, 0, 0, 0.12)",
           transition: "all 0.3s ease-in-out",
@@ -219,7 +286,6 @@ export default function AiChat() {
           flexDirection: "column",
         }}
       >
-        {/* Header */}
         <div
           style={{
             backgroundColor: "#5C12A7",
@@ -257,8 +323,8 @@ export default function AiChat() {
               BATTERY HEALTH & POWER
             </p>
           </div>
-          <DownloadOutlined 
-            style={{ fontSize: "20px", cursor: "pointer" }} 
+          <DownloadOutlined
+            style={{ fontSize: "20px", cursor: "pointer" }}
             onClick={downloadChatAsPDF}
             disabled={isLoading}
           />
@@ -269,14 +335,13 @@ export default function AiChat() {
           )}
         </div>
 
-        {/* Chat Messages */}
         <div
           ref={chatRef}
           style={{
             flex: 1,
             padding: "12px",
             overflowY: "auto",
-            backgroundColor: "rgba(255, 255, 255, 0.05)",
+            backgroundColor: !isDownloading ? "rgb(247,235,251, 0.5)" : "white",
             backdropFilter: "blur(15px)",
             WebkitBackdropFilter: "blur(16px)",
             display: "flex",
@@ -284,6 +349,15 @@ export default function AiChat() {
             gap: "12px",
           }}
         >
+          {!isDownloading && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
+            <p style={{ fontSize: "14px", fontWeight: 550, letterSpacing: "0.5px", color: "gray" }}>Wyre AI Chat</p>
+            <p style={{ fontSize: "12px", fontWeight: 500, letterSpacing: "0.5px", color: "gray", marginTop: "-8px" }}>
+              <InfoCircleOutlined style={{ fontSize: "12px", marginRight: "6px" }} />
+              Please Ask Questions Related to Wyre
+            </p>
+          </div>
+          )}
           {messages.map((message) => (
             <div key={message.id}>
               {message.type === "ai" ? (
@@ -300,7 +374,7 @@ export default function AiChat() {
                       flexShrink: 0,
                     }}
                   >
-                    <p style={{ color: "white", fontSize: "12px", fontWeight: "bold" }}>AI</p>
+                  <img src="/icon/wyre-ai-logo.svg" alt="Wyre Ai Logo" style={{ width: "15px", height: "15px" }} />
                   </div>
                   <div
                     style={{
@@ -313,7 +387,7 @@ export default function AiChat() {
                     }}
                   >
                     <p style={{ fontSize: "12px", lineHeight: "1.4", wordBreak: "break-word" }}>
-                      {message.content}
+                      <div dangerouslySetInnerHTML={{ __html: message.content }} />
                     </p>
                   </div>
                 </div>
@@ -323,12 +397,14 @@ export default function AiChat() {
                     style={{
                       backgroundColor: "#5C35922B",
                       borderRadius: "8px",
-                        padding: "2px 12px",
-                        border: "1px solid #b9b9b9",
+                      padding: "2px 12px",
+                      border: "1px solid #b9b9b9",
                       maxWidth: "200px",
                     }}
                   >
-                    <p style={{ fontSize: "12px", wordBreak: "break-word" }}>{message.content}</p>
+                    <p style={{ fontSize: "12px", wordBreak: "break-word" }}>
+                      <div dangerouslySetInnerHTML={{ __html: message.content }} />
+                    </p>
                   </div>
                 </div>
               )}
@@ -358,7 +434,7 @@ export default function AiChat() {
                   flexShrink: 0,
                 }}
               >
-                <p style={{ color: "white", fontSize: "12px", fontWeight: "bold" }}>AI</p>
+                 <img src="/icon/wyre-ai-logo.svg" alt="Wyre Ai Logo" style={{ width: "15px", height: "15px" }} />
               </div>
               <div
                 style={{
@@ -404,11 +480,13 @@ export default function AiChat() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Suggested Questions */}
         <div
           style={{
             padding: "8px 12px",
-            backgroundColor: "#fafafa",
+            backgroundColor: "rgb(247,235,251, 0.5)",
+            backdropFilter: "blur(15px)",
+            WebkitBackdropFilter: "blur(16px)",
+            borderTop: "1px solid #d9d9d9",
             display: "flex",
             flexDirection: "column",
             gap: "8px",
@@ -451,7 +529,6 @@ export default function AiChat() {
           </Button>
         </div>
 
-        {/* Input Area */}
         <div
           style={{
             padding: "12px",
@@ -474,8 +551,6 @@ export default function AiChat() {
                 onClick={handleSendMessage}
                 disabled={!inputValue.trim()}
                 style={{
-                  // backgroundColor: "#5C12A7",
-                  // borderColor: "#5C12A7",
                   width: "34px",
                   height: "34px",
                   minWidth: "34px",
@@ -503,5 +578,5 @@ export default function AiChat() {
         }
       `}</style>
     </>
-  )
+  );
 }
