@@ -186,7 +186,7 @@ export default function AiChat() {
     setIsTyping(true);
 
     try {
-      const response = await APIService.post("/api/chatbot/chat/client/", { question: inputValue, session_id: sessionId });
+      const response = await APIService.post("/api/v1/chatbot/chat/client/", { question: inputValue, session_id: sessionId });
       const aiResponse = {
         id: (Date.now() + 1).toString(),
         type: "ai",
