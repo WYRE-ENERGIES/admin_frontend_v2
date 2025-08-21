@@ -5,7 +5,7 @@ import jwt_decode from 'jwt-decode';
 
 export const loginAUser = (parameters) => async (dispatch) => {
   dispatch(loginUserLoading(true));
-  const requestUrl = '/api/v1/auth/';
+  const requestUrl = '/api/v1/admin_auth/'; 
   try {
     const response = await APIServiceNoAuth.post(requestUrl, parameters);
     
@@ -19,7 +19,7 @@ export const loginAUser = (parameters) => async (dispatch) => {
     return { fulfilled: true, message: 'successful' };
   } catch (error) {
     dispatch(loginUserLoading(false));
-    return { fulfilled: false, message: error.response?.data?.detail || 'An error occurred during login' };
+    return { fulfilled: false, message: error.response?.data?.error || 'An error occurred during login' };
   }
 };
 
