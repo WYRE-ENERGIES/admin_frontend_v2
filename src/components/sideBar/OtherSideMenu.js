@@ -1,14 +1,3 @@
-// function SideMenu() {
-//     return (
-//       <div className="SideMenu">
-//         <sidebar>Side Menu</sidebar>
-//       </div>
-//     );
-//   }
-
-//   export default SideMenu;
-
-
 import {
   EnvironmentOutlined,
   UserOutlined,
@@ -42,7 +31,7 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
 
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    setClientLogo(currentUser.client_image || 'https://placeholdit.com/600x400/dddddd/999999?text=No+Logo&font_size=130');
+    setClientLogo(currentUser.client_image);
     setClientName(currentUser.client || '---');
   }, []);
 
@@ -137,7 +126,7 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
           width={73}
           height={38}
           style={{ padding: 0, objectFit: 'contain' }}
-          src={EnvData.REACT_APP_API_URL + clientLogo}
+          src={EnvData.REACT_APP_API_URL + clientLogo || 'https://placeholdit.com/600x400/dddddd/999999?text=Wyre&font_size=150'}
           alt='Client Logo'
           preview={false}
         />
