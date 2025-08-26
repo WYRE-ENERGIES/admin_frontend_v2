@@ -3,39 +3,28 @@ import {
   UserOutlined,
   ProjectOutlined,
   MenuOutlined,
-  CompassOutlined,
-  DashboardOutlined,
   AimOutlined,
   HeatMapOutlined,
   LoginOutlined,
-  SendOutlined,
-  MessageOutlined,
   MailOutlined,
-  CustomerServiceOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   ArrowLeftOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
-import { Button, Image, Menu, Space, theme, Drawer } from "antd";
-import Form from "antd/es/form/Form";
+import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
-import useToken from "antd/es/theme/useToken";
+ 
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logUserOut } from "../../redux/actions/auth/auth.action";
-import { useDispatch } from "react-redux";
+import { connect } from "react-redux";
   
-function SideMenu({collapsed, setCollapsed}) {
+function SideMenu({collapsed, setCollapsed, logUserOut}) {
     const [selectedLocation, setSelectedLocation] = useState('/');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const [isAdminImpersonating, setIsAdminImpersonating] = useState(false);
     const location = useLocation();
-    const {
-      token: { colorBgContainer },
-    } = theme.useToken();
-    const dispatch = useDispatch();
+    
 
     // Handle window resize
     useEffect(() => {
@@ -66,7 +55,7 @@ function SideMenu({collapsed, setCollapsed}) {
     };
 
   const logOut = () => {
-    dispatch(logUserOut());
+    logUserOut();
   };
     
     const items = [
@@ -298,4 +287,4 @@ function SideMenu({collapsed, setCollapsed}) {
     );
 }
 
-export default SideMenu;
+export default connect(null, { logUserOut })(SideMenu);

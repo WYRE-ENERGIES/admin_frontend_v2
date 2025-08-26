@@ -14,15 +14,15 @@ import { Button, Image, Menu, theme, Drawer, Space } from "antd";
 import Sider from "antd/es/layout/Sider";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { connect } from "react-redux";
 import { logUserOut } from "../../redux/actions/auth/auth.action";
 
-function OtherSideMenu({ collapsed, setCollapsed }) {
+function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
     const [selectedLocation, setSelectedLocation] = useState('/');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const location = useLocation();
-    const dispatch = useDispatch();
+    
     const navigate = useNavigate();
 
     // Responsive: handle window resize
@@ -41,7 +41,7 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
     }, [location.pathname]);
 
   const logOut = () => {
-    dispatch(logUserOut());
+    logUserOut();
   };
 
     const items = [
@@ -197,6 +197,6 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
     );
 }
 
-export default OtherSideMenu;
+export default connect(null, { logUserOut })(OtherSideMenu);
     
     
