@@ -20,7 +20,6 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 const USER_ROLES = [
-  { id: 3, name: 'CLIENT_ADMIN' },
   { id: 4, name: 'OPERATOR' },
   { id: 5, name: 'VIEWER' },
 ];

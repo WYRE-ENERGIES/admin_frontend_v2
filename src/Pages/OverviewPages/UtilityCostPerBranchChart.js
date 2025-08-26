@@ -15,6 +15,7 @@ const UtilityCostPerBranchChart = ({
   selectedRegion,
   selectedDate,
   loading = false,
+  downloading = false,
 }) => {
   const branchOptions = useMemo(
     () => data?.map(item => ({ label: item.name, value: item.name })) || [],
@@ -40,7 +41,9 @@ const UtilityCostPerBranchChart = ({
           topLeft: 6,
           topRight: 6
         },
-        borderSkipped: false
+        borderSkipped: false,
+        barThickness: 40,
+        maxBarThickness: 60
       },
     ],
   };
@@ -68,7 +71,7 @@ const UtilityCostPerBranchChart = ({
   };
 
   return (
-    <Card style={{ borderRadius: 22 }}>
+    <Card style={{ overflow: "hidden", borderRadius: 22 }}>
       <Spin spinning={loading} size="large">
         <div
           style={{
@@ -117,7 +120,11 @@ const UtilityCostPerBranchChart = ({
             />
           </Space>
         </div>
-        <Bar data={chartData} options={options} />
+        <Bar
+          style={{ maxWidth: downloading ? "78vw" : "" }}
+          data={chartData} 
+          options={options} 
+        />
       </Spin>
     </Card>
   );

@@ -1,5 +1,5 @@
 import { APIService } from "../../../config/Api/apiServices";
-import { getDieselCostBarChartLoading, getDieselCostBarChartSuccess, getDieselLitresBarChartLoading, getDieselLitresBarChartSuccess, getKeyMetricsLoading, getKeyMetricsSuccess, getTotalCostBarChartLoading, getTotalCostBarChartSuccess, getTotalCostTopCardLoading, getTotalCostTopCardSuccess, getTotalEnergyBarChartLoading, getTotalEnergyTopCardLoading, getTotalEnergyTopCardSuccess, getUtilityEnergyBarChartLoading, getUtilityEnergyBarChartSuccess, gettTotalEnergyBarChartSuccess, getUtilityCostPerBranchLoading, getUtilityCostPerBranchSuccess, getUtilityEnergyPerBranchLoading, getUtilityEnergyPerBranchSuccess, getDieselCostPerBranchLoading, getDieselCostPerBranchSuccess, getDieselLitresPerBranchLoading, getDieselLitresPerBranchSuccess } from "./overview.creator";
+import { getDieselCostBarChartLoading, getDieselCostBarChartSuccess, getDieselLitresBarChartLoading, getDieselLitresBarChartSuccess, getKeyMetricsLoading, getKeyMetricsSuccess, getTotalCostBarChartLoading, getTotalCostBarChartSuccess, getTotalCostTopCardLoading, getTotalCostTopCardSuccess, getTotalEnergyBarChartLoading, getTotalEnergyTopCardLoading, getTotalEnergyTopCardSuccess, getUtilityEnergyBarChartLoading, getUtilityEnergyBarChartSuccess, gettTotalEnergyBarChartSuccess, getUtilityCostPerBranchLoading, getUtilityCostPerBranchSuccess, getUtilityEnergyPerBranchLoading, getUtilityEnergyPerBranchSuccess, getDieselCostPerBranchLoading, getDieselCostPerBranchSuccess, getDieselLitresPerBranchLoading, getDieselLitresPerBranchSuccess, getDieselCardLoading, getDieselCardSuccess } from "./overview.creator";
 
 export const getTotalEnergyTopCard = (clientId, startDate, endDate) => async (dispatch) => {
 
@@ -206,4 +206,18 @@ export const getDieselLitresPerBranch = (clientId, month, year) => async (dispat
     dispatch(getDieselLitresPerBranchLoading(false));
     return { fulfilled: false, message: error.response?.data?.detail || "Error" }
   }
+};
+
+export const getDieselCardData = (clientId, month, year) => async (dispatch) => {
+    dispatch(getDieselCardLoading(true));
+    const requestUrl = `/api/v2/client-cumulative-diesel-data/${clientId}/?month=${month}&year=${year}`;
+    try {
+        const response = await APIService.get(requestUrl);
+        dispatch(getDieselCardSuccess(response.data));
+        dispatch(getDieselCardLoading(false));
+        return { fulfilled: true, message: 'successful' };
+    } catch (error) {
+        dispatch(getDieselCardLoading(false));
+        return { fulfilled: false, message: error.response?.data?.detail || 'Failed to fetch diesel card data' };
+    }
 };

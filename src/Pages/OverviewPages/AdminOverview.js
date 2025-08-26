@@ -3,7 +3,7 @@ import { SearchOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined } from "@ant-design/icons";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { getKeyMetricsData, getTotalCostTopCard, getTotalEnergyBarChartData, getTotalEnergyTopCard, getUtilityCostPerBranch, getUtilityEnergyPerBranch, getDieselCostPerBranch, getDieselLitresPerBranch } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
@@ -27,13 +27,12 @@ import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
 import { PiLightningDuotone } from "react-icons/pi";
-import { getLocationsData } from "../../redux/actions/location/location.action";
+import { getLocationsData, getRegionsListData } from "../../redux/actions/location/location.action";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import UtilityCostPerBranchChart from "./UtilityCostPerBranchChart";
 import GenericBranchBarChart from "./GenericBranchBarChart";
-import { APIService } from "../../config/Api/apiServices";
-import React, { useMemo } from "react";
+import { useSelector } from 'react-redux';
 
 ChartJS.register(
   CategoryScale,
@@ -72,17 +71,17 @@ const buttons = [
   },
 ]
 
-const RendeChartsComponents = ({index}) => {
+const RendeChartsComponents = ({index, downloading}) => {
   switch (index) {
-    case 0: return <TotalEnergyChart />
+    case 0: return <TotalEnergyChart downloading={downloading} />
      break;
-    case 1: return <UtilityCostChart /> 
+    case 1: return <UtilityCostChart downloading={downloading} /> 
      break;
-    case 2: return <UtilityEnergyChart /> 
+    case 2: return <UtilityEnergyChart downloading={downloading} /> 
      break;
-    case 3: return <DieselCostChart /> 
+    case 3: return <DieselCostChart downloading={downloading} /> 
      break;
-    case 4: return <DieselLitreChart /> 
+    case 4: return <DieselLitreChart downloading={downloading} /> 
      break;
     default:
       break;
@@ -95,11 +94,13 @@ function AdminOverview(props) {
   const [isSelectChart, setIsSelectChart] = useState(0)
   const [keyMetricsData, setkeyMetricsData] = useState([])
   const [pageDataHolder, setPageDataHolder] = useState([])
-  const [holdLocationData, setHoldLocationData] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   let options=[]
-  if (holdLocationData) {
-    holdLocationData.map((item) => {
+  const fetchRegionLoading = useSelector(state => state.locationPage.fetchRegionLoading);
+  const fetchedRegion = useSelector(state => state.locationPage.fetchedRegion);
+  const locationData = useSelector(state => state.locationPage.fetchedLocation);
+  if (locationData && locationData.results) {
+    locationData.results.map((item) => {
     options.push({
       value: item.id,
       label: item.name,
@@ -108,8 +109,9 @@ function AdminOverview(props) {
   })
   }
   // const selectRegion = OPTIONS.map((o) => !selectedItems.includes(o));
-  const handleRegionChange = value => {
-  };
+const handleRegionChange = value => {
+  setSelectedRegion(value);
+};
 
   const { Search } = Input;
     const [downloading, setDownloading] = useState(false);
@@ -180,6 +182,27 @@ function AdminOverview(props) {
   // const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().format("DD-MM-YYYY HH:mm");
 
+  // All useSelector hooks are now at the top
+  useEffect(() => {
+    if (!clientId) return;
+    props.getRegionsListData(clientId);
+  }, [clientId]);
+
+  useEffect(() => {
+    if (fetchedRegion && fetchedRegion.regions) {
+      setRegionOptions(fetchedRegion.regions.map(r => r.region));
+      const map = {};
+      fetchedRegion.regions.forEach(r => {
+        map[r.region] = (r.branches || []).map(b => b.branch_name);
+      });
+      setRegionBranchMap(map);
+    } else {
+      setRegionOptions([]);
+      setRegionBranchMap({});
+    }
+  }, [fetchedRegion]);
+
+
   // const showKeyMetricsTable = () => {
   //   const clientId = props.auth.userData.client_id
   //   props.getKeyMetricsData(clientId, startDate, endDate);
@@ -212,14 +235,10 @@ function AdminOverview(props) {
     showKeyMetricsTable()
   }, [])
   useEffect(() => {
-    const handleBranch = async () => {
-      const requestBranchesData = await props.getLocationsData(clientId)
-      if (requestBranchesData?.fulfilled) {
-        setHoldLocationData(requestBranchesData?.data?.results)
-      }
+    if (clientId) {
+      props.getLocationsData(clientId);
     }
-    handleBranch()
-  },[])
+  }, [clientId])
   useEffect(() => {
     if (props.overviewPage.fetchedKeyMetrics) {
       setkeyMetricsData(props.overviewPage.fetchedKeyMetrics.results)
@@ -234,9 +253,32 @@ function AdminOverview(props) {
     const year = dayjs(date).year();
     props.getKeyMetricsData(clientId, month, year , 1, e.target.value)
   }
-  const displayedData = selectedIds.length === 0
-    ? keyMetricsData
-    : keyMetricsData.filter(item => selectedIds.includes(item.id));
+  // Add region filter state if not already present
+
+  // Build branch options based on selected region
+  let branchOptions = [];
+  if (locationData && locationData.results) {
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      branchOptions = locationData.results
+        .filter(item => regionBranchMap[selectedRegion].includes(item.name))
+        .map(item => ({ value: item.id, label: item.name, key: item.id }));
+    } else {
+      branchOptions = locationData.results.map(item => ({ value: item.id, label: item.name, key: item.id }));
+    }
+  }
+
+  // Filter displayedData by region and branch
+  const displayedData = useMemo(() => {
+    let data = keyMetricsData;
+    if (selectedRegion && regionBranchMap[selectedRegion]) {
+      const allowed = new Set(regionBranchMap[selectedRegion]);
+      data = data.filter(item => allowed.has(item.name));
+    }
+    if (selectedIds.length > 0) {
+      data = data.filter(item => selectedIds.includes(item.id));
+    }
+    return data;
+  }, [keyMetricsData, selectedRegion, selectedIds, regionBranchMap]);
 
   // const handleCompareBranches = (e) => {
   //   const filtered = data.filter((item) =>
@@ -616,27 +658,6 @@ function AdminOverview(props) {
       }));
   };
 
-  useEffect(() => {
-    async function fetchRegions() {
-      if (!clientId) return;
-      try {
-        const res = await APIService.get(`/api/v1/accounts/client/${clientId}/regions-branches/`);
-        const regions = res.data.regions || [];
-        setRegionOptions(regions.map(r => r.region));
-        // Mapping region name to branch names for fast lookup
-        const map = {};
-        regions.forEach(r => {
-          map[r.region] = (r.branches || []).map(b => b.branch_name);
-        });
-        setRegionBranchMap(map);
-      } catch (e) {
-        setRegionOptions([]);
-        setRegionBranchMap({});
-      }
-    }
-    fetchRegions();
-  }, [clientId]);
-
   const [selectedBranches, setSelectedBranches] = useState([]);
 
   const handleBranchSelect = (branches) => setSelectedBranches(branches);
@@ -647,7 +668,9 @@ function AdminOverview(props) {
         <h4 className="mobile-title">
           {downloading ? "Report" : "Admin Overview"}
         </h4>
-          <div>
+        {
+          !downloading && (
+             <div>
           <Button
             onClick={handleDownloadPdf}
             disabled={downloading || props.overviewPage.fetchKeyMetricsLoading || props.overviewPage.fetchTotalEnergyTopCardLoading || props.overviewPage.fetchTotalEnergyBarChartDataLoading}
@@ -657,6 +680,8 @@ function AdminOverview(props) {
               Download Report
             </Button>
           </div>
+          )
+         }
           {/* <div>
             <Button
               style={{
@@ -784,12 +809,12 @@ function AdminOverview(props) {
               isSelectChart={isSelectChart}
               setIsSelectChart={setIsSelectChart}
             />
-          </div>
+            </div>
         </section>
-         )}
-        <RendeChartsComponents index={isSelectChart} />
+        )}
+            <RendeChartsComponents index={isSelectChart} downloading={downloading} />
           {isSelectChart === 0 ? (
-          <section className="total-energy-bar-chart">
+            <section className="total-energy-bar-chart">
             <div
               style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}
             >
@@ -815,30 +840,26 @@ function AdminOverview(props) {
                   }}
                 />
                 <Select
-                className="select-bar"
+                className="select-bar metrics-branch"
                 mode="multiple"
                 placeholder="Select branches"
                 maxTagCount={1}
-                maxTagTextLength={10}
+                  maxTagTextLength={10}
                 maxTagPlaceholder={omittedValues => `+${omittedValues.length} more`}
-                onChange={handleCompareBranches}
+                  onChange={handleCompareBranches}
                 value={selectedIds}
                 style={{ marginRight: 10 }}
-                options={options}
+                options={branchOptions}
               />
               <Select
-                className="select-bar"
-                prefix="Region"
-                defaultValue="lucy"
-                style={{ marginRight: 10 }}
-                onChange={handleRegionChange}
-                options={[
-                  { value: 'jack', label: 'North' },
-                  { value: 'lucy', label: 'South' },
-                  { value: 'Yiminghe', label: 'East' },
-                  { value: 'disabled', label: 'Disabled', disabled: true },
-                ]}
-              />
+                  className="select-bar metrics-region"
+                  placeholder="Search by Region"
+                  allowClear
+                  onChange={setSelectedRegion}
+                  value={selectedRegion}
+                  style={{ marginRight: 10, width: 180 }}
+                  options={regionOptions.map(region => ({ value: region, label: region }))}
+                />
               <DatePicker
                   className="picker-date"
                   style={{
@@ -1048,6 +1069,7 @@ function AdminOverview(props) {
               onDateChange={handleUtilityCostMonthChange}
               selectedDate={dayjs(`${utilityCostYear}-${utilityCostMonth}`, "YYYY-M")}
               loading={props.overviewPage.fetchUtilityCostPerBranchLoading}
+              downloading={downloading}
             />
           </section>
         ) : isSelectChart === 2 ? (
@@ -1065,6 +1087,7 @@ function AdminOverview(props) {
               loading={props.overviewPage.fetchUtilityEnergyPerBranchLoading}
               onBranchSelect={handleBranchSelect}
               selectedBranches={selectedBranches}
+              downloading={downloading}
             />
           </section>
         ) : isSelectChart === 3 ? (
@@ -1082,6 +1105,7 @@ function AdminOverview(props) {
               loading={props.overviewPage.fetchDieselCostPerBranchLoading}
               onBranchSelect={handleBranchSelect}
               selectedBranches={selectedBranches}
+              downloading={downloading}
             />
           </section>
         ) : isSelectChart === 4 ? (
@@ -1099,6 +1123,7 @@ function AdminOverview(props) {
               loading={props.overviewPage.fetchDieselLitresPerBranchLoading}
               onBranchSelect={handleBranchSelect}
               selectedBranches={selectedBranches}
+              downloading={downloading}
             />
           </section>
         ) : (
@@ -1114,6 +1139,7 @@ function AdminOverview(props) {
               selectedDate={genericTabDate}
               onBranchSelect={handleBranchSelect}
               selectedBranches={selectedBranches}
+              downloading={downloading}
             />
           </section>
         )}
@@ -1132,11 +1158,13 @@ const mapDispatchToProps = {
   getUtilityEnergyPerBranch,
   getDieselCostPerBranch,
   getDieselLitresPerBranch,
+  getRegionsListData,
 };
 
 const mapStateToProps = (state) => ({
   overviewPage: state.overviewPage,
   auth: state.auth,
+  locationPage: state.locationPage,
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(AdminOverview);

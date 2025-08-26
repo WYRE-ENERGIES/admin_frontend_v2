@@ -1,12 +1,9 @@
-import { Button, Card, DatePicker, Image, Input, Select, Space, Table, Typography } from "antd";
+import { Card, DatePicker } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { DownloadOutlined, PlusOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { getClientUtilityCostData } from "../../redux/actions/overview/overview.action";
-import { useSearchParams } from "react-router-dom";
-import { connect, useSelector } from "react-redux";
-import moment from "moment";
+import { connect } from "react-redux";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -18,11 +15,6 @@ import {
 } from 'chart.js';
 import 'chart.js/auto'
 import { Bar } from "react-chartjs-2";
-import Pagination from "../../components/Pagination";
-import ColumnGroup from "antd/es/table/ColumnGroup";
-import Column from "antd/es/table/Column";
-import Search from "antd/es/input/Search";
-import TotalEnergyChart from "./TotalEnergyChart";
 import { getYear } from "date-fns";
 
 ChartJS.register(
@@ -35,8 +27,8 @@ ChartJS.register(
 );
 
 
-function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
-  const [dateSearch, setDateSearch] = useState('')
+function UtilityCostChart(props) {
+  const { downloading = false } = props;
   const [selectedDate, setSelectedDate] = useState()
   const [costChartData, setCostChartData] = useState({
     labels: [],
@@ -44,8 +36,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   })
   
   dayjs.extend(customParseFormat);
-  const dateFormat = 'YYYY';
-  const { RangePicker } = DatePicker;
 
   const showUtilityCostBarchart = () => {
     const clientId = props.auth.userData.client_id;
@@ -83,9 +73,19 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
         labels,
         datasets: [
           {
+            label: "historical Average",
+            data: historicalAverage,
+            backgroundColor: "#EF0000",
+            type: "line",
+            borderColor: "#EF0000",
+            borderWidth: 1,
+            fill: false,
+            // xAxisID: "axis-bar",
+          },
+          {
             label: "PHCN Cost",
             data: clientCost,
-            backgroundColor: "#094D92",
+            backgroundColor: "#43D540",
             borderRadius: 6,
             barThickness: 30,
             maxBarThickness: 30,
@@ -97,16 +97,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
             borderRadius: 6,
             barThickness: 30,
             maxBarThickness: 30,
-          },
-          {
-            label: "historical Average",
-            data: historicalAverage,
-            backgroundColor: "#EF0000",
-            type: "line",
-            borderColor: "#EF0000",
-            borderWidth: 1,
-            fill: false,
-            // xAxisID: "axis-bar",
           },
         ],
       };
@@ -159,7 +149,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
     },
   };
 
-
   return (
     <>
       <div className="##########">
@@ -169,10 +158,11 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
       )} */}
           <section className="total-energy-bar-chart">
             <Card
-              style={{
+            style={{
+                overflow: "hidden",
                 borderRadius: 22,
               }}
-              loading={props.overviewPage.fetchTotalCostBarChartLoading}
+              loading={props.overviewPage.fetchUtilityCostBarChartLoading}
             >
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <div>
@@ -193,18 +183,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                   />
                 </div> */}
                 <div className="">
-                <Select
-                  className="select-bar"
-                  mode="multiple"
-                  maxTagCount={1}
-                  maxTagTextLength={10}
-                  maxTagPlaceholder={omittedValues => `+${omittedValues.length} more`}
-                  placeholder="Select branches"
-                  // onChange={handleCompareBranch}
-                  // value={selectedIds}
-                  style={{ width:165, marginRight: 10 }}
-                  // options={selectOptions}
-                />
                 {/* <Button
                   type="default"
                   onClick={() => setSelectedIds([])}
@@ -213,20 +191,6 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                 >
                   Reset Selection
                 </Button> */}
-                <Select
-                  className="select-bar"
-                  // prefix="Region"
-                  placeholder="Search by Region"
-                  // defaultValue="lucy"
-                  style={{ marginRight: 10, width:165 }}
-                  // onChange={handleRegionChange}
-                  options={[
-                    { value: 'jack', label: 'North' },
-                    { value: 'lucy', label: 'South' },
-                    { value: 'Yiminghe', label: 'East' },
-                    { value: 'disabled', label: 'Disabled', disabled: true },
-                  ]}
-                />
                 <DatePicker
                   defaultValue={selectedDate}
                   picker="year"
@@ -235,7 +199,11 @@ function UtilityCostChart(props, showUtilityCostPage, setShowUtilityCostPage) {
                 />
               </div>
               </div>
-              <Bar options={options2} data={costChartData} />
+              <Bar 
+              style={{ maxWidth: downloading ? "78vw" : "" }} 
+              options={options2} 
+              data={costChartData} 
+            />
             </Card>
           </section>
         

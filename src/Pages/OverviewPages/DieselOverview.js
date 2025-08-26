@@ -1,10 +1,13 @@
-import { Button, DatePicker, Dropdown, Form, Image, Input, Modal, Space, Table, Typography, notification } from "antd";
+import { Button, DatePicker, Dropdown, Form, Image, Input, Modal, Space, Table, Typography, notification, Spin } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { BsThreeDots } from 'react-icons/bs'
 import { useEffect, useState } from "react";
 import { connect, useSelector } from "react-redux";
+import { APIService } from "../../config/Api/apiServices";
 import { getDieselConsumptionData, getDieselData, getDieselProcurementData } from "../../redux/actions/diesel/diesel.action"; 
+import { getDieselCardData } from '../../redux/actions/overview/overview.action';
+import { numberFormatter } from '../../helpers/genericHelpers';
 
 function DieselOverview(props) {
   const [showprocurementsModal, setShowprocurementsModal] = useState(false)
@@ -21,8 +24,10 @@ function DieselOverview(props) {
   const dateFormat = 'DD/MM/YYYY';
   const { RangePicker } = DatePicker;
 
-  const showDieselList = () => {
+  const showDieselList = (date) => {
     const clientId = props.auth.userData.client_id
+    const month = dayjs(date).month() + 1;
+    const year = dayjs(date).year();
     props.getDieselData(clientId);
   }
 
@@ -233,27 +238,27 @@ function DieselOverview(props) {
       key: "date",
     },
     {
-      title: "Price Per Month (\u20A6)",
+      title: "Price Per Litre (\u20A6)",
       dataIndex: "price_per_litre",
-      render: (value) => <>{value.toLocaleString(
+      render: (value) => <>{value? value.toLocaleString(
         undefined,
-        { maximumFractionDigits: 2 })}</>,
+        { maximumFractionDigits: 2 }) : 0}</>,
       key: "price_per_litre",
     },
     {
-      title: "Liters",
+      title: "Litres",
       dataIndex: "quantity",
-      render: (value) => <>{value.toLocaleString(
+      render: (value) => <>{value? value.toLocaleString(
         undefined,
-        { maximumFractionDigits: 2 }) + 'L'}</>,
+        { maximumFractionDigits: 2 }) + 'L' : 0}</>,
       key: "quantity",
     },
     {
       title: "Amount (\u20A6)",
       dataIndex: "amount",
-      render: (value) => <>{value.toLocaleString(
+      render: (value) => <>{value? value.toLocaleString(
         undefined,
-        { maximumFractionDigits: 2 })}</>,
+        { maximumFractionDigits: 2 }) : 0}</>,
       key: "amount",
     },
   ];
@@ -267,7 +272,9 @@ function DieselOverview(props) {
     {
       title: "Daily Consumption",
       dataIndex: "consumption",
-      render: (value) => <>{value + 'L'}</>,
+      render: (value) => <>{value ? value.toLocaleString(
+        undefined,
+        { maximumFractionDigits: 2 }) + 'L' : 0}</>,
       key: "consumption",
     },
     {
@@ -281,8 +288,22 @@ function DieselOverview(props) {
   const onChange = (pagination, filters, sorter, extra) => {
   };
 
+  const handleMonthChange = (date) => {
+    setSelectedDate(date);
+    if (date) {
+      props.getDieselCardData(props.auth.userData.client_id, date.month() + 1, date.year());
+      props.showDieselList(props.auth.userData.client_id, date.month() + 1, date.year());
+    }
+  };
+
+  useEffect(() => {
+    // Fetch initial data for current month/year
+    const now = dayjs();
+    props.getDieselCardData(props.auth.userData.client_id, now.month() + 1, now.year());
+  }, []);
+
   return (
-    <>
+    <div>
       <div className="AppHeader">
         <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
           Diesel Overview
@@ -312,16 +333,95 @@ function DieselOverview(props) {
             //   // moment().endOf("month"),
             // ]}
             defaultValue={selectedDate}
+            value={selectedDate}
             disabledDate={(current) => {
               return current && current > dayjs().endOf('month');
             }}
             picker="month"
             format={monthFormat}
-            // onChange={handleDateChange}
+            onChange={handleMonthChange}
           />
         </Space>
       </div>
       <div className="##########">
+        <Spin spinning={props.dieselCardLoading}>
+          <div style={{ display: 'flex', gap: '24px', paddingInline: "24px" }}>
+            <div style={{
+              flex: 1,
+              paddingInline: '24px',
+              paddingBottom: "10px",
+              borderRadius: '12px',
+              backgroundColor: '#fff',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}>
+              <Typography.Title level={4} style={{display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px"}}>
+               <img src="/icon/monthly-usage.svg" alt="Monthly Usage" style={{height: "30px", width: "30px"}} /> 
+                Monthly Usage
+              </Typography.Title>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Litres</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>{numberFormatter(props.dieselCardData?.monthly_usage?.litres) || 0}L</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Cost</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.monthly_usage?.cost) || 0}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Avg Price/L</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.monthly_usage?.avg_price_per_litre) || 0}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              flex: 1,
+              paddingInline: '24px',
+              paddingBottom: "10px",
+              borderRadius: '12px',
+              backgroundColor: '#fff',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}>
+               <Typography.Title level={4} style={{display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px"}}>
+               <img src="/icon/stock-balance.svg" alt="Monthly Usage" style={{height: "30px", width: "30px"}} /> 
+                Stock Balance
+              </Typography.Title>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Litres</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>{numberFormatter(props.dieselCardData?.stock_balance?.litres) || 0}L</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Cost</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.stock_balance?.cost) || 0}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Current Price/L</span>
+                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.stock_balance?.current_price_per_litre) || 0}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              flex: 1,
+              paddingInline: '24px',
+              paddingBottom: "10px",
+              borderRadius: '12px',
+              backgroundColor: '#fff',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}>
+            <Typography.Title level={4} style={{display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px"}}>
+               <img src="/icon/branch.svg" alt="Monthly Usage" style={{height: "30px", width: "30px"}} /> 
+                Branches
+              </Typography.Title>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
+                <Typography.Title level={2} style={{fontWeight: "550", color: "#5C12A7"}}>
+                  {numberFormatter(props.dieselCardData?.branch_count) || 0}
+                </Typography.Title>
+              </div>
+            </div>
+          </div>
+        </Spin>
         <section className="total-energy-bar-chart diesel-overview-table">
           {/* <div className="client-page-flex-display"> */}
           {/* <div className="client-user-table"> */}
@@ -393,20 +493,23 @@ function DieselOverview(props) {
           </div>
         </section>
       </div>
-    </>
+    </div>
   );
 }
 
 const mapDispatchToProps = {
   getDieselData,
   getDieselProcurementData,
-  getDieselConsumptionData
+  getDieselConsumptionData,
+  getDieselCardData
 };
 
 const mapStateToProps = (state) => ({
   overviewPage: state.overviewPage,
   auth: state.auth,
-  dieselPage: state.dieselPage
+  dieselPage: state.dieselPage,
+  dieselCardData: state.overviewPage.fetchedDieselCard,
+  dieselCardLoading: state.overviewPage.fetchDieselCardLoading
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(DieselOverview);

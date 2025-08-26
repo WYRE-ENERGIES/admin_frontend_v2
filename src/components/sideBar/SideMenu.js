@@ -10,6 +10,7 @@ import {
   ArrowLeftOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
+import EnvData from '../../config/EnvData';
 import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
  
@@ -23,8 +24,17 @@ function SideMenu({collapsed, setCollapsed, logUserOut}) {
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const [isAdminImpersonating, setIsAdminImpersonating] = useState(false);
+    const [clientLogo, setClientLogo] = useState(null);
+    const [clientName, setClientName] = useState(null);
     const location = useLocation();
     
+
+    // Get client info from localStorage
+    useEffect(() => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      setClientLogo(currentUser.client_image || '');
+      setClientName(currentUser.client || 'Polaris Bank');
+    }, []);
 
     // Handle window resize
     useEffect(() => {
@@ -216,19 +226,19 @@ function SideMenu({collapsed, setCollapsed, logUserOut}) {
           marginTop: '20px'
 
         }}>
-          <Image
+          <img
             width={73}
             height={38}
-            style={{ padding: 0 }}
-            src={require('../../Logos/polaris-logo/polarisSvg.svg').default}
-            alt='Clients Logo'
+            style={{ padding: 0, objectFit: 'contain' }}
+      src={EnvData.REACT_APP_API_URL + clientLogo}
+            alt='Client Logo'
             preview={false}
           />
           <p style={{
             fontSize: '12px',
             display: collapsed ? 'none' : 'block',
             color: 'white'
-          }}>Polaris Bank</p>
+          }}>{clientName}</p>
         </div>
       </>
     );

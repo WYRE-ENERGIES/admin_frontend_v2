@@ -25,6 +25,8 @@ const initialState = {
     fetchedUtilityEnergyPerBranch: false,
     fetchDieselCostPerBranchLoading: false,
     fetchedDieselCostPerBranch: false,
+    fetchDieselCardLoading: false,
+    fetchedDieselCard: false,
 }
 
 const overviewReducers = (state = initialState, action) => {
@@ -159,6 +161,17 @@ const overviewReducers = (state = initialState, action) => {
             return {
                 ...state,
                 fetchedDieselCostPerBranch: action.payload
+            }
+
+        case overviewTypes.GET_DIESEL_CARD_LOADING:
+            return {
+                ...state,
+                fetchDieselCardLoading: action.payload
+            }
+        case overviewTypes.GET_DIESEL_CARD_SUCCESS:
+            return {
+                ...state,
+                fetchedDieselCard: action.payload
             }
     
         default: return state;
