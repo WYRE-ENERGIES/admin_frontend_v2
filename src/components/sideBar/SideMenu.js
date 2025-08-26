@@ -28,15 +28,12 @@ function SideMenu({collapsed, setCollapsed, logUserOut}) {
     const [clientName, setClientName] = useState(null);
     const location = useLocation();
     
-
-    // Get client info from localStorage
     useEffect(() => {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
       setClientLogo(currentUser.client_image);
       setClientName(currentUser.client);
     }, []);
 
-    // Handle window resize
     useEffect(() => {
       const handleResize = () => {
         const mobile = window.innerWidth <= 768;
@@ -230,7 +227,7 @@ function SideMenu({collapsed, setCollapsed, logUserOut}) {
             width={73}
             height={38}
             style={{ padding: 0, objectFit: 'contain' }}
-      src={EnvData.REACT_APP_API_URL + clientLogo || 'https://placeholdit.com/600x400/dddddd/999999?text=Wyre&font=inter&font_size=140'}
+            src={EnvData.REACT_APP_API_URL + clientLogo || 'https://placeholdit.com/600x400/dddddd/999999?text=Wyre&font=inter&font_size=140'}
             alt='Client Logo'
             preview={false}
           />
