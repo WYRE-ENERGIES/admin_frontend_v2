@@ -33,7 +33,7 @@ function SideMenu({collapsed, setCollapsed, logUserOut}) {
     useEffect(() => {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
       setClientLogo(currentUser.client_image || '');
-      setClientName(currentUser.client || 'Polaris Bank');
+      setClientName(currentUser.client || '---');
     }, []);
 
     // Handle window resize
