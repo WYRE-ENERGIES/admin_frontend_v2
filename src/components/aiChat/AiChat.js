@@ -35,6 +35,13 @@ export default function AiChat() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadError, setDownloadError] = useState(null);
   const [sessionId, setSessionId] = useState(null);
+  const [topic, setTopic] = useState(null);
+  const [suggestedPrompts, setSuggestedPrompts] = useState([
+    "What is my total energy usage?",
+    "Which branch is contributing more to diesel consumption?",
+    "Show total cost breakdown by branch for last month",
+  ]);
+  const [promptsVersion, setPromptsVersion] = useState(0);
   const chatRef = useRef(null);
   const widgetRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -115,15 +122,14 @@ export default function AiChat() {
       const usablePageHeight = pageHeight - margin - titleHeight;
       const imgWidth = canvas.width;
       const imgHeight = canvas.height;
-      const aspectRatio = imgWidth / usablePageHeight;
       const pdfImgWidth = pageWidth - 2 * margin;
-      const pdfImgHeight = pdfImgWidth / aspectRatio;
       const pixelsPerMm = imgWidth / pdfImgWidth;
 
       // Add title on first page
       pdf.setFontSize(20);
       pdf.setTextColor(0, 0, 0);
-      pdf.text('Wyre AI Chat History', pageWidth / 2, margin + 10, { align: 'center' });
+      const pdfTitle = topic ? `Wyre AI • ${topic}` : 'Wyre AI Chat';
+      pdf.text(pdfTitle, pageWidth / 2, margin + 10, { align: 'center' });
 
       // Paginate content
       let yOffset = 0;
@@ -174,36 +180,51 @@ export default function AiChat() {
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
+    const question = inputValue;
+    setInputValue("");
+    await sendQuestion(question);
+  };
+
+  const handleSuggestedQuestion = (question) => {
+    sendQuestion(question);
+  };
+
+  const sendQuestion = async (question) => {
+    const trimmed = (question || '').trim();
+    if (!trimmed) return;
+
     const newMessage = {
       id: Date.now().toString(),
       type: "user",
-      content: inputValue,
+      content: trimmed,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     };
 
     setMessages((prev) => [...prev, newMessage]);
-    setInputValue("");
     setIsTyping(true);
 
     try {
-      const response = await APIService.post("/api/v1/chatbot/chat/client/", { question: inputValue, session_id: sessionId });
+      const response = await APIService.post("/api/v1/chatbot/chat/client/", { question: trimmed, session_id: sessionId });
       const aiResponse = {
         id: (Date.now() + 1).toString(),
         type: "ai",
-        content:
-          response.data.data.answer,
+        content: response.data.data.answer,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       };
-      setSessionId(response.data.data.session_id);
+      const responseData = response?.data?.data || {};
+      setSessionId(responseData.session_id);
+      if (!topic && responseData.topic) {
+        setTopic(responseData.topic);
+      }
+      if (Array.isArray(responseData.suggested_prompts) && responseData.suggested_prompts.length > 0) {
+        setSuggestedPrompts(responseData.suggested_prompts);
+        setPromptsVersion((v) => v + 1);
+      }
       setMessages((prev) => [...prev, aiResponse]);
       setIsTyping(false);
     } catch (error) {
       console.error('Error fetching AI response:', error);
     }
-  };
-
-  const handleSuggestedQuestion = (question) => {
-    setInputValue(question);
   };
 
   return (
@@ -306,17 +327,23 @@ export default function AiChat() {
               style={{
                 color: "white",
                 fontSize: "14px",
-                fontWeight: 500,
-                letterSpacing: "0.5px",
+                fontWeight: 550,
+                letterSpacing: "0.8px",
+                textTransform: "uppercase",
               }}
             >
-              BATTERY HEALTH & POWER
+              {topic || 'Wyre AI Dashboard Assistant'}
             </p>
           </div>
-          <DownloadOutlined
-            style={{ fontSize: "20px", cursor: "pointer" }}
+          <Button 
+          type="text" 
+          size="small" 
+          icon={<DownloadOutlined style={{ fontSize: "20px" }} />} 
             onClick={downloadChatAsPDF}
-            disabled={isLoading}
+            style={{
+                color: "#fff",
+              }}
+            disabled={isLoading || messages.length < 2}
           />
           {downloadError && (
             <div style={{ color: 'red', fontSize: '12px', marginTop: '8px' }}>
@@ -470,7 +497,7 @@ export default function AiChat() {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* <div
+        <div
           style={{
             padding: "8px 12px",
             backgroundColor: "rgb(247,235,251, 0.5)",
@@ -482,42 +509,32 @@ export default function AiChat() {
             gap: "8px",
           }}
         >
-          <Button
-            size="small"
-            onClick={() => handleSuggestedQuestion("Which branch is contributing more to diesel consumption?")}
-            style={{
-              textAlign: "left",
-              height: "auto",
-              padding: "8px 12px",
-              borderRadius: "16px",
-              backgroundColor: "white",
-              border: "1px solid #d9d9d9",
-              fontSize: "12px",
-              color: "#666",
-              whiteSpace: "normal",
-              lineHeight: "1.3",
-            }}
-          >
-            Which branch is contributing more to diesel consumption?
-          </Button>
-          <Button
-            size="small"
-            onClick={() => handleSuggestedQuestion("Average diesel usage?")}
-            style={{
-              textAlign: "left",
-              height: "auto",
-              padding: "8px 12px",
-              borderRadius: "16px",
-              backgroundColor: "white",
-              border: "1px solid #d9d9d9",
-              fontSize: "12px",
-              color: "#666",
-              width: "fit-content",
-            }}
-          >
-            Average diesel usage?
-          </Button>
-        </div> */}
+          {suggestedPrompts.map((prompt, index) => (
+            <Button
+              key={`${prompt}-${index}-${promptsVersion}`}
+              size="small"
+              onClick={() => handleSuggestedQuestion(prompt)}
+              style={{
+                textAlign: "left",
+                height: "auto",
+                padding: "8px 12px",
+                borderRadius: "16px",
+                backgroundColor: "white",
+                border: "1px solid #d9d9d9",
+                fontSize: "12px",
+                color: "#666",
+                whiteSpace: "normal",
+                lineHeight: "1.3",
+                width: "fit-content",
+                opacity: 0,
+                animation: "fadeInUp 280ms ease-out forwards",
+                animationDelay: `${index * 80}ms`,
+              }}
+            >
+              {prompt}
+            </Button>
+          ))}
+        </div>
 
         <div
           style={{
@@ -564,6 +581,16 @@ export default function AiChat() {
           }
           40% {
             transform: scale(1);
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(6px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
       `}</style>
