@@ -513,22 +513,24 @@ export default function AiChat() {
             <Button
               key={`${prompt}-${index}-${promptsVersion}`}
               size="small"
-              onClick={() => handleSuggestedQuestion(prompt)}
+              onClick={() => !isTyping && handleSuggestedQuestion(prompt)}
+              disabled={isTyping}
               style={{
                 textAlign: "left",
                 height: "auto",
                 padding: "8px 12px",
                 borderRadius: "16px",
-                backgroundColor: "white",
+                backgroundColor: isTyping ? "#f5f5f5" : "white",
                 border: "1px solid #d9d9d9",
                 fontSize: "12px",
-                color: "#666",
+                color: isTyping ? "#ccc" : "#666",
                 whiteSpace: "normal",
                 lineHeight: "1.3",
                 width: "fit-content",
                 opacity: 0,
                 animation: "fadeInUp 280ms ease-out forwards",
                 animationDelay: `${index * 80}ms`,
+                cursor: isTyping ? "not-allowed" : "pointer",
               }}
             >
               {prompt}
@@ -546,29 +548,32 @@ export default function AiChat() {
         >
           <Input
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onPressEnter={handleSendMessage}
-            placeholder="Ask Wyre AI anything..."
+            onChange={(e) => !isTyping && setInputValue(e.target.value)}
+            onPressEnter={!isTyping ? handleSendMessage : undefined}
+            placeholder={isTyping ? "Wyre AI is responding..." : "Ask Wyre AI anything..."}
+            disabled={isTyping}
             suffix={
               <Button
                 type="primary"
                 size="small"
                 shape="circle"
                 icon={<SendOutlined size={34} />}
-                onClick={handleSendMessage}
-                disabled={!inputValue.trim()}
+                onClick={!isTyping ? handleSendMessage : undefined}
+                disabled={!inputValue.trim() || isTyping}
                 style={{
                   width: "34px",
                   height: "34px",
                   minWidth: "34px",
+                  opacity: isTyping ? 0.5 : 1,
                 }}
               />
             }
             style={{
               borderRadius: "20px",
-              backgroundColor: "#fafafa",
+              backgroundColor: isTyping ? "#f0f0f0" : "#fafafa",
               fontSize: "12px",
               paddingRight: "4px",
+              cursor: isTyping ? "not-allowed" : "text",
             }}
           />
         </div>
