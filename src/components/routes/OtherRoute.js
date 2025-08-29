@@ -20,7 +20,7 @@ function OtherRoute() {
           <Route path="/clients" element={<ClientOverview />}></Route>
           <Route path="/create-client" element={<CreateClient />}></Route>
           <Route path="/client/:clientId" element={<ClientDetails />} />
-                  <Route path="/settings" element={<Settings />}></Route>
+          <Route path="/settings" element={<Settings />}></Route>
         <Route path="/log-out" element={<LogOut />}></Route>
       </Routes>
     </div>

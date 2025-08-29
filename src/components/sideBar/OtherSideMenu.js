@@ -10,18 +10,12 @@
 
 
 import {
-    EnvironmentOutlined,
     UserOutlined,
-    ProjectOutlined,
     MenuOutlined,
-    HeatMapOutlined,
-    LoginOutlined,
-    MailOutlined,
   DownloadOutlined,
     SettingOutlined,
-    ArrowLeftOutlined,
 } from "@ant-design/icons";
-import { Button, Image, Menu, theme, Drawer, Space } from "antd";
+import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -68,6 +62,11 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
             label: "Clients",
             key: "/clients",
             icon: <UserOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+        },
+        {
+            label: "System",
+            key: "/system-constants",
+            icon: <SettingOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
         },
         {
             type: 'divider',
