@@ -6,17 +6,14 @@ import {
   UploadOutlined,
 } from "@ant-design/icons"
 import EnvData from '../../config/EnvData';
-import { APIService } from '../../config/Api/apiServices';
-import { useDispatch, useSelector } from 'react-redux';
+import { connect } from 'react-redux';
 import { updateUserProfile, updateUserPassword } from '../../redux/actions/auth/auth.action';
 
 const { Content } = Layout
 const { Title, Text } = Typography
 const { Option } = Select
 
-export default function SettingsPage() {
-  const dispatch = useDispatch();
-  const auth = useSelector(state => state.auth);
+function SettingsPage({ auth, updateUserProfile, updateUserPassword }) {
   const updateProfileLoading = auth.updateProfileLoading;
   const updatePasswordLoading = auth.updatePasswordLoading;
   // Use state for userData
@@ -27,9 +24,8 @@ export default function SettingsPage() {
   const [editingPassword, setEditingPassword] = useState(false)
   const [form] = Form.useForm()
   const [passwordForm] = Form.useForm()
-  const [isLoading, setIsLoading] = useState(false)
-  const [isLogoLoading, setIsLogoLoading] = useState(false)
-  const [uploadedFile, setUploadedFile] = useState(null);
+  const [, setIsLogoLoading] = useState(false)
+  
   const [imagePreview, setImagePreview] = useState(null);
   const [pendingLogo, setPendingLogo] = useState(null);
 
@@ -42,10 +38,7 @@ export default function SettingsPage() {
     return () => window.removeEventListener('storage', handleStorage)
   }, [])
 
-  const updateUserData = (newUserData) => {
-    setUserData(newUserData)
-    localStorage.setItem('currentUser', JSON.stringify(newUserData))
-  }
+  
 
 
   useEffect(() => {
@@ -57,7 +50,7 @@ export default function SettingsPage() {
     })
   }, [userData, form])
 
-  const clientId = userData.client_id
+  
 
   const handleSubmit = async (values) => {
     const updatedUserData = {
@@ -67,7 +60,7 @@ export default function SettingsPage() {
       roles: userData.roles,
       branch_id: userData.branch_id
     };
-    const result = await dispatch(updateUserProfile(userData.client_id, userData.id, updatedUserData, pendingLogo));
+    const result = await updateUserProfile(userData.client_id, userData.id, updatedUserData, pendingLogo);
     if (result && result.fulfilled)
     {
       notification.success({
@@ -113,7 +106,6 @@ export default function SettingsPage() {
 
       const dataUrl = await toBase64(fileObj)
       setImagePreview(dataUrl)
-      setUploadedFile(fileObj)
       setPendingLogo(fileObj)
 
       notification.success({
@@ -172,7 +164,7 @@ export default function SettingsPage() {
       current_password: values.current_password,
       new_password: values.new_password,
     };
-    const result = await dispatch(updateUserPassword(updatePayload));
+    const result = await updateUserPassword(updatePayload);
     if (result && result.fulfilled)
     {
       notification.success({
@@ -192,11 +184,69 @@ export default function SettingsPage() {
     }
   };
 
+  const validatePhoneNumber = (_, value) => {
+    if (!value)
+    {
+      return Promise.reject('Please enter your phone number');
+    }
+
+    const numericValue = value.replace(/\D/g, '');
+
+    // Check prefix
+    const mobilePrefixes = ['07', '08', '09'];
+    const landlinePrefixes = ['01', '02', '03'];
+    const allPrefixes = [...mobilePrefixes, ...landlinePrefixes];
+
+    const prefix = numericValue.substring(0, 2);
+    if (!allPrefixes.includes(prefix))
+    {
+      return Promise.reject('Phone number must start with 01, 02, 03 (landline) or 07, 08, 09 (mobile)');
+    }
+
+    // Check length based on type
+    if (mobilePrefixes.includes(prefix))
+    {
+      if (numericValue.length !== 11)
+      {
+        return Promise.reject('Mobile number must be exactly 11 digits');
+      }
+    } else if (landlinePrefixes.includes(prefix))
+    {
+      if (numericValue.length !== 8 && numericValue.length !== 10)
+      {
+        return Promise.reject('Landline number must be either 8 or 10 digits');
+      }
+    }
+
+    return Promise.resolve();
+  };
+
   const validatePassword = (_, value) => {
     if (!value)
     {
       return Promise.reject('Please enter your password');
     }
+
+    if (value.length < 8)
+    {
+      return Promise.reject('Password must be at least 8 characters long');
+    }
+
+    if (!/[0-9]/.test(value))
+    {
+      return Promise.reject('Password must contain at least one number');
+    }
+
+    if (!/[A-Z]/.test(value))
+    {
+      return Promise.reject('Password must contain at least one uppercase letter');
+    }
+
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(value))
+    {
+      return Promise.reject('Password must contain at least one special character');
+    }
+
     return Promise.resolve();
   };
 
@@ -210,13 +260,25 @@ export default function SettingsPage() {
     {
       return Promise.reject('Passwords do not match');
     }
-    return Promise.resolve();
-  };
 
-  const logOut = () => {
-    window.localStorage.removeItem("loggedWyreUserAdmin");
-    window.localStorage.removeItem("currentUser");
-    window.location.href = "/";
+    if (value.length < 8)
+    {
+      return Promise.reject('Password must be at least 8 characters long');
+    }
+    if (!/[0-9]/.test(value))
+    {
+      return Promise.reject('Password must contain at least one number');
+    }
+    if (!/[A-Z]/.test(value))
+    {
+      return Promise.reject('Password must contain at least one uppercase letter');
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(value))
+    {
+      return Promise.reject('Password must contain at least one special character');
+    }
+
+    return Promise.resolve();
   };
 
   return (
@@ -241,9 +303,9 @@ export default function SettingsPage() {
         >
           <Avatar
             size={120}
-            style={{ backgroundColor: "#b9b9b9", border: "4px solid #f5f5f5" }}
+            style={{ backgroundColor: "#b9b9b9", border: "4px solid #fff" }}
             shape="square"
-            src={EnvData.REACT_APP_API_URL + userData.client_image || 'https://placeholdit.com/600x400/dddddd/999999?text=Wyre&font_size=120'}
+            src={EnvData.REACT_APP_API_URL + userData.client_image}
             icon={<UserOutlined />}
           />
           <div>
@@ -341,13 +403,12 @@ export default function SettingsPage() {
                     rules={[{ required: true, message: 'Please enter your email' }, { type: 'email', message: 'Please enter a valid email' }]}
                     validateTrigger={"onChange"}
                   >
-                    <Input defaultValue={userData.email} style={{ borderRadius: "8px" }} />
+                    <Input defaultValue={userData.email} style={{ borderRadius: "8px" }} disabled />
                   </Form.Item>
                   <Form.Item
                     name="phone_number"
                     label="Phone Number"
-                    rules={[{ required: true, message: 'Please enter your phone number' }]}
-                    validateTrigger={"onChange"}
+                    validateTrigger={"onType"}
                   >
                     <Input.Group compact style={{ display: "flex", alignItems: "center" }}>
                       <Select defaultValue="+234" disabled>
@@ -356,10 +417,12 @@ export default function SettingsPage() {
                       <Form.Item
                         name="phone_number"
                         noStyle
-                        validateTrigger={"onChange"}
+                        rules={[{ required: true, validator: validatePhoneNumber }]}
                       >
                         <Input
                           defaultValue={userData.phone_number}
+                          type="number"
+                          pattern="[0-9]*"
                           style={{ width: "calc(100% - 80px)", borderRadius: "0 8px 8px 0" }}
                         />
                       </Form.Item>
@@ -500,25 +563,13 @@ export default function SettingsPage() {
           </Card>
         </Space>
 
-        <div
-          style={{
-            float: "right",
-            marginTop: "50px",
-          }}
-        >
-          <Button
-            danger
-            style={{
-              background: "#E74C3C",
-              borderColor: "#E74C3C",
-              color: "white",
-            }}
-            onClick={logOut}
-          >
-            Log out
-          </Button>
-        </div>
       </Content>
     </section>
   )
 }
+
+const mapStateToProps = (state) => ({
+  auth: state.auth,
+});
+
+export default connect(mapStateToProps, { updateUserProfile, updateUserPassword })(SettingsPage)

@@ -10,38 +10,37 @@
 
 
 import {
-  EnvironmentOutlined,
-  UserOutlined,
-  ProjectOutlined,
-  MenuOutlined,
-  HeatMapOutlined,
+    EnvironmentOutlined,
+    ProjectOutlined,
+    MenuOutlined,
+    HeatMapOutlined,
   LoginOutlined,
   SettingOutlined,
   MailOutlined,
 } from "@ant-design/icons";
-import { Button, Image, Menu, theme, Drawer, Space } from "antd";
+import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { logoutUser } from "../../redux/actions/auth/auth.creator";
+import { connect } from "react-redux";
+import { logUserOut } from "../../redux/actions/auth/auth.action";
 import EnvData from "../../config/EnvData";
 
-function BulkSideMenu({ collapsed, setCollapsed }) {
-  const [selectedLocation, setSelectedLocation] = useState('/');
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-  const [clientLogo, setClientLogo] = useState(null);
-  const [clientName, setClientName] = useState(null);
-  const location = useLocation();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+function BulkSideMenu({ collapsed, setCollapsed, logUserOut }) {
+    const [selectedLocation, setSelectedLocation] = useState('/');
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+   const [clientLogo, setClientLogo] = useState(null);
+    const [clientName, setClientName] = useState(null);
+    const location = useLocation();    
 
-  useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    setClientLogo(currentUser.client_image);
-    setClientName(currentUser.client || '---');
-  }, []);
+    useEffect(() => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      setClientLogo(currentUser.client_image);
+      setClientName(currentUser.client);
+    }, []);
+    
+    const navigate = useNavigate();
 
   // Responsive: handle window resize
   useEffect(() => {
@@ -59,103 +58,105 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
   }, [location.pathname]);
 
   const logOut = () => {
-    dispatch(logoutUser());
-    window.localStorage.removeItem('loggedWyreUserAdmin');
-    window.location.href = '/';
+    logUserOut();
   };
 
-  const items = [
-    {
-      label: "Admin Overview",
-      key: "/",
-      icon: <ProjectOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-    },
-    {
-      label: "Devices List",
-      key: "/devices-list",
-      icon: <HeatMapOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-    },
-    {
-      label: "View Location",
-      key: "/locations",
-      icon: <EnvironmentOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-    },
-    {
-      type: 'divider',
-    },
-    {
-      label: "Settings",
-      key: "/settings",
-      icon: <SettingOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-    },
-    {
-      label: "Support",
-      key: "/support",
-      icon: <MailOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-    },
-    {
-      type: 'divider',
-    },
-  ];
+    const items = [
+        {
+            label: "Admin Overview",
+            key: "/",
+            icon: <ProjectOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+        },
+        {
+            label: "Devices List",
+            key: "/devices-list",
+            icon: <HeatMapOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+        },
+        {
+            label: "View Location",
+            key: "/locations",
+            icon: <EnvironmentOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+        },
+        {
+            type: 'divider',
+        },
+          {
+        label: "Settings",
+        key: "/settings",
+        icon: <SettingOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+      },
+        {
+            label: "Support",
+            key: "/support",
+            icon: <MailOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+        },
+        {
+            type: 'divider',
+        },
+        {
+            label: "Log Out",
+            key: "logout",
+            icon: <LoginOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+            onClick: logOut,
+        },
+    ];
 
-  // Menu content for both desktop and mobile
-  const MenuContent = () => (
-    <>
-      <div className="wyre-logo" style={{ textAlign: 'center' }}>
-        <Image width={80} preview={false} src="/Images/Wyre white-08 1.png" />
-        {!isMobile && (
-          <Button
-            type="text"
-            icon={<MenuOutlined style={{ color: "white" }} />}
-            onClick={() => setCollapsed(!collapsed)}
-            style={{ marginLeft: 10, color: "white" }}
+    // Menu content for both desktop and mobile
+    const MenuContent = () => (
+        <>
+            <div className="wyre-logo" style={{ textAlign: 'center' }}>
+                <Image width={80} preview={false} src="/Images/Wyre white-08 1.png" />
+                {!isMobile && (
+                    <Button
+                        type="text"
+                        icon={<MenuOutlined style={{ color: "white" }} />}
+                        onClick={() => setCollapsed(!collapsed)}
+                        style={{ marginLeft: 10, color: "white" }}
+                    />
+                )}
+            </div>
+            <Menu
+                className="SideMenuVertical"
+                theme="white"
+                selectedKeys={[selectedLocation]}
+                onClick={({ key }) => {
+                    if (key === '/log-out') {
+                        logOut();
+                    } else {
+                        navigate(key);
+                        if (isMobile) setMobileDrawerOpen(false);
+                    }
+                }}
+                mode="vertical"
+                items={items}
+            />
+            <div
+                className="SideMenuVertical"
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'start',
+                    width: '100%',
+                  padding: 0,
+                    gap: '20px',
+                    marginTop: '20px'
+                }}>
+                  <img
+            width={73}
+            height={38}
+            style={{ padding: 0, objectFit: 'contain' }}
+            src={EnvData.REACT_APP_API_URL + clientLogo || 'https://placeholdit.com/600x400/dddddd/999999?text=Wyre&font=inter&font_size=140'}
+            alt='Client Logo'
+            preview={false}
           />
-        )}
-      </div>
-      <Menu
-        className="SideMenuVertical"
-        theme="white"
-        selectedKeys={[selectedLocation]}
-        onClick={({ key }) => {
-          if (key === '/log-out')
-          {
-            logOut();
-          } else
-          {
-            navigate(key);
-            if (isMobile) setMobileDrawerOpen(false);
-          }
-        }}
-        mode="vertical"
-        items={items}
-      />
-      <div
-        className="SideMenuVertical"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'start',
-          width: '100%',
-          padding: 0,
-          gap: '20px',
-          marginTop: '20px'
-        }}>
-        <img
-          width={73}
-          height={38}
-          style={{ padding: 0, objectFit: 'contain' }}
-          src={EnvData.REACT_APP_API_URL + clientLogo || 'https://placeholdit.com/600x400/dddddd/999999?text=Wyre&font_size=150'}
-          alt='Client Logo'
-          preview={false}
-        />
-        <p style={{
-          fontSize: '12px',
-          display: collapsed ? 'none' : 'block',
-          color: 'white'
-        }}>{clientName}</p>
-      </div>
-    </>
-  );
+          <p style={{
+            fontSize: '12px',
+            display: collapsed ? 'none' : 'block',
+            color: 'white'
+          }}>{clientName || '---'}</p>
+            </div>
+        </>
+    );
 
   // Mobile header
   const MobileHeader = () => (
@@ -224,5 +225,6 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
   );
 }
 
-export default BulkSideMenu;
-
+export default connect(null, { logUserOut })(BulkSideMenu);
+    
+    
