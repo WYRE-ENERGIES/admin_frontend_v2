@@ -3,32 +3,23 @@ import {
   UserOutlined,
   ProjectOutlined,
   MenuOutlined,
-  CompassOutlined,
-  DashboardOutlined,
   AimOutlined,
   HeatMapOutlined,
   LoginOutlined,
-  SendOutlined,
-  MessageOutlined,
   MailOutlined,
-  CustomerServiceOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   ArrowLeftOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
 import EnvData from '../../config/EnvData';
-import { Button, Image, Menu, Space, theme, Drawer } from "antd";
-import Form from "antd/es/form/Form";
+import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
-import useToken from "antd/es/theme/useToken";
+ 
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logUserOut } from "../../redux/actions/auth/auth.action";
-import { useDispatch } from "react-redux";
-import { logoutUser } from "../../redux/actions/auth/auth.creator";
+import { connect } from "react-redux";
   
-function SideMenu({collapsed, setCollapsed}) {
+function SideMenu({collapsed, setCollapsed, logUserOut}) {
     const [selectedLocation, setSelectedLocation] = useState('/');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -36,19 +27,13 @@ function SideMenu({collapsed, setCollapsed}) {
     const [clientLogo, setClientLogo] = useState(null);
     const [clientName, setClientName] = useState(null);
     const location = useLocation();
-    const {
-      token: { colorBgContainer },
-    } = theme.useToken();
-    const dispatch = useDispatch;
-
-    // Get client info from localStorage
+    
     useEffect(() => {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      setClientLogo(currentUser.client_image || '');
-      setClientName(currentUser.client || 'Polaris Bank');
+      setClientLogo(currentUser.client_image);
+      setClientName(currentUser.client);
     }, []);
 
-    // Handle window resize
     useEffect(() => {
       const handleResize = () => {
         const mobile = window.innerWidth <= 768;
@@ -67,12 +52,6 @@ function SideMenu({collapsed, setCollapsed}) {
         setIsAdminImpersonating(!!adminBackup);
     }, [location.pathname]);
 
-    const onLogout = () => {
-      const navigateTo = '/'
-      dispatch(logoutUser())
-      navigate(navigateTo)
-    }
-
     const goBackToAdmin = () => {
         const adminBackup = localStorage.getItem('adminUserBackup');
         if (adminBackup) {
@@ -82,12 +61,9 @@ function SideMenu({collapsed, setCollapsed}) {
         }
     };
 
-    const logOut = () => {
-      dispatch(logoutUser());
-      window.localStorage.removeItem('loggedWyreUserAdmin');
-      window.localStorage.removeItem('adminUserBackup');
-      window.location.href = '/';
-    };
+  const logOut = () => {
+    logUserOut();
+  };
     
     const items = [
       {
@@ -111,6 +87,9 @@ function SideMenu({collapsed, setCollapsed}) {
         icon: <AimOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
+        type: 'divider',
+      },
+      {
         label: "Diesel Overview",
         key: "/diesel",
         icon: <HeatMapOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
@@ -121,23 +100,29 @@ function SideMenu({collapsed, setCollapsed}) {
         icon: <SettingOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       // {
-      //   label: "Regions Activities",
-      //   key: "/regions-activities",
-      //   icon: <CompassOutlined />,
-      // },
-      // {
-      //   label: "Top Management Report",
-      //   key: "/top-mngt",
-      //   icon: <SendOutlined />,
-      // },
-      {
-        type: 'divider',
-      },
-      {
-        label: "Support",
-        key: "/support",
-        icon: <MailOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
-      },
+        //   label: "Regions Activities",
+        //   key: "/regions-activities",
+        //   icon: <CompassOutlined />,
+        // },
+        // {
+          //   label: "Top Management Report",
+          //   key: "/top-mngt",
+          //   icon: <SendOutlined />,
+          // },
+          {
+            type: 'divider',
+          },
+          {
+            label: "Support",
+            key: "/support",
+            icon: <MailOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+          },
+          {
+            label: "Log Out",
+            key: "logout",
+            icon: <LoginOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+            onClick: logOut
+          },
       {
         type: 'divider',
       },
@@ -242,7 +227,7 @@ function SideMenu({collapsed, setCollapsed}) {
             width={73}
             height={38}
             style={{ padding: 0, objectFit: 'contain' }}
-      src={EnvData.REACT_APP_API_URL + clientLogo}
+            src={EnvData.REACT_APP_API_URL + clientLogo || 'https://placeholdit.com/600x400/dddddd/999999?text=Wyre&font=inter&font_size=140'}
             alt='Client Logo'
             preview={false}
           />
@@ -250,7 +235,7 @@ function SideMenu({collapsed, setCollapsed}) {
             fontSize: '12px',
             display: collapsed ? 'none' : 'block',
             color: 'white'
-          }}>{clientName}</p>
+          }}>{clientName || '---'}</p>
         </div>
       </>
     );
@@ -309,4 +294,4 @@ function SideMenu({collapsed, setCollapsed}) {
     );
 }
 
-export default SideMenu;
+export default connect(null, { logUserOut })(SideMenu);

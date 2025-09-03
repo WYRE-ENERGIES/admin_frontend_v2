@@ -1,14 +1,3 @@
-// function SideMenu() {
-//     return (
-//       <div className="SideMenu">
-//         <sidebar>Side Menu</sidebar>
-//       </div>
-//     );
-//   }
-  
-//   export default SideMenu;
-
-
 import {
     UserOutlined,
     MenuOutlined,
@@ -19,16 +8,24 @@ import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { logoutUser } from "../../redux/actions/auth/auth.creator";
-import DownloadPage from "../../Pages/AuthPages/DownloadPage";
+import { connect } from "react-redux";
+import { logUserOut } from "../../redux/actions/auth/auth.action";
+import EnvData from "../../config/EnvData";
 
-function OtherSideMenu({ collapsed, setCollapsed }) {
+function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
     const [selectedLocation, setSelectedLocation] = useState('/');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-    const location = useLocation();
-    const dispatch = useDispatch();
+   const [clientLogo, setClientLogo] = useState(null);
+    const [clientName, setClientName] = useState(null);
+    const location = useLocation();    
+
+    useEffect(() => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      setClientLogo(currentUser.client_image);
+      setClientName(currentUser.client);
+    }, []);
+    
     const navigate = useNavigate();
 
     // Responsive: handle window resize
@@ -46,11 +43,9 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
         setSelectedLocation(location.pathname);
     }, [location.pathname]);
 
-    const logOut = () => {
-        dispatch(logoutUser());
-        window.localStorage.removeItem('loggedWyreUserAdmin');
-        window.location.href = '/';
-    };
+  const logOut = () => {
+    logUserOut();
+  };
 
     const items = [
         {
@@ -78,6 +73,12 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
       },
         {
             type: 'divider',
+        },
+        {
+            label: "Log Out",
+            key: "logout",
+            icon: <LoginOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+            onClick: logOut,
         },
     ];
 
@@ -121,19 +122,19 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
                     gap: '20px',
                     marginTop: '20px'
                 }}>
-                <Image
-                    width={73}
-                    height={38}
-                    preview={false}
-                    style={{ padding: 0 }}
-                    src="/Images/atc.png"
-                    alt='ATC Logo'
-                />
-                <p style={{
-                    fontSize: '12px',
-                    display: collapsed ? 'none' : 'block',
-                    color: 'white'
-                }}>ATC</p>
+                   <img
+            width={73}
+            height={38}
+            style={{ padding: 0, objectFit: 'contain' }}
+            src={EnvData.REACT_APP_API_URL + clientLogo || 'https://placeholdit.com/600x400/dddddd/999999?text=Wyre&font=inter&font_size=140'}
+            alt='Client Logo'
+            preview={false}
+          />
+          <p style={{
+            fontSize: '12px',
+            display: collapsed ? 'none' : 'block',
+            color: 'white'
+          }}>{clientName || '---'}</p>
             </div>
         </>
     );
@@ -204,6 +205,6 @@ function OtherSideMenu({ collapsed, setCollapsed }) {
     );
 }
 
-export default OtherSideMenu;
+export default connect(null, { logUserOut })(OtherSideMenu);
     
     

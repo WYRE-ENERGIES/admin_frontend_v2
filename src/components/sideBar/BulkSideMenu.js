@@ -11,7 +11,6 @@
 
 import {
     EnvironmentOutlined,
-    UserOutlined,
     ProjectOutlined,
     MenuOutlined,
     HeatMapOutlined,
@@ -19,19 +18,28 @@ import {
     SettingOutlined,
     MailOutlined,
 } from "@ant-design/icons";
-import { Button, Image, Menu, theme, Drawer, Space } from "antd";
+import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { logoutUser } from "../../redux/actions/auth/auth.creator";
+import { connect } from "react-redux";
+import { logUserOut } from "../../redux/actions/auth/auth.action";
+import EnvData from "../../config/EnvData";
 
-function BulkSideMenu({ collapsed, setCollapsed }) {
+function BulkSideMenu({ collapsed, setCollapsed, logUserOut }) {
     const [selectedLocation, setSelectedLocation] = useState('/');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
-    const location = useLocation();
-    const dispatch = useDispatch();
+   const [clientLogo, setClientLogo] = useState(null);
+    const [clientName, setClientName] = useState(null);
+    const location = useLocation();    
+
+    useEffect(() => {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      setClientLogo(currentUser.client_image);
+      setClientName(currentUser.client);
+    }, []);
+    
     const navigate = useNavigate();
 
     // Responsive: handle window resize
@@ -49,11 +57,9 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
         setSelectedLocation(location.pathname);
     }, [location.pathname]);
 
-    const logOut = () => {
-        dispatch(logoutUser());
-        window.localStorage.removeItem('loggedWyreUserAdmin');
-        window.location.href = '/';
-    };
+  const logOut = () => {
+    logUserOut();
+  };
 
     const items = [
         {
@@ -86,6 +92,12 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
         },
         {
             type: 'divider',
+        },
+        {
+            label: "Log Out",
+            key: "logout",
+            icon: <LoginOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+            onClick: logOut,
         },
     ];
 
@@ -129,19 +141,19 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
                     gap: '20px',
                     marginTop: '20px'
                 }}>
-                <Image
-                    width={73}
-                    height={38}
-                    preview={false}
-                    style={{ padding: 0 }}
-                    src="/Images/atc.png"
-                    alt='ATC Logo'
-                />
-                <p style={{
-                    fontSize: '12px',
-                    display: collapsed ? 'none' : 'block',
-                    color: 'white'
-                }}>ATC</p>
+                  <img
+            width={73}
+            height={38}
+            style={{ padding: 0, objectFit: 'contain' }}
+            src={EnvData.REACT_APP_API_URL + clientLogo || 'https://placeholdit.com/600x400/dddddd/999999?text=Wyre&font=inter&font_size=140'}
+            alt='Client Logo'
+            preview={false}
+          />
+          <p style={{
+            fontSize: '12px',
+            display: collapsed ? 'none' : 'block',
+            color: 'white'
+          }}>{clientName || '---'}</p>
             </div>
         </>
     );
@@ -212,6 +224,6 @@ function BulkSideMenu({ collapsed, setCollapsed }) {
     );
 }
 
-export default BulkSideMenu;
+export default connect(null, { logUserOut })(BulkSideMenu);
     
     
