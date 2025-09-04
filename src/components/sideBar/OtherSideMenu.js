@@ -2,7 +2,8 @@ import {
     UserOutlined,
     MenuOutlined,
   DownloadOutlined,
-    SettingOutlined,
+  SettingOutlined,
+    LoginOutlined
 } from "@ant-design/icons";
 import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";

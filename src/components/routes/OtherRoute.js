@@ -7,6 +7,7 @@ import CreateClient from "../../Pages/OverviewPages/CreateClient";
 import ClientDetails from "../../Pages/OverviewPages/ClientDetails";
 import DownloadPage from "../../Pages/AuthPages/DownloadPage";
 import Settings from "../../Pages/OverviewPages/Settings";
+import SystemConstants from "../../Pages/OverviewPages/SystemContants";
 
 function OtherRoute() {
   return (
@@ -19,6 +20,7 @@ function OtherRoute() {
           <Route path='/force-login-admin' element={<ForceLoginAdminHandler />} />
           <Route path="/clients" element={<ClientOverview />}></Route>
           <Route path="/create-client" element={<CreateClient />}></Route>
+          <Route path="/system-constants" element={<SystemConstants />}></Route>
           <Route path="/client/:clientId" element={<ClientDetails />} />
           <Route path="/settings" element={<Settings />}></Route>
         <Route path="/log-out" element={<LogOut />}></Route>
