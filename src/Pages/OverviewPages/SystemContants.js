@@ -281,7 +281,7 @@ function SystemConstants() {
           <thead>
             <tr>
               <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #e5e7eb" }}>Band</th>
-              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #e5e7eb" }}>Threshold (kWh)</th>
+              <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #e5e7eb" }}>Threshold (Hours)</th>
               <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid #e5e7eb" }}>Rate (NGN/kWh)</th>
             </tr>
           </thead>
