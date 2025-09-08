@@ -43,23 +43,24 @@ function SideMenu({collapsed, setCollapsed, logUserOut}) {
         }
       };
 
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
     useEffect(() => {
         const adminBackup = localStorage.getItem('adminUserBackup');
         setIsAdminImpersonating(!!adminBackup);
     }, [location.pathname]);
 
-    const goBackToAdmin = () => {
-        const adminBackup = localStorage.getItem('adminUserBackup');
-        if (adminBackup) {
-            // localStorage.setItem('loggedWyreUserAdmin', adminBackup);
-            // localStorage.removeItem('adminUserBackup');
-            window.location.href = '/force-login-admin';
-        }
-    };
+  const goBackToAdmin = () => {
+    const adminBackup = localStorage.getItem('adminUserBackup');
+    if (adminBackup)
+    {
+      // localStorage.setItem('loggedWyreUserAdmin', adminBackup);
+      // localStorage.removeItem('adminUserBackup');
+      window.location.href = '/force-login-admin';
+    }
+  };
 
   const logOut = () => {
     logUserOut();
@@ -128,93 +129,95 @@ function SideMenu({collapsed, setCollapsed, logUserOut}) {
       },
     ]
 
-    if (isAdminImpersonating) {
-        const backToAdminItem = {
-        label: <span style={{ fontWeight: 'bold' }}>Back to Admin</span>,
-            key: "/back-to-admin",
-            onClick: goBackToAdmin,
-            icon: <ArrowLeftOutlined />,
-            style: {
-                background: '#fff',
-                color: '#222',
-                fontWeight: 'bold',
-                borderRadius: 6,
-                marginBottom: 8,
-            },
-        };
-        items.unshift(backToAdminItem);
-    }
-  
-    useEffect(() => {
-      const pathName = location.pathname;
-      setSelectedLocation(pathName);
-    }, [location.pathname]);
+  if (isAdminImpersonating)
+  {
+    const backToAdminItem = {
+      label: <span style={{ fontWeight: 'bold' }}>Back to Admin</span>,
+      key: "/back-to-admin",
+      onClick: goBackToAdmin,
+      icon: <ArrowLeftOutlined />,
+      style: {
+        background: '#fff',
+        color: '#222',
+        fontWeight: 'bold',
+        borderRadius: 6,
+        marginBottom: 8,
+      },
+    };
+    items.unshift(backToAdminItem);
+  }
 
-    const navigate = useNavigate();
+  useEffect(() => {
+    const pathName = location.pathname;
+    setSelectedLocation(pathName);
+  }, [location.pathname]);
 
-    const MenuContent = () => (
-      <>
-        <div className="wyre-logo">
-            <Image width={80} preview={false} src="/Images/Wyre white-08 1.png"></Image>
-            <Button
-            type="text"
-            className="mobile-menu-button"
-              icon={
-                collapsed ? (
-                  <MenuOutlined style={{ color: "white" }} />
-                ) : (
-                  // <MenuFoldOutlined style={{ color: "white" }} />
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '100%'
-                  }}>
-                    {/* <Image width={80} src="/Images/Wyre white-08 1.png"></Image> */}
-                    <Button
-                      type="text"
-                      icon={
-                        collapsed ? (
-                          <MenuOutlined style={{ color: "white" }} />
-                        ) : (
-                          <MenuOutlined style={{ marginLeft: 0, color: "white" }} />
-                        )
-                      }
-                      onClick={() => {
-                        setCollapsed(!collapsed);
-                      }}
-                    />
-                  </div>
-                )
-              }
-              onClick={() => {
-                setCollapsed(!collapsed);
-              }}
-            style={{
-              marginLeft: '5px',
-              scale: collapsed ? '1.1' : '1',
-                width: 52,
-                // height: 64,
-              }}
-            />
-        </div>
-        <Menu
-          className="SideMenuVertical"
-          theme="white"
-          selectedKeys={selectedLocation}
-          defaultSelectedKeys={["1"]}
-          onClick={(Item) => {
-            navigate(Item.key);
-            if (isMobile) {
-              setMobileDrawerOpen(false);
-            }
+  const navigate = useNavigate();
+
+  const MenuContent = () => (
+    <>
+      <div className="wyre-logo">
+        <Image width={80} preview={false} src="/Images/Wyre white-08 1.png"></Image>
+        <Button
+          type="text"
+          className="mobile-menu-button"
+          icon={
+            collapsed ? (
+              <MenuOutlined style={{ color: "white" }} />
+            ) : (
+              // <MenuFoldOutlined style={{ color: "white" }} />
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%'
+              }}>
+                {/* <Image width={80} src="/Images/Wyre white-08 1.png"></Image> */}
+                <Button
+                  type="text"
+                  icon={
+                    collapsed ? (
+                      <MenuOutlined style={{ color: "white" }} />
+                    ) : (
+                      <MenuOutlined style={{ marginLeft: 0, color: "white" }} />
+                    )
+                  }
+                  onClick={() => {
+                    setCollapsed(!collapsed);
+                  }}
+                />
+              </div>
+            )
+          }
+          onClick={() => {
+            setCollapsed(!collapsed);
           }}
-          mode="vertical"
-          items={items}
-        />
-        <div
-          className="SideMenuVertical"
           style={{
+            marginLeft: '5px',
+            scale: collapsed ? '1.1' : '1',
+            width: 52,
+            // height: 64,
+          }}
+        />
+      </div>
+      <Menu
+        className="SideMenuVertical"
+        theme="white"
+        selectedKeys={selectedLocation}
+        defaultSelectedKeys={["1"]}
+        onClick={(Item) => {
+          navigate(Item.key);
+          if (isMobile)
+          {
+            setMobileDrawerOpen(false);
+          }
+        }}
+        mode="vertical"
+        items={items}
+      />
+      <div
+        className="SideMenuVertical"
+        style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'start',
@@ -240,58 +243,59 @@ function SideMenu({collapsed, setCollapsed, logUserOut}) {
       </>
     );
 
-    // Mobile Header
-    const MobileHeader = () => (
-      <div className="mobile-header">
-        <Image width={80} src="/Images/Wyre white-08 1.png" />
-        <Button
-          type="text"
-          icon={<MenuOutlined style={{ color: "white" }} />}
-          onClick={() => setMobileDrawerOpen(true)}
-          style={{ color: "white" }}
-        />
-      </div>
-    );
+  // Mobile Header
+  const MobileHeader = () => (
+    <div className="mobile-header">
+      <Image width={80} src="/Images/Wyre white-08 1.png" />
+      <Button
+        type="text"
+        icon={<MenuOutlined style={{ color: "white" }} />}
+        onClick={() => setMobileDrawerOpen(true)}
+        style={{ color: "white" }}
+      />
+    </div>
+  );
 
-    if (isMobile) {
-      return (
-        <>
-          <MobileHeader />
-          <Drawer
-            placement="right"
-            onClose={() => setMobileDrawerOpen(false)}
-            open={mobileDrawerOpen}
-            width={280}
-            bodyStyle={{ padding: 0, backgroundColor: "#5C12A7" }}
-            headerStyle={{ display: 'none' }}
-          >
-            <MenuContent />
-          </Drawer>
-        </>
-      );
-    }
-
+  if (isMobile)
+  {
     return (
-      <Sider
-        style={{
-          height: "100vh",
-          position: "sticky",
-          right: 0,
-          left: 0,
-          top: 0,
-          bottom: 0,
-          color: "white",
-          marginLeft: 15
-        }}
-        collapsible
-        collapsed={collapsed}
-        collapsedWidth={60}
-        trigger={null}
-        onCollapse={(value) => setCollapsed(value)}
-      >
-        <MenuContent />
-      </Sider>
+      <>
+        <MobileHeader />
+        <Drawer
+          placement="right"
+          onClose={() => setMobileDrawerOpen(false)}
+          open={mobileDrawerOpen}
+          width={280}
+          bodyStyle={{ padding: 0, backgroundColor: "#5C12A7" }}
+          headerStyle={{ display: 'none' }}
+        >
+          <MenuContent />
+        </Drawer>
+      </>
     );
+  }
+
+  return (
+    <Sider
+      style={{
+        height: "100vh",
+        position: "sticky",
+        right: 0,
+        left: 0,
+        top: 0,
+        bottom: 0,
+        color: "white",
+        marginLeft: 15
+      }}
+      collapsible
+      collapsed={collapsed}
+      collapsedWidth={60}
+      trigger={null}
+      onCollapse={(value) => setCollapsed(value)}
+    >
+      <MenuContent />
+    </Sider>
+  );
 }
 
 export default connect(null, { logUserOut })(SideMenu);

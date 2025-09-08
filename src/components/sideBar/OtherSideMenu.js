@@ -1,14 +1,14 @@
 import {
-    EnvironmentOutlined,
-    UserOutlined,
-    ProjectOutlined,
-    MenuOutlined,
-    HeatMapOutlined,
-    LoginOutlined,
-    MailOutlined,
+  EnvironmentOutlined,
+  UserOutlined,
+  ProjectOutlined,
+  MenuOutlined,
+  HeatMapOutlined,
+  LoginOutlined,
+  MailOutlined,
   DownloadOutlined,
-    SettingOutlined,
-    ArrowLeftOutlined,
+  SettingOutlined,
+  ArrowLeftOutlined,
 } from "@ant-design/icons";
 import { Button, Image, Menu, theme, Drawer, Space } from "antd";
 import Sider from "antd/es/layout/Sider";
@@ -34,20 +34,20 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
     
     const navigate = useNavigate();
 
-    // Responsive: handle window resize
-    useEffect(() => {
-        const handleResize = () => {
-            const mobile = window.innerWidth <= 768;
-            setIsMobile(mobile);
-            if (!mobile) setMobileDrawerOpen(false);
-        };
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, []);
+  // Responsive: handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      if (!mobile) setMobileDrawerOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-    useEffect(() => {
-        setSelectedLocation(location.pathname);
-    }, [location.pathname]);
+  useEffect(() => {
+    setSelectedLocation(location.pathname);
+  }, [location.pathname]);
 
   const logOut = () => {
     logUserOut();
@@ -140,70 +140,71 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
         </>
     );
 
-    // Mobile header
-    const MobileHeader = () => (
-        <div className="mobile-header" style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-        alignItems: 'center',
-            paddingBottom: '5px',
-            backgroundColor: '#5C12A7',
-            position: 'sticky',
-            top: 0,
-            zIndex: 1000,
-        }}>
-            <Image width={80} src="/Images/Wyre white-08 1.png" />
-            <Button
-                type="text"
-                icon={<MenuOutlined style={{ color: "white" }} />}
-                onClick={() => setMobileDrawerOpen(true)}
-                style={{ color: "white" }}
-            />
-        </div>
-    );
+  // Mobile header
+  const MobileHeader = () => (
+    <div className="mobile-header" style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingBottom: '5px',
+      backgroundColor: '#5C12A7',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1000,
+    }}>
+      <Image width={80} src="/Images/Wyre white-08 1.png" />
+      <Button
+        type="text"
+        icon={<MenuOutlined style={{ color: "white" }} />}
+        onClick={() => setMobileDrawerOpen(true)}
+        style={{ color: "white" }}
+      />
+    </div>
+  );
 
-    // Render mobile drawer if mobile
-    if (isMobile) {
-        return (
-            <>
-                <MobileHeader />
-                <Drawer
-                    placement="right"
-                    onClose={() => setMobileDrawerOpen(false)}
-                    open={mobileDrawerOpen}
-                    width={280}
-                    bodyStyle={{ padding: 0, backgroundColor: "#5C12A7" }}
-                    headerStyle={{ display: 'none' }}
-                >
-                    <MenuContent />
-                </Drawer>
-            </>
-        );
-    }
-
-    // Render desktop sidebar
+  // Render mobile drawer if mobile
+  if (isMobile)
+  {
     return (
-        <Sider
-            style={{
-                height: "100vh",
-                position: "sticky",
-                
-                right: 0,
-                left: 0,
-                top: 0,
-                bottom: 0,
-                color: "white",
-                marginLeft: 15
-            }}
-            collapsible
-            collapsed={collapsed}
-            collapsedWidth={60}
-            trigger={null}
-            onCollapse={(value) => setCollapsed(value)}
+      <>
+        <MobileHeader />
+        <Drawer
+          placement="right"
+          onClose={() => setMobileDrawerOpen(false)}
+          open={mobileDrawerOpen}
+          width={280}
+          bodyStyle={{ padding: 0, backgroundColor: "#5C12A7" }}
+          headerStyle={{ display: 'none' }}
         >
-            <MenuContent />
-        </Sider>
+          <MenuContent />
+        </Drawer>
+      </>
     );
+  }
+
+  // Render desktop sidebar
+  return (
+    <Sider
+      style={{
+        height: "100vh",
+        position: "sticky",
+
+        right: 0,
+        left: 0,
+        top: 0,
+        bottom: 0,
+        color: "white",
+        marginLeft: 15
+      }}
+      collapsible
+      collapsed={collapsed}
+      collapsedWidth={60}
+      trigger={null}
+      onCollapse={(value) => setCollapsed(value)}
+    >
+      <MenuContent />
+    </Sider>
+  );
 }
 
 export default connect(null, { logUserOut })(OtherSideMenu);
