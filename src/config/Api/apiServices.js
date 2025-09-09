@@ -97,6 +97,14 @@ export const APIService = {
     forceLoginClientAdmin(clientId) {
         return instance.post(`/api/v2/force-login-client-admin/${clientId}/`);
     },
+
+    forceLoginBranch(branchId) {
+        return instance.post(`/api/v1/force-login/${branchId}/`);
+    },
+
+    getPermittedBranches() {
+        return instance.get('/api/v1/accounts/user/permitted-branches/');
+    },
 };
 
 export const APIServiceNoAuth = {
