@@ -1,25 +1,27 @@
 import moment from "moment";
-import { addUserBranchLoading, addUserBranchSuccess, addUsersLoading, addUsersSuccess, editUserLoading, editUserSuccess, getAllDevicesLoading, getAllDevicesSuccess, getDeviceConsumptionLoading, getDeviceConsumptionSuccess, getDeviceReadingsLoading, getDeviceReadingsSuccess, getDeviceSwitchLoading, getDeviceSwitchSuccess, getRolesLoading,  getRolesSuccess, loginUserLoading } from "./auth.creator";
+import { addUserBranchLoading, addUserBranchSuccess, addUsersLoading, addUsersSuccess, editUserLoading, editUserSuccess, getAllDevicesLoading, getAllDevicesSuccess, getDeviceConsumptionLoading, getDeviceConsumptionSuccess, getDeviceReadingsLoading, getDeviceReadingsSuccess, getDeviceSwitchLoading, getDeviceSwitchSuccess, getRolesLoading,  getRolesSuccess, loginUserLoading, updateProfileLoading, updateProfileSuccess, updatePasswordLoading, updatePasswordSuccess } from "./auth.creator";
 import { APIService, APIServiceNoAuth } from "../../../config/Api/apiServices";
-
-
+import jwt_decode from 'jwt-decode';
 
 export const loginAUser = (parameters) => async (dispatch) => {
   dispatch(loginUserLoading(true));
-  const requestUrl = `/token/`;
+  const requestUrl = '/api/v1/admin_auth/'; 
   try {
     const response = await APIServiceNoAuth.post(requestUrl, parameters);
-
-    // dispatch(loginUserSuccess(response.data));
-    window.localStorage.setItem('loggedWyreUserAdmin', JSON.stringify(response.data));
-    dispatch(loginUserLoading(false))
-    return { fulfilled: true, message: 'successful' }
+    
+    // Decode the access token to get user details
+    const decodedToken = jwt_decode(response.data.data.token.access);
+    
+    window.localStorage.setItem('loggedWyreUserAdmin', JSON.stringify(response.data?.data.token));
+    window.localStorage.setItem('currentUser', JSON.stringify(decodedToken));
+    
+    dispatch(loginUserLoading(false));
+    return { fulfilled: true, message: 'successful' };
   } catch (error) {
     dispatch(loginUserLoading(false));
-    return { fulfilled: false, message: error.response.data.detail }
+    return { fulfilled: false, message: error.response?.data?.error || 'An error occurred during login' };
   }
 };
-
 
 /**
  * @description method to sign out a user
@@ -154,5 +156,59 @@ export const updateUser = (parameters) => async (dispatch) => {
   } catch (error) {
     dispatch(editUserLoading(false));
     return { fulfilled: false, message: error.response.data.detail }
+  }
+};
+
+export const updateUserProfile = (clientId, userId, updatedUserData, pendingLogo) => async (dispatch) => {
+  dispatch(updateProfileLoading(true));
+  try {
+    const userUpdateResponse = await APIService.put(
+      `/api/v2/clients/${clientId}/users/${userId}/`,
+      updatedUserData
+    );
+    let updatedUser = userUpdateResponse.data;
+    if (pendingLogo) {
+      const formData = new FormData();
+      formData.append('logo', pendingLogo, pendingLogo.name);
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      };
+      await APIService.putMultipart(
+        `/api/v1/accounts/view-update-client/${clientId}/`,
+        formData,
+        config
+      );
+    }
+    const clientResponse = await APIService.get(
+      `/api/v1/accounts/view-update-client/${clientId}/`
+    );
+    const clientData = clientResponse.data.client;
+    const completeUserData = {
+      ...updatedUser,
+      client_image: clientData.logo,
+      client_type: clientData.client_type,
+    };
+    dispatch(updateProfileSuccess(completeUserData));
+    dispatch(updateProfileLoading(false));
+    return { fulfilled: true, message: 'Profile updated successfully!', data: completeUserData };
+  } catch (error) {
+    dispatch(updateProfileLoading(false));
+    return { fulfilled: false, message: error.message || 'Failed to update profile.' };
+  }
+};
+
+export const updateUserPassword = (updatePayload) => async (dispatch) => {
+  dispatch(updatePasswordLoading(true));
+  try {
+    await APIService.post('/api/v1/account/user-password/', updatePayload);
+    dispatch(updatePasswordSuccess(true));
+    dispatch(updatePasswordLoading(false));
+    return { fulfilled: true, message: 'Password updated successfully!' };
+  } catch (error) {
+    dispatch(updatePasswordLoading(false));
+    let message = error?.response?.data?.detail || error?.response?.data?.message || error.message || 'Failed to update password.';
+    return { fulfilled: false, message };
   }
 };
