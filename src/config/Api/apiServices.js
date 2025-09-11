@@ -86,40 +86,7 @@ export const APIService = {
         return instanceMultipart.put(endpoint, data);
     },
 
-    suspendClient(clientId, isActive) {
-        return instance.patch(`/api/v2/suspend_client/${clientId}/`, { is_active: isActive });
-    },
-
-    suspendBranch(branchId, isActive) {
-        return instance.patch(`/api/v2/suspend_branch/${branchId}/`, { is_active: isActive });
-    },
-
-    forceLoginClientAdmin(clientId) {
-        return instance.post(`/api/v2/force-login-client-admin/${clientId}/`);
-    },
-
-    // System Constants
-    getSystemConstantsList() {
-        return instance.get('/api/v1/system-constants/');
-    },
-
-    getSystemConstantsValues() {
-        return instance.get('/api/v1/system-constants-values/');
-    },
-
-    getTariffStructure() {
-        return instance.get('/api/v1/tariff-structure/');
-    },
-
-    bulkUpdateSystemConstants(constantsPayload) {
-        // constantsPayload shape: { constants: [{ name, value }, ...] }
-        return instance.post('/api/v1/system-constants-bulk-update/', constantsPayload);
-    },
-
-    updateSystemConstantById(id, payload) {
-        // payload shape: { value, description, source, is_active }
-        return instance.put(`/api/v1/system-constants/${id}/`, payload);
-    },
+    
 };
 
 export const APIServiceNoAuth = {

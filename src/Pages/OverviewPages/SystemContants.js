@@ -1,25 +1,20 @@
 /* eslint-disable no-restricted-globals */
 import React, { useEffect, useMemo, useState } from "react";
 import { connect } from "react-redux";
-import { APIService } from "../../config/Api/apiServices";
 import { Button, Spin } from "antd";
+import { fetchSystemConstantsAll, bulkUpdateSystemConstants, updateSystemConstantById } from "../../redux/actions/systemConstants/system.constants.action";
 
-function SystemConstants() {
-  const [loading, setLoading] = useState(true);
+function SystemConstants(props) {
+  const { systemConstants, fetchSystemConstantsAll: fetchAll, bulkUpdateSystemConstants: bulkUpdate, updateSystemConstantById: updateOne } = props;
   const [savingBulk, setSavingBulk] = useState(false);
   const [savingDiesel, setSavingDiesel] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const [constantsValues, setConstantsValues] = useState({});
   const [editedValues, setEditedValues] = useState({});
-
-  const [tariff, setTariff] = useState({});
   const [editedTariff, setEditedTariff] = useState({});
 
   const DIESEL_CONSTANT_NAME = "DIESEL_PRICE_PER_LITRE";
-  // If your API uses a stable id for diesel price, update here
-  const [constantsList, setConstantsList] = useState([]);
 
   const tariffPairs = useMemo(
     () => [
@@ -35,50 +30,20 @@ function SystemConstants() {
   const dieselValue = useMemo(() => {
     const edited = editedValues[DIESEL_CONSTANT_NAME];
     if (edited !== undefined && edited !== null && edited !== "") return edited;
-    return constantsValues[DIESEL_CONSTANT_NAME];
-  }, [editedValues, constantsValues]);
+    return systemConstants.values?.[DIESEL_CONSTANT_NAME];
+  }, [editedValues, systemConstants.values]);
 
   const getConstantMeta = (name) => {
-    if (!Array.isArray(constantsList)) return {};
-    const found = constantsList.find((c) => c?.name === name);
+    if (!Array.isArray(systemConstants.list)) return {};
+    const found = systemConstants.list.find((c) => c?.name === name);
     return found || {};
   };
 
   useEffect(() => {
-    let isMounted = true;
-    const load = async () => {
-      setLoading(true);
-      setError("");
-      setSuccess("");
-      try {
-        const [constantsValuesRes, constantsListRes, tariffRes] = await Promise.all([
-          APIService.getSystemConstantsValues(),
-          APIService.getSystemConstantsList(),
-          APIService.getTariffStructure(),
-        ]);
-        if (!isMounted) return;
-        const constantsData = constantsValuesRes?.data?.data || {};
-        setConstantsValues(constantsData);
-        setEditedValues({});
-
-        const constantsListData = constantsListRes?.data?.data || [];
-        setConstantsList(constantsListData);
-
-        const tariffData = tariffRes?.data?.data || {};
-        setTariff(tariffData);
-        setEditedTariff({});
-      } catch (e) {
-        if (!isMounted) return;
-        setError("Failed to load system constants. Please try again.");
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-    load();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    setError("");
+    setSuccess("");
+    fetchAll();
+  }, [fetchAll]);
 
   const onChangeConstant = (name, value) => {
     setEditedValues((prev) => ({ ...prev, [name]: value }));
@@ -88,7 +53,7 @@ function SystemConstants() {
     setEditedTariff((prev) => ({
       ...prev,
       [band]: {
-        ...(prev[band] || tariff[band] || {}),
+        ...(prev[band] || (systemConstants.tariff || {})[band] || {}),
         [key]: value,
       },
     }));
@@ -131,18 +96,9 @@ function SystemConstants() {
         return;
       }
 
-      await APIService.bulkUpdateSystemConstants({ constants: constantsPayload });
+      await bulkUpdate({ constants: constantsPayload });
       setSuccess("Constants updated successfully.");
-      // Refresh data
-      const [constantsValuesRes, constantsListRes, tariffRes] = await Promise.all([
-        APIService.getSystemConstantsValues(),
-        APIService.getSystemConstantsList(),
-        APIService.getTariffStructure(),
-      ]);
-      setConstantsValues(constantsValuesRes?.data?.data || {});
       setEditedValues({});
-      setConstantsList(constantsListRes?.data?.data || []);
-      setTariff(tariffRes?.data?.data || {});
       setEditedTariff({});
     } catch (e) {
       setError("Failed to save changes. Please try again.");
@@ -160,22 +116,15 @@ function SystemConstants() {
         setError("Please enter a valid diesel price.");
         return;
       }
-      const dieselItem = constantsList.find((c) => c?.name === DIESEL_CONSTANT_NAME);
+      const dieselItem = (systemConstants.list || []).find((c) => c?.name === DIESEL_CONSTANT_NAME);
       const dieselId = dieselItem?.id;
-      await APIService.updateSystemConstantById(dieselId, {
+      await updateOne(dieselId, {
         value: Number(dieselValue),
         description: "Current Diesel Price per Litre in Naira",
         source: "Current market rate",
         is_active: true,
       });
       setSuccess("Diesel price updated successfully.");
-      // Refresh single value via values endpoint
-      const [valuesRes, listRes] = await Promise.all([
-        APIService.getSystemConstantsValues(),
-        APIService.getSystemConstantsList(),
-      ]);
-      setConstantsValues(valuesRes?.data?.data || {});
-      setConstantsList(listRes?.data?.data || []);
       setEditedValues((prev) => ({ ...prev, [DIESEL_CONSTANT_NAME]: undefined }));
     } catch (e) {
       setError("Failed to update diesel price. Please try again.");
@@ -191,7 +140,7 @@ function SystemConstants() {
         <Button
           type="primary"
           onClick={handleSaveBulk}
-          disabled={savingBulk || loading}
+          disabled={savingBulk || systemConstants.loading}
         >
           {savingBulk ? "Saving..." : "Save All Changes"}
         </Button>
@@ -222,14 +171,14 @@ function SystemConstants() {
         <button
           type="button"
           onClick={handleSaveDiesel}
-          disabled={savingDiesel || loading}
+          disabled={savingDiesel || systemConstants.loading}
           style={{
             padding: "8px 12px",
             background: "#111827",
             color: "#fff",
             border: "none",
             borderRadius: 8,
-            cursor: savingDiesel || loading ? "not-allowed" : "pointer",
+            cursor: savingDiesel || systemConstants.loading ? "not-allowed" : "pointer",
           }}
         >
           {savingDiesel ? "Updating..." : "Update"}
@@ -287,7 +236,7 @@ function SystemConstants() {
           </thead>
           <tbody>
             {tariffPairs.map(({ band }) => {
-              const base = tariff[band] || {};
+              const base = systemConstants.tariff?.[band] || {};
               const edited = editedTariff[band] || {};
               const threshold = edited.threshold ?? base.threshold ?? "";
               const rate = edited.rate ?? base.rate ?? "";
@@ -326,7 +275,7 @@ function SystemConstants() {
       DIESEL_CONSTANT_NAME,
       ...tariffPairs.flatMap((p) => [p.rate, p.threshold]),
     ]);
-    const entries = Object.entries(constantsValues).filter(([name]) => !exclude.has(name));
+    const entries = Object.entries(systemConstants.values || {}).filter(([name]) => !exclude.has(name));
     if (entries.length === 0) return null;
     return (
       <div style={{
@@ -369,7 +318,7 @@ function SystemConstants() {
     );
   };
 
-  if (loading) {
+  if (systemConstants.loading) {
     return (
       <div style={{ padding: "24px 32px" }}>
         {renderHeader()}
@@ -393,8 +342,13 @@ function SystemConstants() {
 
 const mapStateToProps = (state) => ({
   auth: state.auth,
+  systemConstants: state.systemConstants,
 });
 
-export default connect(mapStateToProps)(SystemConstants);
+const mapDispatchToProps = {
+  fetchSystemConstantsAll,
+  bulkUpdateSystemConstants,
+  updateSystemConstantById,
+};
 
-// end of script
+export default connect(mapStateToProps, mapDispatchToProps)(SystemConstants);

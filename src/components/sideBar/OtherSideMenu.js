@@ -3,7 +3,8 @@ import {
     MenuOutlined,
   DownloadOutlined,
   SettingOutlined,
-    LoginOutlined
+  LoginOutlined,
+    HolderOutlined
 } from "@ant-design/icons";
 import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
@@ -62,7 +63,7 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
         {
             label: "System",
             key: "/system-constants",
-            icon: <SettingOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+            icon: <HolderOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
         },
         {
             type: 'divider',
