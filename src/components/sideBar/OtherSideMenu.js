@@ -3,7 +3,7 @@ import {
   UserOutlined,
   ProjectOutlined,
   MenuOutlined,
-  HeatMapOutlined,
+  WarningOutlined,
   LoginOutlined,
   MailOutlined,
   DownloadOutlined,
@@ -63,7 +63,12 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
             label: "Clients",
             key: "/clients",
             icon: <UserOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-        },
+      },
+      {
+          label: "Anomalies",
+          key: "/anomalies",
+          icon: <WarningOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+      },
         {
             type: 'divider',
         },
