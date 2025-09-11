@@ -2,11 +2,13 @@ import { Button, DatePicker, Dropdown, Form, Image, Input, List, Menu, Modal, Po
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect, useState } from "react";
-import { connect, useSelector } from "react-redux";
+import { connect, useSelector, useDispatch } from "react-redux";
 import { addALocation, addARegion, deleteARegion, getLocationsData, getRegionsListData, updateALocation, updateARegion } from "../../redux/actions/location/location.action";
+import { forceLoginBranchAction } from "../../redux/actions/branch/branch.creator";
 import { DeleteOutlined, EditOutlined, EyeOutlined, MoreOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
 import { BsThreeDots } from "react-icons/bs";
 import axios from "axios";
+import EnvData from "../../config/EnvData";
 
 const successNotificationPopUp = (type, formName) => {
   notification[type]({
@@ -55,6 +57,7 @@ const SubmitButton = ({ form }) => {
 };
 
 function ViewLocations(props) {
+  const dispatch = useDispatch();
   const [dieselDataTable, setDieselDataTable] = useState({})
   const [viewLocationModal, setviewLocationModal] = useState(false)
   const [addLocationModal, setAddLocationModal] = useState(false)
@@ -73,6 +76,51 @@ function ViewLocations(props) {
   const [addLocationform] = Form.useForm();
   const [editLocationform] = Form.useForm();
   const [addRegionform] = Form.useForm();
+
+  const handleBranchLogin = async (branchId) => {
+    try {
+      const data = await dispatch(forceLoginBranchAction(branchId));
+      const params = new URLSearchParams({
+        access: data.token.access,
+        refresh: data.token.refresh,
+        username: data.username,
+        email: data.email,
+        first_name: data.first_name,
+        last_name: data.last_name,
+      });
+      window.open(`${EnvData.REACT_APP_DASHBOARD_URL}/force-login?${params.toString()}`, '_blank');
+    } catch (err) {
+      // Check for specific permission error
+      if (err?.response?.data?.detail === "You do not have permission for this branch") {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You do not have permission to access this branch dashboard. Please contact your administrator for access rights.',
+          duration: 5,
+        });
+      } else if (err?.response?.data?.detail) {
+        // Handle other detailed error responses
+        notification.error({
+          message: 'Branch Access Failed',
+          description: err.response.data.detail,
+          duration: 5,
+        });
+      } else if (err?.response?.data?.message) {
+        // Handle error messages from API
+        notification.error({
+          message: 'Branch Force Login Failed',
+          description: err.response.data.message,
+          duration: 5,
+        });
+      } else {
+        // Handle generic errors
+        notification.error({
+          message: 'Branch Force Login Failed',
+          description: err?.message || 'Unable to login to branch dashboard. Please try again later.',
+          duration: 5,
+        });
+      }
+    }
+  };
 
   const { Search } = Input;
   
@@ -329,35 +377,40 @@ function ViewLocations(props) {
     width: '10%',
     dataIndex: 'action',
     render: (_, record) => {
-      return (
-        <a
-          target="_blank"
-          onClick={(e) => {
-            e.preventDefault();
-            // setlocationTableData(record);
-            // setEditLocationModal(true)
-            handleClickEditLocation(record)
-          }}
-          rel="noopener noreferrer"
-          style={{ color: 'black' }}
-        >
-          {/* <Dropdown
-            menu={menuProps}
+      const menu = (
+        <Menu>
+          <Menu.Item
+            key="edit"
+            icon={<EditOutlined />}
+            onClick={() => handleClickEditLocation(record)}
           >
-            <Button
-              style={{
-                color: "#5C12A7",
-                width: 44,
-                height: 25,
-                backgroundColor: "rgba(92, 18, 167, 0.1)",
-                borderRadius: 12,
-              }}
-            >
-              <BsThreeDots />
-            </Button>
-          </Dropdown> */}
-          <EditOutlined /> Edit
-        </a>
+            Edit
+          </Menu.Item>
+          <Menu.Item
+            key="view-dashboard"
+            icon={<EyeOutlined />}
+            onClick={() => handleBranchLogin(record.id)}
+          >
+            View Branch Dashboard
+          </Menu.Item>
+        </Menu>
+      );
+
+      return (
+        <Dropdown overlay={menu} trigger={["click"]}>
+          <Button
+            shape="none"
+            type="text"
+            icon={<BsThreeDots />}
+            style={{
+              color: "#5C12A7",
+              width: 44,
+              height: 25,
+              backgroundColor: "rgba(92, 18, 167, 0.1)",
+              borderRadius: 12,
+            }}
+          />
+        </Dropdown>
       );
     }
   });
