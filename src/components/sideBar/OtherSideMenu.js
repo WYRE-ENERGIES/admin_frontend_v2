@@ -1,9 +1,13 @@
 import {
-    UserOutlined,
-    MenuOutlined,
+  EnvironmentOutlined,
+  UserOutlined,
+  ProjectOutlined,
+  MenuOutlined,
+  WarningOutlined,
+  LoginOutlined,
+  MailOutlined,
   DownloadOutlined,
   SettingOutlined,
-  LoginOutlined,
     HolderOutlined
 } from "@ant-design/icons";
 import { Button, Image, Menu, Drawer } from "antd";
@@ -59,7 +63,12 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
             label: "Clients",
             key: "/clients",
             icon: <UserOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-        },
+      },
+      {
+          label: "Anomalies",
+          key: "/anomalies",
+          icon: <WarningOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+      },
         {
             label: "System",
             key: "/system-constants",
