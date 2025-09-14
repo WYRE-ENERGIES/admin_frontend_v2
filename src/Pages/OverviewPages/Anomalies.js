@@ -1,15 +1,17 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { Button, Modal, Table, Tag, Typography, Space, notification, Popconfirm, Input, Divider } from 'antd'
 import { APIService } from '../../config/Api/apiServices'
-import { ExclamationCircleFilled } from '@ant-design/icons'
+import { ExclamationCircleFilled, CheckCircleOutlined, DeleteOutlined } from '@ant-design/icons'
 
 const { Title, Text } = Typography;
 
 const LIST_ENDPOINT = '/api/v1/anomalies/readings/';
 const CONTEXT_ENDPOINT = '/api/v1/anomalies/reading-context/';
 const DELETE_ENDPOINT = '/api/v1/anomalies/readings/delete/';
+const CLEAR_FLAGS_ENDPOINT = '/api/v1/anomalies/readings/clear-flags/';
 
 const defaultPageSize = 20;
+const DEBOUNCE_MS = 400;
 
 const Anomalies = () => {
   const [loading, setLoading] = useState(false);
@@ -72,6 +74,21 @@ const Anomalies = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Debounced live search: triggers fetch 400ms after user stops typing
+  const isFirstSearchRef = useRef(true);
+  useEffect(() => {
+    // Skip running on the very first mount since we already load once above
+    if (isFirstSearchRef.current) {
+      isFirstSearchRef.current = false;
+      return;
+    }
+    const handle = setTimeout(() => {
+      setPage(1);
+      loadAnomalies(1, pageSize, (searchText || '').trim());
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(handle);
+  }, [searchText, pageSize, loadAnomalies]);
+
   const handleTableChange = (pagination) => {
     const nextPage = pagination.current;
     const nextSize = pagination.pageSize;
@@ -82,7 +99,7 @@ const Anomalies = () => {
 
   const onSearch = () => {
     setPage(1);
-    loadAnomalies(1, pageSize, searchText);
+    loadAnomalies(1, pageSize, (searchText || '').trim());
   };
 
   const clearSearch = () => {
@@ -166,6 +183,28 @@ const Anomalies = () => {
     }
   }, []);
 
+  const clearFlagsByIds = useCallback(async (ids, onDone) => {
+    if (!ids || ids.length === 0) return;
+    try {
+      const payload = { ids };
+      const response = await APIService.post(CLEAR_FLAGS_ENDPOINT, payload);
+      const data = response?.data;
+      const updated = data?.updated || 0;
+      const found = data?.found || 0;
+      
+      notification.success({ 
+        message: 'Flags cleared successfully',
+        description: `Updated ${updated} out of ${found} readings`
+      });
+      if (typeof onDone === 'function') onDone();
+    } catch (error) {
+      notification.error({
+        message: 'Clear flags failed',
+        description: error?.response?.data?.detail || error?.message || 'Please try again'
+      });
+    }
+  }, []);
+
   const handleBulkDeleteMain = useCallback(async () => {
     const ids = selectedRowKeys;
     await deleteByIds(ids, () => {
@@ -173,6 +212,14 @@ const Anomalies = () => {
       loadAnomalies(page, pageSize, searchText);
     });
   }, [deleteByIds, loadAnomalies, page, pageSize, searchText, selectedRowKeys]);
+
+  const handleBulkClearFlagsMain = useCallback(async () => {
+    const ids = selectedRowKeys;
+    await clearFlagsByIds(ids, () => {
+      setSelectedRowKeys([]);
+      loadAnomalies(page, pageSize, searchText);
+    });
+  }, [clearFlagsByIds, loadAnomalies, page, pageSize, searchText, selectedRowKeys]);
 
   const handleRowDelete = useCallback(async (record) => {
     await deleteByIds([record.id], () => {
@@ -185,6 +232,17 @@ const Anomalies = () => {
     });
   }, [contextTarget, deleteByIds, loadAnomalies, page, pageSize, searchText]);
 
+  const handleRowClearFlags = useCallback(async (record) => {
+    await clearFlagsByIds([record.id], () => {
+      if (contextTarget && contextTarget.id === record.id) {
+        setContextModalOpen(false);
+        setContextRows([]);
+        setContextTarget(null);
+      }
+      loadAnomalies(page, pageSize, searchText);
+    });
+  }, [contextTarget, clearFlagsByIds, loadAnomalies, page, pageSize, searchText]);
+
   const handleBulkDeleteContext = useCallback(async () => {
     const ids = selectedContextRowKeys;
     await deleteByIds(ids, () => {
@@ -193,6 +251,15 @@ const Anomalies = () => {
       loadAnomalies(page, pageSize, searchText);
     });
   }, [deleteByIds, loadAnomalies, page, pageSize, reloadContext, searchText, selectedContextRowKeys]);
+
+  const handleBulkClearFlagsContext = useCallback(async () => {
+    const ids = selectedContextRowKeys;
+    await clearFlagsByIds(ids, () => {
+      setSelectedContextRowKeys([]);
+      reloadContext();
+      loadAnomalies(page, pageSize, searchText);
+    });
+  }, [clearFlagsByIds, loadAnomalies, page, pageSize, reloadContext, searchText, selectedContextRowKeys]);
 
   const columns = useMemo(() => [
     {
@@ -254,10 +321,24 @@ const Anomalies = () => {
       title: 'Actions',
       key: 'actions',
       fixed: 'right',
-      width: 210,
+      width: 200,
       render: (_, record) => (
         <Space size="small">
-          <Button size="small" onClick={() => openContextFor(record)}>View context</Button>
+          <Popconfirm
+            title="Mark as valid?"
+            description={
+              <div>
+                This will clear flags for reading <Text strong>#{record.id}</Text> and remove it from anomalies.
+              </div>
+            }
+            okText="Mark Valid"
+            okType="outline"
+            icon={<CheckCircleOutlined style={{ color: 'green' }} />}
+            onConfirm={() => handleRowClearFlags(record)}
+          >
+            <Button size="small" type="primary" title="Mark as valid">
+            Valid</Button>
+          </Popconfirm>
           <Popconfirm
             title="Delete reading?"
             description={
@@ -270,12 +351,35 @@ const Anomalies = () => {
             icon={<ExclamationCircleFilled style={{ color: 'red' }} />}
             onConfirm={() => handleRowDelete(record)}
           >
-            <Button size="small" danger>Delete</Button>
+            <Button size="small" danger title="Delete" >
+            Delete</Button>
           </Popconfirm>
         </Space>
       )
     }
-  ], [handleRowDelete, openContextFor]);
+  ], [handleRowDelete, handleRowClearFlags]);
+
+  // Frontend filtering for search
+  const filteredAnomalies = useMemo(() => {
+    const query = (searchText || '').trim().toLowerCase();
+    if (!query) return anomalies;
+
+    const normalize = (val) => (val === null || val === undefined ? '' : String(val)).toLowerCase();
+
+    return (anomalies || []).filter((row) => {
+      const haystacks = [
+        normalize(row.device_name),
+        normalize(row.branch_name),
+        normalize(row.irregular_reason),
+        normalize(row.anomaly_level),
+        normalize(row.kwh_import),
+        normalize(row.post_datetime ? new Date(row.post_datetime).toLocaleString() : ''),
+        normalize(row.id),
+      ];
+      const combined = haystacks.join(' | ');
+      return combined.includes(query);
+    });
+  }, [anomalies, searchText]);
 
   const contextColumns = useMemo(() => [
     {
@@ -331,6 +435,23 @@ const Anomalies = () => {
             />
             <Button onClick={clearSearch}>Reset</Button>
             <Popconfirm
+              title="Mark selected as valid?"
+              description={
+                <div>
+                  This will clear flags for <Text strong>{selectedRowKeys.length}</Text> selected reading(s) and remove them from anomalies.
+                </div>
+              }
+              okText="Mark Valid"
+              okType="primary"
+              icon={<CheckCircleOutlined style={{ color: 'green' }} />}
+              onConfirm={handleBulkClearFlagsMain}
+              disabled={!selectedRowKeys.length}
+            >
+              <Button type="primary" disabled={!selectedRowKeys.length} icon={<CheckCircleOutlined />}>
+                Mark as valid
+              </Button>
+            </Popconfirm>
+            <Popconfirm
               title="Delete selected readings?"
               description={
                 <div>
@@ -343,7 +464,7 @@ const Anomalies = () => {
               onConfirm={handleBulkDeleteMain}
               disabled={!selectedRowKeys.length}
             >
-              <Button danger disabled={!selectedRowKeys.length}>
+              <Button danger disabled={!selectedRowKeys.length} icon={<DeleteOutlined />}>
                 Delete selected
               </Button>
             </Popconfirm>
@@ -355,16 +476,22 @@ const Anomalies = () => {
       <Table
         rowKey="id"
         loading={loading}
-        dataSource={anomalies}
+        dataSource={filteredAnomalies}
         columns={columns}
         scroll={{ x: 1200 }}
-        pagination={{ current: page, pageSize, total, showSizeChanger: true }}
-        onChange={handleTableChange}
+        pagination={
+          (searchText || '').trim()
+            ? false
+            : { current: page, pageSize, total, showSizeChanger: true }
+        }
+        onChange={
+          (searchText || '').trim() ? undefined : handleTableChange
+        }
         rowSelection={{
           selectedRowKeys,
           onChange: setSelectedRowKeys,
         }}
-        onRow={(record) => ({ onDoubleClick: () => openContextFor(record) })}
+        onRow={(record) => ({ onClick: () => openContextFor(record) })}
       />
 
       <Modal
@@ -393,6 +520,23 @@ const Anomalies = () => {
           <Button onClick={reloadContext} loading={contextLoading}>Reload</Button>
           <Divider type="vertical" />
           <Popconfirm
+            title="Mark selected as valid?"
+            description={
+              <div>
+                This will clear flags for <Text strong>{selectedContextRowKeys.length}</Text> selected reading(s) and remove them from anomalies.
+              </div>
+            }
+            okText="Mark Valid"
+            okType="primary"
+            icon={<CheckCircleOutlined style={{ color: 'green' }} />}
+            onConfirm={handleBulkClearFlagsContext}
+            disabled={!selectedContextRowKeys.length}
+          >
+            <Button type="primary" disabled={!selectedContextRowKeys.length} icon={<CheckCircleOutlined />}>
+              Mark as valid
+            </Button>
+          </Popconfirm>
+          <Popconfirm
             title="Delete selected in context?"
             description={
               <div>
@@ -405,7 +549,9 @@ const Anomalies = () => {
             onConfirm={handleBulkDeleteContext}
             disabled={!selectedContextRowKeys.length}
           >
-            <Button danger disabled={!selectedContextRowKeys.length}>Delete selected</Button>
+            <Button danger disabled={!selectedContextRowKeys.length} icon={<DeleteOutlined />}>
+              Delete selected
+            </Button>
           </Popconfirm>
         </Space>
 
@@ -423,7 +569,7 @@ const Anomalies = () => {
           }}
         />
         <div style={{ marginTop: 8 }}>
-          <Text type="secondary">Tip: Double-click a row in the main table to open its context.</Text>
+          <Text type="secondary">Tip: Click a row in the main table to open its context.</Text>
         </div>
       </Modal>
     </div>
