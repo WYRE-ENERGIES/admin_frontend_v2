@@ -31,9 +31,11 @@ const Anomalies = () => {
 
   const loadAnomalies = useCallback(async (nextPage = page, nextPageSize = pageSize, query = searchText) => {
     setLoading(true);
-    try {
+    try
+    {
       const params = { page: nextPage, page_size: nextPageSize };
-      if (query && query.trim()) {
+      if (query && query.trim())
+      {
         params.search = query.trim();
       }
       const response = await APIService.get(LIST_ENDPOINT, { params });
@@ -41,28 +43,35 @@ const Anomalies = () => {
       const payload = data?.data || data;
 
       // Expected shape: { status, data: { readings, total_count, page, page_size, total_pages } }
-      if (payload?.readings && Array.isArray(payload.readings)) {
+      if (payload?.readings && Array.isArray(payload.readings))
+      {
         setAnomalies(payload.readings);
         setTotal(Number(payload.total_count || 0));
-      } else if (Array.isArray(payload)) {
+      } else if (Array.isArray(payload))
+      {
         setAnomalies(payload);
         setTotal(payload.length || 0);
-      } else if (Array.isArray(payload?.results)) {
+      } else if (Array.isArray(payload?.results))
+      {
         setAnomalies(payload.results);
         setTotal(Number(payload.count || 0));
-      } else if (Array.isArray(payload?.data)) {
+      } else if (Array.isArray(payload?.data))
+      {
         setAnomalies(payload.data);
         setTotal(payload.data.length || 0);
-      } else {
+      } else
+      {
         setAnomalies([]);
         setTotal(0);
       }
-    } catch (error) {
+    } catch (error)
+    {
       notification.error({
         message: 'Failed to load anomalies',
         description: error?.response?.data?.detail || error?.message || 'Please try again'
       });
-    } finally {
+    } finally
+    {
       setLoading(false);
     }
   }, [page, pageSize, searchText]);
@@ -78,7 +87,8 @@ const Anomalies = () => {
   const isFirstSearchRef = useRef(true);
   useEffect(() => {
     // Skip running on the very first mount since we already load once above
-    if (isFirstSearchRef.current) {
+    if (isFirstSearchRef.current)
+    {
       isFirstSearchRef.current = false;
       return;
     }
@@ -113,7 +123,8 @@ const Anomalies = () => {
     setContextLoading(true);
     setContextTarget(record);
     setSelectedContextRowKeys([]);
-    try {
+    try
+    {
       const response = await APIService.get(CONTEXT_ENDPOINT, {
         params: { reading_id: record.id, window: contextWindow }
       });
@@ -128,13 +139,15 @@ const Anomalies = () => {
         ...normalize(next, 'next'),
       ];
       setContextRows(rows);
-    } catch (error) {
+    } catch (error)
+    {
       notification.error({
         message: 'Failed to load reading context',
         description: error?.response?.data?.detail || error?.message || 'Please try again'
       });
       setContextRows([]);
-    } finally {
+    } finally
+    {
       setContextLoading(false);
     }
   }, [contextWindow]);
@@ -143,7 +156,8 @@ const Anomalies = () => {
     if (!contextTarget) return;
     setContextLoading(true);
     setSelectedContextRowKeys([]);
-    try {
+    try
+    {
       const response = await APIService.get(CONTEXT_ENDPOINT, {
         params: { reading_id: contextTarget.id, window: contextWindow }
       });
@@ -158,24 +172,28 @@ const Anomalies = () => {
         ...normalize(next, 'next'),
       ];
       setContextRows(rows);
-    } catch (error) {
+    } catch (error)
+    {
       notification.error({
         message: 'Failed to refresh context',
         description: error?.response?.data?.detail || error?.message || 'Please try again'
       });
-    } finally {
+    } finally
+    {
       setContextLoading(false);
     }
   }, [contextTarget, contextWindow]);
 
   const deleteByIds = useCallback(async (ids, onDone) => {
     if (!ids || ids.length === 0) return;
-    try {
+    try
+    {
       const payload = { ids };
       await APIService.delete(DELETE_ENDPOINT, payload);
       notification.success({ message: 'Deleted successfully' });
       if (typeof onDone === 'function') onDone();
-    } catch (error) {
+    } catch (error)
+    {
       notification.error({
         message: 'Delete failed',
         description: error?.response?.data?.detail || error?.message || 'Please try again'
@@ -185,19 +203,21 @@ const Anomalies = () => {
 
   const clearFlagsByIds = useCallback(async (ids, onDone) => {
     if (!ids || ids.length === 0) return;
-    try {
+    try
+    {
       const payload = { ids };
       const response = await APIService.post(CLEAR_FLAGS_ENDPOINT, payload);
       const data = response?.data;
       const updated = data?.updated || 0;
       const found = data?.found || 0;
-      
-      notification.success({ 
+
+      notification.success({
         message: 'Flags cleared successfully',
         description: `Updated ${updated} out of ${found} readings`
       });
       if (typeof onDone === 'function') onDone();
-    } catch (error) {
+    } catch (error)
+    {
       notification.error({
         message: 'Clear flags failed',
         description: error?.response?.data?.detail || error?.message || 'Please try again'
@@ -223,7 +243,8 @@ const Anomalies = () => {
 
   const handleRowDelete = useCallback(async (record) => {
     await deleteByIds([record.id], () => {
-      if (contextTarget && contextTarget.id === record.id) {
+      if (contextTarget && contextTarget.id === record.id)
+      {
         setContextModalOpen(false);
         setContextRows([]);
         setContextTarget(null);
@@ -234,7 +255,8 @@ const Anomalies = () => {
 
   const handleRowClearFlags = useCallback(async (record) => {
     await clearFlagsByIds([record.id], () => {
-      if (contextTarget && contextTarget.id === record.id) {
+      if (contextTarget && contextTarget.id === record.id)
+      {
         setContextModalOpen(false);
         setContextRows([]);
         setContextTarget(null);
@@ -299,19 +321,6 @@ const Anomalies = () => {
       render: (v) => v ? <Tag color="red">Yes</Tag> : <Tag color="default">No</Tag>,
     },
     {
-      title: 'Reason',
-      dataIndex: 'irregular_reason',
-      key: 'irregular_reason',
-      ellipsis: true,
-      render: (v) => v || '-',
-    },
-    {
-      title: 'Level',
-      dataIndex: 'anomaly_level',
-      key: 'anomaly_level',
-      render: (v) => v ?? '-',
-    },
-    {
       title: 'Zero Updated',
       dataIndex: 'zero_updated',
       key: 'zero_updated',
@@ -337,7 +346,7 @@ const Anomalies = () => {
             onConfirm={() => handleRowClearFlags(record)}
           >
             <Button size="small" type="primary" title="Mark as valid">
-            Valid</Button>
+              Valid</Button>
           </Popconfirm>
           <Popconfirm
             title="Delete reading?"
@@ -352,7 +361,7 @@ const Anomalies = () => {
             onConfirm={() => handleRowDelete(record)}
           >
             <Button size="small" danger title="Delete" >
-            Delete</Button>
+              Delete</Button>
           </Popconfirm>
         </Space>
       )
@@ -420,7 +429,7 @@ const Anomalies = () => {
   ], []);
 
   return (
-           <div style={{ margin: '30px' }}>
+    <div style={{ margin: '30px' }}>
       <div className="row" style={{ marginBottom: 20, alignItems: 'center' }}>
         <div className="col-12" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
           <Title level={4} style={{ margin: 0 }}>Anomalies</Title>
