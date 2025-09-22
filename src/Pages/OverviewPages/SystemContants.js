@@ -43,7 +43,7 @@ function SystemConstants(props) {
     setError("");
     setSuccess("");
     fetchAll();
-  }, [fetchAll]);
+  }, []);
 
   const onChangeConstant = (name, value) => {
     setEditedValues((prev) => ({ ...prev, [name]: value }));
