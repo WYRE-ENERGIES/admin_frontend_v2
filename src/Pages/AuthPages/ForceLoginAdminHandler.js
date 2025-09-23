@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react';
 import { Spin } from 'antd';
-import { useDispatch } from 'react-redux';
+import { connect } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { loginUserSuccess } from '../../redux/actions/auth/auth.creator';
 
-const ForceLoginAdminHandler = () => {
+const ForceLoginAdminHandler = (props) => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
   useEffect(() => {
     const adminBackup = localStorage.getItem('adminUserBackup');
@@ -18,7 +17,7 @@ const ForceLoginAdminHandler = () => {
       try {
         // Parse the user object and dispatch the login action
         const adminUser = JSON.parse(adminBackup);
-        dispatch(loginUserSuccess(adminUser));
+        props.loginUserSuccess(adminUser);
       } catch (error) {
         console.error("Failed to parse admin backup data", error);
       }
@@ -34,7 +33,7 @@ const ForceLoginAdminHandler = () => {
         window.location.replace('/');
       }, 1000);
     }
-  }, [navigate, dispatch]);
+  }, [navigate, props]);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -43,4 +42,12 @@ const ForceLoginAdminHandler = () => {
   );
 };
 
-export default ForceLoginAdminHandler; 
+const mapDispatchToProps = {
+  loginUserSuccess,
+};
+
+const mapStateToProps = (state) => ({
+  auth: state.auth,
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ForceLoginAdminHandler); 

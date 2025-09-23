@@ -2,7 +2,7 @@ import { Button, DatePicker, Dropdown, Form, Image, Input, List, Menu, Modal, Po
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect, useState } from "react";
-import { connect, useSelector, useDispatch } from "react-redux";
+import { connect } from "react-redux";
 import { addALocation, addARegion, deleteARegion, getLocationsData, getRegionsListData, updateALocation, updateARegion } from "../../redux/actions/location/location.action";
 import { forceLoginBranchAction } from "../../redux/actions/branch/branch.creator";
 import { DeleteOutlined, EditOutlined, EyeOutlined, MoreOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
@@ -57,7 +57,6 @@ const SubmitButton = ({ form }) => {
 };
 
 function ViewLocations(props) {
-  const dispatch = useDispatch();
   const [dieselDataTable, setDieselDataTable] = useState({})
   const [viewLocationModal, setviewLocationModal] = useState(false)
   const [addLocationModal, setAddLocationModal] = useState(false)
@@ -79,7 +78,7 @@ function ViewLocations(props) {
 
   const handleBranchLogin = async (branchId) => {
     try {
-      const data = await dispatch(forceLoginBranchAction(branchId));
+      const data = await props.forceLoginBranchAction(branchId);
       const params = new URLSearchParams({
         access: data.token.access,
         refresh: data.token.refresh,
@@ -1108,6 +1107,7 @@ const mapDispatchToProps = {
   addARegion,
   updateARegion,
   deleteARegion,
+  forceLoginBranchAction,
 };
 
 const mapStateToProps = (state) => ({
