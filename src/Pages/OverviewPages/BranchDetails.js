@@ -1,19 +1,12 @@
 import React, { useEffect, useState } from "react";
 import {
-  Row,
-  Col,
-  Spin,
-  Modal,
-  notification,
-  Table,
   Space,
-  Card,
   DatePicker,
   Breadcrumb,
   Tooltip,
 } from "antd";
 
-import { connect, useSelector } from "react-redux";
+import { connect } from "react-redux";
 
 import moment from "moment";
 import dayjs from "dayjs";
@@ -21,7 +14,7 @@ import { useSearchParams } from "react-router-dom";
 import { getBranchDetailsData } from "../../redux/actions/branch/branch.action";
 import DailyConsumptionChart from "./DailyConsumptionChart";
 import IconComponent from "./IconComponent";
-import { convertDecimalTimeToMinutes, convertDecimalTimeToNormal, numberFormatter } from "../../helpers/genericHelpers";
+import { convertDecimalTimeToMinutes, numberFormatter } from "../../helpers/genericHelpers";
 
 function BranchDetails(props) {
   const [searchParams] = useSearchParams();

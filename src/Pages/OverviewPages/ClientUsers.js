@@ -1,10 +1,10 @@
-import { Button, Dropdown, Form, Image, Input, List, Modal, Popconfirm, Space, Table, Typography, notification } from "antd";
+import { Button, Dropdown, Input, Modal, Popconfirm, Space, Table, Typography, notification } from "antd";
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import { PlusOutlined, SearchOutlined, UserOutlined, EditOutlined, CloseOutlined } from "@ant-design/icons";
+import { PlusOutlined, UserOutlined, EditOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
-import { connect, useSelector } from "react-redux";
+import { connect } from "react-redux";
 import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData, getViewUserBranchesData, removeClientUsersData, updateClientUsersData } from "../../redux/actions/clientUser/clientUser.action"; 
 import EditClientUserForm from "./EditClientUserForm";
 import AddClientUserForm from "./AddClientUserForm";
@@ -40,8 +40,6 @@ function ClientUsers(props) {
   const isNextLoadable = currentPage*pageSize < pageDataHolder.length;
 
   const { Search } = Input;
-  const authData = useSelector((state) => state.auth);
-
   
   dayjs.extend(customParseFormat);
 
