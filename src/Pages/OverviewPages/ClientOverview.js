@@ -59,7 +59,7 @@ const ClientOverview = () => {
   const handleSuspendClient = async (clientId, isActive) => {
     setLoading(true);
     try {
-      await APIService.suspendClient(clientId, isActive);
+      await APIService.patch(`/api/v2/suspend_client/${clientId}/`, { is_active: isActive });
       notification.success({
         message: isActive ? 'Activate Client' : 'Suspend Client',
         description: isActive ? 'Client has been activated successfully.' : 'Client has been suspended successfully.'
