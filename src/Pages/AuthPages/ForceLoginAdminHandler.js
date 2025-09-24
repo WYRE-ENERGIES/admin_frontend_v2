@@ -33,7 +33,7 @@ const ForceLoginAdminHandler = (props) => {
         window.location.replace('/');
       }, 1000);
     }
-  }, [navigate, props]);
+  }, [navigate]);
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
