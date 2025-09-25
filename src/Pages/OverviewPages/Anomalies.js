@@ -29,7 +29,7 @@ const Anomalies = () => {
   const [contextRows, setContextRows] = useState([]);
   const [selectedContextRowKeys, setSelectedContextRowKeys] = useState([]);
 
-  const loadAnomalies = useCallback(async (nextPage = page, nextPageSize = pageSize, query = searchText) => {
+  const loadAnomalies = useCallback(async (nextPage, nextPageSize, query) => {
     setLoading(true);
     try
     {
@@ -74,7 +74,7 @@ const Anomalies = () => {
     {
       setLoading(false);
     }
-  }, [page, pageSize, searchText]);
+  }, []);
 
   useEffect(() => {
     loadAnomalies(1, defaultPageSize, '');
@@ -318,13 +318,13 @@ const Anomalies = () => {
       title: 'Irregular',
       dataIndex: 'is_irregular',
       key: 'is_irregular',
-      render: (v) => v ? <Tag color="red">Yes</Tag> : <Tag color="default">No</Tag>,
+      render: (v) => v ? <Tag color="default">No</Tag> : <Tag color="red">Yes</Tag>,
     },
     {
       title: 'Zero Updated',
       dataIndex: 'zero_updated',
       key: 'zero_updated',
-      render: (v) => v ? <Tag color="blue">True</Tag> : <Tag>False</Tag>,
+       render: (v) => v ? <Tag color="blue">True</Tag> : <Tag>False</Tag>,
     },
     {
       title: 'Actions',
@@ -368,27 +368,6 @@ const Anomalies = () => {
     }
   ], [handleRowDelete, handleRowClearFlags]);
 
-  // Frontend filtering for search
-  const filteredAnomalies = useMemo(() => {
-    const query = (searchText || '').trim().toLowerCase();
-    if (!query) return anomalies;
-
-    const normalize = (val) => (val === null || val === undefined ? '' : String(val)).toLowerCase();
-
-    return (anomalies || []).filter((row) => {
-      const haystacks = [
-        normalize(row.device_name),
-        normalize(row.branch_name),
-        normalize(row.irregular_reason),
-        normalize(row.anomaly_level),
-        normalize(row.kwh_import),
-        normalize(row.post_datetime ? new Date(row.post_datetime).toLocaleString() : ''),
-        normalize(row.id),
-      ];
-      const combined = haystacks.join(' | ');
-      return combined.includes(query);
-    });
-  }, [anomalies, searchText]);
 
   const contextColumns = useMemo(() => [
     {
@@ -485,22 +464,31 @@ const Anomalies = () => {
       <Table
         rowKey="id"
         loading={loading}
-        dataSource={filteredAnomalies}
+        dataSource={anomalies}
         columns={columns}
         scroll={{ x: 1200 }}
-        pagination={
-          (searchText || '').trim()
-            ? false
-            : { current: page, pageSize, total, showSizeChanger: true }
-        }
-        onChange={
-          (searchText || '').trim() ? undefined : handleTableChange
-        }
+        pagination={{
+          current: page,
+          pageSize,
+          total,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
+        }}
+        onChange={handleTableChange}
         rowSelection={{
           selectedRowKeys,
           onChange: setSelectedRowKeys,
         }}
-        onRow={(record) => ({ onClick: () => openContextFor(record) })}
+        onRow={(record) => ({ 
+          onClick: (e) => {
+            // Only open modal if clicking on the row itself, not on action buttons
+            if (e.target.closest('.ant-btn') || e.target.closest('.ant-popconfirm')) {
+              return;
+            }
+            openContextFor(record);
+          }
+        })}
       />
 
       <Modal
