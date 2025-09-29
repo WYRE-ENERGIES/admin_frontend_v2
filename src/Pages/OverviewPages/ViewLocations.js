@@ -1,27 +1,13 @@
-import { Button, DatePicker, Dropdown, Form, Image, Input, List, Menu, Modal, Popconfirm, Select, Space, Spin, Table, Typography, message, notification } from "antd";
+import { Button, DatePicker, Dropdown, Form, Input, Menu, Modal, Popconfirm, Select, Space, Spin, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect, useState } from "react";
-import { connect, useSelector, useDispatch } from "react-redux";
+import { connect } from "react-redux";
 import { addALocation, addARegion, deleteARegion, getLocationsData, getRegionsListData, updateALocation, updateARegion } from "../../redux/actions/location/location.action";
 import { forceLoginBranchAction } from "../../redux/actions/branch/branch.creator";
-import { DeleteOutlined, EditOutlined, EyeOutlined, MoreOutlined, PlusOutlined, UserOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, EyeOutlined, MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import { BsThreeDots } from "react-icons/bs";
-import axios from "axios";
 import EnvData from "../../config/EnvData";
-
-const successNotificationPopUp = (type, formName) => {
-  notification[type]({
-    message: 'Region Added',
-    description: `Your addition to the ${formName} has been successfully created`,
-  });
-};
-const errorNotificationPopUp = (type, formName) => {
-  notification[type]({
-    message: 'Failed',
-    description: `Your addition to the ${formName} failed, please try again later`,
-  });
-};
 
 const SubmitButton = ({ form }) => {
   const [submittable, setSubmittable] = useState(false);
@@ -57,10 +43,6 @@ const SubmitButton = ({ form }) => {
 };
 
 function ViewLocations(props) {
-  const dispatch = useDispatch();
-  const [dieselDataTable, setDieselDataTable] = useState({})
-  const [viewLocationModal, setviewLocationModal] = useState(false)
-  const [addLocationModal, setAddLocationModal] = useState(false)
   const [addRegionsModal, setAddRegionsModal] = useState(false)
   const [viewRegionsModal, setviewRegionsModal] = useState(false)
   const [editLocationModal, setEditLocationModal] = useState(false)
@@ -79,7 +61,7 @@ function ViewLocations(props) {
 
   const handleBranchLogin = async (branchId) => {
     try {
-      const data = await dispatch(forceLoginBranchAction(branchId));
+      const data = await props.forceLoginBranchAction(branchId);
       const params = new URLSearchParams({
         access: data.token.access,
         refresh: data.token.refresh,
@@ -1108,6 +1090,7 @@ const mapDispatchToProps = {
   addARegion,
   updateARegion,
   deleteARegion,
+  forceLoginBranchAction,
 };
 
 const mapStateToProps = (state) => ({

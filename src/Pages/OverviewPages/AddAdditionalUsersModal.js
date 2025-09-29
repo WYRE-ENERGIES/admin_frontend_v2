@@ -13,10 +13,9 @@ import {
   notification,
 } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
-import { APIService } from '../../config/Api/apiServices';
 import { createAdditionalUsers } from './CreateClient';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 const { Option } = Select;
 
 const USER_ROLES = [
