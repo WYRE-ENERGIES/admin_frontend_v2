@@ -1,29 +1,9 @@
 import { Button, Form, Image, Input, Select, Spin, notification } from "antd";
 import { useEffect, useState } from "react";
-import { connect, useSelector } from "react-redux";
+import { connect } from "react-redux";
 import { addClientUsersData, assignLocation, getClientUsersData, getUserBranchesData } from "../../redux/actions/clientUser/clientUser.action"; 
 import { getLocationsData } from "../../redux/actions/location/location.action";
 import { getAllRoles } from "../../redux/actions/auth/auth.action";
-
-const successNotificationPopUp = (type, formName) => {
-  notification[type]({
-    message: 'Client User Added',
-    description: `Your addition to the ${formName} has been successfully created`,
-  });
-};
-const errorNotificationPopUp = (type, formName) => {
-  notification[type]({
-    message: 'Failed',
-    description: `Your addition to the ${formName} failed, please try again later`,
-  });
-};
-const NotAllowedNotification = () => {
-  notification.error({
-    message: 'Request Error',
-    description: 'NOT ALLOWED',
-    duration: 5
-  })
-}
 
 const SubmitButton = ({ form }) => {
   const [submittable, setSubmittable] = useState(false);

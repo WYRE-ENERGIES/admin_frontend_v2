@@ -1,10 +1,9 @@
-import { Button, DatePicker, Dropdown, Form, Image, Input, Modal, Space, Table, Typography, notification, Spin } from "antd";
+import { Button, DatePicker, Input, Modal, Space, Table, Typography, Spin } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { BsThreeDots } from 'react-icons/bs'
 import { useEffect, useState } from "react";
-import { connect, useSelector } from "react-redux";
-import { APIService } from "../../config/Api/apiServices";
+import { connect } from "react-redux";
 import { getDieselConsumptionData, getDieselData, getDieselProcurementData } from "../../redux/actions/diesel/diesel.action"; 
 import { getDieselCardData } from '../../redux/actions/overview/overview.action';
 import { numberFormatter } from '../../helpers/genericHelpers';
@@ -15,7 +14,6 @@ function DieselOverview(props) {
   const [dieselDataTable, setDieselDataTable] = useState({})
   const [selectedDate,setSelectedDate] = useState([dayjs().startOf('month'),
       dayjs(),])
-  const [dieselProcureDataTable, setDieselProcureDataTable] = useState({})
 
   const { Search } = Input;
   

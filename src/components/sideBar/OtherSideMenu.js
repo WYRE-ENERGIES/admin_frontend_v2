@@ -1,11 +1,8 @@
 import {
-  EnvironmentOutlined,
   UserOutlined,
-  ProjectOutlined,
   MenuOutlined,
   WarningOutlined,
   LoginOutlined,
-  MailOutlined,
   DownloadOutlined,
   SettingOutlined,
     HolderOutlined
