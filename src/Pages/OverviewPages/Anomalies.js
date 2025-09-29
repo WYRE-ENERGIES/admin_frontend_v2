@@ -123,7 +123,7 @@ const Anomalies = () => {
       applySearchFilter(allAnomalies, (searchText || '').trim());
     }, DEBOUNCE_MS);
     return () => clearTimeout(handle);
-  }, [searchText, allAnomalies, applySearchFilter]);
+  }, [searchText, allAnomalies]);
 
   const handleTableChange = (pagination) => {
     const nextPage = pagination.current;
@@ -256,7 +256,7 @@ const Anomalies = () => {
       setSelectedRowKeys([]);
       loadAllAnomalies();
     });
-  }, [deleteByIds, loadAllAnomalies, selectedRowKeys]);
+  }, [deleteByIds, loadAllAnomalies]);
 
   const handleBulkClearFlagsMain = useCallback(async () => {
     const ids = selectedRowKeys;
@@ -264,7 +264,7 @@ const Anomalies = () => {
       setSelectedRowKeys([]);
       loadAllAnomalies();
     });
-  }, [clearFlagsByIds, loadAllAnomalies, selectedRowKeys]);
+  }, [selectedRowKeys]);
 
   const handleRowDelete = useCallback(async (record) => {
     await deleteByIds([record.id], () => {
@@ -297,7 +297,7 @@ const Anomalies = () => {
       reloadContext();
       loadAllAnomalies();
     });
-  }, [deleteByIds, loadAllAnomalies, reloadContext, selectedContextRowKeys]);
+  }, [selectedContextRowKeys]);
 
   const handleBulkClearFlagsContext = useCallback(async () => {
     const ids = selectedContextRowKeys;
@@ -306,7 +306,7 @@ const Anomalies = () => {
       reloadContext();
       loadAllAnomalies();
     });
-  }, [clearFlagsByIds, loadAllAnomalies, reloadContext, selectedContextRowKeys]);
+  }, [reloadContext, selectedContextRowKeys]);
 
   const columns = useMemo(() => [
     {
