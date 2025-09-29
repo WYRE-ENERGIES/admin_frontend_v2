@@ -15,10 +15,11 @@ const DEBOUNCE_MS = 400;
 
 const Anomalies = () => {
   const [loading, setLoading] = useState(false);
-  const [anomalies, setAnomalies] = useState([]);
+  const [allAnomalies, setAllAnomalies] = useState([]); // Store all fetched anomalies
+  const [filteredAnomalies, setFilteredAnomalies] = useState([]); // Store filtered anomalies for display
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(defaultPageSize);
-  const [total, setTotal] = useState(0);
+  const [, setTotal] = useState(0);
   const [selectedRowKeys, setSelectedRowKeys] = useState([]);
   const [searchText, setSearchText] = useState('');
 
@@ -29,41 +30,67 @@ const Anomalies = () => {
   const [contextRows, setContextRows] = useState([]);
   const [selectedContextRowKeys, setSelectedContextRowKeys] = useState([]);
 
-  const loadAnomalies = useCallback(async (nextPage, nextPageSize, query) => {
+  const applySearchFilter = useCallback((data, query) => {
+    if (!query || !query.trim()) {
+      setFilteredAnomalies(data);
+      return;
+    }
+
+    const searchTerm = query.toLowerCase().trim();
+    const filtered = data.filter(anomaly => {
+      // Search across multiple fields
+      const searchableFields = [
+        anomaly.device_name,
+        anomaly.branch_name,
+        anomaly.irregular_reason,
+        anomaly.id?.toString(),
+        anomaly.kwh_import?.toString()
+      ].filter(Boolean);
+
+      return searchableFields.some(field => 
+        field.toLowerCase().includes(searchTerm)
+      );
+    });
+
+    setFilteredAnomalies(filtered);
+  }, []);
+
+  const loadAllAnomalies = useCallback(async () => {
     setLoading(true);
     try
     {
-      const params = { page: nextPage, page_size: nextPageSize };
-      if (query && query.trim())
-      {
-        params.search = query.trim();
-      }
+      // Fetch all anomalies with a large page size to get everything
+      const params = { page: 1, page_size: 10000 };
       const response = await APIService.get(LIST_ENDPOINT, { params });
       const data = response?.data;
       const payload = data?.data || data;
 
-      // Expected shape: { status, data: { readings, total_count, page, page_size, total_pages } }
+      let anomaliesData = [];
+      let totalCount = 0;
+
       if (payload?.readings && Array.isArray(payload.readings))
       {
-        setAnomalies(payload.readings);
-        setTotal(Number(payload.total_count || 0));
+        anomaliesData = payload.readings;
+        totalCount = Number(payload.total_count || 0);
       } else if (Array.isArray(payload))
       {
-        setAnomalies(payload);
-        setTotal(payload.length || 0);
+        anomaliesData = payload;
+        totalCount = payload.length || 0;
       } else if (Array.isArray(payload?.results))
       {
-        setAnomalies(payload.results);
-        setTotal(Number(payload.count || 0));
+        anomaliesData = payload.results;
+        totalCount = Number(payload.count || 0);
       } else if (Array.isArray(payload?.data))
       {
-        setAnomalies(payload.data);
-        setTotal(payload.data.length || 0);
-      } else
-      {
-        setAnomalies([]);
-        setTotal(0);
+        anomaliesData = payload.data;
+        totalCount = payload.data.length || 0;
       }
+
+      setAllAnomalies(anomaliesData);
+      setTotal(totalCount);
+      
+      // Apply current search filter to the newly loaded data
+      applySearchFilter(anomaliesData, searchText);
     } catch (error)
     {
       notification.error({
@@ -74,16 +101,15 @@ const Anomalies = () => {
     {
       setLoading(false);
     }
-  }, []);
+  }, [searchText, applySearchFilter]);
 
   useEffect(() => {
-    loadAnomalies(1, defaultPageSize, '');
+    loadAllAnomalies();
     setPage(1);
     setPageSize(defaultPageSize);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Debounced live search: triggers fetch 400ms after user stops typing
   const isFirstSearchRef = useRef(true);
   useEffect(() => {
     // Skip running on the very first mount since we already load once above
@@ -94,28 +120,27 @@ const Anomalies = () => {
     }
     const handle = setTimeout(() => {
       setPage(1);
-      loadAnomalies(1, pageSize, (searchText || '').trim());
+      applySearchFilter(allAnomalies, (searchText || '').trim());
     }, DEBOUNCE_MS);
     return () => clearTimeout(handle);
-  }, [searchText, pageSize, loadAnomalies]);
+  }, [searchText, allAnomalies, applySearchFilter]);
 
   const handleTableChange = (pagination) => {
     const nextPage = pagination.current;
     const nextSize = pagination.pageSize;
     setPage(nextPage);
     setPageSize(nextSize);
-    loadAnomalies(nextPage, nextSize, searchText);
   };
 
   const onSearch = () => {
     setPage(1);
-    loadAnomalies(1, pageSize, (searchText || '').trim());
+    applySearchFilter(allAnomalies, (searchText || '').trim());
   };
 
   const clearSearch = () => {
     setSearchText('');
     setPage(1);
-    loadAnomalies(1, pageSize, '');
+    applySearchFilter(allAnomalies, '');
   };
 
   const openContextFor = useCallback(async (record) => {
@@ -229,17 +254,17 @@ const Anomalies = () => {
     const ids = selectedRowKeys;
     await deleteByIds(ids, () => {
       setSelectedRowKeys([]);
-      loadAnomalies(page, pageSize, searchText);
+      loadAllAnomalies();
     });
-  }, [deleteByIds, loadAnomalies, page, pageSize, searchText, selectedRowKeys]);
+  }, [deleteByIds, loadAllAnomalies, selectedRowKeys]);
 
   const handleBulkClearFlagsMain = useCallback(async () => {
     const ids = selectedRowKeys;
     await clearFlagsByIds(ids, () => {
       setSelectedRowKeys([]);
-      loadAnomalies(page, pageSize, searchText);
+      loadAllAnomalies();
     });
-  }, [clearFlagsByIds, loadAnomalies, page, pageSize, searchText, selectedRowKeys]);
+  }, [clearFlagsByIds, loadAllAnomalies, selectedRowKeys]);
 
   const handleRowDelete = useCallback(async (record) => {
     await deleteByIds([record.id], () => {
@@ -249,9 +274,9 @@ const Anomalies = () => {
         setContextRows([]);
         setContextTarget(null);
       }
-      loadAnomalies(page, pageSize, searchText);
+      loadAllAnomalies();
     });
-  }, [contextTarget, deleteByIds, loadAnomalies, page, pageSize, searchText]);
+  }, [contextTarget, deleteByIds, loadAllAnomalies]);
 
   const handleRowClearFlags = useCallback(async (record) => {
     await clearFlagsByIds([record.id], () => {
@@ -261,27 +286,27 @@ const Anomalies = () => {
         setContextRows([]);
         setContextTarget(null);
       }
-      loadAnomalies(page, pageSize, searchText);
+      loadAllAnomalies();
     });
-  }, [contextTarget, clearFlagsByIds, loadAnomalies, page, pageSize, searchText]);
+  }, [contextTarget, clearFlagsByIds, loadAllAnomalies]);
 
   const handleBulkDeleteContext = useCallback(async () => {
     const ids = selectedContextRowKeys;
     await deleteByIds(ids, () => {
       setSelectedContextRowKeys([]);
       reloadContext();
-      loadAnomalies(page, pageSize, searchText);
+      loadAllAnomalies();
     });
-  }, [deleteByIds, loadAnomalies, page, pageSize, reloadContext, searchText, selectedContextRowKeys]);
+  }, [deleteByIds, loadAllAnomalies, reloadContext, selectedContextRowKeys]);
 
   const handleBulkClearFlagsContext = useCallback(async () => {
     const ids = selectedContextRowKeys;
     await clearFlagsByIds(ids, () => {
       setSelectedContextRowKeys([]);
       reloadContext();
-      loadAnomalies(page, pageSize, searchText);
+      loadAllAnomalies();
     });
-  }, [clearFlagsByIds, loadAnomalies, page, pageSize, reloadContext, searchText, selectedContextRowKeys]);
+  }, [clearFlagsByIds, loadAllAnomalies, reloadContext, selectedContextRowKeys]);
 
   const columns = useMemo(() => [
     {
@@ -456,7 +481,7 @@ const Anomalies = () => {
                 Delete selected
               </Button>
             </Popconfirm>
-            <Button type="primary" onClick={() => loadAnomalies(page, pageSize, searchText)} loading={loading}>Refresh</Button>
+            <Button type="primary" onClick={() => loadAllAnomalies()} loading={loading}>Refresh</Button>
           </Space>
         </div>
       </div>
@@ -464,13 +489,13 @@ const Anomalies = () => {
       <Table
         rowKey="id"
         loading={loading}
-        dataSource={anomalies}
+        dataSource={filteredAnomalies}
         columns={columns}
         scroll={{ x: 1200 }}
         pagination={{
           current: page,
           pageSize,
-          total,
+          total: filteredAnomalies.length,
           showSizeChanger: true,
           showQuickJumper: true,
           showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
