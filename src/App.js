@@ -66,7 +66,7 @@ function App() {
                   </div>
                   {/* <AppFooter /> */}
                 </div>
-                : decodedUser && decodedUser.client_type === "SUPERADMIN" ?
+                : decodedUser && decodedUser.client_type === "WYRE" ?
                   <div>
                     {/* <AppHeader /> */}
                     <div className="SidemenuAndPagecontent">
