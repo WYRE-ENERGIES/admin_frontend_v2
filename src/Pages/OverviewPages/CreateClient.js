@@ -674,23 +674,18 @@ const CreateClient = () => {
       let errorMessage = 'Failed to create main user. Please check your connection and try again.';
       let fieldErrors = {};
       
-      // Handle specific field errors from API response
+      // Handle specific field errors from API response (simplified to username & email only)
       if (error.response?.data?.errors) {
         fieldErrors = error.response.data.errors;
         
-        // Set form field errors for specific fields
+        // Only surface username and email backend errors to the form
         Object.keys(fieldErrors).forEach(fieldName => {
-          const fieldPath = fieldName === 'email' ? 'mainEmail' : 
-                          fieldName === 'username' ? 'mainUsername' :
-                          fieldName === 'first_name' ? 'mainFirstName' :
-                          fieldName === 'last_name' ? 'mainLastName' :
-                          fieldName === 'phone_number' ? 'mainPhoneNumber' :
-                          fieldName === 'password' ? 'mainPassword' : fieldName;
-          
-          form.setFields([{
-            name: fieldPath,
-            errors: fieldErrors[fieldName]
-          }]);
+          if (fieldName === 'email' || fieldName === 'username') {
+            form.setFields([{
+              name: fieldName === 'email' ? 'mainEmail' : 'mainUsername',
+              errors: Array.isArray(fieldErrors[fieldName]) ? fieldErrors[fieldName] : [fieldErrors[fieldName]]
+            }]);
+          }
         });
         
         // Create a user-friendly error message
@@ -749,66 +744,31 @@ const CreateClient = () => {
       if (error.response?.data?.errors) {
         fieldErrors = error.response.data.errors;
         
-        // Set form field errors for specific fields
+        // Simplified backend error mapping for branches
+        // NOTE: We intentionally only surface backend validation errors for branch email fields
+        // ('email' and 'copy_email'). Mapping every possible field (including nested devices)
+        // made this handler noisy and hard to maintain. Frontend validation already covers
+        // other fields sufficiently. This keeps UX clear and code simpler.
         Object.keys(fieldErrors).forEach(fieldName => {
-          // For branches, errors might be structured differently
-          // Check if it's an array of errors (multiple branches)
           if (Array.isArray(fieldErrors[fieldName])) {
             fieldErrors[fieldName].forEach((branchError, branchIndex) => {
               if (branchError && typeof branchError === 'object') {
-                // Handle per-branch errors
-                Object.keys(branchError).forEach(branchFieldName => {
-                  const fieldPath = branchFieldName === 'name' ? 'name' : 
-                                  branchFieldName === 'email' ? 'email' :
-                                  branchFieldName === 'address' ? 'address' :
-                                  branchFieldName === 'city' ? 'city' :
-                                  branchFieldName === 'region' ? 'region' :
-                                  branchFieldName === 'copy_email' ? 'copyEmail' : branchFieldName;
-                  
-                  form.setFields([{
-                    name: ['branches', branchIndex, fieldPath],
-                    errors: Array.isArray(branchError[branchFieldName]) ? branchError[branchFieldName] : [branchError[branchFieldName]]
-                  }]);
-                  
-                  // Handle device errors within branches
-                  if (branchFieldName === 'devices' && Array.isArray(branchError[branchFieldName])) {
-                    branchError[branchFieldName].forEach((deviceError, deviceIndex) => {
-                      if (deviceError && typeof deviceError === 'object') {
-                        Object.keys(deviceError).forEach(deviceFieldName => {
-                          const deviceFieldPath = deviceFieldName === 'name' ? 'name' : 
-                                                deviceFieldName === 'type' ? 'type' :
-                                                deviceFieldName === 'provider' ? 'provider' :
-                                                deviceFieldName === 'device_id' ? 'deviceId' :
-                                                deviceFieldName === 'is_load' ? 'isLoad' :
-                                                deviceFieldName === 'is_source' ? 'isSource' :
-                                                deviceFieldName === 'gen_size' ? 'genSize' :
-                                                deviceFieldName === 'fuel_type' ? 'fuelType' : deviceFieldName;
-                          
-                          form.setFields([{
-                            name: ['branches', branchIndex, 'devices', deviceIndex, deviceFieldPath],
-                            errors: Array.isArray(deviceError[deviceFieldName]) ? deviceError[deviceFieldName] : [deviceError[deviceFieldName]]
-                          }]);
-                        });
-                      }
-                    });
+                ['email', 'copy_email'].forEach(emailField => {
+                  const errorForField = branchError[emailField];
+                  if (errorForField) {
+                    form.setFields([{
+                      name: ['branches', branchIndex, emailField === 'copy_email' ? 'copyEmail' : 'email'],
+                      errors: Array.isArray(errorForField) ? errorForField : [errorForField]
+                    }]);
                   }
                 });
               }
             });
-          } else {
-            // Handle single field error (might be for the entire batch)
-            const fieldPath = fieldName === 'name' ? 'name' : 
-                            fieldName === 'email' ? 'email' :
-                            fieldName === 'address' ? 'address' :
-                            fieldName === 'city' ? 'city' :
-                            fieldName === 'region' ? 'region' :
-                            fieldName === 'copy_email' ? 'copyEmail' : fieldName;
-            
-            // Apply error to all branches for this field
+          } else if (fieldName === 'email' || fieldName === 'copy_email') {
             const branches = values.branches || [];
             branches.forEach((_, branchIndex) => {
               form.setFields([{
-                name: ['branches', branchIndex, fieldPath],
+                name: ['branches', branchIndex, fieldName === 'copy_email' ? 'copyEmail' : 'email'],
                 errors: Array.isArray(fieldErrors[fieldName]) ? fieldErrors[fieldName] : [fieldErrors[fieldName]]
               }]);
             });
@@ -897,49 +857,31 @@ const CreateClient = () => {
       let errorMessage = 'Failed to create additional users. Please check your connection and try again.';
       let fieldErrors = {};
       
-      // Handle specific field errors from API response
+      // Handle specific field errors from API response (simplified to username & email only)
       if (error.response?.data?.errors) {
         fieldErrors = error.response.data.errors;
         
-        // Set form field errors for specific fields
         Object.keys(fieldErrors).forEach(fieldName => {
-          // For additional users, errors might be structured differently
-          // Check if it's an array of errors (multiple users)
+          // Expect either array-of-user objects, or a batch-level field
           if (Array.isArray(fieldErrors[fieldName])) {
             fieldErrors[fieldName].forEach((userError, userIndex) => {
               if (userError && typeof userError === 'object') {
-                // Handle per-user errors
-                Object.keys(userError).forEach(userFieldName => {
-                  const fieldPath = userFieldName === 'email' ? 'email' : 
-                                  userFieldName === 'username' ? 'username' :
-                                  userFieldName === 'first_name' ? 'firstName' :
-                                  userFieldName === 'last_name' ? 'lastName' :
-                                  userFieldName === 'phone_number' ? 'phoneNumber' :
-                                  userFieldName === 'password' ? 'password' :
-                                  userFieldName === 'roles' ? 'role' : userFieldName;
-                  
-                  form.setFields([{
-                    name: ['additionalUsers', userIndex, fieldPath],
-                    errors: Array.isArray(userError[userFieldName]) ? userError[userFieldName] : [userError[userFieldName]]
-                  }]);
+                ['email', 'username'].forEach(key => {
+                  const err = userError[key];
+                  if (err) {
+                    form.setFields([{
+                      name: ['additionalUsers', userIndex, key],
+                      errors: Array.isArray(err) ? err : [err]
+                    }]);
+                  }
                 });
               }
             });
-          } else {
-            // Handle single field error (might be for the entire batch)
-            const fieldPath = fieldName === 'email' ? 'email' : 
-                            fieldName === 'username' ? 'username' :
-                            fieldName === 'first_name' ? 'firstName' :
-                            fieldName === 'last_name' ? 'lastName' :
-                            fieldName === 'phone_number' ? 'phoneNumber' :
-                            fieldName === 'password' ? 'password' :
-                            fieldName === 'roles' ? 'role' : fieldName;
-            
-            // Apply error to all additional users for this field
+          } else if (fieldName === 'email' || fieldName === 'username') {
             const additionalUsers = values.additionalUsers || [];
             additionalUsers.forEach((_, userIndex) => {
               form.setFields([{
-                name: ['additionalUsers', userIndex, fieldPath],
+                name: ['additionalUsers', userIndex, fieldName],
                 errors: Array.isArray(fieldErrors[fieldName]) ? fieldErrors[fieldName] : [fieldErrors[fieldName]]
               }]);
             });
