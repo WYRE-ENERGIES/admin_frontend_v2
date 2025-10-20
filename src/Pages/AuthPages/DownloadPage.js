@@ -664,6 +664,9 @@ const handleAllDevicesTableChange = (pagination) => {
   const monitoringPct30Min = calculatePostingPercentage(monitorDataState, 30);
   const monitoringPct60Min = calculatePostingPercentage(monitorDataState, 60);
   const monitoringPct24Hr = calculatePostingPercentage(monitorDataState, 24 * 60);
+  const allDevicesPct30Min = calculatePostingPercentage(sortedDataState, 30);
+  const allDevicesPct60Min = calculatePostingPercentage(sortedDataState, 60);
+  const allDevicesPct24Hr = calculatePostingPercentage(sortedDataState, 24 * 60);
 
   return (
     <div className="download-page-container" style={{ padding: "24px" }}>
@@ -815,7 +818,10 @@ const handleAllDevicesTableChange = (pagination) => {
               </Card>
             </Col>
 
-            <Col xs={24}>
+          <Col xs={24}>
+          <h1 style={{fontSize: 24, color: "#333" }}>
+            Monitoring Table
+          </h1>
               <Row gutter={[24, 24]} >
                 <Col xs={24} md={8}>
                   <Card style={cardStyle}>
@@ -836,7 +842,7 @@ const handleAllDevicesTableChange = (pagination) => {
                   </Card>
                 </Col>
               </Row>
-              <Card title="Monitoring Table" style={cardStyle}>
+              <Card style={cardStyle}>
                 <Table
                   dataSource={monitorDataState}
                   columns={monitorColumn}
@@ -848,7 +854,30 @@ const handleAllDevicesTableChange = (pagination) => {
             </Col>
 
             <Col xs={24}>
-              <Card title="All Devices Table" style={cardStyle}>
+          <h1 style={{fontSize: 24, color: "#333" }}>
+            All Devices Table
+          </h1>
+              <Row gutter={[24, 24]}>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 30 minutes</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct30Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 60 minutes</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct60Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 24 hours</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct24Hr}%</div>
+                  </Card>
+                </Col>
+              </Row>
+              <Card style={cardStyle}>
                 <Table
                   dataSource={sortedDataState}
                   columns={columnData}
