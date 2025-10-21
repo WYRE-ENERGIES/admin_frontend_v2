@@ -14,13 +14,16 @@ import {
   InputNumber,
   Steps,
   message,
-  Modal,
-  Result
+  TimePicker
 } from 'antd';
-import { MinusCircleOutlined, PlusOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { APIService, instanceMultipart } from '../../config/Api/apiServices';
 import { notification } from 'antd';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat);
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -49,8 +52,20 @@ const USER_ROLES = [
   { id: 5, name: 'VIEWER' },
 ];
 
-const initialDeviceForm = { name: '', type: null, provider: null, deviceId: '', isLoad: false, isSource: false, genSize: null, fuelType: null };
-const initialBranchForm = { name: '', address: '', city: '', email: '', region: null, copyEmail: '', devices: [initialDeviceForm] };
+const getInitialDeviceForm = () => ({ 
+  name: '', 
+  type: null, 
+  provider: null, 
+  deviceId: '', 
+  isLoad: false, 
+  isSource: false, 
+  genSize: null, 
+  fuelType: null,
+  // Defaults to full day window: 00:00 - 23:59
+  operationalStartTime: dayjs('00:00', 'HH:mm'),
+  operationalEndTime: dayjs('23:59', 'HH:mm')
+});
+const initialBranchForm = { name: '', address: '', city: '', email: '', region: null, copyEmail: '', devices: [getInitialDeviceForm()] };
 const initialUserForm = { username: '', firstName: '', lastName: '', email: '', phoneNumber: '', password: '', role: null };
 const initialEmailForm = { email: '' };
 const initialRegionForm = { region: '' };
@@ -90,9 +105,10 @@ const createClientWithRegions = async (clientData) => {
   }
   
 
-  for (let [key, value] of formData.entries()) {
-
-  }
+  // Debug: Log form data entries
+  // for (let [key, value] of formData.entries()) {
+  //   console.log(key, value);
+  // }
   
   return await instanceMultipart.post('/api/v1/accounts/create-client-with-regions/', formData);
 };
@@ -128,6 +144,8 @@ export const createBranches = async (clientId, branchesData) => {
       ...(device.type === 1 ? {
         gen_size: device.genSize,
         fuel_type: device.fuelType,
+        operating_hours_start: device.operationalStartTime,
+        operating_hours_end: device.operationalEndTime,
       } : {})
     })) || []
   }));
@@ -232,6 +250,80 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
                         </Select>
                     </Form.Item>
                 </Col>
+                <Col xs={24} sm={12} md={6}>
+                    <Form.Item
+                        {...deviceRestField}
+                        label="Operational Start Time"
+                        name={[deviceName, 'operationalStartTime']}
+                        rules={[
+                            { 
+                                required: true, 
+                                message: '${label} is required for Generator!' 
+                            },
+                            {
+                                validator: (_, value) => {
+                                    if (!value) {
+                                        return Promise.resolve();
+                                    }
+                                    if (value && typeof value.isValid === 'function' && !value.isValid()) {
+                                        return Promise.reject(new Error('Please select a valid start time'));
+                                    }
+                                    const end = form.getFieldValue(['branches', branchName, 'devices', deviceName, 'operationalEndTime']);
+                                    if (end && typeof end.isValid === 'function' && end.isValid()) {
+                                        if (value.isAfter(end)) {
+                                            return Promise.reject(new Error('Start time cannot be after end time'));
+                                        }
+                                    }
+                                    return Promise.resolve();
+                                }
+                            }
+                        ]}
+                    >
+                        <TimePicker 
+                            style={{ width: '100%' }} 
+                            format="HH:mm" 
+                        placeholder="Select start time"
+                        defaultValue={dayjs('00:00', 'HH:mm')}
+                        />
+                    </Form.Item>
+                </Col>
+                <Col xs={24} sm={12} md={6}>
+                    <Form.Item
+                        {...deviceRestField}
+                        label="Operational End Time"
+                        name={[deviceName, 'operationalEndTime']}
+                        rules={[
+                            { 
+                                required: true, 
+                                message: '${label} is required for Generator!' 
+                            },
+                            {
+                                validator: (_, value) => {
+                                    if (!value) {
+                                        return Promise.resolve();
+                                    }
+                                    if (value && typeof value.isValid === 'function' && !value.isValid()) {
+                                        return Promise.reject(new Error('Please select a valid end time'));
+                                    }
+                                    const start = form.getFieldValue(['branches', branchName, 'devices', deviceName, 'operationalStartTime']);
+                                    if (start && typeof start.isValid === 'function' && start.isValid()) {
+                                        if (value.isBefore(start)) {
+                                            return Promise.reject(new Error('End time cannot be before start time'));
+                                        }
+                                    }
+                                    return Promise.resolve();
+                                }
+                            }
+                        ]}
+                    >
+                        <TimePicker 
+                            style={{ width: '100%' }} 
+                            format="HH:mm" 
+                        placeholder="Select end time"
+                        defaultValue={dayjs('23:59', 'HH:mm')}
+                        />
+                    </Form.Item>
+                </Col>
             </>
         )}
         <Col xs={12} sm={6} md={3}>
@@ -264,8 +356,6 @@ const CreateClient = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [successModalVisible, setSuccessModalVisible] = useState(false);
-  const [createdClientData, setCreatedClientData] = useState(null);
   const [clientId, setClientId] = useState(null);
   const [clientRegions, setClientRegions] = useState([]);
   const [stepData, setStepData] = useState({});
@@ -286,9 +376,10 @@ const CreateClient = () => {
     if (savedData) {
       try {
         loadedFormValues = JSON.parse(savedData);
-
       } catch (error) {
+        console.error('Error parsing saved form data:', error);
         localStorage.removeItem(LOCAL_STORAGE_KEY);
+        message.warning('Corrupted form data detected and cleared. Please start fresh.');
       }
     }
     
@@ -336,10 +427,30 @@ const CreateClient = () => {
     
     merged.branches.forEach(branch => {
       if (!Array.isArray(branch.devices) || branch.devices.length === 0) {
-        branch.devices = [initialDeviceForm];
+        branch.devices = [getInitialDeviceForm()];
+      } else {
+        // Ensure all existing devices have proper time field initialization
+        branch.devices.forEach(device => {
+          // Ensure valid Dayjs instances and apply defaults if missing
+          if (!device.operationalStartTime || typeof device.operationalStartTime.isValid !== 'function' || !device.operationalStartTime.isValid()) {
+            device.operationalStartTime = dayjs('00:00', 'HH:mm');
+          }
+          if (!device.operationalEndTime || typeof device.operationalEndTime.isValid !== 'function' || !device.operationalEndTime.isValid()) {
+            device.operationalEndTime = dayjs('23:59', 'HH:mm');
+          }
+        });
       }
     });
     
+    // Prefill time fields on initial load for all devices
+    merged.branches.forEach(branch => {
+      branch.devices = (branch.devices || []).map(device => ({
+        ...device,
+        operationalStartTime: device.operationalStartTime || dayjs('00:00', 'HH:mm'),
+        operationalEndTime: device.operationalEndTime || dayjs('23:59', 'HH:mm')
+      }));
+    });
+
     form.setFieldsValue(merged);
     setStepData(loadedProgress);
     setInitialDataLoaded(true);
@@ -487,8 +598,32 @@ const CreateClient = () => {
       console.error('Error data:', error.response?.data);
       
       let errorMessage = 'Failed to create client. Please check your connection and try again.';
+      let fieldErrors = {};
       
-      if (error.response?.data?.message) {
+      // Handle specific field errors from API response
+      if (error.response?.data?.errors) {
+        fieldErrors = error.response.data.errors;
+        
+        // Set form field errors for specific fields
+        Object.keys(fieldErrors).forEach(fieldName => {
+          const fieldPath = fieldName === 'name' ? 'clientName' : 
+                          fieldName === 'client_type' ? 'clientType' :
+                          fieldName === 'phone_number' ? 'clientPhoneNumber' :
+                          fieldName === 'email' ? 'clientEmail' :
+                          fieldName === 'address' ? 'clientAddress' : fieldName;
+          
+          form.setFields([{
+            name: fieldPath,
+            errors: fieldErrors[fieldName]
+          }]);
+        });
+        
+        // Create a user-friendly error message
+        const firstError = Object.values(fieldErrors)[0]?.[0];
+        if (firstError) {
+          errorMessage = firstError;
+        }
+      } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.data?.detail) {
         errorMessage = error.response.data.detail;
@@ -504,7 +639,7 @@ const CreateClient = () => {
         message: 'Error Creating Client',
         description: errorMessage
       });
-      return { success: false, error: errorMessage };
+      return { success: false, error: errorMessage, fieldErrors };
     } finally {
       setIsSubmitting(false);
       message.destroy('createClient');
@@ -533,9 +668,32 @@ const CreateClient = () => {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Main user creation error:', error);
-      let errorMessage = 'Failed to create main user. Please check your connection and try again.';
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
       
-      if (error.response?.data?.message) {
+      let errorMessage = 'Failed to create main user. Please check your connection and try again.';
+      let fieldErrors = {};
+      
+      // Handle specific field errors from API response (simplified to username & email only)
+      if (error.response?.data?.errors) {
+        fieldErrors = error.response.data.errors;
+        
+        // Only surface username and email backend errors to the form
+        Object.keys(fieldErrors).forEach(fieldName => {
+          if (fieldName === 'email' || fieldName === 'username') {
+            form.setFields([{
+              name: fieldName === 'email' ? 'mainEmail' : 'mainUsername',
+              errors: Array.isArray(fieldErrors[fieldName]) ? fieldErrors[fieldName] : [fieldErrors[fieldName]]
+            }]);
+          }
+        });
+        
+        // Create a user-friendly error message
+        const firstError = Object.values(fieldErrors)[0]?.[0];
+        if (firstError) {
+          errorMessage = firstError;
+        }
+      } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.data?.detail) {
         errorMessage = error.response.data.detail;
@@ -547,7 +705,7 @@ const CreateClient = () => {
         message: 'Error Creating Main User',
         description: errorMessage
       });
-      return { success: false, error: errorMessage };
+      return { success: false, error: errorMessage, fieldErrors };
     } finally {
       setIsSubmitting(false);
       message.destroy('createMainUser');
@@ -576,9 +734,64 @@ const CreateClient = () => {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Branches creation error:', error);
-      let errorMessage = 'Failed to create branches. Please check your connection and try again.';
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
       
-      if (error.response?.data?.message) {
+      let errorMessage = 'Failed to create branches. Please check your connection and try again.';
+      let fieldErrors = {};
+      
+      // Handle specific field errors from API response
+      if (error.response?.data?.errors) {
+        fieldErrors = error.response.data.errors;
+        
+        // Simplified backend error mapping for branches
+        // NOTE: We intentionally only surface backend validation errors for branch email fields
+        // ('email' and 'copy_email'). Mapping every possible field (including nested devices)
+        // made this handler noisy and hard to maintain. Frontend validation already covers
+        // other fields sufficiently. This keeps UX clear and code simpler.
+        Object.keys(fieldErrors).forEach(fieldName => {
+          if (Array.isArray(fieldErrors[fieldName])) {
+            fieldErrors[fieldName].forEach((branchError, branchIndex) => {
+              if (branchError && typeof branchError === 'object') {
+                ['email', 'copy_email'].forEach(emailField => {
+                  const errorForField = branchError[emailField];
+                  if (errorForField) {
+                    form.setFields([{
+                      name: ['branches', branchIndex, emailField === 'copy_email' ? 'copyEmail' : 'email'],
+                      errors: Array.isArray(errorForField) ? errorForField : [errorForField]
+                    }]);
+                  }
+                });
+              }
+            });
+          } else if (fieldName === 'email' || fieldName === 'copy_email') {
+            const branches = values.branches || [];
+            branches.forEach((_, branchIndex) => {
+              form.setFields([{
+                name: ['branches', branchIndex, fieldName === 'copy_email' ? 'copyEmail' : 'email'],
+                errors: Array.isArray(fieldErrors[fieldName]) ? fieldErrors[fieldName] : [fieldErrors[fieldName]]
+              }]);
+            });
+          }
+        });
+        
+        // Create a user-friendly error message
+        const firstError = Object.values(fieldErrors)[0];
+        if (Array.isArray(firstError) && firstError[0]) {
+          if (typeof firstError[0] === 'object') {
+            const firstBranchError = Object.values(firstError[0])[0];
+            if (Array.isArray(firstBranchError)) {
+              errorMessage = firstBranchError[0];
+            } else {
+              errorMessage = firstBranchError;
+            }
+          } else {
+            errorMessage = firstError[0];
+          }
+        } else if (typeof firstError === 'string') {
+          errorMessage = firstError;
+        }
+      } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.data?.detail) {
         errorMessage = error.response.data.detail;
@@ -590,7 +803,7 @@ const CreateClient = () => {
         message: 'Error Creating Branches',
         description: errorMessage
       });
-      return { success: false, error: errorMessage };
+      return { success: false, error: errorMessage, fieldErrors };
     } finally {
       setIsSubmitting(false);
       message.destroy('createBranches');
@@ -638,9 +851,60 @@ const CreateClient = () => {
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Additional users creation error:', error);
-      let errorMessage = 'Failed to create additional users. Please check your connection and try again.';
+      console.error('Error response:', error.response);
+      console.error('Error data:', error.response?.data);
       
-      if (error.response?.data?.message) {
+      let errorMessage = 'Failed to create additional users. Please check your connection and try again.';
+      let fieldErrors = {};
+      
+      // Handle specific field errors from API response (simplified to username & email only)
+      if (error.response?.data?.errors) {
+        fieldErrors = error.response.data.errors;
+        
+        Object.keys(fieldErrors).forEach(fieldName => {
+          // Expect either array-of-user objects, or a batch-level field
+          if (Array.isArray(fieldErrors[fieldName])) {
+            fieldErrors[fieldName].forEach((userError, userIndex) => {
+              if (userError && typeof userError === 'object') {
+                ['email', 'username'].forEach(key => {
+                  const err = userError[key];
+                  if (err) {
+                    form.setFields([{
+                      name: ['additionalUsers', userIndex, key],
+                      errors: Array.isArray(err) ? err : [err]
+                    }]);
+                  }
+                });
+              }
+            });
+          } else if (fieldName === 'email' || fieldName === 'username') {
+            const additionalUsers = values.additionalUsers || [];
+            additionalUsers.forEach((_, userIndex) => {
+              form.setFields([{
+                name: ['additionalUsers', userIndex, fieldName],
+                errors: Array.isArray(fieldErrors[fieldName]) ? fieldErrors[fieldName] : [fieldErrors[fieldName]]
+              }]);
+            });
+          }
+        });
+        
+        // Create a user-friendly error message
+        const firstError = Object.values(fieldErrors)[0];
+        if (Array.isArray(firstError) && firstError[0]) {
+          if (typeof firstError[0] === 'object') {
+            const firstUserError = Object.values(firstError[0])[0];
+            if (Array.isArray(firstUserError)) {
+              errorMessage = firstUserError[0];
+            } else {
+              errorMessage = firstUserError;
+            }
+          } else {
+            errorMessage = firstError[0];
+          }
+        } else if (typeof firstError === 'string') {
+          errorMessage = firstError;
+        }
+      } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.data?.detail) {
         errorMessage = error.response.data.detail;
@@ -652,7 +916,7 @@ const CreateClient = () => {
         message: 'Error Creating Additional Users',
         description: errorMessage
       });
-      return { success: false, error: errorMessage };
+      return { success: false, error: errorMessage, fieldErrors };
     } finally {
       setIsSubmitting(false);
       message.destroy('createAdditionalUsers');
@@ -1036,7 +1300,7 @@ const CreateClient = () => {
                             </Col> 
                           </Row>
                         ))} 
-                        <Button type="dashed" onClick={() => addDevice(initialDeviceForm)} block icon={<PlusOutlined />} style={{marginTop: '10px'}}>
+                        <Button type="dashed" onClick={() => addDevice(getInitialDeviceForm())} block icon={<PlusOutlined />} style={{marginTop: '10px'}}>
                           Add Device
                         </Button> 
                       </div>
@@ -1140,6 +1404,45 @@ const CreateClient = () => {
     message.success('Progress cleared. Starting fresh.');
   };
 
+  const clearCorruptedData = () => {
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
+      localStorage.removeItem(CLIENT_PROGRESS_KEY);
+      localStorage.removeItem(CLIENT_ID_KEY);
+      localStorage.removeItem(CLIENT_STEP_KEY);
+      
+      const initialFormData = {
+        clientName: '',
+        clientType: null,
+        clientPhoneNumber: '',
+        clientEmail: '',
+        clientAddress: '',
+        regions: [],
+        additionalEmails: [],
+        mainUsername: '',
+        mainFirstName: '',
+        mainLastName: '',
+        mainEmail: '',
+        mainPhoneNumber: '',
+        mainPassword: '',
+        branches: [initialBranchForm],
+        additionalUsers: [],
+      };
+      
+      form.setFieldsValue(initialFormData);
+      setCurrentStep(0);
+      setClientId(null);
+      setStepData({});
+      setLogoFile(null);
+      setClientRegions([]);
+      
+      message.success('Corrupted data cleared. Form reset to initial state.');
+    } catch (error) {
+      console.error('Error clearing corrupted data:', error);
+      message.error('Failed to clear corrupted data. Please refresh the page.');
+    }
+  };
+
   // Render null until initial data is loaded to prevent flicker/errors
   if (!initialDataLoaded) {
     return null;
@@ -1149,15 +1452,23 @@ const CreateClient = () => {
     <div style={{ margin: '30px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
         <Title level={2}>Create New Client</Title>
-        {clientId && (
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
           <Button 
             type="default" 
-            onClick={clearAllProgress}
+            onClick={clearCorruptedData}
             style={{ marginLeft: 'auto' }}
           >
-            Start Over
+            Clear Corrupted Data
           </Button>
-        )}
+          {clientId && (
+            <Button 
+              type="default" 
+              onClick={clearAllProgress}
+            >
+              Start Over
+            </Button>
+          )}
+        </div>
       </div>
       <Form
         form={form}
