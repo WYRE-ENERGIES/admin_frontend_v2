@@ -1,10 +1,5 @@
 import { Routes, Route } from "react-router-dom";
 import LogOut from "../../Pages/OverviewPages/LogOut";
-import ClientOverview from "../../Pages/OverviewPages/ClientOverview";
-import ForceLoginHandler from "../../Pages/AuthPages/ForceLoginHandler";
-import ForceLoginAdminHandler from "../../Pages/AuthPages/ForceLoginAdminHandler";
-import CreateClient from "../../Pages/OverviewPages/CreateClient";
-import ClientDetails from "../../Pages/OverviewPages/ClientDetails";
 import DownloadPage from "../../Pages/AuthPages/DownloadPage";
 import Settings from "../../Pages/OverviewPages/Settings";
 import SystemConstants from "../../Pages/OverviewPages/SystemContants";
@@ -24,9 +19,6 @@ function OperatorsRoute() {
           <Route path="/log-out" element={<LogOut />}></Route>
         </Routes>
       </div>
-      {/* <Routes>
-        <Route path="/log-out" element={<AuthRoute />}></Route>
-    </Routes> */}
     </>
   );
 }
