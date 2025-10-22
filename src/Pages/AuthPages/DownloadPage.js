@@ -70,6 +70,18 @@ function DownloadPage(props) {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
+  const [monitorPagination, setMonitorPagination] = useState({
+  current: 1,
+  pageSize: 10,
+  showSizeChanger: true,
+  pageSizeOptions: ['10', '20', '50', '100'],
+});
+const [allDevicesPagination, setAllDevicesPagination] = useState({
+  current: 1,
+  pageSize: 10,
+  showSizeChanger: true,
+  pageSizeOptions: ['10', '20', '50', '100'],
+});
 
   const { RangePicker } = DatePicker;
 
@@ -127,6 +139,22 @@ function DownloadPage(props) {
     clearFilters();
     setSearchText("");
   };
+
+  const handleMonitorTableChange = (pagination) => {
+  setMonitorPagination((prev) => ({
+    ...prev,
+    current: pagination.current,
+    pageSize: pagination.pageSize,
+  }));
+};
+
+const handleAllDevicesTableChange = (pagination) => {
+  setAllDevicesPagination((prev) => ({
+    ...prev,
+    current: pagination.current,
+    pageSize: pagination.pageSize,
+  }));
+};
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -623,6 +651,23 @@ function DownloadPage(props) {
     return (window.location.href = `${EnvData.REACT_APP_API_URL}${downloadUrl}`);
   };
 
+  // Monitoring overview percentages (based on Monitoring Table data)
+  const calculatePostingPercentage = (devices, minutes) => {
+    if (!devices || devices.length === 0) return 0;
+    const devicesWithLastPost = devices.filter((device) => !!device.last_posted);
+    if (devicesWithLastPost.length === 0) return 0;
+    const cutoffTime = moment().subtract(minutes, 'minutes');
+    const devicesWithinWindow = devicesWithLastPost.filter((device) => moment(device.last_posted).isAfter(cutoffTime));
+    return Math.round((devicesWithinWindow.length / devicesWithLastPost.length) * 100);
+  };
+
+  const monitoringPct30Min = calculatePostingPercentage(monitorDataState, 30);
+  const monitoringPct60Min = calculatePostingPercentage(monitorDataState, 60);
+  const monitoringPct24Hr = calculatePostingPercentage(monitorDataState, 24 * 60);
+  const allDevicesPct30Min = calculatePostingPercentage(sortedDataState, 30);
+  const allDevicesPct60Min = calculatePostingPercentage(sortedDataState, 60);
+  const allDevicesPct24Hr = calculatePostingPercentage(sortedDataState, 24 * 60);
+
   return (
     <div className="download-page-container" style={{ padding: "24px" }}>
       <Spin spinning={props.auth.allDevicesfetchLoading || props.auth.fetchDeviceReadingsLoading}>
@@ -773,24 +818,72 @@ function DownloadPage(props) {
               </Card>
             </Col>
 
-            <Col xs={24}>
-              <Card title="Monitoring Table" style={cardStyle}>
+          <Col xs={24}>
+          <h1 style={{fontSize: 24, color: "#333" }}>
+            Monitoring Table
+          </h1>
+              <Row gutter={[24, 24]} >
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Posted within last 30 minutes</Title>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{monitoringPct30Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Posted within last 60 minutes</Title>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{monitoringPct60Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Posted within last 24 hours</Title>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{monitoringPct24Hr}%</div>
+                  </Card>
+                </Col>
+              </Row>
+              <Card style={cardStyle}>
                 <Table
                   dataSource={monitorDataState}
                   columns={monitorColumn}
                   scroll={{ x: true }}
-                  pagination={{ pageSize: 10 }}
+                pagination={monitorPagination}
+                onChange={handleMonitorTableChange}
                 />
               </Card>
             </Col>
 
             <Col xs={24}>
-              <Card title="All Devices Table" style={cardStyle}>
+          <h1 style={{fontSize: 24, color: "#333" }}>
+            All Devices Table
+          </h1>
+              <Row gutter={[24, 24]}>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 30 minutes</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct30Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 60 minutes</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct60Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 24 hours</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct24Hr}%</div>
+                  </Card>
+                </Col>
+              </Row>
+              <Card style={cardStyle}>
                 <Table
                   dataSource={sortedDataState}
                   columns={columnData}
-                  scroll={{ x: true }}
-                  pagination={{ pageSize: 10 }}
+                scroll={{ x: true }}
+                pagination={allDevicesPagination}
+                onChange={handleAllDevicesTableChange}
                 />
               </Card>
             </Col>
