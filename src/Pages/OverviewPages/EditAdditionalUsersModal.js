@@ -254,10 +254,12 @@ const EditAdditionalUsersModal = ({ visible, onCancel, users, clientId, onUserUp
             rules={[{ required: true, message: 'Please select a role' }]}
           >
             <Select placeholder="Select role">
-              {roles.map(role => (
-                 role.name !== "SUPERADMIN" && role.name !== "CLIENT_ADMIN" &&
-                    <Option key={role.id} value={role.id}>{role.name}</Option>
-              ))}
+              {roles
+                .filter(role => role.name !== "SUPERADMIN" && role.name !== "CLIENT_ADMIN")
+                .map(role => (
+                  <Option key={role.id} value={role.id}>{role.name}</Option>
+                ))
+              }
             </Select>
           </Form.Item>
         </Form>

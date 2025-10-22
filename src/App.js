@@ -12,6 +12,8 @@ import BulkmonitoringPageView from './components/pageContent/PageViews/Bulkmonit
 import { ConfigProvider } from 'antd';
 import OtherSideMenu from "./components/sideBar/OtherSideMenu";
 import OtherPageView from "./components/pageContent/PageViews/OtherPageView";
+import OperatorsSideMenu from "./components/sideBar/OperatorsSideMenu";
+import OperatorsPageView from "./components/pageContent/PageViews/OperatorsPageVeiw";
 
 function App() {
   const decodedUser = authHelper()
@@ -31,60 +33,73 @@ function App() {
         },
       }}
     >
-    <div className="App">
-      <BrowserRouter>
-      {
-        decodedUser && decodedUser.client_type === "STANDARD" ?
-        <div>
-          {/* <AppHeader /> */}
-          <div className="SidemenuAndPagecontent">
-            <SideMenu
-              trigger={null}
-              collapsible
-              collapsed={collapsed}
-              setCollapsed={setCollapsed}
-              onBreakpoint={onBreakpoint}
-            />
-            <PageView />
-          </div>
-          {/* <AppFooter /> */}
-        </div> :
-        decodedUser && decodedUser.client_type === "BULK_MONITORING" ?
-        <div>
-          {/* <AppHeader /> */}
-          <div className="SidemenuAndPagecontent">
-            <BulkSideMenu
-              trigger={null}
-              collapsible
-              collapsed={collapsed}
-              setCollapsed={setCollapsed}
-              onBreakpoint={onBreakpoint}
-            />
-            <BulkmonitoringPageView />
-          </div>
+      <div className="App">
+        <BrowserRouter>
+          {
+            decodedUser && decodedUser.client_type === "STANDARD" ?
+              <div>
+                {/* <AppHeader /> */}
+                <div className="SidemenuAndPagecontent">
+                  <SideMenu
+                    trigger={null}
+                    collapsible
+                    collapsed={collapsed}
+                    setCollapsed={setCollapsed}
+                    onBreakpoint={onBreakpoint}
+                  />
+                  <PageView />
+                </div>
+                {/* <AppFooter /> */}
+              </div> :
+              decodedUser && decodedUser.client_type === "BULK_MONITORING" ?
+                <div>
+                  {/* <AppHeader /> */}
+                  <div className="SidemenuAndPagecontent">
+                    <BulkSideMenu
+                      trigger={null}
+                      collapsible
+                      collapsed={collapsed}
+                      setCollapsed={setCollapsed}
+                      onBreakpoint={onBreakpoint}
+                    />
+                    <BulkmonitoringPageView />
+                  </div>
                   {/* <AppFooter /> */}
                 </div>
                 : decodedUser && decodedUser.client_type === "WYRE" ?
-              <div>
-          {/* <AppHeader /> */}
-          <div className="SidemenuAndPagecontent">
-            <OtherSideMenu
-              trigger={null}
-              collapsible
-              collapsed={collapsed}
-              setCollapsed={setCollapsed}
-              onBreakpoint={onBreakpoint}
-            />
-            <OtherPageView />
-          </div>
-          {/* <AppFooter /> */}
-                </div>
-          :
-        <AuthRoute />
-      }
-      </BrowserRouter>
-    </div>
-      </ConfigProvider>
+                  <div>
+                    {/* <AppHeader /> */}
+                    <div className="SidemenuAndPagecontent">
+                      <OtherSideMenu
+                        trigger={null}
+                        collapsible
+                        collapsed={collapsed}
+                        setCollapsed={setCollapsed}
+                        onBreakpoint={onBreakpoint}
+                      />
+                      <OtherPageView />
+                    </div>
+                    {/* <AppFooter /> */}
+                  </div>
+                  : decodedUser && decodedUser.client_type === "WYRE" && decodedUser.role_text === "OPERATOR" ?
+                    <div>
+                      <div className="SidemenuAndPagecontent">
+                        <OperatorsSideMenu
+                          trigger={null}
+                          collapsible
+                          collapsed={collapsed}
+                          setCollapsed={setCollapsed}
+                          onBreakpoint={onBreakpoint}
+                        />
+                        <OperatorsPageView />
+                      </div>
+                    </div>
+                    :
+                    <AuthRoute />
+          }
+        </BrowserRouter>
+      </div>
+    </ConfigProvider>
   );
 }
 
