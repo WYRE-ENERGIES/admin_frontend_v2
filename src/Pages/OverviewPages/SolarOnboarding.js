@@ -302,7 +302,7 @@ const SolarOnboarding = () => {
             onClick={handleBack}
             style={{ padding: 0, height: 'auto' }}
           />
-          <Title level={2} style={{ margin: 0 }}>
+          <Title level={3} style={{ margin: 0 }}>
             {showStationDetails ? 'Solar Station Details' : 'Solar Onboarding'}
           </Title>
         </div>
