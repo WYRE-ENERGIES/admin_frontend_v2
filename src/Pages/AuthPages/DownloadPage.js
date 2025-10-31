@@ -52,9 +52,6 @@ const cardStyle = {
   borderRadius: "8px",
 };
 
-// Hardcoded password for device readings downloads
-const DEVICE_DOWNLOAD_PASSWORD = "12345678";
-
 function DownloadPage(props) {
   const [form] = Form.useForm();
   const [formTwo] = Form.useForm();
@@ -383,7 +380,7 @@ const handleAllDevicesTableChange = (pagination) => {
                 );
 
                 if (request.fulfilled) {
-                  props.getDownloadAllDevices(DEVICE_DOWNLOAD_PASSWORD);
+                  props.getDownloadAllDevices(pPassword);
                   return notification.info({
                     message: "Successful",
                     description: request.message,
@@ -474,7 +471,7 @@ const handleAllDevicesTableChange = (pagination) => {
                 );
 
                 if (request.fulfilled) {
-                  props.getDownloadAllDevices(DEVICE_DOWNLOAD_PASSWORD);
+                  props.getDownloadAllDevices(pPassword);
                   return notification.info({
                     message: "Successful",
                     description: request.message,
@@ -588,7 +585,6 @@ const handleAllDevicesTableChange = (pagination) => {
   const onSelectFormSubmit = async (values) => {
     const { dateRange } = values;
     const request = await props.getDownloadDeviceReadings(
-      DEVICE_DOWNLOAD_PASSWORD,
       deviceId,
       dateRange
     );
@@ -640,7 +636,7 @@ const handleAllDevicesTableChange = (pagination) => {
 
   const onSelectAggregateFormSubmit = async (values) => {
     const { dateRange } = values;
-    const downloadUrl = `/api/v1/get_aggregated_device_readings/${DEVICE_DOWNLOAD_PASSWORD}/${deviceId}/${
+    const downloadUrl = `/api/v1/get_aggregated_device_readings/${deviceId}/$${
       moment(dateRange[0]).format("DD-MM-YYYY HH:mm") +
       "/" +
       moment(dateRange[1]).format("DD-MM-YYYY HH:mm")
@@ -657,7 +653,7 @@ const handleAllDevicesTableChange = (pagination) => {
   
   const onOperatingTimeSubmit = async (values) => {
     const { deviceId, dateRange, timeRange } = values;
-    const downloadUrl = `/api/v1/get_timed_device_readings/${DEVICE_DOWNLOAD_PASSWORD}/${deviceId}/${moment(dateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(dateRange[1]).format('DD-MM-YYYY HH:mm')}/${moment(timeRange[0]).format('HH') + '/' + moment(timeRange[1]).format('HH')}`;
+    const downloadUrl = `/api/v1/get_timed_device_readings/${deviceId}/${moment(dateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(dateRange[1]).format('DD-MM-YYYY HH:mm')}/${moment(timeRange[0]).format('HH') + '/' + moment(timeRange[1]).format('HH')}`;
 
     form.resetFields();
 
