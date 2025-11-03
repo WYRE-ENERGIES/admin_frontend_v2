@@ -56,7 +56,7 @@ const ClientOverview = () => {
     navigate(`/client/${clientId}`);
   };
   const handleCreateSolar = (clientId) => {
-    navigate(`/create-solar/${clientId}`);
+    navigate('/solar-onboarding');
   };
 
   const handleSuspendClient = async (clientId, isActive) => {

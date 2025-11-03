@@ -24,7 +24,7 @@ function OtherRoute() {
           <Route path="/create-client" element={<CreateClient />}></Route>
           <Route path="/system-constants" element={<SystemConstants />}></Route>
           <Route path="/client/:clientId" element={<ClientDetails />} />
-          <Route path="/create-solar/:clientId" element={<SolarOnboarding />} />
+          <Route path="/solar-onboarding" element={<SolarOnboarding />} />
           <Route path="/settings" element={<Settings />}></Route>
           <Route path="/anomalies" element={<Anomalies />}></Route>
           <Route path="/log-out" element={<LogOut />}></Route>

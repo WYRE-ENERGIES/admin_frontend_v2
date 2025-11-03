@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Form,
   Input,
@@ -10,207 +10,171 @@ import {
   Col,
   notification,
   Typography,
+  Table,
+  Space,
+  InputNumber,
+  Switch,
+  Modal,
 } from 'antd';
-import { ArrowLeftOutlined, SaveOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, SaveOutlined, EditOutlined, PlusOutlined, BulbOutlined } from '@ant-design/icons';
 import { APIService } from '../../config/Api/apiServices';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+const DEVICE_TYPES = ['BATTERY', 'INVERTER', 'SOLAR_PANEL', 'CHARGE_CONTROLLER', 'OTHER'];
+const DEVICE_STATUS = ['online', 'offline', 'maintenance', 'error'];
+
 const SolarOnboarding = () => {
-  const { clientId } = useParams();
   const navigate = useNavigate();
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const [saving, setSaving] = useState(false);
-  const [showStationDetails, setShowStationDetails] = useState(false);
-  const [stationData, setStationData] = useState(null);
-  const [branches, setBranches] = useState([]);
-  const [branchesLoading, setBranchesLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [showDeviceDetails, setShowDeviceDetails] = useState(false);
+  const [deviceData, setDeviceData] = useState(null);
+  const [editingDevice, setEditingDevice] = useState(null);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+  const [isToggleModalVisible, setIsToggleModalVisible] = useState(false);
+  const [togglingDevice, setTogglingDevice] = useState(null);
+  const [devices, setDevices] = useState([]);
   const [searching, setSearching] = useState(false);
 
-  // Fetch all branches for the select dropdown
-  const fetchAllBranches = async () => {
-    setBranchesLoading(true);
+  // Fetch all devices
+  const fetchDevices = async () => {
+    setLoading(true);
     try {
-      // Try common API patterns for fetching all branches
-      const endpoints = [
-        '/cadmin/branches',
-        '/api/v1/accounts/branches/',
-        '/api/v2/branches/',
-      ];
-      
-      let response = null;
-      for (const endpoint of endpoints) {
-        try {
-          response = await APIService.get(endpoint);
-          if (response && response.data) {
-            break;
-          }
-        } catch (err) {
-          // Try next endpoint
-          continue;
-        }
-      }
-      
-      if (response && response.data) {
-        // Handle different response structures
-        const branchesData = 
-          response.data.branches || 
-          response.data.results || 
-          response.data.data || 
-          (Array.isArray(response.data) ? response.data : []);
-        
-        setBranches(branchesData);
-      } else {
-        notification.warning({
-          message: 'Warning',
-          description: 'Could not load branches list. You may need to manually enter branch information.',
-        });
-      }
+      const response = await APIService.get('/api/v1/solar/devices/all/');
+      const devicesData = response.data.devices || response.data.results || response.data.data || 
+                         (Array.isArray(response.data) ? response.data : []);
+      setDevices(devicesData);
     } catch (error) {
-      console.error('Failed to fetch branches:', error);
+      console.error('Failed to fetch devices:', error);
       notification.warning({
         message: 'Warning',
-        description: 'Could not load branches list. You may still proceed with station details.',
+        description: 'Could not load devices list.',
       });
     } finally {
-      setBranchesLoading(false);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (showStationDetails) {
-      fetchAllBranches();
-    }
-  }, [showStationDetails]);
+    fetchDevices();
+  }, []);
 
-  // Handle initial form submission (Station Number and Product Name)
-  const handleSearchStation = async (values) => {
-    const { stationNumber, productName } = values;
+  // Handle initial form submission (Serial Number and Model)
+  const handleSearchDevice = async (values) => {
+    const { serial, model } = values;
     
-    if (!stationNumber || !productName) {
+    if (!serial || !model) {
       notification.warning({
         message: 'Validation Error',
-        description: 'Please fill in both Station Number and Product Name.',
+        description: 'Please fill in both Serial Number and Model.',
       });
       return;
     }
 
     setSearching(true);
     try {
-      // Try to fetch station data based on station number
-      // You may need to adjust this endpoint based on your API
-      const endpoints = [
-        `/api/v2/solar-station/${stationNumber}/`,
-        `/api/v1/solar-station/${stationNumber}/`,
-        `/cadmin/solar-station/${stationNumber}/`,
-      ];
+      // Try to fetch device data based on serial number
+      const response = await APIService.get(`/api/v1/solar/devices/?serial=${serial}`);
       
-      let response = null;
-      let stationFound = false;
+      const devicesList = response.data.devices || response.data.results || response.data.data || 
+                         (Array.isArray(response.data) ? response.data : []);
       
-      for (const endpoint of endpoints) {
-        try {
-          response = await APIService.get(endpoint);
-          if (response && response.data) {
-            stationFound = true;
-            break;
-          }
-        } catch (err) {
-          continue;
-        }
-      }
+      const existingDevice = devicesList.find(d => d.serial === serial);
       
-      if (stationFound && response) {
-        // Station exists - load its data
-        const station = response.data.station || response.data || {};
-        setStationData({
-          ...station,
-          stationNumber,
-          productName,
-          // Ensure we have the required fields with defaults
-          name: station.name || station.station_name || '',
-          phone: station.phone || station.phone_number || '',
-          email: station.email || '',
-          branchId: station.branch_id || station.branch || null,
+      if (existingDevice) {
+        // Device exists - load its data
+        setDeviceData({
+          ...existingDevice,
+          serial,
+          model: existingDevice.model || model,
         });
         
-        // Pre-fill the form with station data
+        // Pre-fill the form with device data
         form.setFieldsValue({
-          name: station.name || station.station_name || '',
-          phone: station.phone || station.phone_number || '',
-          email: station.email || '',
-          branchId: station.branch_id || station.branch || null,
-          stationBranches: station.branches || [],
+          serial: existingDevice.serial,
+          model: existingDevice.model || model,
+          device_type: existingDevice.device_type || 'BATTERY',
+          capacity_kwp: existingDevice.capacity_kwp || 0,
+          status: existingDevice.status || 'online',
+          is_active: existingDevice.is_active !== undefined ? existingDevice.is_active : true,
+          branch: existingDevice.branch || null,
         });
         
-        setShowStationDetails(true);
+        setShowDeviceDetails(true);
         notification.success({
-          message: 'Station Found',
-          description: 'Station details loaded successfully.',
+          message: 'Device Found',
+          description: 'Device details loaded successfully.',
         });
       } else {
-        // Station doesn't exist - create new station data structure
-        setStationData({
-          stationNumber,
-          productName,
-          name: '',
-          phone: '',
-          email: '',
-          branchId: null,
-          stationBranches: [],
+        // Device doesn't exist - create new device data structure
+        setDeviceData({
+          serial,
+          model,
+          device_type: 'BATTERY',
+          capacity_kwp: 0,
+          status: 'online',
+          is_active: true,
+          branch: null,
         });
         
         form.setFieldsValue({
-          name: '',
-          phone: '',
-          email: '',
-          branchId: null,
-          stationBranches: [],
+          serial,
+          model,
+          device_type: 'BATTERY',
+          capacity_kwp: 0,
+          status: 'online',
+          is_active: true,
+          branch: null,
         });
         
-        setShowStationDetails(true);
+        setShowDeviceDetails(true);
         notification.info({
-          message: 'New Station',
-          description: 'Creating new station. Please fill in the station details.',
+          message: 'New Device',
+          description: 'Creating new device. Please fill in the device details.',
         });
       }
     } catch (error) {
-      // Station doesn't exist or error - initialize as new
-      setStationData({
-        stationNumber,
-        productName,
-        name: '',
-        phone: '',
-        email: '',
-        branchId: null,
-        stationBranches: [],
+      // Device doesn't exist or error - initialize as new
+      setDeviceData({
+        serial,
+        model,
+        device_type: 'BATTERY',
+        capacity_kwp: 0,
+        status: 'online',
+        is_active: true,
+        branch: null,
       });
       
       form.setFieldsValue({
-        name: '',
-        phone: '',
-        email: '',
-        branchId: null,
-        stationBranches: [],
+        serial,
+        model,
+        device_type: 'BATTERY',
+        capacity_kwp: 0,
+        status: 'online',
+        is_active: true,
+        branch: null,
       });
       
-      setShowStationDetails(true);
+      setShowDeviceDetails(true);
       notification.info({
-        message: 'New Station',
-        description: 'Please fill in the station details below.',
+        message: 'New Device',
+        description: 'Please fill in the device details below.',
       });
     } finally {
       setSearching(false);
     }
   };
 
-  // Handle saving station details
+  // Handle saving device details (create new)
   const handleSave = async (values) => {
-    if (!stationData) {
+    if (!deviceData) {
       notification.error({
         message: 'Error',
-        description: 'Station data not found. Please search for a station first.',
+        description: 'Device data not found. Please search for a device first.',
       });
       return;
     }
@@ -218,56 +182,37 @@ const SolarOnboarding = () => {
     setSaving(true);
     try {
       const payload = {
-        station_number: stationData.stationNumber,
-        product_name: stationData.productName,
-        name: values.name,
-        phone: values.phone || values.phoneNumber,
-        email: values.email,
-        branch_id: values.branchId,
-        client_id: clientId,
+        serial: values.serial,
+        model: values.model || '',
+        device_type: values.device_type || 'BATTERY',
+        capacity_kwp: values.capacity_kwp || 0,
+        status: values.status || 'online',
+        is_active: values.is_active !== undefined ? values.is_active : true,
       };
 
-      // Try different endpoints for creating/updating solar station
-      const endpoints = [
-        `/api/v2/solar-station/`,
-        `/api/v1/solar-station/`,
-        `/cadmin/solar-station/`,
-      ];
-
-      let success = false;
-      let error = null;
-
-      for (const endpoint of endpoints) {
-        try {
-          if (stationData.id) {
-            // Update existing
-            const updateEndpoint = `${endpoint}${stationData.id}/`;
-            await APIService.patch(updateEndpoint, payload);
-          } else {
-            // Create new
-            await APIService.post(endpoint, payload);
-          }
-          success = true;
-          break;
-        } catch (err) {
-          error = err;
-          continue;
-        }
-      }
-
-      if (success) {
+      // If device has an ID, update it; otherwise create new
+      if (deviceData.id) {
+        await APIService.patch(`/api/v1/solar/devices/${deviceData.id}/update/`, payload);
         notification.success({
           message: 'Success',
-          description: 'Station details saved successfully.',
+          description: 'Device updated successfully.',
         });
-        
-        // Optionally navigate back to clients list after a delay
-        setTimeout(() => {
-          navigate('/clients');
-        }, 1500);
       } else {
-        throw error || new Error('Failed to save station details');
+        // Create new device - try to find endpoint
+        await APIService.post('/api/v1/solar/devices/', payload);
+        notification.success({
+          message: 'Success',
+          description: 'Device created successfully.',
+        });
       }
+      
+      // Refresh devices list
+      await fetchDevices();
+      
+      // Reset form and go back
+      setShowDeviceDetails(false);
+      setDeviceData(null);
+      form.resetFields();
     } catch (error) {
       console.error('Save error:', error);
       notification.error({
@@ -275,7 +220,96 @@ const SolarOnboarding = () => {
         description: error?.response?.data?.message || 
                     error?.response?.data?.detail || 
                     error.message || 
-                    'Failed to save station details. Please try again.',
+                    'Failed to save device details. Please try again.',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Handle editing device
+  const handleEdit = (device) => {
+    setEditingDevice(device);
+    editForm.setFieldsValue({
+      serial: device.serial,
+      model: device.model || '',
+      device_type: device.device_type || 'BATTERY',
+      capacity_kwp: device.capacity_kwp || 0,
+      status: device.status || 'online',
+      is_active: device.is_active !== undefined ? device.is_active : true,
+    });
+    setIsEditModalVisible(true);
+  };
+
+  // Handle updating device
+  const handleUpdateDevice = async (values) => {
+    if (!editingDevice) return;
+
+    setSaving(true);
+    try {
+      const payload = {
+        serial: values.serial,
+        model: values.model || '',
+        device_type: values.device_type || 'BATTERY',
+        capacity_kwp: values.capacity_kwp || 0,
+        status: values.status || 'online',
+        is_active: values.is_active !== undefined ? values.is_active : true,
+      };
+
+      await APIService.patch(`/api/v1/solar/devices/${editingDevice.id}/update/`, payload);
+      
+      notification.success({
+        message: 'Success',
+        description: 'Device updated successfully.',
+      });
+      
+      setIsEditModalVisible(false);
+      setEditingDevice(null);
+      await fetchDevices();
+    } catch (error) {
+      console.error('Update error:', error);
+      notification.error({
+        message: 'Error',
+        description: error?.response?.data?.message || 
+                    error?.response?.data?.detail || 
+                    error.message || 
+                    'Failed to update device. Please try again.',
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Handle toggle device status
+  const handleToggleStatus = (device) => {
+    setTogglingDevice(device);
+    setIsToggleModalVisible(true);
+  };
+
+  // Confirm toggle status
+  const confirmToggleStatus = async () => {
+    if (!togglingDevice) return;
+
+    setSaving(true);
+    try {
+      const response = await APIService.post(`/api/v1/solar/devices/${togglingDevice.id}/toggle-status/`);
+      
+      notification.success({
+        message: 'Success',
+        description: response.data.message || 'Device status toggled successfully.',
+      });
+      
+      setIsToggleModalVisible(false);
+      setTogglingDevice(null);
+      await fetchDevices();
+    } catch (error) {
+      console.error('Toggle error:', error);
+      notification.error({
+        message: 'Error',
+        description: error?.response?.data?.message || 
+                    error?.response?.data?.detail || 
+                    error.message || 
+                    'Failed to toggle device status. Please try again.',
       });
     } finally {
       setSaving(false);
@@ -283,75 +317,165 @@ const SolarOnboarding = () => {
   };
 
   const handleBack = () => {
-    if (showStationDetails) {
-      setShowStationDetails(false);
-      setStationData(null);
+    if (showDeviceDetails) {
+      setShowDeviceDetails(false);
+      setDeviceData(null);
       form.resetFields();
-    } else {
-      navigate('/clients');
     }
   };
+
+  const deviceColumns = [
+    {
+      title: 'Serial',
+      dataIndex: 'serial',
+      key: 'serial',
+    },
+    {
+      title: 'Model',
+      dataIndex: 'model',
+      key: 'model',
+    },
+    {
+      title: 'Device Type',
+      dataIndex: 'device_type',
+      key: 'device_type',
+    },
+    {
+      title: 'Capacity (kWp)',
+      dataIndex: 'capacity_kwp',
+      key: 'capacity_kwp',
+      render: (value) => value || 0,
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status) => (
+        <span style={{ 
+          color: status === 'online' ? 'green' : status === 'offline' ? 'red' : 'orange',
+          fontWeight: 'bold' 
+        }}>
+          {status || 'N/A'}
+        </span>
+      ),
+    },
+    {
+      title: 'Active',
+      dataIndex: 'is_active',
+      key: 'is_active',
+      render: (isActive) => (
+        <span style={{ color: isActive ? 'green' : 'red', fontWeight: 'bold' }}>
+          {isActive ? 'Yes' : 'No'}
+        </span>
+      ),
+    },
+    {
+      title: 'Branch',
+      dataIndex: 'branch',
+      key: 'branch',
+      render: (branch) => branch || '---',
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Space>
+          <Button
+            type="primary"
+            size="small"
+            icon={<EditOutlined />}
+            onClick={() => handleEdit(record)}
+          >
+            Edit
+          </Button>
+          <Button
+            type={record.is_active ? 'default' : 'primary'}
+            size="small"
+            icon={<BulbOutlined />}
+            onClick={() => handleToggleStatus(record)}
+          >
+            {record.is_active ? 'Deactivate' : 'Activate'}
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
   return (
     <div style={{ margin: '30px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Button
-            type="text"
-            icon={<ArrowLeftOutlined />}
-            onClick={handleBack}
-            style={{ padding: 0, height: 'auto' }}
-          />
           <Title level={3} style={{ margin: 0 }}>
-            {showStationDetails ? 'Solar Station Details' : 'Solar Onboarding'}
+            {showDeviceDetails ? 'Solar Device Details' : 'Solar Onboarding'}
           </Title>
         </div>
+        {/* {!showDeviceDetails && (
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setShowDeviceDetails(true)}
+            style={{ background: '#5C12A7' }}
+          >
+            Add New Device
+          </Button>
+        )} */}
       </div>
 
-      {!showStationDetails ? (
-        // Initial Form: Station Number and Product Name
-        <Card title="Search Station" style={{ maxWidth: 600, margin: '0 auto' }}>
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleSearchStation}
-            autoComplete="off"
-          >
-            <Form.Item
-              label="Station Number"
-              name="stationNumber"
-              rules={[{ required: true, message: 'Station Number is required!' }]}
+      {!showDeviceDetails ? (
+        <>
+          {/* Initial Form: Serial Number and Model */}
+          <Card title="Add New Solar Device" style={{ marginBottom: '20px' }}>
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={handleSearchDevice}
+              autoComplete="off"
             >
-              <Input placeholder="Enter Station Number" size="large" />
-            </Form.Item>
-
-            <Form.Item
-              label="Product Name"
-              name="productName"
-              rules={[{ required: true, message: 'Product Name is required!' }]}
-            >
-              <Input placeholder="Enter Product Name" size="large" />
-            </Form.Item>
-
-            <Form.Item>
-              <Button
-                type="primary"
-                htmlType="submit"
-                loading={searching}
-                size="large"
-                block
-                style={{ background: '#5C12A7' }}
+              <Form.Item
+                label="Serial Number"
+                name="serial"
+                rules={[{ required: true, message: 'Serial Number is required!' }]}
               >
-                {searching ? 'Searching...' : 'Proceed'}
-              </Button>
-            </Form.Item>
-          </Form>
-        </Card>
+                <Input placeholder="Enter Serial Number" size="large" />
+              </Form.Item>
+
+              <Form.Item
+                label="Model"
+                name="model"
+                rules={[{ required: true, message: 'Model is required!' }]}
+              >
+                <Input placeholder="Enter Model" size="large" />
+              </Form.Item>
+
+              <Form.Item>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  loading={searching}
+                  size="large"
+                  block
+                  style={{ background: '#5C12A7' }}
+                >
+                  {searching ? 'Searching...' : 'Proceed'}
+                </Button>
+              </Form.Item>
+            </Form>
+          </Card>
+
+          {/* Devices List */}
+          <Card title="Solar Devices">
+            <Table
+              dataSource={devices}
+              columns={deviceColumns}
+              rowKey="id"
+              loading={loading}
+              pagination={{ pageSize: 10 }}
+            />
+          </Card>
+        </>
       ) : (
-        // Station Details Form (Editable)
-        <Card
-          title="Station Information"
-        >
+        // Device Details Form (Editable)
+        <Card title="Device Information">
           <Form
             form={form}
             layout="vertical"
@@ -360,78 +484,68 @@ const SolarOnboarding = () => {
           >
             <Row gutter={16}>
               <Col xs={24} sm={12} md={8}>
-                <Form.Item label="Station Number">
-                  <Input value={stationData?.stationNumber} disabled />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12} md={8}>
-                <Form.Item label="Product Name">
-                  <Input value={stationData?.productName} disabled />
+                <Form.Item
+                  label="Serial Number"
+                  name="serial"
+                  rules={[{ required: true, message: 'Serial Number is required!' }]}
+                >
+                  <Input placeholder="Enter Serial Number" />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12} md={8}>
                 <Form.Item
-                  label="Station Name"
-                  name="name"
-                  rules={[{ required: true, message: 'Station Name is required!' }]}
+                  label="Model"
+                  name="model"
                 >
-                  <Input placeholder="Enter Station Name" />
+                  <Input placeholder="Enter Model" />
                 </Form.Item>
               </Col>
               <Col xs={24} sm={12} md={8}>
                 <Form.Item
-                  label="Phone Number"
-                  name="phone"
-                  rules={[
-                    { required: true, message: 'Phone Number is required!' },
-                  ]}
+                  label="Device Type"
+                  name="device_type"
+                  rules={[{ required: true, message: 'Device Type is required!' }]}
                 >
-                  <Input placeholder="Enter Phone Number" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12} md={8}>
-                <Form.Item
-                  label="Email"
-                  name="email"
-                  rules={[
-                    { type: 'email', message: 'Please enter a valid email!' },
-                    { required: true, message: 'Email is required!' },
-                  ]}
-                >
-                  <Input placeholder="Enter Email" />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12} md={8}>
-                <Form.Item
-                  label="Branch"
-                  name="branchId"
-                  rules={[{ required: true, message: 'Please select a branch!' }]}
-                >
-                  <Select
-                    placeholder="Select Branch"
-                    loading={branchesLoading}
-                    showSearch
-                    filterOption={(input, option) =>
-                      (option?.children || '').toLowerCase().includes(input.toLowerCase())
-                    }
-                    allowClear
-                  >
-                    {branches.map((branch) => (
-                      <Option key={branch.id || branch.branch_id} value={branch.id || branch.branch_id}>
-                        {branch.name || branch.branch_name || `Branch ${branch.id || branch.branch_id}`}
-                      </Option>
+                  <Select placeholder="Select Device Type">
+                    {DEVICE_TYPES.map(type => (
+                      <Option key={type} value={type}>{type}</Option>
                     ))}
                   </Select>
-                  {branchesLoading && (
-                    <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
-                      Loading branches...
-                    </Text>
-                  )}
-                  {!branchesLoading && branches.length === 0 && (
-                    <Text type="secondary" style={{ fontSize: '12px', display: 'block', marginTop: '4px' }}>
-                      No branches available. Please contact support.
-                    </Text>
-                  )}
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12} md={8}>
+                <Form.Item
+                  label="Capacity (kWp)"
+                  name="capacity_kwp"
+                >
+                  <InputNumber
+                    placeholder="Enter Capacity"
+                    style={{ width: '100%' }}
+                    min={0}
+                    step={0.1}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12} md={8}>
+                <Form.Item
+                  label="Status"
+                  name="status"
+                  rules={[{ required: true, message: 'Status is required!' }]}
+                >
+                  <Select placeholder="Select Status">
+                    {DEVICE_STATUS.map(status => (
+                      <Option key={status} value={status}>{status.toUpperCase()}</Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12} md={8}>
+                <Form.Item
+                  label="Active"
+                  name="is_active"
+                  valuePropName="checked"
+                >
+                  <Switch />
                 </Form.Item>
               </Col>
             </Row>
@@ -444,6 +558,7 @@ const SolarOnboarding = () => {
                 type="primary"
                 htmlType="submit"
                 loading={saving}
+                icon={<SaveOutlined />}
                 style={{ background: '#5C12A7' }}
               >
                 Save
@@ -452,6 +567,113 @@ const SolarOnboarding = () => {
           </Form>
         </Card>
       )}
+
+      {/* Edit Device Modal */}
+      <Modal
+        title="Edit Device"
+        open={isEditModalVisible}
+        onCancel={() => {
+          setIsEditModalVisible(false);
+          setEditingDevice(null);
+          editForm.resetFields();
+        }}
+        footer={null}
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={handleUpdateDevice}
+        >
+          <Form.Item
+            label="Serial Number"
+            name="serial"
+            rules={[{ required: true, message: 'Serial Number is required!' }]}
+          >
+            <Input placeholder="Enter Serial Number" />
+          </Form.Item>
+          <Form.Item
+            label="Model"
+            name="model"
+          >
+            <Input placeholder="Enter Model" />
+          </Form.Item>
+          <Form.Item
+            label="Device Type"
+            name="device_type"
+            rules={[{ required: true, message: 'Device Type is required!' }]}
+          >
+            <Select placeholder="Select Device Type">
+              {DEVICE_TYPES.map(type => (
+                <Option key={type} value={type}>{type}</Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="Capacity (kWp)"
+            name="capacity_kwp"
+          >
+            <InputNumber
+              placeholder="Enter Capacity"
+              style={{ width: '100%' }}
+              min={0}
+              step={0.1}
+            />
+          </Form.Item>
+          <Form.Item
+            label="Status"
+            name="status"
+            rules={[{ required: true, message: 'Status is required!' }]}
+          >
+            <Select placeholder="Select Status">
+              {DEVICE_STATUS.map(status => (
+                <Option key={status} value={status}>{status.toUpperCase()}</Option>
+              ))}
+            </Select>
+          </Form.Item>
+          <Form.Item
+            label="Active"
+            name="is_active"
+            valuePropName="checked"
+          >
+            <Switch />
+          </Form.Item>
+          <Form.Item style={{ marginBottom: 0, marginTop: '24px' }}>
+            <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
+              <Button onClick={() => {
+                setIsEditModalVisible(false);
+                setEditingDevice(null);
+                editForm.resetFields();
+              }}>
+                Cancel
+              </Button>
+              <Button
+                type="primary"
+                htmlType="submit"
+                loading={saving}
+                style={{ background: '#5C12A7' }}
+              >
+                Update
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Toggle Status Confirmation Modal */}
+      <Modal
+        title="Confirm Action"
+        open={isToggleModalVisible}
+        onOk={confirmToggleStatus}
+        onCancel={() => {
+          setIsToggleModalVisible(false);
+          setTogglingDevice(null);
+        }}
+        confirmLoading={saving}
+      >
+        <p>
+          Are you sure you want to {togglingDevice?.is_active ? 'deactivate' : 'activate'} device with serial "{togglingDevice?.serial}"?
+        </p>
+      </Modal>
     </div>
   );
 };
