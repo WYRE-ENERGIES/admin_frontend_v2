@@ -55,7 +55,7 @@ export const getAllRoles = () => async (dispatch) => {
 
 export const getDownloadAllDevices = () => async (dispatch) => {
   dispatch(getAllDevicesLoading(true));
-  const requestUrl = `/api/v1/get_all_devices/12345678/`;
+  const requestUrl = `/api/v1/get_all_devices/`;
   try {
     const response = await APIService.get(requestUrl);
     dispatch(getAllDevicesSuccess(response.data));
@@ -72,12 +72,12 @@ export const getDownloadDeviceReadings = (deviceId, userDateRange) => async (dis
   const requestUrl = `/api/v1/get_device_readings/${deviceId}/${moment(userDateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(userDateRange[1]).format('DD-MM-YYYY HH:mm')}/`;
   try {
     const response = await APIService.get(requestUrl);
-    dispatch(getDeviceReadingsSuccess(response.data.authenticatedData));
+    dispatch(getDeviceReadingsSuccess(response.data));
     dispatch(getDeviceReadingsLoading(false));
     return { fulfilled: true, message: 'successful', data: response.data };
   } catch (error) {
     dispatch(getDeviceReadingsLoading(false));
-    return { fulfilled: false, message: error.response.data.detail };
+    return { fulfilled: false, message: error.response?.data?.detail || error.message };
   }
 };
 
