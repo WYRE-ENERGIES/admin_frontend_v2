@@ -22,11 +22,8 @@ import { CaretDownFilled } from "@ant-design/icons";
 import { Input } from "antd";
 import { downloadFile, compareDateInfo } from "../../helpers/generalHelper";
 import moment from "moment";
-import { Link } from "react-router-dom";
 import EnvData from "../../config/EnvData";
-import { render } from "react-dom";
 import Highlighter from "react-highlight-words";
-import Password from "antd/lib/input/Password";
 
 const { convertArrayToCSV } = require("convert-array-to-csv");
 const { Title } = Typography;
@@ -275,26 +272,9 @@ const handleAllDevicesTableChange = (pagination) => {
   }, [props.auth.allDevicesfetched]);
   useEffect(() => {
     if(!props.auth.allDevicesfetched){
-      const storedPassword = sessionStorage.getItem('pp');
-      // Check if stored password is valid, otherwise use default
-      let password = "12345678";
-      if (storedPassword && storedPassword.trim() !== '') {
-        try {
-          const decodedPassword = base64_decode(storedPassword);
-          // Only use decoded password if it's not null/undefined and is a valid string
-          if (decodedPassword && decodedPassword.trim() !== '') {
-            password = decodedPassword;
-          }
-        } catch (error) {
-          console.error("Error decoding password:", error);
-          // Use default password if decoding fails
-        }
-      }
-      setPPassword(password);
-      props.getDownloadAllDevices(password);
+      props.getDownloadAllDevices();
     }
-    
-  }, [sessionStorage.getItem('pp') || compareDateInfo(sessionStorage.getItem('ppt'), 30)])
+  }, [props.auth.allDevicesfetched])
 
   const columnData = [
     {
@@ -380,7 +360,7 @@ const handleAllDevicesTableChange = (pagination) => {
                 );
 
                 if (request.fulfilled) {
-                  props.getDownloadAllDevices(pPassword);
+                  props.getDownloadAllDevices();
                   return notification.info({
                     message: "Successful",
                     description: request.message,
@@ -471,7 +451,7 @@ const handleAllDevicesTableChange = (pagination) => {
                 );
 
                 if (request.fulfilled) {
-                  props.getDownloadAllDevices(pPassword);
+                  props.getDownloadAllDevices();
                   return notification.info({
                     message: "Successful",
                     description: request.message,
@@ -558,19 +538,10 @@ const handleAllDevicesTableChange = (pagination) => {
     </Select>
   );
 
-  const onPasswordFormSubmit = async (values) => {
-    const { password } = values;
-    
-    const request = await props.getDownloadAllDevices(password);
-
-    // save password in session storage
-
-    var b = base64_encode(password);
-    sessionStorage.setItem('pp', b)
-    sessionStorage.setItem('ppt', new Date());
+  const onPasswordFormSubmit = async () => {
+    const request = await props.getDownloadAllDevices();
 
     if (request.fulfilled) {
-      setPPassword(password);
       form.resetFields();
       return notification.info({
         message: "successful",
@@ -636,7 +607,7 @@ const handleAllDevicesTableChange = (pagination) => {
 
   const onSelectAggregateFormSubmit = async (values) => {
     const { dateRange } = values;
-    const downloadUrl = `/api/v1/get_aggregated_device_readings/${deviceId}/$${
+    const downloadUrl = `/api/v1/get_aggregated_device_readings/${deviceId}/${
       moment(dateRange[0]).format("DD-MM-YYYY HH:mm") +
       "/" +
       moment(dateRange[1]).format("DD-MM-YYYY HH:mm")
