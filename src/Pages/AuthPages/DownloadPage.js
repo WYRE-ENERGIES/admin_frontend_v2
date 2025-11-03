@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 // import { useCookies } from "react-cookie";
-import { decode as base64_decode, encode as base64_encode } from 'base-64';
+// removed legacy password storage
 
 
 import {
@@ -20,13 +20,10 @@ import dayjs from 'dayjs';
 import buddhistEra from 'dayjs/plugin/buddhistEra';
 import { CaretDownFilled } from "@ant-design/icons";
 import { Input } from "antd";
-import { downloadFile, compareDateInfo } from "../../helpers/generalHelper";
+import { downloadFile } from "../../helpers/generalHelper";
 import moment from "moment";
-import { Link } from "react-router-dom";
 import EnvData from "../../config/EnvData";
-import { render } from "react-dom";
 import Highlighter from "react-highlight-words";
-import Password from "antd/lib/input/Password";
 
 const { convertArrayToCSV } = require("convert-array-to-csv");
 const { Title } = Typography;
@@ -57,7 +54,7 @@ function DownloadPage(props) {
   const [formTwo] = Form.useForm();
   const [formThree] = Form.useForm();
   const [formFour] = Form.useForm();
-  const [pPassword, setPPassword] = useState("12345678");
+  // removed legacy password state
   const [deviceName, setDeviceName] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
   const [branchName, setBranchName] = useState(false);
@@ -274,13 +271,10 @@ const handleAllDevicesTableChange = (pagination) => {
     }
   }, [props.auth.allDevicesfetched]);
   useEffect(() => {
-    if(!props.auth.allDevicesfetched){
-      const password = base64_decode(sessionStorage.getItem('pp'));
-      setPPassword(password);
-      props.getDownloadAllDevices(password);
+    if (!props.auth.allDevicesfetched) {
+      props.getDownloadAllDevices();
     }
-    
-  }, [sessionStorage.getItem('pp') || compareDateInfo(sessionStorage.getItem('ppt'), 30)])
+  }, [])
 
   const columnData = [
     {
@@ -366,7 +360,7 @@ const handleAllDevicesTableChange = (pagination) => {
                 );
 
                 if (request.fulfilled) {
-                  props.getDownloadAllDevices(pPassword);
+                  props.getDownloadAllDevices();
                   return notification.info({
                     message: "Successful",
                     description: request.message,
@@ -457,7 +451,7 @@ const handleAllDevicesTableChange = (pagination) => {
                 );
 
                 if (request.fulfilled) {
-                  props.getDownloadAllDevices(pPassword);
+                  props.getDownloadAllDevices();
                   return notification.info({
                     message: "Successful",
                     description: request.message,
@@ -544,19 +538,10 @@ const handleAllDevicesTableChange = (pagination) => {
     </Select>
   );
 
-  const onPasswordFormSubmit = async (values) => {
-    const { password } = values;
-    
-    const request = await props.getDownloadAllDevices(password);
-
-    // save password in session storage
-
-    var b = base64_encode(password);
-    sessionStorage.setItem('pp', b)
-    sessionStorage.setItem('ppt', new Date());
+  const onPasswordFormSubmit = async () => {
+    const request = await props.getDownloadAllDevices();
 
     if (request.fulfilled) {
-      setPPassword(password);
       form.resetFields();
       return notification.info({
         message: "successful",
@@ -571,7 +556,6 @@ const handleAllDevicesTableChange = (pagination) => {
   const onSelectFormSubmit = async (values) => {
     const { dateRange } = values;
     const request = await props.getDownloadDeviceReadings(
-      pPassword,
       deviceId,
       dateRange
     );
@@ -623,7 +607,7 @@ const handleAllDevicesTableChange = (pagination) => {
 
   const onSelectAggregateFormSubmit = async (values) => {
     const { dateRange } = values;
-    const downloadUrl = `/api/v1/get_aggregated_device_readings/${pPassword}/${deviceId}/${
+    const downloadUrl = `/api/v1/get_aggregated_device_readings/${deviceId}/${
       moment(dateRange[0]).format("DD-MM-YYYY HH:mm") +
       "/" +
       moment(dateRange[1]).format("DD-MM-YYYY HH:mm")
@@ -640,7 +624,7 @@ const handleAllDevicesTableChange = (pagination) => {
   
   const onOperatingTimeSubmit = async (values) => {
     const { deviceId, dateRange, timeRange } = values;
-    const downloadUrl = `/api/v1/get_timed_device_readings/${pPassword}/${deviceId}/${moment(dateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(dateRange[1]).format('DD-MM-YYYY HH:mm')}/${moment(timeRange[0]).format('HH') + '/' + moment(timeRange[1]).format('HH')}`;
+    const downloadUrl = `/api/v1/get_timed_device_readings/${deviceId}/${moment(dateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(dateRange[1]).format('DD-MM-YYYY HH:mm')}/${moment(timeRange[0]).format('HH') + '/' + moment(timeRange[1]).format('HH')}`;
 
     form.resetFields();
 
@@ -661,12 +645,31 @@ const handleAllDevicesTableChange = (pagination) => {
     return Math.round((devicesWithinWindow.length / devicesWithLastPost.length) * 100);
   };
 
-  const monitoringPct30Min = calculatePostingPercentage(monitorDataState, 30);
-  const monitoringPct60Min = calculatePostingPercentage(monitorDataState, 60);
-  const monitoringPct24Hr = calculatePostingPercentage(monitorDataState, 24 * 60);
-  const allDevicesPct30Min = calculatePostingPercentage(sortedDataState, 30);
-  const allDevicesPct60Min = calculatePostingPercentage(sortedDataState, 60);
-  const allDevicesPct24Hr = calculatePostingPercentage(sortedDataState, 24 * 60);
+  // Use useMemo to recalculate percentages only when data changes
+  const monitoringPct30Min = useMemo(() => 
+    calculatePostingPercentage(monitorDataState, 30), 
+    [monitorDataState]
+  );
+  const monitoringPct60Min = useMemo(() => 
+    calculatePostingPercentage(monitorDataState, 60), 
+    [monitorDataState]
+  );
+  const monitoringPct24Hr = useMemo(() => 
+    calculatePostingPercentage(monitorDataState, 24 * 60), 
+    [monitorDataState]
+  );
+  const allDevicesPct30Min = useMemo(() => 
+    calculatePostingPercentage(sortedDataState, 30), 
+    [sortedDataState]
+  );
+  const allDevicesPct60Min = useMemo(() => 
+    calculatePostingPercentage(sortedDataState, 60), 
+    [sortedDataState]
+  );
+  const allDevicesPct24Hr = useMemo(() => 
+    calculatePostingPercentage(sortedDataState, 24 * 60), 
+    [sortedDataState]
+  );
 
   return (
     <div className="download-page-container" style={{ padding: "24px" }}>
