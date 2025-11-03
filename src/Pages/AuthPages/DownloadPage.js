@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
 import React, { useEffect, useRef, useState, useMemo } from "react";
 // import { useCookies } from "react-cookie";
-import { decode as base64_decode, encode as base64_encode } from 'base-64';
+// removed legacy password storage
 
 
 import {
@@ -20,7 +20,7 @@ import dayjs from 'dayjs';
 import buddhistEra from 'dayjs/plugin/buddhistEra';
 import { CaretDownFilled } from "@ant-design/icons";
 import { Input } from "antd";
-import { downloadFile, compareDateInfo } from "../../helpers/generalHelper";
+import { downloadFile } from "../../helpers/generalHelper";
 import moment from "moment";
 import EnvData from "../../config/EnvData";
 import Highlighter from "react-highlight-words";
@@ -54,7 +54,7 @@ function DownloadPage(props) {
   const [formTwo] = Form.useForm();
   const [formThree] = Form.useForm();
   const [formFour] = Form.useForm();
-  const [pPassword, setPPassword] = useState("12345678");
+  // removed legacy password state
   const [deviceName, setDeviceName] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
   const [branchName, setBranchName] = useState(false);
@@ -271,10 +271,10 @@ const handleAllDevicesTableChange = (pagination) => {
     }
   }, [props.auth.allDevicesfetched]);
   useEffect(() => {
-    if(!props.auth.allDevicesfetched){
+    if (!props.auth.allDevicesfetched) {
       props.getDownloadAllDevices();
     }
-  }, [props.auth.allDevicesfetched])
+  }, [])
 
   const columnData = [
     {
