@@ -30,32 +30,9 @@ const SolarOnboarding = (props) => {
   const [stationsLoading, setStationsLoading] = useState(false);
   const [branches, setBranches] = useState([]);
   const [branchesLoading, setBranchesLoading] = useState(false);
-
-  const generateDummyStations = () => {
-    const nowIso = new Date().toISOString();
-    const branches = ['HQ', 'Residence', 'Factory', 'Warehouse', 'Outlet'];
-    return Array.from({ length: 20 }).map((_, idx) => {
-      const i = idx + 1;
-      const lat = 6.45 + i * 0.001;
-      const lng = 3.46 + i * 0.001;
-      return {
-        id: i,
-        branch: i % 5,
-        deye_station_id: `DUMMY_${61000000 + i}`,
-        name: `Dummy Station ${i}`,
-        address: `${100 + i} Example Street, Lagos`,
-        latitude: Number(lat.toFixed(6)),
-        longitude: Number(lng.toFixed(6)),
-        coordinates: [Number(lat.toFixed(6)), Number(lng.toFixed(6))],
-        installed_capacity: Number((20 + i * 0.5).toFixed(1)),
-        is_active: i % 3 !== 0,
-        created_at: nowIso,
-        updated_at: nowIso,
-        branch_id: i % 5,
-        branch_name: branches[i % branches.length],
-      };
-    });
-  };
+  const [searchFilters, setSearchFilters] = useState({ searchText: '', branch_id: undefined });
+  const [togglingStationId, setTogglingStationId] = useState(null);
+  const [deviceSearchText, setDeviceSearchText] = useState('');
 
   const fetchStations = async () => {
     setStationsLoading(true);
@@ -63,15 +40,14 @@ const SolarOnboarding = (props) => {
       const resp = await APIService.get('/api/v1/solar/stations/all/');
       const data = resp?.data || {};
       const list = Array.isArray(data.stations) ? data.stations : [];
-      setStations(list.length ? list : generateDummyStations());
+      setStations(list.length ? list : []);
     } catch (error) {
       console.error('Failed to fetch stations:', error);
       notification.warning({
         message: 'Warning',
         description: 'Could not load stations list.',
       });
-      // Provide dummy data even if request fails
-      setStations(generateDummyStations());
+      setStations([]);
     } finally {
       setStationsLoading(false);
     }
@@ -87,12 +63,9 @@ const SolarOnboarding = (props) => {
       setBranchesLoading(true);
       try {
         const resp = await APIService.get('/cadmin/branches/');
-        const data = resp?.data || {};
-        const list = Array.isArray(data) ? data : (Array.isArray(data.results) ? data.results : (Array.isArray(data.branches) ? data.branches : []));
-        const normalized = list
-          .map((b) => ({ id: b.id ?? b.branch_id ?? b.value, name: b.name ?? b.branch_name ?? b.label }))
-          .filter((b) => b.id && b.name);
-        setBranches(normalized);
+        const branches = Array.isArray(resp?.data)
+          ? resp.data.map(({ id, name }) => ({ id, name })) : [];
+        setBranches(branches);
       } catch (error) {
         console.error('Failed to fetch branches:', error);
         setBranches([]);
@@ -130,6 +103,7 @@ const SolarOnboarding = (props) => {
       const station = {
         product_name: data.product_name || product_name,
         station_id: data.station_id || station_id,
+        branch_id: data.branch_id || null,
         name: stationInfo.name || '',
         installed_capacity: stationInfo.installed_capacity || 0,
         latitude: stationInfo.latitude || null,
@@ -141,6 +115,7 @@ const SolarOnboarding = (props) => {
       };
 
       setDevices(Array.isArray(data.devices) ? data.devices : []);
+      setDeviceSearchText('');
 
       form.setFieldsValue(station);
         setShowDeviceDetails(true);
@@ -170,6 +145,7 @@ const SolarOnboarding = (props) => {
         create_time: null,
       };
       setDevices([]);
+      setDeviceSearchText('');
       form.setFieldsValue(station);
       setShowDeviceDetails(true);
       notification.info({
@@ -231,22 +207,63 @@ const SolarOnboarding = (props) => {
       console.error('Save error:', error);
       notification.error({
         message: 'Error',
-        description: error?.response?.data?.message || 
-                    error?.response?.data?.detail || 
-                    error.message || 
-                    'Failed to save station details. Please try again.',
+        description: error?.response?.data?.message || error?.response?.data?.detail || error.message || 'Failed to save station details. Please try again.',
       });
     } finally {
       setSaving(false);
     }
   };
 
-  
+  const handleToggleStationStatus = async (stationId) => {
+    if (!stationId) {
+      notification.error({
+        message: 'Error',
+        description: 'Station ID is missing.',
+      });
+      return;
+    }
+
+    setTogglingStationId(stationId);
+    try {
+      const response = await APIService.post(`/api/v1/solar/stations/${stationId}/toggle-status/`);
+      const data = response?.data || {};
+
+      if (data.station) {
+        // Update the station in the local state
+        setStations((prevStations) =>
+          prevStations.map((station) =>
+            station.id === stationId || station.id === data.station.id
+              ? { ...station, ...data.station, is_active: data.current_status }
+              : station
+          )
+        );
+
+        notification.success({
+          message: 'Success',
+          description: data.message || `Station ${data.current_status ? 'activated' : 'deactivated'} successfully.`,
+        });
+      } else {
+        notification.error({
+          message: 'Error',
+          description: 'Failed to update station status. Please try again.',
+        });
+      }
+    } catch (error) {
+      console.error('Toggle station status error:', error);
+      notification.error({
+        message: 'Error',
+        description: error?.response?.data?.message || error?.response?.data?.detail || error.message || 'Failed to toggle station status. Please try again.',
+      });
+    } finally {
+      setTogglingStationId(null);
+    }
+  };
 
   const handleBack = () => {
     if (showDeviceDetails) {
       setShowDeviceDetails(false);
       form.resetFields();
+      setDeviceSearchText('');
     }
   };
 
@@ -346,7 +363,13 @@ const SolarOnboarding = (props) => {
                 name="product_name"
                 rules={[{ required: true, message: 'Product Name is required!' }]}
               >
-                <Input placeholder="Enter Product Name (e.g. deye)" size="large" />
+                <Select
+                  placeholder="Select Product Name"
+                  size="large"
+                  options={[
+                    { label: 'Deye', value: 'deye' },
+                  ]}
+                />
               </Form.Item>
 
               <Form.Item>
@@ -365,8 +388,60 @@ const SolarOnboarding = (props) => {
           </Card>
 
           <Card title="All Stations">
+            <div style={{ marginBottom: 16, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+              <Input.Search
+                placeholder="Search by Name, Station ID, or Address"
+                allowClear
+                onSearch={(value) => {
+                  setSearchFilters((prev) => ({ ...prev, searchText: value }));
+                }}
+                onChange={e =>
+                  setSearchFilters((prev) => ({ ...prev, searchText: e.target.value }))
+                }
+                style={{ width: 300 }}
+                value={searchFilters?.searchText || ''}
+                enterButton
+              />
+              <Select
+                placeholder="Filter by Branch"
+                allowClear
+                style={{ width: 200 }}
+                loading={branchesLoading}
+                value={searchFilters?.branch_id || undefined}
+                onChange={(value) =>
+                  setSearchFilters((prev) => ({ ...prev, branch_id: value }))
+                }
+                options={[
+                  ...branches.map((b) => ({ label: b.name, value: b.id }))
+                ]}
+                showSearch
+                optionFilterProp="label"
+              />
+              <Button
+                onClick={() => setSearchFilters({ searchText: '', branch_id: undefined })}
+                disabled={!searchFilters?.searchText && !searchFilters?.branch_id}
+              >
+                Reset Filters
+              </Button>
+            </div>
             <Table
-              dataSource={stations}
+              dataSource={
+                stations.filter((station) => {
+                  const searchText = searchFilters?.searchText?.toLowerCase() || '';
+                  const textMatch = searchText
+                    ? (
+                        (station.name || '').toLowerCase().includes(searchText) ||
+                        (station.deye_station_id || '').toLowerCase().includes(searchText) ||
+                        (station.address || '').toLowerCase().includes(searchText)
+                      )
+                    : true;
+                  const branchMatch = searchFilters?.branch_id
+                    ? String(station.branch_id) === String(searchFilters.branch_id) ||
+                      String(station.branch) === String(searchFilters.branch_id)
+                    : true;
+                  return textMatch && branchMatch;
+                })
+              }
               columns={[
                 { title: 'Station ID', dataIndex: 'deye_station_id', key: 'deye_station_id' },
                 { title: 'Name', dataIndex: 'name', key: 'name' },
@@ -384,6 +459,26 @@ const SolarOnboarding = (props) => {
                 { title: 'Latitude', dataIndex: 'latitude', key: 'latitude' },
                 { title: 'Longitude', dataIndex: 'longitude', key: 'longitude' },
                 { title: 'Created At', dataIndex: 'created_at', key: 'created_at' },
+                {
+                  title: 'Action',
+                  key: 'action',
+                  render: (_, record) => {
+                    const isToggling = togglingStationId === record.id;
+                    const isActive = record.is_active;
+                    return (
+                      <Button
+                        variant="solid"
+                        color={isActive ? 'danger' : 'primary'}
+                        danger={isActive}
+                        loading={isToggling}
+                        onClick={() => handleToggleStationStatus(record.id)}
+                        disabled={isToggling}
+                      >
+                        {isActive ? 'Deactivate' : 'Activate'}
+                      </Button>
+                    );
+                  },
+                },
               ]}
               rowKey="id"
               loading={stationsLoading}
@@ -502,9 +597,36 @@ const SolarOnboarding = (props) => {
             </div>
           </Form>
           <div style={{ marginTop: '24px' }}>
-            <Title level={4} style={{ marginBottom: 16 }}>Devices</Title>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <Title level={4} style={{ margin: 0 }}>Devices</Title>
+              <Input.Search
+                placeholder="Search by Device SN, Device ID, Type, or Product ID"
+                allowClear
+                onSearch={(value) => {
+                  setDeviceSearchText(value);
+                }}
+                onChange={e =>
+                  setDeviceSearchText(e.target.value)
+                }
+                style={{ width: 350 }}
+                value={deviceSearchText}
+                enterButton
+              />
+            </div>
             <Table
-              dataSource={devices}
+              dataSource={
+                devices.filter((device) => {
+                  const searchText = deviceSearchText?.toLowerCase() || '';
+                  if (!searchText) return true;
+                  return (
+                    String(device.device_sn || '').toLowerCase().includes(searchText) ||
+                    String(device.device_id || '').toLowerCase().includes(searchText) ||
+                    String(device.device_type || '').toLowerCase().includes(searchText) ||
+                    String(device.product_id || '').toLowerCase().includes(searchText) ||
+                    String(device.status || '').toLowerCase().includes(searchText)
+                  );
+                })
+              }
               columns={deviceColumns}
               rowKey="device_id"
               pagination={{ pageSize: 10 }}
