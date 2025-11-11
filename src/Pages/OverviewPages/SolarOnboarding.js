@@ -16,6 +16,7 @@ import {
 } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
 import { APIService } from '../../config/Api/apiServices';
+import { useNavigate } from 'react-router-dom';
 
 const { Title } = Typography;
 
@@ -33,6 +34,7 @@ const SolarOnboarding = (props) => {
   const [searchFilters, setSearchFilters] = useState({ searchText: '', branch_id: undefined });
   const [togglingStationId, setTogglingStationId] = useState(null);
   const [deviceSearchText, setDeviceSearchText] = useState('');
+  const navigate = useNavigate();
 
   const fetchStations = async () => {
     setStationsLoading(true);
@@ -214,18 +216,22 @@ const SolarOnboarding = (props) => {
     }
   };
 
-  const handleToggleStationStatus = async (stationId) => {
-    if (!stationId) {
+  const handleToggleStationStatus = async (station) => {
+    const branchIdentifier = station?.branch_id ?? station?.branch;
+    const stationId = station?.id;
+
+    if (!branchIdentifier) {
       notification.error({
         message: 'Error',
-        description: 'Station ID is missing.',
+        description: 'Branch ID is missing for this station.',
       });
       return;
     }
 
-    setTogglingStationId(stationId);
+    const loadingKey = stationId ?? branchIdentifier;
+    setTogglingStationId(loadingKey);
     try {
-      const response = await APIService.post(`/api/v1/solar/stations/${stationId}/toggle-status/`);
+      const response = await APIService.post(`/api/v1/solar/stations/${branchIdentifier}/toggle-status/`);
       const data = response?.data || {};
 
       if (data.station) {
@@ -463,7 +469,8 @@ const SolarOnboarding = (props) => {
                   title: 'Action',
                   key: 'action',
                   render: (_, record) => {
-                    const isToggling = togglingStationId === record.id;
+                    const loadingKey = record.id ?? record.branch_id ?? record.branch;
+                    const isToggling = togglingStationId === loadingKey;
                     const isActive = record.is_active;
                     return (
                       <Button
@@ -471,7 +478,10 @@ const SolarOnboarding = (props) => {
                         color={isActive ? 'danger' : 'primary'}
                         danger={isActive}
                         loading={isToggling}
-                        onClick={() => handleToggleStationStatus(record.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleToggleStationStatus(record);
+                        }}
                         disabled={isToggling}
                       >
                         {isActive ? 'Deactivate' : 'Activate'}
@@ -480,14 +490,34 @@ const SolarOnboarding = (props) => {
                   },
                 },
               ]}
-              rowKey="id"
+              rowKey={(record) => record.id || record.deye_station_id}
               loading={stationsLoading}
               pagination={{ pageSize: 10 }}
+              onRow={(record) => {
+                const branchIdentifier = record?.branch_id ?? record?.branch;
+                return {
+                  onClick: () => {
+                    if (!branchIdentifier) {
+                      notification.warning({
+                        message: 'Branch Missing',
+                        description: 'Branch information is required to view station details.',
+                      });
+                      return;
+                    }
+                    navigate(`/solar-onboarding/stations/${branchIdentifier}`, {
+                      state: {
+                        stationId: record?.id,
+                        station: record,
+                      },
+                    });
+                  },
+                  style: { cursor: 'pointer' },
+                };
+              }}
             />
           </Card>
         </>
       ) : (
-        // Station Details Form (Editable)
         <Card title="Station Information">
           <Form
             form={form}
