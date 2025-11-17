@@ -12,7 +12,7 @@ import ForceLoginAdminHandler from "../../Pages/AuthPages/ForceLoginAdminHandler
 
 function AuthRoute() {
   return (
-    <div>\
+    <div>
       <AuthHeader />
 
       <main className='auth-container'>

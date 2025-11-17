@@ -6,6 +6,7 @@ import {
   DownloadOutlined,
   SettingOutlined,
   HolderOutlined,
+  ThunderboltOutlined,
 } from "@ant-design/icons";
 import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
@@ -61,11 +62,16 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
             key: "/clients",
             icon: <UserOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
       },
-      {
+        {
           label: "Anomalies",
           key: "/anomalies",
           icon: <WarningOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
       },
+        {
+            label: "Solar Onboarding",
+            key: "/solar-onboarding",
+            icon: <ThunderboltOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+        },
         {
             label: "System",
             key: "/system-constants",

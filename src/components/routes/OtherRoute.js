@@ -9,6 +9,8 @@ import DownloadPage from "../../Pages/AuthPages/DownloadPage";
 import Settings from "../../Pages/OverviewPages/Settings";
 import SystemConstants from "../../Pages/OverviewPages/SystemContants";
 import Anomalies from "../../Pages/OverviewPages/Anomalies";
+import SolarOnboarding from "../../Pages/OverviewPages/SolarOnboarding";
+import SolarStationDetails from "../../Pages/OverviewPages/SolarStationDetails";
 
 function OtherRoute() {
   return (
@@ -23,14 +25,13 @@ function OtherRoute() {
           <Route path="/create-client" element={<CreateClient />}></Route>
           <Route path="/system-constants" element={<SystemConstants />}></Route>
           <Route path="/client/:clientId" element={<ClientDetails />} />
+          <Route path="/solar-onboarding" element={<SolarOnboarding />} />
+          <Route path="/solar-onboarding/stations/:branchId" element={<SolarStationDetails />} />
           <Route path="/settings" element={<Settings />}></Route>
           <Route path="/anomalies" element={<Anomalies />}></Route>
           <Route path="/log-out" element={<LogOut />}></Route>
         </Routes>
       </div>
-      {/* <Routes>
-        <Route path="/log-out" element={<AuthRoute />}></Route>
-    </Routes> */}
     </>
   );
 }
