@@ -15,68 +15,75 @@ import {
   
 } from 'antd';
 import { SaveOutlined } from '@ant-design/icons';
-import { APIService } from '../../config/Api/apiServices';
 import { useNavigate } from 'react-router-dom';
+import {
+  fetchSolarStations,
+  fetchSolarBranches,
+  searchSolarStation,
+  clearSolarStationSearch,
+  saveSolarStation,
+  toggleSolarStationStatus,
+} from '../../redux/actions/solar/solar.action';
 
 const { Title } = Typography;
 
 
-const SolarOnboarding = (props) => {
+const SolarOnboarding = ({
+  solar: {
+    stations,
+    stationsLoading,
+    stationsError,
+    branches,
+    branchesLoading,
+    branchesError,
+    searchStationLoading,
+    searchedStation,
+    searchedDevices = [],
+    saveStationLoading,
+    toggleStationStatusLoadingId,
+  },
+  fetchSolarStations: fetchStationsAction,
+  fetchSolarBranches: fetchBranchesAction,
+  searchSolarStation: searchStationAction,
+  clearSolarStationSearch: clearSearchAction,
+  saveSolarStation: saveStationAction,
+  toggleSolarStationStatus: toggleStationStatusAction,
+}) => {
   const [form] = Form.useForm();
-  const [saving, setSaving] = useState(false);
   const [showDeviceDetails, setShowDeviceDetails] = useState(false);
-  const [devices, setDevices] = useState([]);
   const [searching, setSearching] = useState(false);
-  const [stations, setStations] = useState([]);
-  const [stationsLoading, setStationsLoading] = useState(false);
-  const [branches, setBranches] = useState([]);
-  const [branchesLoading, setBranchesLoading] = useState(false);
   const [searchFilters, setSearchFilters] = useState({ searchText: '', branch_id: undefined });
-  const [togglingStationId, setTogglingStationId] = useState(null);
   const [deviceSearchText, setDeviceSearchText] = useState('');
   const navigate = useNavigate();
 
-  const fetchStations = async () => {
-    setStationsLoading(true);
-    try {
-      const resp = await APIService.get('/api/v1/solar/stations/all/');
-      const data = resp?.data || {};
-      const list = Array.isArray(data.stations) ? data.stations : [];
-      setStations(list.length ? list : []);
-    } catch (error) {
-      console.error('Failed to fetch stations:', error);
+  useEffect(() => {
+    fetchStationsAction();
+    fetchBranchesAction();
+  }, [fetchBranchesAction, fetchStationsAction]);
+
+  useEffect(() => {
+    if (stationsError) {
       notification.warning({
         message: 'Warning',
-        description: 'Could not load stations list.',
+        description: stationsError,
       });
-      setStations([]);
-    } finally {
-      setStationsLoading(false);
     }
-  };
+  }, [stationsError]);
 
   useEffect(() => {
-    fetchStations();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (branchesError) {
+      notification.warning({
+        message: 'Warning',
+        description: branchesError,
+      });
+    }
+  }, [branchesError]);
 
   useEffect(() => {
-    const fetchBranches = async () => {
-      setBranchesLoading(true);
-      try {
-        const resp = await APIService.get('/cadmin/branches/');
-        const branches = Array.isArray(resp?.data)
-          ? resp.data.map(({ id, name }) => ({ id, name })) : [];
-        setBranches(branches);
-      } catch (error) {
-        console.error('Failed to fetch branches:', error);
-        setBranches([]);
-      } finally {
-        setBranchesLoading(false);
-      }
-    };
-    fetchBranches();
-  }, []);
+    if (searchedStation && showDeviceDetails) {
+      form.setFieldsValue(searchedStation);
+    }
+  }, [form, searchedStation, showDeviceDetails]);
 
   const handleSearchDevice = async (values) => {
     const { station_id, product_name } = values;
@@ -88,72 +95,25 @@ const SolarOnboarding = (props) => {
       return;
     }
 
-    setSearching(true);
     try {
-      const response = await APIService.get(`/api/v1/solar/stations/${product_name}/${station_id}/`);
-      const data = response?.data || {};
-
-      if (data?.error) {
-        notification.error({
-          message: 'Error',
-          description: data.error,
-        });
-        return;
-      }
-
-      const stationInfo = data.station_info || {};
-      const station = {
-        product_name: data.product_name || product_name,
-        station_id: data.station_id || station_id,
-        branch_id: data.branch_id || null,
-        name: stationInfo.name || '',
-        installed_capacity: stationInfo.installed_capacity || 0,
-        latitude: stationInfo.latitude || null,
-        longitude: stationInfo.longitude || null,
-        address: stationInfo.address || '',
-        region: stationInfo.region || '',
-        currency: stationInfo.currency || '',
-        create_time: stationInfo.create_time || null,
-      };
-
-      setDevices(Array.isArray(data.devices) ? data.devices : []);
-      setDeviceSearchText('');
-
-      form.setFieldsValue(station);
+      setSearching(true);
+      const result = await searchStationAction({ station_id, product_name });
+      if (result?.fulfilled) {
+        const isNew = result?.data?.isNew;
+        form.setFieldsValue(result?.data?.station || {});
         setShowDeviceDetails(true);
-        notification.success({
-        message: 'Station Found',
-        description: 'Station details loaded successfully.',
-      });
-    } catch (error) {
-      const apiError = error?.response?.data?.error || error?.response?.data?.detail || error?.message;
-      if (apiError) {
+        setDeviceSearchText('');
+
+        notification[isNew ? 'info' : 'success']({
+          message: isNew ? 'New Station' : 'Station Found',
+          description: isNew ? 'Please fill in the station details below.' : 'Station details loaded successfully.',
+        });
+      } else {
         notification.error({
           message: 'Error',
-          description: apiError,
+          description: result?.message || 'Could not load station.',
         });
-        return;
       }
-      const station = {
-        product_name,
-        station_id,
-        name: '',
-        installed_capacity: 0,
-        latitude: null,
-        longitude: null,
-        address: '',
-        region: '',
-        currency: '',
-        create_time: null,
-      };
-      setDevices([]);
-      setDeviceSearchText('');
-      form.setFieldsValue(station);
-      setShowDeviceDetails(true);
-      notification.info({
-        message: 'New Station',
-        description: 'Please fill in the station details below.',
-      });
     } finally {
       setSearching(false);
     }
@@ -176,7 +136,6 @@ const SolarOnboarding = (props) => {
       return;
     }
 
-    setSaving(true);
     try {
       const selectedBranch = branches.find((b) => String(b.id) === String(values.branch_id));
       const branch_name = selectedBranch?.name || values.branch_name || '';
@@ -195,31 +154,33 @@ const SolarOnboarding = (props) => {
           currency: values.currency || '',
           create_time: values.create_time || null,
         },
-        devices: Array.isArray(devices) ? devices : [],
-        device_count: Array.isArray(devices) ? devices.length : 0,
+        devices: Array.isArray(searchedDevices) ? searchedDevices : [],
+        device_count: Array.isArray(searchedDevices) ? searchedDevices.length : 0,
       };
 
-      await APIService.post(`/api/v1/solar/branch/${payload.branch_id}/`, payload);
-      
-      notification.success({
-        message: 'Success',
-        description: 'Station details saved successfully.',
-      });
+      const result = await saveStationAction(payload);
+      if (result?.fulfilled) {
+        notification.success({
+          message: 'Success',
+          description: 'Station details saved successfully.',
+        });
+        fetchStationsAction();
+      } else {
+        notification.error({
+          message: 'Error',
+          description: result?.message || 'Failed to save station details. Please try again.',
+        });
+      }
     } catch (error) {
-      console.error('Save error:', error);
       notification.error({
         message: 'Error',
-        description: error?.response?.data?.message || error?.response?.data?.detail || error.message || 'Failed to save station details. Please try again.',
+        description: error?.message || 'Failed to save station details. Please try again.',
       });
-    } finally {
-      setSaving(false);
     }
   };
 
   const handleToggleStationStatus = async (station) => {
     const branchIdentifier = station?.branch_id ?? station?.branch;
-    const stationId = station?.id;
-
     if (!branchIdentifier) {
       notification.error({
         message: 'Error',
@@ -228,40 +189,18 @@ const SolarOnboarding = (props) => {
       return;
     }
 
-    const loadingKey = stationId ?? branchIdentifier;
-    setTogglingStationId(loadingKey);
-    try {
-      const response = await APIService.post(`/api/v1/solar/stations/${branchIdentifier}/toggle-status/`);
-      const data = response?.data || {};
-
-      if (data.station) {
-        // Update the station in the local state
-        setStations((prevStations) =>
-          prevStations.map((station) =>
-            station.id === stationId || station.id === data.station.id
-              ? { ...station, ...data.station, is_active: data.current_status }
-              : station
-          )
-        );
-
-        notification.success({
-          message: 'Success',
-          description: data.message || `Station ${data.current_status ? 'activated' : 'deactivated'} successfully.`,
-        });
-      } else {
-        notification.error({
-          message: 'Error',
-          description: 'Failed to update station status. Please try again.',
-        });
-      }
-    } catch (error) {
-      console.error('Toggle station status error:', error);
+    const result = await toggleStationStatusAction(station);
+    if (result?.fulfilled) {
+      notification.success({
+        message: 'Success',
+        description: result?.message || 'Station status updated successfully.',
+      });
+      fetchStationsAction();
+    } else {
       notification.error({
         message: 'Error',
-        description: error?.response?.data?.message || error?.response?.data?.detail || error.message || 'Failed to toggle station status. Please try again.',
+        description: result?.message || 'Failed to toggle station status. Please try again.',
       });
-    } finally {
-      setTogglingStationId(null);
     }
   };
 
@@ -270,6 +209,7 @@ const SolarOnboarding = (props) => {
       setShowDeviceDetails(false);
       form.resetFields();
       setDeviceSearchText('');
+      clearSearchAction();
     }
   };
 
@@ -337,7 +277,7 @@ const SolarOnboarding = (props) => {
             type="primary"
             htmlType="submit"
             form="station-details-form"
-            loading={saving}
+            loading={saveStationLoading}
             icon={<SaveOutlined />}
             style={{ background: '#5C12A7' }}
           >
@@ -382,7 +322,7 @@ const SolarOnboarding = (props) => {
                 <Button
                   type="primary"
                   htmlType="submit"
-                  loading={searching}
+                  loading={searching || searchStationLoading}
                   size="large"
                   block
                   style={{ background: '#5C12A7', width: 'max-content' }}
@@ -432,7 +372,7 @@ const SolarOnboarding = (props) => {
             </div>
             <Table
               dataSource={
-                stations.filter((station) => {
+                (stations || []).filter((station) => {
                   const searchText = searchFilters?.searchText?.toLowerCase() || '';
                   const textMatch = searchText
                     ? (
@@ -470,7 +410,7 @@ const SolarOnboarding = (props) => {
                   key: 'action',
                   render: (_, record) => {
                     const loadingKey = record.id ?? record.branch_id ?? record.branch;
-                    const isToggling = togglingStationId === loadingKey;
+                    const isToggling = toggleStationStatusLoadingId === loadingKey;
                     const isActive = record.is_active;
                     return (
                       <Button
@@ -645,7 +585,7 @@ const SolarOnboarding = (props) => {
             </div>
             <Table
               dataSource={
-                devices.filter((device) => {
+                searchedDevices.filter((device) => {
                   const searchText = deviceSearchText?.toLowerCase() || '';
                   if (!searchText) return true;
                   return (
@@ -669,7 +609,16 @@ const SolarOnboarding = (props) => {
 };
 
 const mapStateToProps = (state) => ({
-  auth: state.auth,
+  solar: state.solar,
 });
 
-export default connect(mapStateToProps)(SolarOnboarding);
+const mapDispatchToProps = {
+  fetchSolarStations,
+  fetchSolarBranches,
+  searchSolarStation,
+  clearSolarStationSearch,
+  saveSolarStation,
+  toggleSolarStationStatus,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SolarOnboarding);

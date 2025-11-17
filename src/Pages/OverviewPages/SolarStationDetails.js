@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { connect } from 'react-redux';
 import {
   Button,
   Card,
@@ -20,7 +21,7 @@ import {
   Typography,
 } from 'antd';
 import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons';
-import { APIService } from '../../config/Api/apiServices';
+import { fetchSolarStationDetails, updateSolarDevice } from '../../redux/actions/solar/solar.action';
 
 const { Title, Text } = Typography;
 
@@ -43,15 +44,20 @@ const deviceStatusOptions = [
   { label: 'Fault', value: 'fault' },
 ];
 
-const SolarStationDetails = () => {
+const SolarStationDetails = ({
+  solar: {
+    stationDetails: details,
+    stationDevices: devices = [],
+    stationDetailsLoading: loading,
+    stationDetailsRefreshing: refreshing,
+    updateDeviceLoading: savingDevice,
+  },
+  fetchSolarStationDetails: fetchDetailsAction,
+  updateSolarDevice: updateDeviceAction,
+}) => {
   const { branchId } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [details, setDetails] = useState(null);
-  const [devices, setDevices] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
   const [editingDevice, setEditingDevice] = useState(null);
-  const [savingDevice, setSavingDevice] = useState(false);
   const [form] = Form.useForm();
   const [deviceFormValues, setDeviceFormValues] = useState(null);
 
@@ -80,29 +86,15 @@ const SolarStationDetails = () => {
       return;
     }
 
-    if (showLoader) {
-      setLoading(true);
-    } else {
-      setRefreshing(true);
-    }
-
-    try {
-      const response = await APIService.get(`/api/v1/solar/devices/${branchId}/`);
-      const data = response?.data ?? {};
-      setDetails(data);
-      setDevices(Array.isArray(data.devices) ? data.devices : []);
-    } catch (error) {
-      console.error('Failed to load solar station details:', error);
+    const result = await fetchDetailsAction(branchId, { silent: !showLoader });
+    if (!result?.fulfilled) {
       notification.error({
         message: 'Failed to Load Details',
-        description: error?.response?.data?.message || error?.response?.data?.detail || error?.message || 'Could not fetch the station details. Please try again later.',
+        description: result?.message || 'Could not fetch the station details. Please try again later.',
       });
       navigate(-1);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
     }
-  }, [branchId, navigate]);
+  }, [branchId, fetchDetailsAction, navigate]);
 
   useEffect(() => {
     fetchDetails(true);
@@ -141,21 +133,19 @@ const SolarStationDetails = () => {
         return;
       }
 
-      setSavingDevice(true);
       const payload = {
         ...values,
         capacity_kwp: Number(values.capacity_kwp ?? 0),
       };
 
-      await APIService.patch(`/api/v1/solar/devices/${editingDevice.id}/update/`, payload);
-
-      setDevices((prevDevices) =>
-        prevDevices.map((device) =>
-          device.id === editingDevice.id
-            ? { ...device, ...payload, is_active: payload.is_active }
-            : device
-        )
-      );
+      const result = await updateDeviceAction(editingDevice.id, payload);
+      if (!result?.fulfilled) {
+        notification.error({
+          message: 'Update Failed',
+        description: result?.message || 'Could not update the device. Please try again.',
+        });
+        return;
+      }
 
       notification.success({
         message: 'Device Updated',
@@ -168,13 +158,10 @@ const SolarStationDetails = () => {
       if (error?.errorFields) {
         return;
       }
-      console.error('Failed to update device:', error);
       notification.error({
         message: 'Update Failed',
-        description: error?.response?.data?.message || error?.response?.data?.detail || error?.message || 'Could not update the device. Please try again.',
+        description: 'Could not update the device. Please try again.',
       });
-    } finally {
-      setSavingDevice(false);
     }
   };
 
@@ -371,5 +358,14 @@ const SolarStationDetails = () => {
   );
 };
 
-export default SolarStationDetails;
+const mapStateToProps = (state) => ({
+  solar: state.solar,
+});
+
+const mapDispatchToProps = {
+  fetchSolarStationDetails,
+  updateSolarDevice,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SolarStationDetails);
 
