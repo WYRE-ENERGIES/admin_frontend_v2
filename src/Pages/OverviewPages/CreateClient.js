@@ -65,7 +65,7 @@ const getInitialDeviceForm = () => ({
   operationalStartTime: dayjs('00:00', 'HH:mm'),
   operationalEndTime: dayjs('23:59', 'HH:mm')
 });
-const initialBranchForm = { name: '', address: '', city: '', email: '', region: null, copyEmail: '', devices: [getInitialDeviceForm()] };
+const initialBranchForm = { name: '', address: '', city: '', email: '', region: null, copyEmail: '', devices: [] };
 const initialUserForm = { username: '', firstName: '', lastName: '', email: '', phoneNumber: '', password: '', role: null };
 const initialEmailForm = { email: '' };
 const initialRegionForm = { region: '' };
@@ -133,8 +133,11 @@ export const createBranches = async (clientId, branchesData) => {
     city: branch.city || null,
     email: branch.email || null,
     region: branch.region || null,
-    copy_email: branch.copyEmail || null,
-    devices: branch.devices?.map(device => ({
+    copy_email: branch.copyEmail || '',
+    devices: branch.devices?.filter(device => {
+      // Filter out completely empty devices (no essential fields filled)
+      return device.name || device.type || device.provider || device.deviceId;
+    }).map(device => ({
       name: device.name,
       type: device.type,
       is_load: !!device.isLoad,
@@ -187,7 +190,6 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
             {...deviceRestField}
             label="Device Name"
             name={[deviceName, 'name']}
-            rules={[{ required: true, message: '${label} is required!' }]}
           >
             <Input placeholder="Device Name" />
           </Form.Item>
@@ -197,7 +199,6 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
             {...deviceRestField}
             label="Device Type"
             name={[deviceName, 'type']}
-            rules={[{ required: true, message: 'Please select a ${label}!' }]}
           >
             <Select placeholder="Select Type">
               {DEVICE_TYPES.map(dt => <Option key={dt.id} value={dt.id}>{dt.name} ({dt.id})</Option>)}
@@ -209,7 +210,6 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
             {...deviceRestField}
             label="Provider"
             name={[deviceName, 'provider']}
-            rules={[{ required: true, message: 'Please select a ${label}!' }]}
           >
              <Select placeholder="Select Provider">
               {DEVICE_PROVIDERS.map(p => <Option key={p} value={p}>{p}</Option>)}
@@ -221,7 +221,6 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
             {...deviceRestField}
             label="Device ID"
             name={[deviceName, 'deviceId']}
-            rules={[{ required: true, message: '${label} is required!' }]}
           >
             <Input placeholder="Unique Device ID" />
           </Form.Item>
@@ -233,7 +232,6 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
                         {...deviceRestField}
                         label="Gen Size (kVA)"
                         name={[deviceName, 'genSize']}
-                        rules={[{ required: true, message: '${label} is required for Generator!' }]}
                     >
                         <InputNumber style={{ width: '100%', height: '33px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} placeholder="e.g., 100" />
                     </Form.Item>
@@ -243,7 +241,6 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
                         {...deviceRestField}
                         label="Fuel Type"
                         name={[deviceName, 'fuelType']}
-                        rules={[{ required: true, message: 'Please select ${label} for Generator!' }]}
                     >
                          <Select placeholder="Select Fuel Type">
                           {FUEL_TYPES.map(ft => <Option key={ft} value={ft}>{ft}</Option>)}
@@ -256,10 +253,6 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
                         label="Operational Start Time"
                         name={[deviceName, 'operationalStartTime']}
                         rules={[
-                            { 
-                                required: true, 
-                                message: '${label} is required for Generator!' 
-                            },
                             {
                                 validator: (_, value) => {
                                     if (!value) {
@@ -293,10 +286,6 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
                         label="Operational End Time"
                         name={[deviceName, 'operationalEndTime']}
                         rules={[
-                            { 
-                                required: true, 
-                                message: '${label} is required for Generator!' 
-                            },
                             {
                                 validator: (_, value) => {
                                     if (!value) {
@@ -426,8 +415,9 @@ const CreateClient = () => {
     delete merged.logoFile;
     
     merged.branches.forEach(branch => {
-      if (!Array.isArray(branch.devices) || branch.devices.length === 0) {
-        branch.devices = [getInitialDeviceForm()];
+      // Ensure devices is always an array (can be empty)
+      if (!Array.isArray(branch.devices)) {
+        branch.devices = [];
       } else {
         // Ensure all existing devices have proper time field initialization
         branch.devices.forEach(device => {
@@ -933,24 +923,10 @@ const CreateClient = () => {
       const branches = currentValues.branches || [];
       fieldsToValidatePaths = branches.flatMap((branch, branchIndex) => {
         if (!branch) return [];
+        // Validate branch name and address, devices are optional
         return [
           ['branches', branchIndex, 'name'],
-          ...(branch.devices || []).flatMap((device, deviceIndex) => {
-            if (!device) return [];
-            const basePaths = [
-              ['branches', branchIndex, 'devices', deviceIndex, 'name'],
-              ['branches', branchIndex, 'devices', deviceIndex, 'type'],
-              ['branches', branchIndex, 'devices', deviceIndex, 'provider'],
-              ['branches', branchIndex, 'devices', deviceIndex, 'deviceId'],
-            ];
-            if (device.type === 1) {
-              basePaths.push(
-                ['branches', branchIndex, 'devices', deviceIndex, 'genSize'],
-                ['branches', branchIndex, 'devices', deviceIndex, 'fuelType']
-              );
-            }
-            return basePaths;
-          })
+          ['branches', branchIndex, 'address']
         ];
       });
     } else if (currentStep === 3) {
@@ -1235,7 +1211,7 @@ const CreateClient = () => {
                       </Form.Item>
                     </Col> 
                     <Col xs={24} md={8}>
-                      <Form.Item {...branchRestField} label="Branch Address" name={[branchName, 'address']}>
+                      <Form.Item {...branchRestField} label="Branch Address" name={[branchName, 'address']} rules={[{ required: true, message: 'Branch Address is required!' }]}>
                         <Input placeholder="Branch Address" />
                       </Form.Item>
                     </Col>
@@ -1425,7 +1401,7 @@ const CreateClient = () => {
         mainEmail: '',
         mainPhoneNumber: '',
         mainPassword: '',
-        branches: [initialBranchForm],
+        branches: [{ ...initialBranchForm, devices: [] }],
         additionalUsers: [],
       };
       
