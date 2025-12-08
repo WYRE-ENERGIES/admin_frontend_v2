@@ -7,7 +7,7 @@ import { useEffect, useState, useRef, useMemo } from "react";
 import { getKeyMetricsData, getTotalCostTopCard, getTotalEnergyBarChartData, getTotalEnergyTopCard, getUtilityCostPerBranch, getUtilityEnergyPerBranch, getDieselCostPerBranch, getDieselLitresPerBranch } from "../../redux/actions/overview/overview.action";
 import { useSearchParams } from "react-router-dom";
 import { connect } from "react-redux";
-import moment, { months } from "moment";
+import moment from "moment";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -26,7 +26,6 @@ import UtilityEnergyChart from "./UtilityEnergyChart";
 import DieselCostChart from "./DieselCostChart";
 import DieselLitreChart from "./DieselLitreChart";
 import ChartGroupButtons from "./ChartGroupButtons";
-import { PiLightningDuotone } from "react-icons/pi";
 import { getLocationsData, getRegionsListData } from "../../redux/actions/location/location.action";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';

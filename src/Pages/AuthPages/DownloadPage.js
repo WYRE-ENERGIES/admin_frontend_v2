@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-globals */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useMemo } from "react";
 // import { useCookies } from "react-cookie";
-import { decode as base64_decode, encode as base64_encode } from 'base-64';
+// removed legacy password storage
 
 
 import {
@@ -20,13 +20,10 @@ import dayjs from 'dayjs';
 import buddhistEra from 'dayjs/plugin/buddhistEra';
 import { CaretDownFilled } from "@ant-design/icons";
 import { Input } from "antd";
-import { downloadFile, compareDateInfo } from "../../helpers/generalHelper";
+import { downloadFile } from "../../helpers/generalHelper";
 import moment from "moment";
-import { Link } from "react-router-dom";
 import EnvData from "../../config/EnvData";
-import { render } from "react-dom";
 import Highlighter from "react-highlight-words";
-import Password from "antd/lib/input/Password";
 
 const { convertArrayToCSV } = require("convert-array-to-csv");
 const { Title } = Typography;
@@ -57,7 +54,7 @@ function DownloadPage(props) {
   const [formTwo] = Form.useForm();
   const [formThree] = Form.useForm();
   const [formFour] = Form.useForm();
-  const [pPassword, setPPassword] = useState("12345678");
+  // removed legacy password state
   const [deviceName, setDeviceName] = useState(null);
   const [deviceId, setDeviceId] = useState(null);
   const [branchName, setBranchName] = useState(false);
@@ -70,6 +67,18 @@ function DownloadPage(props) {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
+  const [monitorPagination, setMonitorPagination] = useState({
+  current: 1,
+  pageSize: 10,
+  showSizeChanger: true,
+  pageSizeOptions: ['10', '20', '50', '100'],
+});
+const [allDevicesPagination, setAllDevicesPagination] = useState({
+  current: 1,
+  pageSize: 10,
+  showSizeChanger: true,
+  pageSizeOptions: ['10', '20', '50', '100'],
+});
 
   const { RangePicker } = DatePicker;
 
@@ -127,6 +136,22 @@ function DownloadPage(props) {
     clearFilters();
     setSearchText("");
   };
+
+  const handleMonitorTableChange = (pagination) => {
+  setMonitorPagination((prev) => ({
+    ...prev,
+    current: pagination.current,
+    pageSize: pagination.pageSize,
+  }));
+};
+
+const handleAllDevicesTableChange = (pagination) => {
+  setAllDevicesPagination((prev) => ({
+    ...prev,
+    current: pagination.current,
+    pageSize: pagination.pageSize,
+  }));
+};
 
   const getColumnSearchProps = (dataIndex) => ({
     filterDropdown: ({
@@ -246,13 +271,10 @@ function DownloadPage(props) {
     }
   }, [props.auth.allDevicesfetched]);
   useEffect(() => {
-    if(!props.auth.allDevicesfetched){
-      const password = base64_decode(sessionStorage.getItem('pp'));
-      setPPassword(password);
-      props.getDownloadAllDevices(password);
+    if (!props.auth.allDevicesfetched) {
+      props.getDownloadAllDevices();
     }
-    
-  }, [sessionStorage.getItem('pp') || compareDateInfo(sessionStorage.getItem('ppt'), 30)])
+  }, [])
 
   const columnData = [
     {
@@ -338,7 +360,7 @@ function DownloadPage(props) {
                 );
 
                 if (request.fulfilled) {
-                  props.getDownloadAllDevices(pPassword);
+                  props.getDownloadAllDevices();
                   return notification.info({
                     message: "Successful",
                     description: request.message,
@@ -429,7 +451,7 @@ function DownloadPage(props) {
                 );
 
                 if (request.fulfilled) {
-                  props.getDownloadAllDevices(pPassword);
+                  props.getDownloadAllDevices();
                   return notification.info({
                     message: "Successful",
                     description: request.message,
@@ -516,19 +538,10 @@ function DownloadPage(props) {
     </Select>
   );
 
-  const onPasswordFormSubmit = async (values) => {
-    const { password } = values;
-    
-    const request = await props.getDownloadAllDevices(password);
-
-    // save password in session storage
-
-    var b = base64_encode(password);
-    sessionStorage.setItem('pp', b)
-    sessionStorage.setItem('ppt', new Date());
+  const onPasswordFormSubmit = async () => {
+    const request = await props.getDownloadAllDevices();
 
     if (request.fulfilled) {
-      setPPassword(password);
       form.resetFields();
       return notification.info({
         message: "successful",
@@ -543,7 +556,6 @@ function DownloadPage(props) {
   const onSelectFormSubmit = async (values) => {
     const { dateRange } = values;
     const request = await props.getDownloadDeviceReadings(
-      pPassword,
       deviceId,
       dateRange
     );
@@ -595,7 +607,7 @@ function DownloadPage(props) {
 
   const onSelectAggregateFormSubmit = async (values) => {
     const { dateRange } = values;
-    const downloadUrl = `/api/v1/get_aggregated_device_readings/${pPassword}/${deviceId}/${
+    const downloadUrl = `/api/v1/get_aggregated_device_readings/${deviceId}/${
       moment(dateRange[0]).format("DD-MM-YYYY HH:mm") +
       "/" +
       moment(dateRange[1]).format("DD-MM-YYYY HH:mm")
@@ -612,7 +624,7 @@ function DownloadPage(props) {
   
   const onOperatingTimeSubmit = async (values) => {
     const { deviceId, dateRange, timeRange } = values;
-    const downloadUrl = `/api/v1/get_timed_device_readings/${pPassword}/${deviceId}/${moment(dateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(dateRange[1]).format('DD-MM-YYYY HH:mm')}/${moment(timeRange[0]).format('HH') + '/' + moment(timeRange[1]).format('HH')}`;
+    const downloadUrl = `/api/v1/get_timed_device_readings/${deviceId}/${moment(dateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(dateRange[1]).format('DD-MM-YYYY HH:mm')}/${moment(timeRange[0]).format('HH') + '/' + moment(timeRange[1]).format('HH')}`;
 
     form.resetFields();
 
@@ -622,6 +634,42 @@ function DownloadPage(props) {
     });
     return (window.location.href = `${EnvData.REACT_APP_API_URL}${downloadUrl}`);
   };
+
+  // Monitoring overview percentages (based on Monitoring Table data)
+  const calculatePostingPercentage = (devices, minutes) => {
+    if (!devices || devices.length === 0) return 0;
+    const devicesWithLastPost = devices.filter((device) => !!device.last_posted);
+    if (devicesWithLastPost.length === 0) return 0;
+    const cutoffTime = moment().subtract(minutes, 'minutes');
+    const devicesWithinWindow = devicesWithLastPost.filter((device) => moment(device.last_posted).isAfter(cutoffTime));
+    return Math.round((devicesWithinWindow.length / devicesWithLastPost.length) * 100);
+  };
+
+  // Use useMemo to recalculate percentages only when data changes
+  const monitoringPct30Min = useMemo(() => 
+    calculatePostingPercentage(monitorDataState, 30), 
+    [monitorDataState]
+  );
+  const monitoringPct60Min = useMemo(() => 
+    calculatePostingPercentage(monitorDataState, 60), 
+    [monitorDataState]
+  );
+  const monitoringPct24Hr = useMemo(() => 
+    calculatePostingPercentage(monitorDataState, 24 * 60), 
+    [monitorDataState]
+  );
+  const allDevicesPct30Min = useMemo(() => 
+    calculatePostingPercentage(sortedDataState, 30), 
+    [sortedDataState]
+  );
+  const allDevicesPct60Min = useMemo(() => 
+    calculatePostingPercentage(sortedDataState, 60), 
+    [sortedDataState]
+  );
+  const allDevicesPct24Hr = useMemo(() => 
+    calculatePostingPercentage(sortedDataState, 24 * 60), 
+    [sortedDataState]
+  );
 
   return (
     <div className="download-page-container" style={{ padding: "24px" }}>
@@ -773,24 +821,72 @@ function DownloadPage(props) {
               </Card>
             </Col>
 
-            <Col xs={24}>
-              <Card title="Monitoring Table" style={cardStyle}>
+          <Col xs={24}>
+          <h1 style={{fontSize: 24, color: "#333" }}>
+            Monitoring Table
+          </h1>
+              <Row gutter={[24, 24]} >
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Posted within last 30 minutes</Title>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{monitoringPct30Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Posted within last 60 minutes</Title>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{monitoringPct60Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Posted within last 24 hours</Title>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{monitoringPct24Hr}%</div>
+                  </Card>
+                </Col>
+              </Row>
+              <Card style={cardStyle}>
                 <Table
                   dataSource={monitorDataState}
                   columns={monitorColumn}
                   scroll={{ x: true }}
-                  pagination={{ pageSize: 10 }}
+                pagination={monitorPagination}
+                onChange={handleMonitorTableChange}
                 />
               </Card>
             </Col>
 
             <Col xs={24}>
-              <Card title="All Devices Table" style={cardStyle}>
+          <h1 style={{fontSize: 24, color: "#333" }}>
+            All Devices Table
+          </h1>
+              <Row gutter={[24, 24]}>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 30 minutes</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct30Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 60 minutes</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct60Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 24 hours</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct24Hr}%</div>
+                  </Card>
+                </Col>
+              </Row>
+              <Card style={cardStyle}>
                 <Table
                   dataSource={sortedDataState}
                   columns={columnData}
-                  scroll={{ x: true }}
-                  pagination={{ pageSize: 10 }}
+                scroll={{ x: true }}
+                pagination={allDevicesPagination}
+                onChange={handleAllDevicesTableChange}
                 />
               </Card>
             </Col>

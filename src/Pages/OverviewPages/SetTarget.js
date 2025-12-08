@@ -1,7 +1,7 @@
-import { Button, Form, Image, Input, Space, Spin, Typography, notification } from "antd";
+import { Button, Form, Input, Spin, Typography, notification } from "antd";
 import { useEffect, useState } from "react";
-import { connect, useSelector } from "react-redux";
-import { PercentageOutlined, ClockCircleOutlined, FundOutlined, MoneyCollectOutlined, ProjectOutlined } from "@ant-design/icons";
+import { connect } from "react-redux";
+import { PercentageOutlined, ClockCircleOutlined, FundOutlined, ProjectOutlined } from "@ant-design/icons";
 import { getTargetData, setTargetData } from "../../redux/actions/target/target.action";
 import EditTarget from "./EditTarget";
 
@@ -17,13 +17,6 @@ const errorNotificationPopUp = (type, formName) => {
     description: `Your addition to the ${formName} failed, please try again later`,
   });
 };
-const NotAllowedNotification = () => {
-  notification.error({
-    message: 'Request Error',
-    description: 'NOT ALLOWED',
-    duration: 5
-  })
-}
 
 const SubmitButton = ({ form }) => {
   const [submittable, setSubmittable] = useState(false);

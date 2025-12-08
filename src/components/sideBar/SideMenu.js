@@ -3,32 +3,23 @@ import {
   UserOutlined,
   ProjectOutlined,
   MenuOutlined,
-  CompassOutlined,
-  DashboardOutlined,
   AimOutlined,
   HeatMapOutlined,
   LoginOutlined,
-  SendOutlined,
-  MessageOutlined,
   MailOutlined,
-  CustomerServiceOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
   ArrowLeftOutlined,
   SettingOutlined,
 } from "@ant-design/icons";
 import EnvData from '../../config/EnvData';
-import { Button, Image, Menu, Space, theme, Drawer } from "antd";
-import Form from "antd/es/form/Form";
+import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
-import useToken from "antd/es/theme/useToken";
+ 
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logUserOut } from "../../redux/actions/auth/auth.action";
-import { useDispatch } from "react-redux";
-import { logoutUser } from "../../redux/actions/auth/auth.creator";
+import { connect } from "react-redux";
   
-function SideMenu({collapsed, setCollapsed}) {
+function SideMenu({collapsed, setCollapsed, logUserOut}) {
     const [selectedLocation, setSelectedLocation] = useState('/');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -36,19 +27,13 @@ function SideMenu({collapsed, setCollapsed}) {
     const [clientLogo, setClientLogo] = useState(null);
     const [clientName, setClientName] = useState(null);
     const location = useLocation();
-    const {
-      token: { colorBgContainer },
-    } = theme.useToken();
-    const dispatch = useDispatch;
-
-    // Get client info from localStorage
+    
     useEffect(() => {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      setClientLogo(currentUser.client_image || '');
-      setClientName(currentUser.client || 'Polaris Bank');
+      setClientLogo(currentUser.client_image);
+      setClientName(currentUser.client);
     }, []);
 
-    // Handle window resize
     useEffect(() => {
       const handleResize = () => {
         const mobile = window.innerWidth <= 768;
@@ -58,36 +43,28 @@ function SideMenu({collapsed, setCollapsed}) {
         }
       };
 
-      window.addEventListener('resize', handleResize);
-      return () => window.removeEventListener('resize', handleResize);
-    }, []);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
     useEffect(() => {
         const adminBackup = localStorage.getItem('adminUserBackup');
         setIsAdminImpersonating(!!adminBackup);
     }, [location.pathname]);
 
-    const onLogout = () => {
-      const navigateTo = '/'
-      dispatch(logoutUser())
-      navigate(navigateTo)
+  const goBackToAdmin = () => {
+    const adminBackup = localStorage.getItem('adminUserBackup');
+    if (adminBackup)
+    {
+      // localStorage.setItem('loggedWyreUserAdmin', adminBackup);
+      // localStorage.removeItem('adminUserBackup');
+      window.location.href = '/force-login-admin';
     }
+  };
 
-    const goBackToAdmin = () => {
-        const adminBackup = localStorage.getItem('adminUserBackup');
-        if (adminBackup) {
-            // localStorage.setItem('loggedWyreUserAdmin', adminBackup);
-            // localStorage.removeItem('adminUserBackup');
-            window.location.href = '/force-login-admin';
-        }
-    };
-
-    const logOut = () => {
-      dispatch(logoutUser());
-      window.localStorage.removeItem('loggedWyreUserAdmin');
-      window.localStorage.removeItem('adminUserBackup');
-      window.location.href = '/';
-    };
+  const logOut = () => {
+    logUserOut();
+  };
     
     const items = [
       {
@@ -111,6 +88,9 @@ function SideMenu({collapsed, setCollapsed}) {
         icon: <AimOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
+        type: 'divider',
+      },
+      {
         label: "Diesel Overview",
         key: "/diesel",
         icon: <HeatMapOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
@@ -121,115 +101,123 @@ function SideMenu({collapsed, setCollapsed}) {
         icon: <SettingOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       // {
-      //   label: "Regions Activities",
-      //   key: "/regions-activities",
-      //   icon: <CompassOutlined />,
-      // },
-      // {
-      //   label: "Top Management Report",
-      //   key: "/top-mngt",
-      //   icon: <SendOutlined />,
-      // },
-      {
-        type: 'divider',
-      },
-      {
-        label: "Support",
-        key: "/support",
-        icon: <MailOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
-      },
+        //   label: "Regions Activities",
+        //   key: "/regions-activities",
+        //   icon: <CompassOutlined />,
+        // },
+        // {
+          //   label: "Top Management Report",
+          //   key: "/top-mngt",
+          //   icon: <SendOutlined />,
+          // },
+          {
+            type: 'divider',
+          },
+          {
+            label: "Support",
+            key: "/support",
+            icon: <MailOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+          },
+          {
+            label: "Log Out",
+            key: "logout",
+            icon: <LoginOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+            onClick: logOut
+          },
       {
         type: 'divider',
       },
     ]
 
-    if (isAdminImpersonating) {
-        const backToAdminItem = {
-        label: <span style={{ fontWeight: 'bold' }}>Back to Admin</span>,
-            key: "/back-to-admin",
-            onClick: goBackToAdmin,
-            icon: <ArrowLeftOutlined />,
-            style: {
-                background: '#fff',
-                color: '#222',
-                fontWeight: 'bold',
-                borderRadius: 6,
-                marginBottom: 8,
-            },
-        };
-        items.unshift(backToAdminItem);
-    }
-  
-    useEffect(() => {
-      const pathName = location.pathname;
-      setSelectedLocation(pathName);
-    }, [location.pathname]);
+  if (isAdminImpersonating)
+  {
+    const backToAdminItem = {
+      label: <span style={{ fontWeight: 'bold' }}>Back to Admin</span>,
+      key: "/back-to-admin",
+      onClick: goBackToAdmin,
+      icon: <ArrowLeftOutlined />,
+      style: {
+        background: '#fff',
+        color: '#222',
+        fontWeight: 'bold',
+        borderRadius: 6,
+        marginBottom: 8,
+      },
+    };
+    items.unshift(backToAdminItem);
+  }
 
-    const navigate = useNavigate();
+  useEffect(() => {
+    const pathName = location.pathname;
+    setSelectedLocation(pathName);
+  }, [location.pathname]);
 
-    const MenuContent = () => (
-      <>
-        <div className="wyre-logo">
-            <Image width={80} preview={false} src="/Images/Wyre white-08 1.png"></Image>
-            <Button
-            type="text"
-            className="mobile-menu-button"
-              icon={
-                collapsed ? (
-                  <MenuOutlined style={{ color: "white" }} />
-                ) : (
-                  // <MenuFoldOutlined style={{ color: "white" }} />
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '100%'
-                  }}>
-                    {/* <Image width={80} src="/Images/Wyre white-08 1.png"></Image> */}
-                    <Button
-                      type="text"
-                      icon={
-                        collapsed ? (
-                          <MenuOutlined style={{ color: "white" }} />
-                        ) : (
-                          <MenuOutlined style={{ marginLeft: 0, color: "white" }} />
-                        )
-                      }
-                      onClick={() => {
-                        setCollapsed(!collapsed);
-                      }}
-                    />
-                  </div>
-                )
-              }
-              onClick={() => {
-                setCollapsed(!collapsed);
-              }}
-            style={{
-              marginLeft: '5px',
-              scale: collapsed ? '1.1' : '1',
-                width: 52,
-                // height: 64,
-              }}
-            />
-        </div>
-        <Menu
-          className="SideMenuVertical"
-          theme="white"
-          selectedKeys={selectedLocation}
-          defaultSelectedKeys={["1"]}
-          onClick={(Item) => {
-            navigate(Item.key);
-            if (isMobile) {
-              setMobileDrawerOpen(false);
-            }
+  const navigate = useNavigate();
+
+  const MenuContent = () => (
+    <>
+      <div className="wyre-logo">
+        <Image width={80} preview={false} src="/Images/Wyre white-08 1.png"></Image>
+        <Button
+          type="text"
+          className="mobile-menu-button"
+          icon={
+            collapsed ? (
+              <MenuOutlined style={{ color: "white" }} />
+            ) : (
+              // <MenuFoldOutlined style={{ color: "white" }} />
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100%'
+              }}>
+                {/* <Image width={80} src="/Images/Wyre white-08 1.png"></Image> */}
+                <Button
+                  type="text"
+                  icon={
+                    collapsed ? (
+                      <MenuOutlined style={{ color: "white" }} />
+                    ) : (
+                      <MenuOutlined style={{ marginLeft: 0, color: "white" }} />
+                    )
+                  }
+                  onClick={() => {
+                    setCollapsed(!collapsed);
+                  }}
+                />
+              </div>
+            )
+          }
+          onClick={() => {
+            setCollapsed(!collapsed);
           }}
-          mode="vertical"
-          items={items}
-        />
-        <div
-          className="SideMenuVertical"
           style={{
+            marginLeft: '5px',
+            scale: collapsed ? '1.1' : '1',
+            width: 52,
+            // height: 64,
+          }}
+        />
+      </div>
+      <Menu
+        className="SideMenuVertical"
+        theme="white"
+        selectedKeys={selectedLocation}
+        defaultSelectedKeys={["1"]}
+        onClick={(Item) => {
+          navigate(Item.key);
+          if (isMobile)
+          {
+            setMobileDrawerOpen(false);
+          }
+        }}
+        mode="vertical"
+        items={items}
+      />
+      <div
+        className="SideMenuVertical"
+        style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'start',
@@ -242,7 +230,7 @@ function SideMenu({collapsed, setCollapsed}) {
             width={73}
             height={38}
             style={{ padding: 0, objectFit: 'contain' }}
-      src={EnvData.REACT_APP_API_URL + clientLogo}
+            src={EnvData.REACT_APP_API_URL + clientLogo || '/images/wyre-placeholder-logo.png'}
             alt='Client Logo'
             preview={false}
           />
@@ -250,63 +238,64 @@ function SideMenu({collapsed, setCollapsed}) {
             fontSize: '12px',
             display: collapsed ? 'none' : 'block',
             color: 'white'
-          }}>{clientName}</p>
+          }}>{clientName || '---'}</p>
         </div>
       </>
     );
 
-    // Mobile Header
-    const MobileHeader = () => (
-      <div className="mobile-header">
-        <Image width={80} src="/Images/Wyre white-08 1.png" />
-        <Button
-          type="text"
-          icon={<MenuOutlined style={{ color: "white" }} />}
-          onClick={() => setMobileDrawerOpen(true)}
-          style={{ color: "white" }}
-        />
-      </div>
-    );
+  // Mobile Header
+  const MobileHeader = () => (
+    <div className="mobile-header">
+      <Image width={80} src="/Images/Wyre white-08 1.png" />
+      <Button
+        type="text"
+        icon={<MenuOutlined style={{ color: "white" }} />}
+        onClick={() => setMobileDrawerOpen(true)}
+        style={{ color: "white" }}
+      />
+    </div>
+  );
 
-    if (isMobile) {
-      return (
-        <>
-          <MobileHeader />
-          <Drawer
-            placement="right"
-            onClose={() => setMobileDrawerOpen(false)}
-            open={mobileDrawerOpen}
-            width={280}
-            bodyStyle={{ padding: 0, backgroundColor: "#5C12A7" }}
-            headerStyle={{ display: 'none' }}
-          >
-            <MenuContent />
-          </Drawer>
-        </>
-      );
-    }
-
+  if (isMobile)
+  {
     return (
-      <Sider
-        style={{
-          height: "100vh",
-          position: "sticky",
-          right: 0,
-          left: 0,
-          top: 0,
-          bottom: 0,
-          color: "white",
-          marginLeft: 15
-        }}
-        collapsible
-        collapsed={collapsed}
-        collapsedWidth={60}
-        trigger={null}
-        onCollapse={(value) => setCollapsed(value)}
-      >
-        <MenuContent />
-      </Sider>
+      <>
+        <MobileHeader />
+        <Drawer
+          placement="right"
+          onClose={() => setMobileDrawerOpen(false)}
+          open={mobileDrawerOpen}
+          width={280}
+          bodyStyle={{ padding: 0, backgroundColor: "#5C12A7" }}
+          headerStyle={{ display: 'none' }}
+        >
+          <MenuContent />
+        </Drawer>
+      </>
     );
+  }
+
+  return (
+    <Sider
+      style={{
+        height: "100vh",
+        position: "sticky",
+        right: 0,
+        left: 0,
+        top: 0,
+        bottom: 0,
+        color: "white",
+        marginLeft: 15
+      }}
+      collapsible
+      collapsed={collapsed}
+      collapsedWidth={60}
+      trigger={null}
+      onCollapse={(value) => setCollapsed(value)}
+    >
+      <MenuContent />
+    </Sider>
+  );
 }
 
-export default SideMenu;
+export default connect(null, { logUserOut })(SideMenu);

@@ -8,6 +8,8 @@ import dieselReducers from "./diesel/diesel.reducer";
 import locationReducers from "./location/location.reducer";
 import branchReducers from "./branch/branch.reducer";
 import overviewReducersBulkMonitoring from "./bulkMonitoring/overview/overview.reducer";
+import systemConstantsReducer from "./systemConstants/system.constants.reducer";
+import solarReducer from "./solar/solar.reducer";
 
 const rootReducers = combineReducers({
     overviewPage: overviewReducers,
@@ -19,6 +21,8 @@ const rootReducers = combineReducers({
     dieselPage: dieselReducers,
     locationPage: locationReducers,
     branchPage: branchReducers,
+    systemConstants: systemConstantsReducer,
+    solar: solarReducer,
 });
 
 export default rootReducers

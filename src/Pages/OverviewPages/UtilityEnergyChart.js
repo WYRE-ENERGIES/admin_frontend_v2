@@ -63,7 +63,7 @@ function UtilityEnergyChart(props) {
         labels,
         datasets: [
           {
-            label: "PHCN Consumed Energy",
+            label: "Utility Consumed Energy",
             data: energy,
             backgroundColor: "#43D540",
             borderRadius: 6,

@@ -185,7 +185,7 @@ const ClientDetails = () => {
     if (!client) return;
     setActionLoading(true);
     try {
-      await APIService.suspendClient(client.id, !client.is_active);
+      await APIService.patch(`/api/v2/suspend_client/${client.id}/`, { is_active: !client.is_active });
       notification.success({
         message: client.is_active ? 'Suspend Client' : 'Activate Client',
         description: client.is_active ? 'Client has been suspended successfully.' : 'Client has been activated successfully.'
@@ -204,7 +204,7 @@ const ClientDetails = () => {
   const handleLoginAsClient = async () => {
     if (!client) return;
     try {
-      const response = await APIService.forceLoginClientAdmin(client.id);
+      const response = await APIService.post(`/api/v2/force-login-client-admin/${client.id}/`);
       const tokenData = response.data?.data?.token;
       const userData = response.data?.data;
       if (tokenData?.access && tokenData?.refresh) {
@@ -250,7 +250,7 @@ const ClientDetails = () => {
   const handleSuspendBranch = async (branchId, isActive) => {
     setBranchLoading(true);
     try {
-      await APIService.suspendBranch(branchId, isActive);
+      await APIService.patch(`/api/v2/suspend_branch/${branchId}/`, { is_active: isActive });
       notification.success({
         message: isActive ? 'Activate Branch' : 'Suspend Branch',
         description: isActive ? 'Branch has been activated successfully.' : 'Branch has been suspended successfully.'

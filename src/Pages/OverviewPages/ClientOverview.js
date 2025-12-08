@@ -55,11 +55,14 @@ const ClientOverview = () => {
   const handleViewClient = (clientId) => {
     navigate(`/client/${clientId}`);
   };
+  const handleCreateSolar = (clientId) => {
+    navigate('/solar-onboarding');
+  };
 
   const handleSuspendClient = async (clientId, isActive) => {
     setLoading(true);
     try {
-      await APIService.suspendClient(clientId, isActive);
+      await APIService.patch(`/api/v2/suspend_client/${clientId}/`, { is_active: isActive });
       notification.success({
         message: isActive ? 'Activate Client' : 'Suspend Client',
         description: isActive ? 'Client has been activated successfully.' : 'Client has been suspended successfully.'
@@ -140,6 +143,11 @@ const ClientOverview = () => {
                 key: 'view',
                 label: 'View Client',
                 onClick: () => handleViewClient(record.key)
+              },
+              {
+                key: 'solar',
+                label: 'Create Solar',
+                onClick: () => handleCreateSolar(record.key)
               },
               {
                 key: record.is_active ? 'suspend' : 'activate',

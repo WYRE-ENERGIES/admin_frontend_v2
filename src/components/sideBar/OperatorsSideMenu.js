@@ -4,9 +4,10 @@ import {
   WarningOutlined,
   LoginOutlined,
   DownloadOutlined,
+    MailOutlined,
   SettingOutlined,
   HolderOutlined,
-  ThunderboltOutlined,
+  BookOutlined
 } from "@ant-design/icons";
 import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
@@ -16,7 +17,7 @@ import { connect } from "react-redux";
 import { logUserOut } from "../../redux/actions/auth/auth.action";
 import EnvData from "../../config/EnvData";
 
-function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
+function OperatorsSideMenu({ collapsed, setCollapsed, logUserOut }) {
     const [selectedLocation, setSelectedLocation] = useState('/');
     const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
@@ -57,25 +58,20 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
         key: "/",
         icon: <DownloadOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
       },
-        {
-            label: "Clients",
-            key: "/clients",
-            icon: <UserOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-      },
-        {
+      {
           label: "Anomalies",
           key: "/anomalies",
           icon: <WarningOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
       },
         {
-            label: "Solar Onboarding",
-            key: "/solar-onboarding",
-            icon: <ThunderboltOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
-        },
-        {
             label: "System",
             key: "/system-constants",
             icon: <HolderOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+        },
+        {
+            label: "Documentation",
+            key: "/documentation",
+            icon: <BookOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
         },
         {
             type: 'divider',
@@ -87,7 +83,7 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
       },
         {
             type: 'divider',
-        },
+      },
         {
             label: "Log Out",
             key: "logout",
@@ -220,6 +216,6 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
   );
 }
 
-export default connect(null, { logUserOut })(OtherSideMenu);
+export default connect(null, { logUserOut })(OperatorsSideMenu);
     
     
