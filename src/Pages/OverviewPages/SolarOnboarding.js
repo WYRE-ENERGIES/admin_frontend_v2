@@ -144,6 +144,7 @@ const SolarOnboarding = ({
         branch_name,
         product_name: values.product_name,
         station_id: values.station_id,
+        installed_battery_capacity: values.installed_battery_capacity || 0,
         station_info: {
           name: values.name || '',
           installed_capacity: values.installed_capacity || 0,
@@ -392,6 +393,7 @@ const SolarOnboarding = ({
                 { title: 'Station ID', dataIndex: 'deye_station_id', key: 'deye_station_id' },
                 { title: 'Name', dataIndex: 'name', key: 'name' },
                 { title: 'Branch', dataIndex: 'branch_name', key: 'branch_name' },
+                { title: 'Installed Battery Capacity', dataIndex: 'installed_battery_capacity', key: 'installed_battery_capacity' },
                 { title: 'Installed Capacity (kWp)', dataIndex: 'installed_capacity', key: 'installed_capacity' },
                 {
                   title: 'Active',
@@ -515,6 +517,19 @@ const SolarOnboarding = ({
                 >
                   <InputNumber
                     placeholder="Enter Capacity"
+                    style={{ width: '100%' }}
+                    min={0}
+                    step={0.1}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12} md={8}>
+                <Form.Item
+                  label="Installed Battery Capacity"
+                  name="installed_battery_capacity"
+                >
+                  <InputNumber
+                    placeholder="Enter Installed Battery Capacity"
                     style={{ width: '100%' }}
                     min={0}
                     step={0.1}
