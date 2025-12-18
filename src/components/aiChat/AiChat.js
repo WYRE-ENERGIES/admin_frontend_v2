@@ -156,10 +156,6 @@ export default function AiChat() {
         const croppedImgHeight = tempCanvas.height / pixelsPerMm;
         pdf.addImage(croppedImgData, 'PNG', margin, margin + titleHeight, pdfImgWidth, croppedImgHeight);
 
-        // Add page number
-        pdf.setFontSize(10);
-        pdf.text(`Page ${pageCount}`, pageWidth - margin - 10, pageHeight - 10);
-
         yOffset += usablePageHeight * pixelsPerMm;
         pageCount++;
       }
