@@ -166,13 +166,10 @@ const EditAdditionalUsersModal = ({ visible, onCancel, users, clientId, onUserUp
         onCancel={onCancel}
         width={1000}
         footer={[
-          <Button key="back" onClick={onCancel}>Cancel</Button>,
           <Button key="add" type="dashed" icon={<PlusOutlined />} onClick={handleAddUser}>
             Add User
           </Button>,
-          <Button key="submit" type="primary" loading={loading} onClick={handleSave}>
-            Save
-          </Button>,
+          <Button key="back" type="primary" onClick={onCancel}>Done</Button>,
         ]}
       >
         <Table 
