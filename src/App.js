@@ -66,7 +66,20 @@ function App() {
                   </div>
                   {/* <AppFooter /> */}
                 </div>
-                : decodedUser && decodedUser.client_type === "WYRE" ?
+                : decodedUser && decodedUser.client_type === "WYRE" && decodedUser.role_text === "OPERATOR" ?
+                    <div>
+                      <div className="SidemenuAndPagecontent">
+                        <OperatorsSideMenu
+                          trigger={null}
+                          collapsible
+                          collapsed={collapsed}
+                          setCollapsed={setCollapsed}
+                          onBreakpoint={onBreakpoint}
+                        />
+                        <OperatorsPageView />
+                      </div>
+                    </div>
+                  : decodedUser && decodedUser.client_type === "WYRE" ?
                   <div>
                     {/* <AppHeader /> */}
                     <div className="SidemenuAndPagecontent">
@@ -81,19 +94,6 @@ function App() {
                     </div>
                     {/* <AppFooter /> */}
                   </div>
-                  : decodedUser && decodedUser.client_type === "WYRE" && decodedUser.role_text === "OPERATOR" ?
-                    <div>
-                      <div className="SidemenuAndPagecontent">
-                        <OperatorsSideMenu
-                          trigger={null}
-                          collapsible
-                          collapsed={collapsed}
-                          setCollapsed={setCollapsed}
-                          onBreakpoint={onBreakpoint}
-                        />
-                        <OperatorsPageView />
-                      </div>
-                    </div>
                     :
                     <AuthRoute />
           }

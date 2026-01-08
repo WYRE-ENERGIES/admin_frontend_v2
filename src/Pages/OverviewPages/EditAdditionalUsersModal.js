@@ -115,6 +115,7 @@ const EditAdditionalUsersModal = ({ visible, onCancel, users, clientId, onUserUp
         setIsAddModalVisible(false);
         setEditingUser(null);
         form.resetFields();
+        onCancel();
       } catch (error) {
         notification.error({
           message: 'Error',
