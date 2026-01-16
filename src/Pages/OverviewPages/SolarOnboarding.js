@@ -181,7 +181,7 @@ const SolarOnboarding = ({
   };
 
   const handleToggleStationStatus = async (station) => {
-    const branchIdentifier = station?.branch_id ?? station?.branch;
+    const branchIdentifier = station?.branch ?? station?.branch_id;
     if (!branchIdentifier) {
       notification.error({
         message: 'Error',
@@ -383,8 +383,8 @@ const SolarOnboarding = ({
                       )
                     : true;
                   const branchMatch = searchFilters?.branch_id
-                    ? String(station.branch_id) === String(searchFilters.branch_id) ||
-                      String(station.branch) === String(searchFilters.branch_id)
+                    ? String(station.branch) === String(searchFilters.branch_id) ||
+                      String(station.branch_id) === String(searchFilters.branch_id)
                     : true;
                   return textMatch && branchMatch;
                 })
@@ -411,7 +411,7 @@ const SolarOnboarding = ({
                   title: 'Action',
                   key: 'action',
                   render: (_, record) => {
-                    const loadingKey = record.id ?? record.branch_id ?? record.branch;
+                    const loadingKey = record.id ?? record.branch ?? record.branch_id;
                     const isToggling = toggleStationStatusLoadingId === loadingKey;
                     const isActive = record.is_active;
                     return (
@@ -436,7 +436,7 @@ const SolarOnboarding = ({
               loading={stationsLoading}
               pagination={{ pageSize: 10 }}
               onRow={(record) => {
-                const branchIdentifier = record?.branch_id ?? record?.branch;
+                const branchIdentifier = record?.branch ?? record?.branch_id;
                 return {
                   onClick: () => {
                     if (!branchIdentifier) {
