@@ -13,7 +13,7 @@ import {
 import { connect } from "react-redux";
 import { AlertFilled, FireFilled, SearchOutlined } from '@ant-design/icons';
 
-import { Spin, Form, notification, Select, DatePicker, Table, Switch, Tag, Button, Space, TimePicker, Card, Row, Col, Typography } from "antd";
+import { Spin, Form, notification, Select, DatePicker, Table, Switch, Tag, Button, Space, TimePicker, Card, Row, Col, Typography, Modal, Descriptions } from "antd";
 import en from 'antd/es/date-picker/locale/en_US';
 import enUS from 'antd/es/locale/en_US';
 import dayjs from 'dayjs';
@@ -70,6 +70,8 @@ function DownloadPage(props) {
   const searchInput = useRef(null);
   const [branchPostingData, setBranchPostingData] = useState([]);
   const [branchPostingLoading, setBranchPostingLoading] = useState(false);
+  const [branchDetailModalVisible, setBranchDetailModalVisible] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState(null);
   const [monitorPagination, setMonitorPagination] = useState({
   current: 1,
   pageSize: 10,
@@ -154,6 +156,16 @@ const handleBranchPostingTableChange = (pagination) => {
     current: pagination.current,
     pageSize: pagination.pageSize,
   }));
+};
+
+const handleBranchRowClick = (record) => {
+  setSelectedBranch(record);
+  setBranchDetailModalVisible(true);
+};
+
+const handleCloseBranchModal = () => {
+  setBranchDetailModalVisible(false);
+  setSelectedBranch(null);
 };
 
   const getColumnSearchProps = (dataIndex) => ({
@@ -442,21 +454,6 @@ const handleBranchPostingTableChange = (pagination) => {
       },
     },
     {
-      title: "Status",
-      dataIndex: "hours_since_last_post",
-      key: "status",
-      render: (value) => {
-        if (value === null || value === undefined || value === 999) {
-          return <Tag icon={<FireFilled />} color="red">No Posts</Tag>;
-        }
-        return value <= 36 ? (
-          <Tag icon={<AlertFilled />} color="green">Active</Tag>
-        ) : (
-          <Tag icon={<FireFilled />} color="red">Inactive</Tag>
-        );
-      },
-    },
-    {
       title: "Active Devices",
       dataIndex: "devices",
       key: "active_devices",
@@ -464,6 +461,31 @@ const handleBranchPostingTableChange = (pagination) => {
         if (!devices || !Array.isArray(devices)) return 0;
         return devices.filter((d) => d.is_active === true).length;
       },
+    },
+  ];
+
+  // Device columns for branch detail modal
+  const branchDeviceColumns = [
+    {
+      title: "Device Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Device ID",
+      dataIndex: "device_id",
+      key: "device_id",
+    },
+    {
+      title: "Is Active",
+      dataIndex: "is_active",
+      key: "is_active",
+      render: (value) => (value ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>),
+    },
+    {
+      title: "Device Type",
+      dataIndex: "type",
+      key: "type",
     },
   ];
 
@@ -938,6 +960,47 @@ const handleBranchPostingTableChange = (pagination) => {
                   </Form.Item>
                 </Form>
               </Card>
+          </Col>
+          
+                    <Col xs={24}>
+          <h1 style={{fontSize: 24, color: "#333" }}>
+            Branch Posting
+          </h1>
+              <Row gutter={[24, 24]}>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Branches: Posted within last 30 minutes</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{branchPostingPct30Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Branches: Posted within last 60 minutes</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{branchPostingPct60Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Branches: Posted within last 24 hours</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{branchPostingPct24Hr}%</div>
+                  </Card>
+                </Col>
+              </Row>
+              <Card style={cardStyle}>
+                <Table
+                  dataSource={branchPostingData}
+                  columns={branchPostingColumns}
+                  loading={branchPostingLoading}
+                  scroll={{ x: true }}
+                  pagination={branchPostingPagination}
+                  onChange={handleBranchPostingTableChange}
+                  rowKey="branch_id"
+                  onRow={(record) => ({
+                    onClick: () => handleBranchRowClick(record),
+                    style: { cursor: 'pointer' }
+                  })}
+                />
+              </Card>
             </Col>
 
           <Col xs={24}>
@@ -974,44 +1037,56 @@ const handleBranchPostingTableChange = (pagination) => {
                 />
               </Card>
             </Col>
-
-            <Col xs={24}>
-          <h1 style={{fontSize: 24, color: "#333" }}>
-            Branch Posting
-          </h1>
-              <Row gutter={[24, 24]}>
-                <Col xs={24} md={8}>
-                  <Card style={cardStyle}>
-                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Branches: Posted within last 30 minutes</Title>
-                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{branchPostingPct30Min}%</div>
-                  </Card>
-                </Col>
-                <Col xs={24} md={8}>
-                  <Card style={cardStyle}>
-                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Branches: Posted within last 60 minutes</Title>
-                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{branchPostingPct60Min}%</div>
-                  </Card>
-                </Col>
-                <Col xs={24} md={8}>
-                  <Card style={cardStyle}>
-                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Branches: Posted within last 24 hours</Title>
-                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{branchPostingPct24Hr}%</div>
-                  </Card>
-                </Col>
-              </Row>
-              <Card style={cardStyle}>
-                <Table
-                  dataSource={branchPostingData}
-                  columns={branchPostingColumns}
-                  loading={branchPostingLoading}
-                  scroll={{ x: true }}
-                  pagination={branchPostingPagination}
-                  onChange={handleBranchPostingTableChange}
-                  rowKey="branch_id"
-                />
-              </Card>
-            </Col>
           </Row>
+
+        <Modal
+          title={`Branch Details: ${selectedBranch?.branch_name || ''}`}
+          open={branchDetailModalVisible}
+          onCancel={handleCloseBranchModal}
+          footer={[
+            <Button key="close" onClick={handleCloseBranchModal}>
+              Close
+            </Button>
+          ]}
+          width={900}
+        >
+          {selectedBranch && (
+            <div>
+              {/* Latest Post By Type Section */}
+              {selectedBranch.latest_post_by_type && (
+                <div style={{ marginBottom: 24 }}>
+                  <Title level={5} style={{ marginBottom: 12 }}>Latest Post By Type</Title>
+                  <Descriptions bordered column={1}>
+                    {Object.entries(selectedBranch.latest_post_by_type).map(([type, datetime]) => (
+                      <Descriptions.Item key={type} label={type}>
+                        {datetime ? new Date(datetime).toLocaleString() : '-'}
+                      </Descriptions.Item>
+                    ))}
+                  </Descriptions>
+                </div>
+              )}
+
+              {/* Devices Table Section */}
+              {selectedBranch.devices && Array.isArray(selectedBranch.devices) && (
+                <div>
+                  <Title level={5} style={{ marginBottom: 12 }}>Devices List</Title>
+                  <Table
+                    dataSource={selectedBranch.devices}
+                    columns={branchDeviceColumns}
+                    rowKey={(record, index) => record.device_id || `device-${index}`}
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      pageSizeOptions: ['10', '20', '50'],
+                    }}
+                    scroll={{ x: true }}
+                    size="small"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </Modal>
 
       </Spin>
     </div>

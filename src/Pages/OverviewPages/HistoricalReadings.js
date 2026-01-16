@@ -133,37 +133,44 @@ const HistoricalReadings = () => {
       dataIndex: 'client_name',
       key: 'client_name',
       ellipsis: true,
-      responsive: ['sm'],
+      width: isMobile ? 120 : undefined,
     },
     {
       title: 'Branch Name',
       dataIndex: 'branch_name',
       key: 'branch_name',
       ellipsis: true,
-      responsive: ['sm'],
+      width: isMobile ? 120 : undefined,
     },
     {
       title: 'Device Name',
       dataIndex: 'device_name',
       key: 'device_name',
       ellipsis: true,
-      responsive: ['sm'],
+      width: isMobile ? 120 : undefined,
     },
     {
-      title: 'Reading',
-      dataIndex: 'reading',
-      key: 'reading',
+      title: 'Energy Reading',
+      dataIndex: 'energy_reading',
+      key: 'energy_reading',
       render: (v) => v != null ? (typeof v === 'number' ? Number(v).toFixed(2) : v) : '-',
-      responsive: ['sm'],
+      width: isMobile ? 100 : undefined,
+    },
+    {
+      title: 'Post Date',
+      dataIndex: 'post_date',
+      key: 'post_date',
+      render: (v) => v || '-',
+      width: isMobile ? 100 : undefined,
     },
     {
       title: 'Post Time',
-      dataIndex: 'post_datetime',
-      key: 'post_datetime',
-      render: (v) => (v ? new Date(v).toLocaleString() : '-'),
-      responsive: ['md'],
+      dataIndex: 'post_time',
+      key: 'post_time',
+      render: (v) => v || '-',
+      width: isMobile ? 100 : undefined,
     },
-  ], []);
+  ], [isMobile]);
 
   return (
     <div style={{ 
@@ -209,25 +216,33 @@ const HistoricalReadings = () => {
         </Space>
       </div>
 
-      <Table
-        rowKey="id"
-        loading={loading}
-        dataSource={readings}
-        columns={columns}
-        scroll={{ x: 'max-content' }}
-        pagination={{
-          current: pagination.current_page,
-          pageSize: pagination.page_size,
-          total: pagination.total_count,
-          showSizeChanger: true,
-          showQuickJumper: !isMobile,
-          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
-          pageSizeOptions: ['10', '20', '50', '100'],
-          responsive: true,
-        }}
-        onChange={handleTableChange}
-        size={isMobile ? 'small' : 'middle'}
-      />
+      <div style={{ 
+        overflowX: 'auto',
+        width: '100%',
+        minHeight: isMobile ? '300px' : undefined
+      }}>
+        <Table
+          rowKey={(record, index) => `${record.client_name}-${record.device_name}-${record.post_date}-${record.post_time}-${index}`}
+          loading={loading}
+          dataSource={readings}
+          columns={columns}
+          scroll={{ 
+            x: 'max-content'
+          }}
+          pagination={{
+            current: pagination.current_page,
+            pageSize: pagination.page_size,
+            total: pagination.total_count,
+            showSizeChanger: true,
+            showQuickJumper: !isMobile,
+            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            responsive: true,
+          }}
+          onChange={handleTableChange}
+          size={isMobile ? 'small' : 'middle'}
+        />
+      </div>
     </div>
   )
 }
