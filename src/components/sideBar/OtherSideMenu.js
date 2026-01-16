@@ -63,8 +63,8 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
             icon: <UserOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
       },
         {
-          label: "Anomalies",
-          key: "/anomalies",
+          label: "Historical Readings",
+            key: "/historical-readings",
           icon: <WarningOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
       },
         {

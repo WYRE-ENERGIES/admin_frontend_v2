@@ -45,7 +45,7 @@ const Documentation = () => {
 
       <Alert
         message="Getting Started"
-        description="This documentation is designed for OPERATORS who need to understand and effectively use the Wyre energy management system. You have access to all system features including anomaly management, system configuration, and support functions."
+        description="This documentation is designed for OPERATORS who need to understand and effectively use the Wyre energy management system. You have access to all system features including historical reading management, system configuration, and support functions."
         type="info"
         showIcon
         style={{ marginBottom: '30px' }}
