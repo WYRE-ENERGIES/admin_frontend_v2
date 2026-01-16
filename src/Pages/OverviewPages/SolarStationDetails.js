@@ -70,11 +70,20 @@ const SolarStationDetails = ({
     is_active: Boolean(device?.is_active ?? (typeof device?.status === 'string' ? device.status.toLowerCase() === 'online' : device?.is_active)),
   }), []);
 
-  const stationSummary = useMemo(() => ({
-    branch: details?.branch ?? {},
-    station: details?.station ?? {},
-    count: details?.count ?? 0,
-  }), [details]);
+  const stationSummary = useMemo(() => {
+    const station = details?.station ?? {};
+    const stationInfo = station?.station_info ?? {};
+    return {
+      branch: details?.branch ?? {},
+      station: {
+        ...station,
+        installed_battery_capacity: station.installed_battery_capacity ?? stationInfo.installed_battery_capacity,
+        installed_capacity: station.installed_capacity ?? stationInfo.installed_capacity,
+        installed_capacity_kwp: station.installed_capacity_kwp ?? stationInfo.installed_capacity_kwp ?? station.installed_capacity ?? stationInfo.installed_capacity,
+      },
+      count: details?.count ?? 0,
+    };
+  }, [details]);
 
   const fetchDetails = useCallback(async (showLoader = true) => {
     if (!branchId) {
@@ -266,6 +275,7 @@ const SolarStationDetails = ({
               <Descriptions column={1} bordered={false} size="small">
                 <Descriptions.Item label="Station ID">{stationSummary.station?.deye_station_id || stationSummary.station?.id || '—'}</Descriptions.Item>
                 <Descriptions.Item label="Address">{stationSummary.station?.address || '—'}</Descriptions.Item>
+                <Descriptions.Item label="Installed Battery Capacity (kWh)">{stationSummary.station?.installed_battery_capacity || '—'}</Descriptions.Item>
                 <Descriptions.Item label="Installed Capacity (kWp)">
                   {stationSummary.station?.installed_capacity_kwp ?? stationSummary.station?.installed_capacity ?? '—'}
                 </Descriptions.Item>

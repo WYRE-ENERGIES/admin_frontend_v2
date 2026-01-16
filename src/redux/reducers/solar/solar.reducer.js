@@ -129,10 +129,12 @@ const solarReducer = (state = INITIAL_STATE, action) => {
             station.deye_station_id &&
             updatedStation.deye_station_id &&
             String(station.deye_station_id) === String(updatedStation.deye_station_id);
+          const stationBranch = station.branch ?? station.branch_id;
+          const updatedBranch = updatedStation.branch ?? updatedStation.branch_id;
           const matchesBranch =
-            station.branch_id &&
-            updatedStation.branch_id &&
-            String(station.branch_id) === String(updatedStation.branch_id);
+            stationBranch &&
+            updatedBranch &&
+            String(stationBranch) === String(updatedBranch);
 
           if (matchesId || matchesDeyeId || matchesBranch) {
             return { ...station, ...updatedStation };
