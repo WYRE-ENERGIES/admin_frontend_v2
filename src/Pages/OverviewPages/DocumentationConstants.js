@@ -21,7 +21,7 @@ export const quickStartSteps = [
   },
   {
     title: 'Monitor',
-    description: 'View energy data, anomalies, and system status',
+    description: 'View energy data, historical readings, and system status',
     icon: <BarChartOutlined />
   },
   {
@@ -40,11 +40,11 @@ export const mainFeatures = [
     link: '/'
   },
   {
-    title: 'Anomaly Detection & Management',
-    description: 'Identify, review, and manage irregular energy readings and system anomalies',
+      title: 'Historical Readings Detection & Management',
+    description: 'Identify, review, and manage irregular energy readings and system historical readings',
     icon: <WarningOutlined style={{ color: '#faad14' }} />,
-    pages: ['Anomalies Page', 'Context View', 'Bulk Actions'],
-    link: '/anomalies'
+    pages: ['Historical Readings Page', 'Context View', 'Bulk Actions'],
+    link: '/historical-readings'  
   },
   {
     title: 'System Configuration',
@@ -76,9 +76,9 @@ export const pageDetails = [
     icon: <DownloadOutlined />,
     description: 'Export energy data and reports in CSV format',
     features: [
-      'Export energy consumption data across all locations',
+      'Export energy consumption data across all locations',  
       'Generate comprehensive monthly/quarterly reports',
-      'Download anomaly reports and irregular readings',
+      'Download historical reading reports and irregular readings',
       'Export system performance metrics',
       'Custom date range selection for data export'
     ],
@@ -87,22 +87,22 @@ export const pageDetails = [
     link: '/'
   },
   {
-    key: 'anomalies',
-    title: 'Anomalies Detection & Management',
+    key: 'historical-readings', 
+    title: 'Historical Readings Detection & Management',
     icon: <WarningOutlined />,
     description: 'Monitor and manage irregular energy readings across the system',
     features: [
-      'View all detected anomalies with detailed information',
+      'View all detected historical readings with detailed information',
       'Advanced search and filter capabilities',
-      'Mark anomalies as valid/invalid with context review',
+      'Mark historical readings as valid/invalid with context review',
       'Delete false positive readings permanently',
       'View reading context and historical data',
-      'Bulk operations for multiple anomalies',
-      'Real-time anomaly detection status'
+      'Bulk operations for multiple historical readings',
+          'Real-time historical reading detection status'
     ],
-    usage: 'Critical for maintaining data quality and identifying system issues. Review anomalies regularly to ensure accurate energy monitoring.',
+    usage: 'Critical for maintaining data quality and identifying system issues. Review historical readings regularly to ensure accurate energy monitoring.',
     technical: 'Uses machine learning algorithms to detect irregular patterns in energy consumption data. Provides context windows for better decision making.',
-    link: '/anomalies'
+    link: '/historical-readings'
   },
   {
     key: 'system-constants',
@@ -111,14 +111,14 @@ export const pageDetails = [
     description: 'Configure system-wide parameters and operational constants',
     features: [
       'Set energy consumption thresholds',
-      'Configure anomaly detection parameters',
+      'Configure historical reading detection parameters',
       'Manage system-wide alert settings',
       'Update operational constants and limits',
       'Configure data retention policies',
       'Set performance monitoring parameters'
     ],
     usage: 'Used to fine-tune system behavior, alert thresholds, and operational parameters. Changes affect the entire system.',
-    technical: 'Stores configuration data that affects anomaly detection algorithms, alert systems, and overall system behavior.',
+    technical: 'Stores configuration data that affects historical reading detection algorithms, alert systems, and overall system behavior.',
     link: '/system-constants'
   },
   {
@@ -170,17 +170,17 @@ export const commonTasks = [
     link: '/'
   },
   {
-    task: 'Review and Manage Anomalies',
+    task: 'Review and Manage Historical Readings',
     steps: [
-      'Go to Anomalies page from sidebar',
-      'Review the list of detected anomalies',
-      'Use search to find specific anomalies by device, branch, or reason',
+      'Go to Historical Readings page from sidebar',
+      'Review the list of historical readings',
+      'Use search to find specific readings by device, branch, or reason',
       'Click on a row to view reading context and history',
       'Mark as valid or delete false positives based on context',
-      'Use bulk operations for multiple anomalies'
+      'Use bulk operations for multiple readings'
     ],
-    tips: 'Always review the context before marking anomalies as valid to ensure data accuracy. Use the context window to understand patterns.',
-    link: '/anomalies'
+    tips: 'Always review the context before marking readings as valid to ensure data accuracy. Use the context window to understand patterns.',
+    link: '/historical-readings'
   },
   {
     task: 'Configure System Parameters',
@@ -188,7 +188,7 @@ export const commonTasks = [
       'Navigate to System Constants page',
       'Review current system thresholds and parameters',
       'Update energy consumption thresholds as needed',
-      'Configure anomaly detection parameters',
+        'Configure historical reading detection parameters',
       'Save changes and monitor system behavior'
     ],
     tips: 'Changes to system constants affect the entire system. Test changes in a controlled environment first.',
@@ -227,8 +227,8 @@ export const troubleshooting = [
     severity: 'Medium'
   },
   {
-    issue: 'Anomalies not updating or appearing',
-    solution: 'Click the refresh button on the anomalies page. Data is updated in real-time but may have a slight delay. Check if anomaly detection is enabled in system constants.',
+    issue: 'Historical Readings not updating or appearing',
+    solution: 'Click the refresh button on the historical readings page. Data is updated in real-time but may have a slight delay. Check if historical reading detection is enabled in system constants. Check if historical reading detection is enabled in system constants.',
     severity: 'Low'
   },
   {
@@ -243,19 +243,19 @@ export const troubleshooting = [
   },
   {
     issue: 'Data appears incorrect or inconsistent',
-    solution: 'Verify the date range and filters applied. Check system constants for threshold settings. Contact the data team if discrepancies persist after verification.',
+      solution: 'Verify the date range and filters applied. Check system constants for threshold settings. Contact the data team if discrepancies persist after verification.',
     severity: 'High'
   },
   {
     issue: 'System performance is slow',
-    solution: 'Check your internet connection speed. Large data exports and anomaly processing can be resource-intensive. Consider breaking operations into smaller chunks.',
+    solution: 'Check your internet connection speed. Large data exports and historical reading processing can be resource-intensive. Consider breaking operations into smaller chunks.',
     severity: 'Low'
   }
 ];
 
 export const bestPractices = [
   'Always verify date ranges and filters before analyzing or exporting data',
-  'Review anomalies in context before marking them as valid to ensure data accuracy',
+    'Review historical readings in context before marking them as valid to ensure data accuracy',
   'Export data regularly for backup and reporting purposes',
   'Monitor system constants and thresholds for optimal performance',
   'Use search and filter functions to find specific data quickly',
