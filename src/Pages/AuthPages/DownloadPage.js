@@ -441,7 +441,7 @@ const handleCloseBranchModal = () => {
       dataIndex: "hours_since_last_post",
       key: "hours_since_last_post",
       render: (value) => {
-        if (value === null || value === undefined || value === 999) return "N/A";
+        if (value === null || value === undefined || value === 999) return "Null";
         return (
           <>
             {value + " Hour(s) "} <br />{" "}
@@ -472,11 +472,6 @@ const handleCloseBranchModal = () => {
       key: "name",
     },
     {
-      title: "Device ID",
-      dataIndex: "device_id",
-      key: "device_id",
-    },
-    {
       title: "Is Active",
       dataIndex: "is_active",
       key: "is_active",
@@ -486,6 +481,36 @@ const handleCloseBranchModal = () => {
       title: "Device Type",
       dataIndex: "type",
       key: "type",
+    },
+    {
+      title: "Last Posted",
+      dataIndex: "last_posted",
+      key: "last_posted",
+      render: (value) =>
+        value === null || value === undefined
+          ? "Null"
+          : new Date(value)
+              .toString()
+              .split(" ")
+              .slice(0, 5)
+              .join(" "),
+    },
+    {
+      title: "Hours Since Last Post",
+      dataIndex: "hours_since_last_post",
+      key: "hours_since_last_post",
+      render: (value) => {
+        if (value === null || value === undefined || value === 999) return "Null";
+        return (
+          <>
+            {value + " Hour(s) "} <br />{" "}
+            <span>
+              ({Math.floor(value / 24) + "Days,"} {Math.floor(value % 24) + "Hrs"}
+              )
+            </span>
+          </>
+        );
+      },
     },
   ];
 
@@ -1052,7 +1077,6 @@ const handleCloseBranchModal = () => {
         >
           {selectedBranch && (
             <div>
-              {/* Latest Post By Type Section */}
               {selectedBranch.latest_post_by_type && (
                 <div style={{ marginBottom: 24 }}>
                   <Title level={5} style={{ marginBottom: 12 }}>Latest Post By Type</Title>
@@ -1066,7 +1090,6 @@ const handleCloseBranchModal = () => {
                 </div>
               )}
 
-              {/* Devices Table Section */}
               {selectedBranch.devices && Array.isArray(selectedBranch.devices) && (
                 <div>
                   <Title level={5} style={{ marginBottom: 12 }}>Devices List</Title>
