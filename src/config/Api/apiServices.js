@@ -86,7 +86,9 @@ export const APIService = {
         return instanceMultipart.put(endpoint, data);
     },
 
-    
+    forceLoginBranch(branchId) {
+        return instance.post(`/api/v1/force-login/${branchId}/`);
+    },
 };
 
 export const APIServiceNoAuth = {
