@@ -83,7 +83,7 @@ function UtilityCostChart(props) {
             // xAxisID: "axis-bar",
           },
           {
-            label: "PHCN Cost",
+            label: "Recorded Cost",
             data: clientCost,
             backgroundColor: "#43D540",
             borderRadius: 6,
@@ -91,7 +91,7 @@ function UtilityCostChart(props) {
             maxBarThickness: 30,
           },
           {
-            label: "Wyre Cost",
+            label: "Wyre Calculated Cost",
             data: wyreCost,
             backgroundColor: "#5C12A7",
             borderRadius: 6,
