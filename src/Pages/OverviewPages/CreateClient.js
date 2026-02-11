@@ -8,7 +8,7 @@ import {
   Space,
   Divider,
   Typography,
-  Checkbox,
+  Radio,
   Row,
   Col,
   InputNumber,
@@ -44,7 +44,7 @@ const DEVICE_TYPES = [
   { id: 7, name: 'Swimming Pool' },
   { id: 8, name: 'FEEDER' },
 ];
-const DEVICE_PROVIDERS = ["ACCRELL", "SATEC", "ACREL-ACB"];
+const DEVICE_PROVIDERS = ["ACREL", "SATEC", "ACREL-ACB"];
 const FUEL_TYPES = ["diesel", "gas", "other"];
 const USER_ROLES = [
   { id: 3, name: 'CLIENT_ADMIN' },
@@ -57,8 +57,7 @@ const getInitialDeviceForm = () => ({
   type: null, 
   provider: null, 
   deviceId: '', 
-  isLoad: false, 
-  isSource: false, 
+  deviceRole: null, // 'load' | 'source' – mutually exclusive
   genSize: null, 
   fuelType: null,
   // Defaults to full day window: 00:00 - 23:59
@@ -137,15 +136,19 @@ export const createBranches = async (clientId, branchesData) => {
     devices: branch.devices?.map(device => ({
       name: device.name,
       type: device.type,
-      is_load: !!device.isLoad,
+      is_load: device.deviceRole === 'load',
       provider: device.provider,
       device_id: device.deviceId,
-      is_source: !!device.isSource,
+      is_source: device.deviceRole === 'source',
       ...(device.type === 1 ? {
         gen_size: device.genSize,
         fuel_type: device.fuelType,
-        operating_hours_start: device.operationalStartTime,
-        operating_hours_end: device.operationalEndTime,
+        operating_hours_start: device.operationalStartTime
+          ? dayjs(device.operationalStartTime).format('HH:mm')
+          : null,
+        operating_hours_end: device.operationalEndTime
+          ? dayjs(device.operationalEndTime).format('HH:mm')
+          : null,
       } : {})
     })) || []
   }));
@@ -171,14 +174,14 @@ const getClientRegions = async (clientId) => {
   return await APIService.get(`/api/v1/accounts/client/${clientId}/regions/`);
 };
 
-const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form }) => {
+const DeviceFields = ({ deviceKey, deviceName, deviceIndex, branchName, deviceRestField, form }) => {
   const deviceType = Form.useWatch(['branches', branchName, 'devices', deviceName, 'type'], form);
 
   return (
     <Card key={deviceKey} size="small" style={{ marginBottom: 10, background: '#fafafa' }}>
       <Row gutter={16} align="middle">
           <Col flex="auto">
-              <Text strong>Device {deviceKey + 1}</Text>
+              <Text strong>Device {deviceIndex}</Text>
           </Col>
       </Row>
       <Row gutter={16}>
@@ -200,7 +203,7 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
             rules={[{ required: true, message: 'Please select a ${label}!' }]}
           >
             <Select placeholder="Select Type">
-              {DEVICE_TYPES.map(dt => <Option key={dt.id} value={dt.id}>{dt.name} ({dt.id})</Option>)}
+              {DEVICE_TYPES.map(dt => <Option key={dt.id} value={dt.id}>{dt.name}</Option>)}
             </Select>
           </Form.Item>
         </Col>
@@ -326,26 +329,18 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
                 </Col>
             </>
         )}
-        <Col xs={12} sm={6} md={3}>
-           <Form.Item
-              {...deviceRestField}
-              name={[deviceName, 'isLoad']}
-              valuePropName="checked"
-              label="Is Load?"
-            >
-              <Checkbox />
-            </Form.Item>
+        <Col xs={24} sm={12} md={6}>
+          <Form.Item
+            {...deviceRestField}
+            name={[deviceName, 'deviceRole']}
+            label="Role"
+          >
+            <Radio.Group>
+              <Radio value="load">Is Load</Radio>
+              <Radio value="source">Is Source</Radio>
+            </Radio.Group>
+          </Form.Item>
         </Col>
-         <Col xs={12} sm={6} md={3}>
-            <Form.Item
-              {...deviceRestField}
-              name={[deviceName, 'isSource']}
-              valuePropName="checked"
-              label="Is Source?"
-            >
-              <Checkbox />
-            </Form.Item>
-         </Col>
       </Row>
     </Card>
   );
@@ -442,13 +437,20 @@ const CreateClient = () => {
       }
     });
     
-    // Prefill time fields on initial load for all devices
+    // Prefill time fields and normalize device role on initial load for all devices
     merged.branches.forEach(branch => {
-      branch.devices = (branch.devices || []).map(device => ({
-        ...device,
-        operationalStartTime: device.operationalStartTime || dayjs('00:00', 'HH:mm'),
-        operationalEndTime: device.operationalEndTime || dayjs('23:59', 'HH:mm')
-      }));
+      branch.devices = (branch.devices || []).map(device => {
+        const role = device.deviceRole != null
+          ? device.deviceRole
+          : (device.isLoad ? 'load' : device.isSource ? 'source' : null);
+        const { isLoad, isSource, ...rest } = device;
+        return {
+          ...rest,
+          deviceRole: role,
+          operationalStartTime: device.operationalStartTime || dayjs('00:00', 'HH:mm'),
+          operationalEndTime: device.operationalEndTime || dayjs('23:59', 'HH:mm')
+        };
+      });
     });
 
     form.setFieldsValue(merged);
@@ -1290,10 +1292,10 @@ const CreateClient = () => {
                   <Form.List {...branchRestField} name={[branchName, 'devices']}>
                     {(deviceFields, { add: addDevice, remove: removeDevice }) => (
                       <div style={{ marginLeft: '20px', marginBottom: '15px' }}> 
-                        {deviceFields.map(({ key: deviceKey, name: deviceName, ...deviceRestField }) => (
+                        {deviceFields.map(({ key: deviceKey, name: deviceName, ...deviceRestField }, index) => (
                           <Row key={deviceKey} gutter={8} align="top" style={{ marginBottom: '5px' }}> 
                             <Col flex="auto">
-                              <DeviceFields deviceKey={deviceKey} deviceName={deviceName} branchName={branchName} deviceRestField={deviceRestField} form={form} />
+                              <DeviceFields deviceKey={deviceKey} deviceName={deviceName} deviceIndex={index + 1} branchName={branchName} deviceRestField={deviceRestField} form={form} />
                             </Col> 
                             <Col style={{ paddingTop: '8px' }}>
                               <MinusCircleOutlined style={{ color: 'red', fontSize: '16px' }} onClick={() => removeDevice(deviceName)} />
