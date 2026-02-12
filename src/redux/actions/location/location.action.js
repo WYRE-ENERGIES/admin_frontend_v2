@@ -1,5 +1,5 @@
 import { APIService } from "../../../config/Api/apiServices";
-import { addRegionLoading, addRegionSuccess, deleteRegionLoading, deleteRegionSuccess, editLocationLoading, editLocationSuccess, editRegionLoading, editRegionSuccess, getLocationLoading, getLocationSuccess, getRegionLoading, getRegionSuccess } from "./location.creator";
+import { addRegionLoading, addRegionSuccess, deleteRegionLoading, deleteRegionSuccess, editLocationLoading, editLocationSuccess, editRegionLoading, editRegionSuccess, getClientRegionsLoading, getClientRegionsSuccess, getLocationLoading, getLocationSuccess, getRegionLoading, getRegionSuccess } from "./location.creator";
 
 export const getLocationsData = (clientId, paginationQuery=1) => async (dispatch) => {
     dispatch(getLocationLoading(true));
@@ -51,6 +51,35 @@ export const updateALocation = (branchId, values) => async (dispatch) => {
     } catch (error) {
       dispatch(editLocationLoading(false));     
       return { fulfilled: false, message: error.response.data.detail }
+    }
+};
+
+export const clearClientRegions = () => (dispatch) => {
+    dispatch(getClientRegionsSuccess([]));
+};
+
+export const getClientRegionsData = (clientId) => async (dispatch) => {
+    dispatch(getClientRegionsLoading(true));
+    const requestUrl = `/api/v1/accounts/client/${clientId}/regions/`;
+    try {
+      const response = await APIService.get(requestUrl);
+      let regionsData = [];
+      if (response.data) {
+        if (Array.isArray(response.data)) {
+          regionsData = response.data;
+        } else if (response.data.regions && Array.isArray(response.data.regions)) {
+          regionsData = response.data.regions;
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          regionsData = response.data.data;
+        }
+      }
+      dispatch(getClientRegionsSuccess(regionsData));
+      dispatch(getClientRegionsLoading(false));
+      return { fulfilled: true, data: regionsData };
+    } catch (error) {
+      dispatch(getClientRegionsSuccess([]));
+      dispatch(getClientRegionsLoading(false));
+      return { fulfilled: false, message: error.response?.data?.detail };
     }
 };
 

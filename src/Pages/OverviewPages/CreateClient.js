@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { connect } from 'react-redux';
 import {
   Form,
   Input,
@@ -22,6 +23,7 @@ import { APIService, instanceMultipart } from '../../config/Api/apiServices';
 import { notification } from 'antd';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { clearClientRegions, getClientRegionsData } from '../../redux/actions/location/location.action';
 
 dayjs.extend(customParseFormat);
 
@@ -168,10 +170,6 @@ export const createAdditionalUsers = async (clientId, usersData) => {
   }));
   
   return await APIService.post(`/api/v1/accounts/client/${clientId}/additional-user/`, payload);
-};
-
-const getClientRegions = async (clientId) => {
-  return await APIService.get(`/api/v1/accounts/client/${clientId}/regions/`);
 };
 
 const DeviceFields = ({ deviceKey, deviceName, deviceIndex, branchName, deviceRestField, form }) => {
@@ -346,18 +344,18 @@ const DeviceFields = ({ deviceKey, deviceName, deviceIndex, branchName, deviceRe
   );
 };
 
-const CreateClient = () => {
+const CreateClient = (props) => {
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientId, setClientId] = useState(null);
-  const [clientRegions, setClientRegions] = useState([]);
   const [stepData, setStepData] = useState({});
   const [logoFile, setLogoFile] = useState(null);
   const fileInputRef = useRef(null);
-  const [regionsLoading, setRegionsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { clientRegions = [], regionsLoading = false, getClientRegionsData: fetchClientRegions, clearClientRegions } = props;
 
   useEffect(() => {
     const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -471,7 +469,7 @@ const CreateClient = () => {
     if (clientId && currentStep >= 2 && clientRegions.length === 0 && !regionsLoading) {
       loadClientRegions();
     }
-  }, [clientId, currentStep]);
+  }, [clientId, currentStep, clientRegions.length, regionsLoading]);
 
   const handleValuesChange = (changedValues, allValues) => {
      if (!initialDataLoaded) {
@@ -499,40 +497,10 @@ const CreateClient = () => {
   };
 
   const loadClientRegions = async () => {
-    if (!clientId) {
-      return;
-    }
-    
-    setRegionsLoading(true);
-    try {
-      const response = await getClientRegions(clientId);
-
-      
-      // Ensure we always set an array
-      let regionsData = [];
-      if (response.data) {
-        if (Array.isArray(response.data)) {
-          regionsData = response.data;
-        } else if (response.data.regions && Array.isArray(response.data.regions)) {
-          regionsData = response.data.regions;
-        } else if (response.data.data && Array.isArray(response.data.data)) {
-          regionsData = response.data.data;
-        } else {
-          console.warn('Unexpected regions data structure:', response.data);
-          regionsData = [];
-        }
-      }
-      
-
-      setClientRegions(regionsData);
-
-    } catch (error) {
-      console.error('Failed to load client regions:', error);
-      console.error('Error response:', error.response);
+    if (!clientId) return;
+    const result = await fetchClientRegions(clientId);
+    if (result?.fulfilled === false) {
       message.error('Failed to load client regions');
-      setClientRegions([]); // Set empty array on error
-    } finally {
-      setRegionsLoading(false);
     }
   };
 
@@ -1400,7 +1368,7 @@ const CreateClient = () => {
     setClientId(null);
     setStepData({});
     setLogoFile(null);
-    setClientRegions([]);
+    clearClientRegions();
     form.resetFields();
     
     message.success('Progress cleared. Starting fresh.');
@@ -1436,7 +1404,7 @@ const CreateClient = () => {
       setClientId(null);
       setStepData({});
       setLogoFile(null);
-      setClientRegions([]);
+      clearClientRegions();
       
       message.success('Corrupted data cleared. Form reset to initial state.');
     } catch (error) {
@@ -1523,4 +1491,14 @@ const CreateClient = () => {
   );
 };
 
-export default CreateClient; 
+const mapStateToProps = (state) => ({
+  clientRegions: state.locationPage.fetchedClientRegions || [],
+  regionsLoading: state.locationPage.fetchClientRegionsLoading,
+});
+
+const mapDispatchToProps = {
+  getClientRegionsData,
+  clearClientRegions,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreateClient); 
