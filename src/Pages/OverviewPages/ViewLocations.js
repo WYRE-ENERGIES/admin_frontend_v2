@@ -31,7 +31,7 @@ const SubmitButton = ({ form }) => {
   return (
     <>
       <Button
-        style={{ marginRight:20, height: "40px", borderRadius: "7px", width: "47%" }}
+        className="submitBtn"
         type="primary"
         htmlType="submit"
       // disabled={!submittable}
