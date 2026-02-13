@@ -62,3 +62,12 @@ export const deleteRegionSuccess = (payload = true) => ({
     type: locationTypes.DELETE_REGION_SUCCESS,
     payload,
 });
+
+export const getClientRegionsLoading = (payload = true) => ({
+    type: locationTypes.GET_CLIENT_REGIONS_LOADING,
+    payload,
+});
+export const getClientRegionsSuccess = (payload) => ({
+    type: locationTypes.GET_CLIENT_REGIONS_SUCCESS,
+    payload,
+});
