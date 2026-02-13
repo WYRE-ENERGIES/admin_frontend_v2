@@ -16,10 +16,28 @@ const successNotificationPopUp = (type, formName) => {
     description: `Your update to the ${formName} has been successfully submitted`,
   });
 };
-const errorNotificationPopUp = (type, formName) => {
+const formatServerError = (error) => {
+  if (!error) return null;
+  if (typeof error === 'string') return error;
+  if (error.detail) return typeof error.detail === 'string' ? error.detail : JSON.stringify(error.detail);
+  // Django-style field errors: { "email": ["This email is already in use."] }
+  const fieldMessages = [];
+  for (const [, messages] of Object.entries(error)) {
+    if (Array.isArray(messages)) {
+      fieldMessages.push(messages.join(' '));
+    } else if (typeof messages === 'string') {
+      fieldMessages.push(messages);
+    }
+  }
+  if (fieldMessages.length) return fieldMessages.join(' ');
+  return null;
+};
+
+const errorNotificationPopUp = (type, formName, serverError) => {
+  const description = formatServerError(serverError) || `Your update to the ${formName} failed, please try again later`;
   notification[type]({
     message: 'Failed',
-    description: `Your update to the ${formName} failed, please try again later`,
+    description,
   });
 };
 const NotAllowedNotification = () => {
@@ -188,7 +206,7 @@ function EditClientUserForm(props) {
       }
 
     }
-      errorNotificationPopUp('error', 'client user page')
+    errorNotificationPopUp('error', 'client user page', request.error);
   };
 
   return (

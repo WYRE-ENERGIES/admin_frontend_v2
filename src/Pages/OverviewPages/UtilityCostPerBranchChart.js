@@ -28,22 +28,30 @@ const UtilityCostPerBranchChart = ({
   }, [data, selectedBranches]);
 
   const labels = filteredData?.map(item => item.name) || [];
-  const costs = filteredData?.map(item => item.utility_cost) || [];
+  const wyreCosts = filteredData?.map(item => item.wyre_cost ?? 0) || [];
+  const averageCosts = filteredData?.map(item => item.average_cost ?? 0) || [];
+
+  const barStyle = {
+    borderRadius: { topLeft: 6, topRight: 6 },
+    borderSkipped: false,
+    barThickness: 40,
+    maxBarThickness: 60,
+  };
 
   const chartData = {
     labels,
     datasets: [
       {
-        label: "Utility Cost (naira)",
-        data: costs,
+        label: "Wyre Calculated Cost",
+        data: wyreCosts,
         backgroundColor: "#5C12A7",
-        borderRadius: {
-          topLeft: 6,
-          topRight: 6
-        },
-        borderSkipped: false,
-        barThickness: 40,
-        maxBarThickness: 60
+        ...barStyle,
+      },
+      {
+        label: "Average Cost",
+        data: averageCosts,
+        backgroundColor: "#F9CF40",
+        ...barStyle,
       },
     ],
   };
@@ -51,7 +59,7 @@ const UtilityCostPerBranchChart = ({
   const options = {
     responsive: true,
     plugins: {
-      legend: { display: false },
+      legend: { display: true },
       title: { display: false },
     },
     scales: {

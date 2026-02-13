@@ -1956,3 +1956,23 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
     border-radius: 0;
   }
 }
+
+/* ClientUsers & ViewLocations button styles */
+.removeBtn {
+  border: 1px solid #c72525;
+  color: #c72525;
+  cursor: pointer;
+}
+
+.deleteBtn {
+  background: #c72525;
+  color: white;
+  cursor: pointer;
+}
+
+.submitBtn {
+  margin-right: 20px;
+  height: 40px;
+  border-radius: 7px;
+  width: 47%;
+}

@@ -107,7 +107,8 @@ export const updateClientUsersData = (clientId, id, values) => async (dispatch) 
       return { fulfilled: true, message: 'successful' }
     } catch (error) {
       dispatch(editClientUserLoading(false));
-      return { fulfilled: false, message: error.response.data.detail }
+      const data = error.response?.data;
+      return { fulfilled: false, error: data };
     }
   };
 

@@ -551,7 +551,9 @@ const handleRegionChange = value => {
       .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
       .map(branch => ({
         name: branch.branch_name,
-        utility_cost: branch.average_cost,
+        phcn_cost: branch.phcn_cost,
+        wyre_cost: branch.wyre_cost,
+        average_cost: branch.average_cost,
       }));
   };
 
@@ -619,7 +621,8 @@ const handleRegionChange = value => {
       .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
       .map(branch => ({
         name: branch.branch_name,
-        value: branch.wyre_cost,
+        wyre_cost: branch.wyre_cost,
+        client_cost: branch.client_cost,
       }));
   };
 
@@ -1095,6 +1098,10 @@ const handleRegionChange = value => {
               tabIndex={isSelectChart}
               chartLabel="Diesel Cost Per Branch"
               data={getDieselCostPerBranchData()}
+              seriesConfig={[
+                { key: "wyre_cost", label: "Wyre Calculated Cost", color: "#5C12A7" },
+                { key: "client_cost", label: "Recorded Cost", color: "#F9CF40" },
+              ]}
               onSearch={handleDieselCostSearch}
               onRegionChange={handleRegionChange}
               regionOptions={regionOptions}
