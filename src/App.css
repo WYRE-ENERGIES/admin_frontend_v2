@@ -153,41 +153,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   margin-top: 20px;
 }
 
-.top-card-1 {
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-  background: #FFFFFF;
-  border-radius: 15px;
-  text-align: center;
-  /* margin-bottom: 1rem; */
-  margin-left: 30px;
-  /* min-width: none; */
-  height: 60px;
-  min-width: 198px;
-  overflow: 'hidden',
-  /* margin-top: 20px; */
-}
-.top-card-2 {
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-  background: #FFFFFF;
-  border-radius: 15px;
-  text-align: center;
-  /* margin-bottom: 1rem; */
-  margin-left: 10px;
-  /* min-width: none; */
-  height: 60px;
-  min-width: 198px;
-  overflow: 'hidden',
-  /* margin-top: 20px; */
-}
-
-.card-content {
-  margin-top: 10px;
-  overflow: 'hidden',
-  /* margin-left: 5px; */
-  /* margin-right: 5px; */
-}
+/* .top-card-1, .top-card-2, .card-content — moved to bottom (Top cards section) */
 
 .wyre-logo {
   display: flex;
@@ -1893,39 +1859,102 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   }
 }
 
-.co2.total-energy-card {
-  padding: 0 16px;
+/* ── Top cards section ── */
+.top-cards-section {
+  padding: 0 4px;
 }
 
-.co2.total-energy-card .ant-space {
+/* ── Top cards filter row ── */
+.top-cards-filter-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  width: 100%;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: space-between;
+  margin-bottom: 14px;
 }
 
-.top-card-1, .top-card-2 {
-  background: #FFFFFF;
-  border-radius: 15px;
-  padding-inline: 20px;
-  padding-top: 5px;
-  padding-bottom: 12px;
+.top-cards-period-label {
+  font-size: 17px;
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.72);
+}
+
+.top-cards-filter-row .ant-select {
+  min-width: 160px;
+}
+
+/* ── Top cards grid ── */
+.top-cards-grid {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+}
+
+.top-card-1,
+.top-card-2 {
+  flex: 1;
+  min-width: 0;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 18px 22px;
   height: auto;
-  min-width: 200px;
   margin: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+  text-align: left;
+  display: flex;
+  align-items: center;
 }
 
+.top-card-1 .ant-space,
+.top-card-2 .ant-space {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
 
+/* Icon wrapper */
+.top-card-icon-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.top-card-icon-wrap .ant-image,
+.top-card-icon-wrap .ant-image img {
+  width: 36px !important;
+  height: 36px !important;
+  object-fit: contain;
+}
+
+.top-card-value {
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.35;
+  color: #1a1a1a;
+}
+
+.top-card-label {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.723);
+  margin-top: 2px;
+}
+
+/* ── Responsive ── */
 @media screen and (max-width: 768px) {
-  .co2.total-energy-card .ant-space {
-    justify-content: center;
+  .top-cards-grid {
+    flex-direction: column;
+    gap: 12px;
   }
 
-  .top-card-1, .top-card-2 {
-    flex: 1;
-    min-width: 160px;
+  .top-card-1,
+  .top-card-2 {
+    min-width: 90%;
+  }
+
+  .top-cards-filter-row {
+    gap: 8px;
   }
 }
 
