@@ -112,3 +112,20 @@ export const updatePasswordSuccess = (payload = true) => ({
   type: authTypes.UPDATE_PASSWORD_SUCCESS,
   payload,
 });
+
+export const resetPasswordLoading = (payload = true) => ({
+  type: authTypes.RESET_PASSWORD_LOADING,
+  payload,
+});
+export const resetPasswordSuccess = (payload) => ({
+  type: authTypes.RESET_PASSWORD_SUCCESS,
+  payload,
+});
+export const confirmResetPasswordLoading = (payload = true) => ({
+  type: authTypes.CONFIRM_RESET_PASSWORD_LOADING,
+  payload,
+});
+export const confirmResetPasswordSuccess = (payload) => ({
+  type: authTypes.CONFIRM_RESET_PASSWORD_SUCCESS,
+  payload,
+});

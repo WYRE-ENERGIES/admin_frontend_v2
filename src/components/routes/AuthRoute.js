@@ -2,6 +2,8 @@ import React from 'react';
 import { Route, Routes } from 'react-router-dom';
 
 import Login from '../../Pages/AuthPages/Login';
+import ResetPassword from '../../Pages/AuthPages/ResetPassword';
+import ConfirmResetPassword from '../../Pages/AuthPages/ConfirmResetPassword';
 
 // import ScrollToTop from '../helpers/ScrollToTop';
 import AuthHeader from '../../Pages/OtherPages/AuthHeader';
@@ -19,11 +21,12 @@ function AuthRoute() {
         {/* <ScrollToTop> */}
           <Routes>
           <Route exact path='/' element={<Login />} />
+            <Route path='/reset-password' element={<ResetPassword />} />
+            <Route path='/confirm-reset-password' element={<ConfirmResetPassword />} />
             {/* <Route exact path='/report' element={<Report/>} /> */}
             {/* <Route exact path='/in-mail' element={<InMail />} /> */}
             {/* <Route path='/about' element={<About />} /> */}
             {/* <Route path='/contact' element={<Contact />} /> */}
-          {/* <Route path='/reset-password' element={<ResetPassword />} /> */}
           <Route path="/force-login" element={<ForceLoginHandler />}></Route>
           <Route path='/force-login-admin' element={<ForceLoginAdminHandler />} />
             <Route path='/download-csv' element={<DownloadPage />} />

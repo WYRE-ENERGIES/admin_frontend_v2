@@ -19,6 +19,10 @@ const INITIAL_STATE = {
     updatedProfile: false,
     updatePasswordLoading: false,
     updatedPassword: false,
+    resetPasswordLoading: false,
+    resetPasswordData: null,
+    confirmResetPasswordLoading: false,
+    confirmResetPasswordData: null,
 };
 
 const authReducer = (state = INITIAL_STATE, action) => {
@@ -166,6 +170,26 @@ const authReducer = (state = INITIAL_STATE, action) => {
             return {
                 ...state,
                 updatedPassword: action.payload
+            };
+        case authTypes.RESET_PASSWORD_LOADING:
+            return {
+                ...state,
+                resetPasswordLoading: action.payload
+            };
+        case authTypes.RESET_PASSWORD_SUCCESS:
+            return {
+                ...state,
+                resetPasswordData: action.payload
+            };
+        case authTypes.CONFIRM_RESET_PASSWORD_LOADING:
+            return {
+                ...state,
+                confirmResetPasswordLoading: action.payload
+            };
+        case authTypes.CONFIRM_RESET_PASSWORD_SUCCESS:
+            return {
+                ...state,
+                confirmResetPasswordData: action.payload
             };
 
         default: return state;

@@ -1,6 +1,8 @@
 import moment from "moment";
-import { addUserBranchLoading, addUserBranchSuccess, addUsersLoading, addUsersSuccess, editUserLoading, editUserSuccess, getAllDevicesLoading, getAllDevicesSuccess, getDeviceConsumptionLoading, getDeviceConsumptionSuccess, getDeviceReadingsLoading, getDeviceReadingsSuccess, getDeviceSwitchLoading, getDeviceSwitchSuccess, getRolesLoading,  getRolesSuccess, loginUserLoading, updateProfileLoading, updateProfileSuccess, updatePasswordLoading, updatePasswordSuccess } from "./auth.creator";
+import axios from "axios";
+import { addUserBranchLoading, addUserBranchSuccess, addUsersLoading, addUsersSuccess, editUserLoading, editUserSuccess, getAllDevicesLoading, getAllDevicesSuccess, getDeviceConsumptionLoading, getDeviceConsumptionSuccess, getDeviceReadingsLoading, getDeviceReadingsSuccess, getDeviceSwitchLoading, getDeviceSwitchSuccess, getRolesLoading,  getRolesSuccess, loginUserLoading, updateProfileLoading, updateProfileSuccess, updatePasswordLoading, updatePasswordSuccess, resetPasswordLoading, resetPasswordSuccess, confirmResetPasswordLoading, confirmResetPasswordSuccess } from "./auth.creator";
 import { APIService, APIServiceNoAuth } from "../../../config/Api/apiServices";
+import EnvData from "../../../config/EnvData";
 import jwt_decode from 'jwt-decode';
 
 export const loginAUser = (parameters) => async (dispatch) => {
@@ -209,6 +211,48 @@ export const updateUserPassword = (updatePayload) => async (dispatch) => {
   } catch (error) {
     dispatch(updatePasswordLoading(false));
     let message = error?.response?.data?.detail || error?.response?.data?.message || error.message || 'Failed to update password.';
+    return { fulfilled: false, message };
+  }
+};
+
+export const resetPasswordAction = ({ email }) => async (dispatch) => {
+  dispatch(resetPasswordLoading(true));
+  try {
+    const requestUrl = EnvData.REACT_APP_API_URL + '/accounts/reset_password/';
+    const config = { headers: { 'Content-Type': 'application/json' } };
+    const loggedUserJSON = localStorage.getItem('loggedWyreUserAdmin');
+    if (loggedUserJSON) {
+      try {
+        const userToken = JSON.parse(loggedUserJSON);
+        if (userToken.access) {
+          config.headers.Authorization = `Bearer ${userToken.access}`;
+        }
+      } catch (_) {}
+    }
+    const response = await axios.post(requestUrl, { email }, config);
+    dispatch(resetPasswordSuccess(response.data?.message));
+    dispatch(resetPasswordLoading(false));
+    return { fulfilled: true, message: response.data?.message || 'Check your email for reset instructions.' };
+  } catch (error) {
+    dispatch(resetPasswordLoading(false));
+    const message = error.response?.data?.message || error.response?.data?.error || error.message || 'Request failed';
+    return { fulfilled: false, message };
+  }
+};
+
+export const confirmResetPasswordAction = ({ token, new_password }) => async (dispatch) => {
+  dispatch(confirmResetPasswordLoading(true));
+  try {
+    const requestUrl = EnvData.REACT_APP_API_URL + '/accounts/confirm_reset_password/';
+    const response = await axios.post(requestUrl, { token, new_password }, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    dispatch(confirmResetPasswordSuccess(response.data?.message));
+    dispatch(confirmResetPasswordLoading(false));
+    return { fulfilled: true, message: response.data?.message || 'Password reset successfully.' };
+  } catch (error) {
+    dispatch(confirmResetPasswordLoading(false));
+    const message = error.response?.data?.message || error.response?.data?.error || error.message || 'Request failed';
     return { fulfilled: false, message };
   }
 };
