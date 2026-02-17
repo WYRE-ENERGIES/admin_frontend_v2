@@ -1,5 +1,5 @@
-import { Button, DatePicker, Image, Input, Space, Spin, Table, Select, Typography, message } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { Button, DatePicker, Image, Input, Popover, Space, Spin, Table, Select, Typography, message } from "antd";
+import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined } from "@ant-design/icons";
@@ -47,6 +47,7 @@ const TOP_CARDS_DATE_RANGES = [
   { value: "last_month", label: "Last month" },
   { value: "last_3_months", label: "Last 3 months" },
   { value: "last_6_months", label: "Last 6 months" },
+  { value: "this_year", label: "This year" },
   { value: "last_year", label: "Last year" },
 ];
 
@@ -71,9 +72,13 @@ function getTopCardsDateRange(rangeKey) {
       start = now.clone().subtract(5, "months").startOf("month");
       end = now.clone();
       break;
-    case "last_year":
-      start = now.clone().subtract(11, "months").startOf("month");
+    case "this_year":
+      start = now.clone().startOf("year");
       end = now.clone();
+      break;
+    case "last_year":
+      start = now.clone().subtract(1, "year").startOf("year");
+      end = now.clone().subtract(1, "year").endOf("year");
       break;
     default:
       start = now.clone().startOf("month");
@@ -89,15 +94,17 @@ function getTopCardsPeriodLabel(rangeKey) {
   const now = moment();
   switch (rangeKey) {
     case "this_month":
-      return `For ${now.format("MMMM")}`;
+      return `${now.format("MMMM")}`;
     case "last_month":
-      return `For ${now.clone().subtract(1, "month").format("MMMM")}`;
+      return `${now.clone().subtract(1, "month").format("MMMM")}`;
     case "last_3_months":
-      return `From ${now.clone().subtract(2, "months").format("MMM")} – ${now.format("MMM")}`;
+      return `From ${now.clone().subtract(2, "months").format("MMM")} - ${now.format("MMM")}`;
     case "last_6_months":
-      return `From ${now.clone().subtract(5, "months").format("MMM")} – ${now.format("MMM")}`;
+      return `From ${now.clone().subtract(5, "months").format("MMM")} - ${now.format("MMM")}`;
+    case "this_year":
+      return `From ${now.clone().startOf("year").format("MMM YYYY")} - ${now.format("MMM YYYY")}`;
     case "last_year":
-      return `From ${now.clone().subtract(11, "months").format("MMM YYYY")} – ${now.format("MMM YYYY")}`;
+      return `From ${now.clone().subtract(1, "year").startOf("year").format("MMM YYYY")} - ${now.clone().subtract(1, "year").endOf("year").format("MMM YYYY")}`;
     default:
       return `For ${now.format("MMMM")}`;
   }
@@ -179,7 +186,7 @@ const handleRegionChange = value => {
     const [regionOptions, setRegionOptions] = useState([]);
     const [regionBranchMap, setRegionBranchMap] = useState({});
     const [selectedRegion, setSelectedRegion] = useState(undefined);
-    const [topCardsDateRange, setTopCardsDateRange] = useState("this_month");
+    const [topCardsDateRange, setTopCardsDateRange] = useState("this_year");
 
     const handleDownloadPdf = async () => {
     if (!reportRef.current) return;
@@ -776,16 +783,34 @@ const handleRegionChange = value => {
       <div className="##########">
         <section className="total-energy-bar-chart">
           <div className="top-cards-filter-row">
-            <span className="top-cards-period-label">{topCardsPeriodLabel}</span>
             <Select
               value={topCardsDateRange}
               onChange={setTopCardsDateRange}
               options={TOP_CARDS_DATE_RANGES}
               loading={props.overviewPage?.fetchTotalCostTopCardLoading || props.overviewPage?.fetchTotalEnergyTopCardLoading}
             />
+            <span className="top-cards-period-label">{topCardsPeriodLabel}</span>
           </div>
           <div className="top-cards-grid">
-            <div className="top-card-2">
+            <div className="top-card-2" style={{ position: "relative" }}>
+              {props.overviewPage?.fetchedTotalCostTopCard?.cost_display_color === "red" && (
+                <div style={{ position: "absolute", top: 12, right: 12, zIndex: 1 }}>
+                  <Popover
+                    trigger={["hover", "click"]}
+                    content={
+                      <div style={{ minWidth: 220 }}>
+                        <div style={{ fontWeight: 600, marginBottom: 8 }}>Total monthly cost set target exceeded!</div>
+                        <div style={{ fontSize: 12 }}>
+                          <div>Target: {props.overviewPage?.fetchedTotalCostTopCard?.total_monthly_cost_target?.toLocaleString(undefined, { maximumFractionDigits: 2 })} Naira</div>
+                          <div>Current: {props.overviewPage?.fetchedTotalCostTopCard?.total_calculated_cost?.toLocaleString(undefined, { maximumFractionDigits: 2 })} Naira</div>
+                        </div>
+                      </div>
+                    }
+                  >
+                    <InfoCircleOutlined style={{ color: "rgba(0, 0, 0, 0.45)", cursor: "pointer", fontSize: 16 }} />
+                  </Popover>
+                </div>
+              )}
               <Space>
                 <div className="top-card-icon-wrap">
                   <Image
@@ -795,8 +820,8 @@ const handleRegionChange = value => {
                 </div>
                 <div>
                   <Spin spinning={props.overviewPage?.fetchTotalCostTopCardLoading}>
-                    <header className="top-card-value">
-                      {props.overviewPage?.fetchedTotalCostTopCard.total_calculated_cost?.toLocaleString(
+                    <header className={`top-card-value ${props.overviewPage?.fetchedTotalCostTopCard?.cost_display_color === "red" && "negative-value"}`}>
+                      {props.overviewPage?.fetchedTotalCostTopCard?.total_calculated_cost?.toLocaleString(
                         undefined,
                         { maximumFractionDigits: 2 }
                       )}{" "}

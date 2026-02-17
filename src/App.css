@@ -1935,6 +1935,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: #1a1a1a;
 }
 
+.negative-value {
+  color: #e20000;
+}
+
 .top-card-label {
   font-size: 13px;
   color: rgba(0, 0, 0, 0.723);
