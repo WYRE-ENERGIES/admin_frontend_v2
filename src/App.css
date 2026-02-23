@@ -333,25 +333,22 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 /* Auth Header */
 .header--auth {
   position: relative;
-  top: -30px;
   display: flex;
   flex-direction: column;
-  padding-bottom: 16px;
-  padding-top: 16px;
+  padding: 20px 24px 16px 24px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 
   /* @include media('>=medium') { */
     align-items: center;
-    box-shadow: 'grey-box-shadow';
     flex-direction: row;
     justify-content: space-between;
-    padding-left: 20px;
-    padding-right: 20px;
   /* } */
 }
 
 .header-logo-and-hamburger--auth {
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 
 .header-logo-image--auth {
@@ -400,36 +397,41 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   /* @include media('>=medium') { */
     align-items: center;
     display: flex;
-    /* padding-left: 'large-gutter'; */
     list-style-type: none;
     text-decoration: none;
+    gap: 16px;
   /* } */
 }
 
 .header-link--auth {
   text-decoration: none;
   color: #000;
-  /* height: 24px; */
-  font-size: 16px;
+  font-size: 13px;
   text-align: center;
-  display: block;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.header-link--auth:hover {
+  text-decoration: underline;
+  color: #143861;
 }
 
 a.header-short-button--auth {
-  background-color: #5C12A7;
+  background-color: #5c3592;
   border: 0;
   border-radius: 8px;
   color: #fff;
   display: block;
-  /* padding: 13px 0; */
   text-align: center;
   width: 65.5%;
-  font-size: 16px;
+  font-size: 13px;
 }
 
 .header-nav-list__item--auth {
-  border-top: 'border-grey2' 1px solid;
-  font-size: 1.4rem;
+  flex-shrink: 0;
+  border-top: 1px solid #f0f0f0;
+  font-size: 1.1rem;
   padding: 15px 0;
   padding-left: 7px;
 
@@ -447,24 +449,20 @@ a.header-short-button--auth {
 }
 
 .header-short-button--auth {
-  /* background-color: darkblue; */
   border: 0;
   border-radius: 8px;
   color: white;
   display: block;
   font-weight: bold;
-  padding: 13px 0;
+  font-size: 13px;
+  padding: 9px 18px;
   text-align: center;
   text-decoration: none;
   width: 75%;
+}
 
-  &:hover {
-    color: white;
-  }
-
-  /* @include media('>=medium') { */
-    padding: 13px 26px;
-  /* } */
+.header-short-button--auth:hover {
+  color: white;
 }
 
 /* Auth Form - unified with dashboard (_auth-forms.scss) */
@@ -492,20 +490,21 @@ a.header-short-button--auth {
 
 .first-heading--auth {
   color: #143861;
-  font-size: 1.9rem;
+  font-size: 1.35rem;
   font-weight: 400;
   margin-bottom: 28px;
 }
 
 @media (min-width: 768px) {
   .first-heading--auth {
-    font-size: 2.4rem;
+    font-size: 1.6rem;
   }
 }
 
 .reset-password-note {
   font-weight: 300;
-  line-height: 32px;
+  font-size: 1.05rem;
+  line-height: 1.5;
   margin: auto;
   margin-bottom: 46px;
   max-width: 500px;
@@ -522,8 +521,9 @@ a.header-short-button--auth {
 }
 
 .signup-login-contact-input {
-  height: 50px;
-  padding: 10px 24px;
+  height: 42px;
+  padding: 8px 18px;
+  font-size: 0.95rem;
 }
 
 .outlined-input,
@@ -532,13 +532,13 @@ a.header-short-button--auth {
   max-width: 350px;
 }
 
-/* Placeholder color - match dashboard ($text-blue), slightly bigger */
+/* Placeholder color - match dashboard ($text-blue) */
 .auth-page-container input::placeholder,
 .auth-page-container .signup-login-contact-input::placeholder,
 .auth-page-container .outlined-input::placeholder {
   color: #3d6e92;
   opacity: 1;
-  font-size: 1.08rem;
+  font-size: 0.95rem;
 }
 
 @media (min-width: 768px) {
@@ -575,7 +575,7 @@ a.header-short-button--auth {
 }
 
 .signup-login-contact-error-message {
-  font-size: 1.4rem;
+  font-size: 1.05rem;
   color: #fa0303;
   line-height: 1.5;
   margin-top: 16px;
@@ -590,7 +590,7 @@ a.header-short-button--auth {
 .forgot-password {
   color: #6a8ba3;
   font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.05rem;
   font-weight: 700;
   text-decoration: underline;
 }
@@ -605,9 +605,9 @@ a.header-short-button--auth {
   border-radius: 6px;
   color: #ffffff;
   cursor: pointer;
-  font-size: 1.4rem;
+  font-size: 1.05rem;
   font-weight: 700;
-  height: 45px;
+  height: 42px;
   max-width: 350px;
   text-align: center;
   width: 100%;
@@ -615,10 +615,10 @@ a.header-short-button--auth {
 
 @media (min-width: 768px) {
   .signup-login-contact-button {
-    font-size: 1.6rem;
-    height: 60px;
+    font-size: 1.15rem;
+    height: 44px;
     max-width: 408px;
-    padding: 0 24px;
+    padding: 0 22px;
   }
 }
 

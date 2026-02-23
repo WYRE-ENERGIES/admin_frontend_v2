@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { useForm } from 'react-hook-form';
-import { Spin, notification } from 'antd';
+import { useForm, Controller } from 'react-hook-form';
+import { Spin, notification, Input } from 'antd';
 
-import { confirmResetPasswordAction } from '../../redux/actions/auth/auth.action';
+import { confirmResetPasswordAction, validateResetTokenAction } from '../../redux/actions/auth/auth.action';
+import { validateResetTokenSuccess } from '../../redux/actions/auth/auth.creator';
 import HiddenInputLabel from '../smallComponents/HiddenInputLabel';
-import OutlinedInput from '../smallComponents/OutlinedInput';
 import SocialCluster from '../smallComponents/SocialCluster';
 
 function ConfirmResetPassword() {
@@ -14,10 +14,21 @@ function ConfirmResetPassword() {
   const tokenFromUrl = searchParams.get('token') || '';
 
   const dispatch = useDispatch();
-  const { confirmResetPasswordLoading: loading } = useSelector((state) => state.auth);
+  const {
+    confirmResetPasswordLoading: loading,
+    validateResetTokenLoading: validatingToken,
+    validateResetTokenData: tokenValidation,
+  } = useSelector((state) => state.auth);
   const [errorMessage, setErrorMessage] = useState(null);
   const [success, setSuccess] = useState(false);
-  const { register, handleSubmit } = useForm();
+  const { control, handleSubmit } = useForm();
+
+  useEffect(() => {
+    if (tokenFromUrl) {
+      dispatch(validateResetTokenSuccess(null));
+      dispatch(validateResetTokenAction(tokenFromUrl));
+    }
+  }, [tokenFromUrl, dispatch]);
 
   const onSubmit = async ({ new_password, confirm_password }) => {
     setErrorMessage(null);
@@ -77,6 +88,42 @@ function ConfirmResetPassword() {
     );
   }
 
+  if (validatingToken || tokenValidation === null) {
+    return (
+      <div className='auth-page-container'>
+        <Spin spinning={true}>
+          <div className='signup-login-contact-form'>
+            <h1 className='signup-login-heading first-heading--auth'>Set New Password</h1>
+            <p className='reset-password-note'>Checking your reset link…</p>
+          </div>
+          <SocialCluster />
+        </Spin>
+      </div>
+    );
+  }
+
+  if (tokenValidation && !tokenValidation.valid) {
+    const reasonText = tokenValidation.reason === 'expired' ? 'This link has expired.' : 'This link is no longer valid.';
+    return (
+      <div className='auth-page-container'>
+        <div className='signup-login-contact-form'>
+          <h1 className='signup-login-heading first-heading--auth'>Invalid or Expired Link</h1>
+          <p className='reset-password-note'>
+            {reasonText} Please request a new password reset using the link below.
+          </p>
+          <Link
+            className='signup-login-contact-button'
+            to='/reset-password'
+            style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', maxWidth: '350px', margin: '0 auto', textDecoration: 'none' }}
+          >
+            Reset password
+          </Link>
+        </div>
+        <SocialCluster />
+      </div>
+    );
+  }
+
   return (
     <div className='auth-page-container'>
       <Spin spinning={loading}>
@@ -92,33 +139,40 @@ function ConfirmResetPassword() {
           </p>
 
           <p className='outlined-input-container'>
-            <HiddenInputLabel htmlFor='new-password' labelText='New password' />
-            <OutlinedInput
-              className='signup-login-contact-input'
-              type='password'
+            <HiddenInputLabel htmlFor='new-password' />
+            <Controller
               name='new_password'
-              id='new-password'
-              placeholder='New password'
-              autoComplete='new-password'
-              required={true}
-              autoFocus={true}
-              register={register('new_password').ref}
-              {...register('new_password', { required: true })}
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  id='new-password'
+                  className='signup-login-contact-input outlined-input'
+                  placeholder='New password'
+                  autoComplete='new-password'
+                  size='large'
+                />
+              )}
             />
           </p>
 
           <p className='outlined-input-container'>
-            <HiddenInputLabel htmlFor='confirm-password' labelText='Confirm password' />
-            <OutlinedInput
-              className='signup-login-contact-input'
-              type='password'
+            <HiddenInputLabel htmlFor='confirm-password' />
+            <Controller
               name='confirm_password'
-              id='confirm-password'
-              placeholder='Confirm new password'
-              autoComplete='new-password'
-              required={true}
-              register={register('confirm_password').ref}
-              {...register('confirm_password', { required: true })}
+              control={control}
+              rules={{ required: true }}
+              render={({ field }) => (
+                <Input.Password
+                  {...field}
+                  id='confirm-password'
+                  className='signup-login-contact-input outlined-input'
+                  placeholder='Confirm new password'
+                  autoComplete='new-password'
+                  size='large'
+                />
+              )}
             />
           </p>
 

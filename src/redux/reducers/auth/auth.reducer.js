@@ -23,6 +23,8 @@ const INITIAL_STATE = {
     resetPasswordData: null,
     confirmResetPasswordLoading: false,
     confirmResetPasswordData: null,
+    validateResetTokenLoading: false,
+    validateResetTokenData: null,
 };
 
 const authReducer = (state = INITIAL_STATE, action) => {
@@ -190,6 +192,16 @@ const authReducer = (state = INITIAL_STATE, action) => {
             return {
                 ...state,
                 confirmResetPasswordData: action.payload
+            };
+        case authTypes.VALIDATE_RESET_TOKEN_LOADING:
+            return {
+                ...state,
+                validateResetTokenLoading: action.payload
+            };
+        case authTypes.VALIDATE_RESET_TOKEN_SUCCESS:
+            return {
+                ...state,
+                validateResetTokenData: action.payload
             };
 
         default: return state;

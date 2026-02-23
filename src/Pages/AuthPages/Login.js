@@ -61,10 +61,10 @@ function Login(props) {
               validateTrigger={['onChange', 'onBlur']}
               rules={[
                 { required: true, message: 'Please enter password' },
-                { max: 60, message: 'username cannot be more than 60 characters' }
+                { max: 60, message: 'Password cannot be more than 60 characters' }
               ]}
             >
-              <Input size='large' className='signup-login-contact-input outlined-input' placeholder='Password' type='password' />
+              <Input.Password size='large' className='signup-login-contact-input outlined-input' placeholder='Password' />
             </Form.Item>
 
 
