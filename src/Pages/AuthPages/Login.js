@@ -1,5 +1,6 @@
 /* eslint-disable no-restricted-globals */
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import { Spin, Form, notification } from 'antd';
 import { Input } from 'antd';
@@ -32,16 +33,14 @@ function Login(props) {
   return (
     <div className='auth-page-container'>
       <Spin spinning={props.auth.loginUserLoading} >
-        <div
-          className='signup-login-contact-form'
-        >
           <Form
             form={form}
             name='loginForm'
+            className='signup-login-contact-form'
             onFinish={onSubmit}
             layout='vertical'
             labelAlign="center"
-            style={{ display: 'block' }}
+            // style={{ display: 'block' }}
           >
             <h1 className='signup-login-heading first-heading--auth'>
               Welcome Back
@@ -62,19 +61,19 @@ function Login(props) {
               validateTrigger={['onChange', 'onBlur']}
               rules={[
                 { required: true, message: 'Please enter password' },
-                { max: 60, message: 'username cannot be more than 60 characters' }
+                { max: 60, message: 'Password cannot be more than 60 characters' }
               ]}
             >
-              <Input size='large' className='signup-login-contact-input outlined-input' placeholder='Password' type='password' />
+              <Input.Password size='large' className='signup-login-contact-input outlined-input' placeholder='Password' />
             </Form.Item>
 
 
             <p className='signup-login-contact-error-message'>{errorMessage}</p>
 
             <div className='forgot-password-wrapper'>
-              {/* <Link className='forgot-password' to='/reset-password'>
-            Forgot Password?
-          </Link> */}
+              <Link className='forgot-password' to='/reset-password'>
+                Forgot Password?
+              </Link>
             </div>
             <Form.Item>
               <button type='submit' className='signup-login-contact-button'>Log in</button>
@@ -82,7 +81,6 @@ function Login(props) {
 
 
           </Form>
-        </div>
 
         <SocialCluster />
       </Spin>
