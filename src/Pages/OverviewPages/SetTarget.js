@@ -1,4 +1,4 @@
-import { Button, Form, Input, Spin, Typography, notification } from "antd";
+import { Button, Form, Input, InputNumber, Spin, Typography, notification } from "antd";
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { PercentageOutlined, ClockCircleOutlined, FundOutlined, ProjectOutlined } from "@ant-design/icons";
@@ -59,11 +59,18 @@ function SetTarget(props) {
   }
   
   const clientId = props.auth.userData.client_id
-  const submitSetTargetInfo = async (values ) => {
-    const payloadValues= {
+
+  const formatTotalMonthlyCost = (value) =>
+    value != null && value !== "" ? Number(value).toLocaleString("en-US", { maximumFractionDigits: 0 }) : "";
+  const parseTotalMonthlyCost = (value) =>
+    value === "" || value == null ? undefined : parseFloat(String(value).replace(/,/g, "")) || undefined;
+
+  const submitSetTargetInfo = async (values) => {
+    const payloadValues = {
       ...values,
-      client: clientId
-    }
+      total_monthly_cost: values.total_monthly_cost != null ? Number(values.total_monthly_cost) : values.total_monthly_cost,
+      client: clientId,
+    };
     const request = await props.setTargetData(clientId, payloadValues);
 
     if (request.fulfilled) {
@@ -84,6 +91,7 @@ function SetTarget(props) {
     diesel_usage_accuracy: props.targetPage.fetchedTarget.diesel_usage_accuracy,
     utility_usage_accuracy: props.targetPage.fetchedTarget.utility_usage_accuracy,
     maximum_monthly_deviation_hours: props.targetPage.fetchedTarget.maximum_monthly_deviation_hours,
+    total_monthly_cost: props.targetPage.fetchedTarget.total_monthly_cost,
     papr: props.targetPage.fetchedTarget.papr,
     fuel_efficiency: props.targetPage.fetchedTarget.fuel_efficiency,
     generator_size_efficiency_1: props.targetPage.fetchedTarget.generator_size_efficiency_1,
@@ -129,7 +137,24 @@ function SetTarget(props) {
                     marginRight: "16px",
                   }}
                 >
-                  <Form.Item
+     <Form.Item
+                    name="total_monthly_cost"
+                    label="Total monthly cost"
+                  >
+                    <InputNumber
+                      style={{ height: "52px", width: "100%" }}
+                      placeholder="enter total monthly cost"
+                      prefix={<FundOutlined />}
+                      formatter={formatTotalMonthlyCost}
+                      parser={parseTotalMonthlyCost}
+                      min={0}
+                    />
+                  </Form.Item>
+                </div>
+                <div
+                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
+                  >
+                               <Form.Item
                     name="blended_cost_of_energy"
                     label="Blended cost of energy"
                   >
@@ -139,21 +164,7 @@ function SetTarget(props) {
                       placeholder="enter cost"
                       prefix={<FundOutlined />}
                     />
-                  </Form.Item>
-                </div>
-                <div
-                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
-                >
-                  <Form.Item
-                    name="diesel_usage_accuracy"
-                    label="Usage accuracy diesel"
-                  >
-                    <Input
-                      style={{ height: "52px" }}
-                      placeholder="enter percentage"
-                      prefix={<PercentageOutlined />}
-                    />
-                  </Form.Item>
+                  </Form.Item>    
                 </div>
               </div>
               <div
@@ -165,8 +176,22 @@ function SetTarget(props) {
                     height: "82px",
                     marginRight: "16px",
                   }}
-                >
-                  <Form.Item
+                  >
+                        <Form.Item
+                    name="diesel_usage_accuracy"
+                    label="Usage accuracy diesel"
+                  >
+                    <Input
+                      style={{ height: "52px" }}
+                      placeholder="enter percentage"
+                      prefix={<PercentageOutlined />}
+                    />
+                  </Form.Item>  
+                </div>
+                <div
+                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
+                  >
+                     <Form.Item
                     name="utility_usage_accuracy"
                     label="Usage accuracy utility"
                   >
@@ -177,10 +202,18 @@ function SetTarget(props) {
                     />
                   </Form.Item>
                 </div>
+              </div>
+              <div
+                style={{ width: "842", display: "flex", marginBottom: "24px" }}
+              >
                 <div
-                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
-                >
-                  <Form.Item
+                  style={{
+                    width: "405px",
+                    height: "82px",
+                    marginRight: "16px",
+                  }}
+                  >
+                <Form.Item
                     name="maximum_monthly_deviation_hours"
                     label="Maximum Deviation hours (Month)"
                   >
@@ -188,6 +221,17 @@ function SetTarget(props) {
                       style={{ height: "52px" }}
                       placeholder="enter time"
                       prefix={<ClockCircleOutlined />}
+                    />
+                  </Form.Item>
+                </div>
+                <div
+                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
+                >
+                  <Form.Item name="papr" label="PAPR">
+                    <Input
+                      style={{ height: "52px" }}
+                      placeholder="enter PAPR"
+                      prefix={<ProjectOutlined />}
                     />
                   </Form.Item>
                 </div>
@@ -201,17 +245,6 @@ function SetTarget(props) {
                     height: "82px",
                     marginRight: "16px",
                   }}
-                >
-                  <Form.Item name="papr" label="PAPR">
-                    <Input
-                      style={{ height: "52px" }}
-                      placeholder="enter PAPR"
-                      prefix={<ProjectOutlined />}
-                    />
-                  </Form.Item>
-                </div>
-                <div
-                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
                 >
                   <Form.Item
                     name="fuel_efficiency"
@@ -224,6 +257,9 @@ function SetTarget(props) {
                     />
                   </Form.Item>
                 </div>
+                <div
+                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
+                />
               </div>
               <div>
                 <p>Generator Size Efficiency</p>
