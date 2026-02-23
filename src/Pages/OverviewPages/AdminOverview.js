@@ -801,7 +801,8 @@ const handleRegionChange = value => {
                       <div style={{ minWidth: 220 }}>
                         <div style={{ fontWeight: 600, marginBottom: 8 }}>Total monthly cost set target exceeded!</div>
                         <div style={{ fontSize: 12 }}>
-                          <div>Target: {props.overviewPage?.fetchedTotalCostTopCard?.total_monthly_cost_target?.toLocaleString(undefined, { maximumFractionDigits: 2 })} Naira</div>
+                          <div>Cumulative Target: {props.overviewPage?.fetchedTotalCostTopCard?.total_monthly_cost_target?.toLocaleString(undefined, { maximumFractionDigits: 2 })} Naira</div>
+                          <div>Monthly Target: {(props.overviewPage?.fetchedTotalCostTopCard?.total_monthly_cost_target / props.overviewPage?.fetchedTotalCostTopCard?.months_in_range).toLocaleString(undefined, { maximumFractionDigits: 2 })} Naira</div>
                           <div>Current: {props.overviewPage?.fetchedTotalCostTopCard?.total_calculated_cost?.toLocaleString(undefined, { maximumFractionDigits: 2 })} Naira</div>
                         </div>
                       </div>
