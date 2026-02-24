@@ -215,8 +215,7 @@ function ClientUsers(props) {
             okText="Yes"
             cancelText="No"
           >
-            {/* <CloseOutlined style={{ color: 'red', cursor: 'pointer' }} /> */}
-            <Button style={{ background:'#C72525', color: 'white', cursor: 'pointer' }}>delete</Button>
+            <Button className="removeBtn">Remove</Button>
           </Popconfirm>
         ),
       },

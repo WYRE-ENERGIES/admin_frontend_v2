@@ -85,8 +85,6 @@ export const APIService = {
     putMultipart(endpoint, data) {
         return instanceMultipart.put(endpoint, data);
     },
-
-    
 };
 
 export const APIServiceNoAuth = {

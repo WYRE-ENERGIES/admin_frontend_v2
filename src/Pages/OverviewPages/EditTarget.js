@@ -81,11 +81,12 @@ function EditTarget(props) {
   }
   
   const clientId = props.auth.userData.client_id
-  const submitEditTargetInfo = async (values ) => {
-    const payloadValues= {
+  const submitEditTargetInfo = async (values) => {
+    const payloadValues = {
       ...values,
-      client: clientId
-    }
+      total_monthly_cost: values.total_monthly_cost != null ? Number(values.total_monthly_cost) : values.total_monthly_cost,
+      client: clientId,
+    };
     const request = await props.updateTargetData(clientId, payloadValues);
 
     if (request.fulfilled) {
@@ -95,11 +96,12 @@ function EditTarget(props) {
     return errorNotificationPopUp('error', 'Target page')  
   };
 
-  const submitResetTargetInfo = async (values ) => {
-    const payloadValues= {
+  const submitResetTargetInfo = async (values) => {
+    const payloadValues = {
       ...values,
-      client: clientId
-    }
+      total_monthly_cost: values.total_monthly_cost != null ? Number(values.total_monthly_cost) : values.total_monthly_cost,
+      client: clientId,
+    };
     const request = await props.resetTargetData(clientId, payloadValues);
 
     if (request.fulfilled) {
@@ -116,6 +118,7 @@ function EditTarget(props) {
       diesel_usage_accuracy: props.targetPage.fetchedTarget.diesel_usage_accuracy,
       utility_usage_accuracy: props.targetPage.fetchedTarget.utility_usage_accuracy,
       maximum_monthly_deviation_hours: props.targetPage.fetchedTarget.maximum_monthly_deviation_hours,
+      total_monthly_cost: props.targetPage.fetchedTarget.total_monthly_cost,
       papr: props.targetPage.fetchedTarget.papr,
       fuel_efficiency: props.targetPage.fetchedTarget.fuel_efficiency,
       generator_size_efficiency_1: props.targetPage.fetchedTarget.generator_size_efficiency_1,
@@ -126,6 +129,11 @@ function EditTarget(props) {
 
   const onChange = (value) => {
   };
+
+  const formatTotalMonthlyCost = (value) =>
+    value != null && value !== "" ? Number(value).toLocaleString("en-US", { maximumFractionDigits: 0 }) : "";
+  const parseTotalMonthlyCost = (value) =>
+    value === "" || value == null ? undefined : parseFloat(String(value).replace(/,/g, "")) || undefined;
 
   const maxLengthCheck = (object) => {
     let showString = 'Digit can not be more than 1'
@@ -155,7 +163,24 @@ function EditTarget(props) {
               <div
                 style={{ width: "100%", height: "82px", marginRight: "16px" }}
               >
-                <Form.Item
+                       <Form.Item
+                  name="total_monthly_cost"
+                  label="Total monthly cost"
+                >
+                  <InputNumber
+                    style={{ height: "52px", width: "100%" }}
+                    placeholder="enter total monthly cost"
+                    prefix={<FundOutlined />}
+                    formatter={formatTotalMonthlyCost}
+                    parser={parseTotalMonthlyCost}
+                    min={0}
+                  />
+                </Form.Item>
+              </div>
+              <div
+                style={{ width: "100%", height: "82px" }}
+              >
+                    <Form.Item
                   name="blended_cost_of_energy"
                   label="Blended cost of energy"
                 >
@@ -168,10 +193,14 @@ function EditTarget(props) {
                   />
                 </Form.Item>
               </div>
+            </div>
+            <div
+              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
+            >
               <div
-                style={{ width: "100%", height: "82px" }}
+                style={{ width: "100%", height: "82px", marginRight: "16px" }}
               >
-                <Form.Item
+                  <Form.Item
                   name="diesel_usage_accuracy"
                   label="Usage accuracy diesel"
                 >
@@ -183,14 +212,10 @@ function EditTarget(props) {
                   />
                 </Form.Item>
               </div>
-            </div>
-            <div
-              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
-            >
               <div
-                style={{ width: "100%", height: "82px", marginRight: "16px" }}
+                style={{ width: "100%", height: "82px" }}
               >
-                <Form.Item
+                 <Form.Item
                   name="utility_usage_accuracy"
                   label="Usage accuracy utility"
                 >
@@ -202,10 +227,14 @@ function EditTarget(props) {
                   />
                 </Form.Item>
               </div>
+            </div>
+            <div
+              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
+            >
               <div
-                style={{ width: "100%", height: "82px" }}
+                style={{ width: "100%", height: "82px", marginRight: "16px" }}
               >
-                <Form.Item
+             <Form.Item
                   name="maximum_monthly_deviation_hours"
                   label="Maximum Deviation hours (Month)"
                 >
@@ -217,12 +246,8 @@ function EditTarget(props) {
                   />
                 </Form.Item>
               </div>
-            </div>
-            <div
-              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
-            >
               <div
-                style={{ width: "100%", height: "82px", marginRight: "16px" }}
+                style={{ width: "100%", height: "82px" }}
               >
                 <Form.Item
                   name="papr"
@@ -251,8 +276,12 @@ function EditTarget(props) {
                   />
                 </Form.Item>
               </div>
+            </div>
+            <div
+              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
+            >
               <div
-                style={{ width: "100%", height: "82px" }}
+                style={{ width: "100%", height: "82px", marginRight: "16px" }}
               >
                 <Form.Item name="fuel_efficiency" label="Fuel efficiency kWh/L">
                   <Input
@@ -263,6 +292,7 @@ function EditTarget(props) {
                   />
                 </Form.Item>
               </div>
+              <div style={{ width: "100%", height: "82px" }} />
             </div>
             <div>
               <p>Generator Size Efficiency</p>

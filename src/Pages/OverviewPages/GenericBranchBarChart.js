@@ -5,6 +5,13 @@ import { Card, Input, DatePicker, Select, Space, Spin } from "antd";
 const { Search } = Input;
 const { Option } = Select;
 
+const barStyle = {
+  borderRadius: { topLeft: 6, topRight: 6 },
+  borderSkipped: false,
+  barThickness: 40,
+  maxBarThickness: 60,
+};
+
 const GenericBranchBarChart = ({
   data,
   onBranchSelect,
@@ -16,6 +23,7 @@ const GenericBranchBarChart = ({
   selectedDate,
   tabIndex,
   chartLabel,
+  seriesConfig,
   loading = false,
   downloading = false,
 }) => {
@@ -30,7 +38,26 @@ const GenericBranchBarChart = ({
   }, [data, selectedBranches]);
 
   const labels = filteredData?.map(item => item.name) || [];
-  const values = filteredData?.map(item => item.value) || [];
+  const values = filteredData?.map(item => item.value ?? 0) || [];
+
+  const datasets = useMemo(() => {
+    if (seriesConfig?.length) {
+      return seriesConfig.map(({ key, label, color }) => ({
+        label,
+        data: filteredData?.map(item => item[key] ?? 0) || [],
+        backgroundColor: color,
+        ...barStyle,
+      }));
+    }
+    return [
+      {
+        label: chartLabel,
+        data: values,
+        backgroundColor: "#5C12A7",
+        ...barStyle,
+      },
+    ];
+  }, [seriesConfig, filteredData, chartLabel, values]);
 
   return (
     <Card style={{ overflow: "hidden", borderRadius: 22 }}>
@@ -86,27 +113,11 @@ const GenericBranchBarChart = ({
         </div>
         <Bar
           style={{ maxWidth: downloading ? "78vw" : "" }}
-          data={{
-            labels,
-            datasets: [
-              {
-                label: chartLabel,
-                data: values,
-                backgroundColor: "#5C12A7",
-                borderRadius: {
-                  topLeft: 6,
-                  topRight: 6
-                },
-                borderSkipped: false,
-                barThickness: 40,
-                maxBarThickness: 60
-              },
-            ],
-          }}
+          data={{ labels, datasets }}
           options={{
             responsive: true,
             plugins: {
-              legend: { display: false },
+              legend: { display: !!seriesConfig?.length },
               title: { display: false },
             },
             scales: {

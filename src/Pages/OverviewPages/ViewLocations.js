@@ -31,8 +31,8 @@ const SubmitButton = ({ form }) => {
   return (
     <>
       <Button
-        style={{ marginRight:20, backgroundColor: "white", color: "black", height: "40px", borderRadius: "7px", width: "47%" }}
-        // type="primary"
+        className="submitBtn"
+        type="primary"
         htmlType="submit"
       // disabled={!submittable}
       >
@@ -821,9 +821,7 @@ function ViewLocations(props) {
                 </Form.Item>
                 <Form.Item>
                   <SubmitButton form={form} /> <Button
-                    style={{ backgroundColor: "#C72525", color: "#fff", height: "40px", borderRadius: "7px", width: "47%" }}
-                    type="primary"
-                    // htmlType="council"
+                    style={{ height: "40px", borderRadius: "7px", width: "47%" }}
                     // disabled={!submittable}
                     onClick={() => setEditLocationModal(false)}
                   >

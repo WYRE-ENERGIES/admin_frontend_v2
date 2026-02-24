@@ -77,7 +77,7 @@ function DieselCostChart(props) {
             // xAxisID: "axis-bar",
           },
           {
-            label: "Wyre Cost",
+            label: "Wyre Calculated Cost",
             data: wyreCost,
             fontWeight: "bold",
             backgroundColor: "#5C12A7",
@@ -86,7 +86,7 @@ function DieselCostChart(props) {
             maxBarThickness: 40,
           },
           {
-            label: "Client Cost",
+            label: "Recorded Cost",
             data: clientCost,
             fontWeight: "bold",
             backgroundColor: "#F9CF40",

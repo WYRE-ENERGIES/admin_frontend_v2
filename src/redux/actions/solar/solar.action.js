@@ -84,6 +84,7 @@ const buildStationFromSearch = (data, fallback = {}) => {
     name: stationInfo.name || '',
     installed_capacity: stationInfo.installed_capacity || stationInfo.installed_capacity_kwp || 0,
     installed_capacity_kwp: stationInfo.installed_capacity_kwp || stationInfo.installed_capacity || 0,
+    installed_battery_capacity: stationInfo.installed_battery_capacity ?? fallback.installed_battery_capacity ?? 0,
     latitude: stationInfo.latitude ?? null,
     longitude: stationInfo.longitude ?? null,
     address: stationInfo.address || '',
@@ -157,7 +158,7 @@ export const saveSolarStation = (payload) => async (dispatch) => {
 };
 
 export const toggleSolarStationStatus = (station) => async (dispatch) => {
-  const branchIdentifier = station?.branch_id ?? station?.branch;
+  const branchIdentifier = station?.branch ?? station?.branch_id;
   const stationId = station?.id;
 
   if (!branchIdentifier) {

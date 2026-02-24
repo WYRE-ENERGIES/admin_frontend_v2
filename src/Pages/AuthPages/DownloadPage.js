@@ -13,7 +13,7 @@ import {
 import { connect } from "react-redux";
 import { AlertFilled, FireFilled, SearchOutlined } from '@ant-design/icons';
 
-import { Spin, Form, notification, Select, DatePicker, Table, Switch, Tag, Button, Space, TimePicker, Card, Row, Col, Typography } from "antd";
+import { Spin, Form, notification, Select, DatePicker, Table, Switch, Tag, Button, Space, TimePicker, Card, Row, Col, Typography, Modal, Descriptions } from "antd";
 import en from 'antd/es/date-picker/locale/en_US';
 import enUS from 'antd/es/locale/en_US';
 import dayjs from 'dayjs';
@@ -24,6 +24,7 @@ import { downloadFile } from "../../helpers/generalHelper";
 import moment from "moment";
 import EnvData from "../../config/EnvData";
 import Highlighter from "react-highlight-words";
+import { APIService } from "../../config/Api/apiServices";
 
 const { convertArrayToCSV } = require("convert-array-to-csv");
 const { Title } = Typography;
@@ -67,13 +68,17 @@ function DownloadPage(props) {
   const [searchText, setSearchText] = useState("");
   const [searchedColumn, setSearchedColumn] = useState("");
   const searchInput = useRef(null);
+  const [branchPostingData, setBranchPostingData] = useState([]);
+  const [branchPostingLoading, setBranchPostingLoading] = useState(false);
+  const [branchDetailModalVisible, setBranchDetailModalVisible] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState(null);
   const [monitorPagination, setMonitorPagination] = useState({
   current: 1,
   pageSize: 10,
   showSizeChanger: true,
   pageSizeOptions: ['10', '20', '50', '100'],
 });
-const [allDevicesPagination, setAllDevicesPagination] = useState({
+const [branchPostingPagination, setBranchPostingPagination] = useState({
   current: 1,
   pageSize: 10,
   showSizeChanger: true,
@@ -145,12 +150,22 @@ const [allDevicesPagination, setAllDevicesPagination] = useState({
   }));
 };
 
-const handleAllDevicesTableChange = (pagination) => {
-  setAllDevicesPagination((prev) => ({
+const handleBranchPostingTableChange = (pagination) => {
+  setBranchPostingPagination((prev) => ({
     ...prev,
     current: pagination.current,
     pageSize: pagination.pageSize,
   }));
+};
+
+const handleBranchRowClick = (record) => {
+  setSelectedBranch(record);
+  setBranchDetailModalVisible(true);
+};
+
+const handleCloseBranchModal = () => {
+  setBranchDetailModalVisible(false);
+  setSelectedBranch(null);
 };
 
   const getColumnSearchProps = (dataIndex) => ({
@@ -274,7 +289,32 @@ const handleAllDevicesTableChange = (pagination) => {
     if (!props.auth.allDevicesfetched) {
       props.getDownloadAllDevices();
     }
-  }, [])
+  }, []);
+
+  // Fetch branch posting data
+  useEffect(() => {
+    const fetchBranchPostingData = async () => {
+      setBranchPostingLoading(true);
+      try {
+        const response = await APIService.get('/api/v1/branch-posting-status/');
+        const data = Array.isArray(response?.data) ? response.data : [];
+        // Sort by hours_since_last_post descending
+        const sortedData = data.sort(
+          (a, b) => parseFloat(b.hours_since_last_post || 999) - parseFloat(a.hours_since_last_post || 999)
+        );
+        setBranchPostingData(sortedData);
+      } catch (error) {
+        notification.error({
+          message: 'Failed to load branch posting data',
+          description: error?.response?.data?.detail || error?.message || 'Please try again'
+        });
+        setBranchPostingData([]);
+      } finally {
+        setBranchPostingLoading(false);
+      }
+    };
+    fetchBranchPostingData();
+  }, []);
 
   const columnData = [
     {
@@ -374,6 +414,106 @@ const handleAllDevicesTableChange = (pagination) => {
       },
     },
   ];
+
+  // Branch Posting Table Columns
+  const branchPostingColumns = [
+    {
+      title: "Branch Name",
+      dataIndex: "branch_name",
+      key: "branch_name",
+      ...getColumnSearchProps("branch_name"),
+    },
+    {
+      title: "Latest Post Time",
+      dataIndex: "latest_post_time",
+      key: "latest_post_time",
+      render: (value) =>
+        value
+          ? new Date(value)
+              .toString()
+              .split(" ")
+              .slice(0, 5)
+              .join(" ")
+          : "-",
+    },
+    {
+      title: "Hours Since Last Post",
+      dataIndex: "hours_since_last_post",
+      key: "hours_since_last_post",
+      render: (value) => {
+        if (value === null || value === undefined || value === 999) return "Null";
+        return (
+          <>
+            {value + " Hour(s) "} <br />{" "}
+            <span>
+              ({Math.floor(value / 24) + "Days,"} {Math.floor(value % 24) + "Hrs"}
+              )
+            </span>
+          </>
+        );
+      },
+    },
+    {
+      title: "Active Devices",
+      dataIndex: "devices",
+      key: "active_devices",
+      render: (devices) => {
+        if (!devices || !Array.isArray(devices)) return 0;
+        return devices.filter((d) => d.is_active === true).length;
+      },
+    },
+  ];
+
+  // Device columns for branch detail modal
+  const branchDeviceColumns = [
+    {
+      title: "Device Name",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Is Active",
+      dataIndex: "is_active",
+      key: "is_active",
+      render: (value) => (value ? <Tag color="green">Active</Tag> : <Tag color="red">Inactive</Tag>),
+    },
+    {
+      title: "Device Type",
+      dataIndex: "type",
+      key: "type",
+    },
+    {
+      title: "Last Posted",
+      dataIndex: "last_posted",
+      key: "last_posted",
+      render: (value) =>
+        value === null || value === undefined
+          ? "Null"
+          : new Date(value)
+              .toString()
+              .split(" ")
+              .slice(0, 5)
+              .join(" "),
+    },
+    {
+      title: "Hours Since Last Post",
+      dataIndex: "hours_since_last_post",
+      key: "hours_since_last_post",
+      render: (value) => {
+        if (value === null || value === undefined || value === 999) return "Null";
+        return (
+          <>
+            {value + " Hour(s) "} <br />{" "}
+            <span>
+              ({Math.floor(value / 24) + "Days,"} {Math.floor(value % 24) + "Hrs"}
+              )
+            </span>
+          </>
+        );
+      },
+    },
+  ];
+
   const monitorColumn = [
     {
       title: "Name",
@@ -645,6 +785,18 @@ const handleAllDevicesTableChange = (pagination) => {
     return Math.round((devicesWithinWindow.length / devicesWithLastPost.length) * 100);
   };
 
+  // Branch posting percentage calculation
+  const calculateBranchPostingPercentage = (branches, minutes) => {
+    if (!branches || branches.length === 0) return 0;
+    const branchesWithPost = branches.filter((branch) => branch.latest_post_time && branch.hours_since_last_post !== 999);
+    if (branchesWithPost.length === 0) return 0;
+    const cutoffTime = moment().subtract(minutes, 'minutes');
+    const branchesWithinWindow = branchesWithPost.filter((branch) => 
+      branch.latest_post_time && moment(branch.latest_post_time).isAfter(cutoffTime)
+    );
+    return Math.round((branchesWithinWindow.length / branchesWithPost.length) * 100);
+  };
+
   // Use useMemo to recalculate percentages only when data changes
   const monitoringPct30Min = useMemo(() => 
     calculatePostingPercentage(monitorDataState, 30), 
@@ -671,9 +823,23 @@ const handleAllDevicesTableChange = (pagination) => {
     [sortedDataState]
   );
 
+  // Branch posting percentages
+  const branchPostingPct30Min = useMemo(() => 
+    calculateBranchPostingPercentage(branchPostingData, 30), 
+    [branchPostingData]
+  );
+  const branchPostingPct60Min = useMemo(() => 
+    calculateBranchPostingPercentage(branchPostingData, 60), 
+    [branchPostingData]
+  );
+  const branchPostingPct24Hr = useMemo(() => 
+    calculateBranchPostingPercentage(branchPostingData, 24 * 60), 
+    [branchPostingData]
+  );
+
   return (
     <div className="download-page-container" style={{ padding: "24px" }}>
-      <Spin spinning={props.auth.allDevicesfetchLoading || props.auth.fetchDeviceReadingsLoading}>
+      <Spin spinning={props.auth.allDevicesfetchLoading || props.auth.fetchDeviceReadingsLoading || branchPostingLoading}>
         <Title level={2} style={{ textAlign: "center", marginBottom: "32px" }}>
           Download CSV File
         </Title>
@@ -819,6 +985,47 @@ const handleAllDevicesTableChange = (pagination) => {
                   </Form.Item>
                 </Form>
               </Card>
+          </Col>
+          
+                    <Col xs={24}>
+          <h1 style={{fontSize: 24, color: "#333" }}>
+            Branch Posting
+          </h1>
+              <Row gutter={[24, 24]}>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Branches: Posted within last 30 minutes</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{branchPostingPct30Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Branches: Posted within last 60 minutes</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{branchPostingPct60Min}%</div>
+                  </Card>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Card style={cardStyle}>
+                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>Branches: Posted within last 24 hours</Title>
+                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{branchPostingPct24Hr}%</div>
+                  </Card>
+                </Col>
+              </Row>
+              <Card style={cardStyle}>
+                <Table
+                  dataSource={branchPostingData}
+                  columns={branchPostingColumns}
+                  loading={branchPostingLoading}
+                  scroll={{ x: true }}
+                  pagination={branchPostingPagination}
+                  onChange={handleBranchPostingTableChange}
+                  rowKey="branch_id"
+                  onRow={(record) => ({
+                    onClick: () => handleBranchRowClick(record),
+                    style: { cursor: 'pointer' }
+                  })}
+                />
+              </Card>
             </Col>
 
           <Col xs={24}>
@@ -855,42 +1062,54 @@ const handleAllDevicesTableChange = (pagination) => {
                 />
               </Card>
             </Col>
-
-            <Col xs={24}>
-          <h1 style={{fontSize: 24, color: "#333" }}>
-            All Devices Table
-          </h1>
-              <Row gutter={[24, 24]}>
-                <Col xs={24} md={8}>
-                  <Card style={cardStyle}>
-                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 30 minutes</Title>
-                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct30Min}%</div>
-                  </Card>
-                </Col>
-                <Col xs={24} md={8}>
-                  <Card style={cardStyle}>
-                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 60 minutes</Title>
-                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct60Min}%</div>
-                  </Card>
-                </Col>
-                <Col xs={24} md={8}>
-                  <Card style={cardStyle}>
-                    <Title level={5} style={{ marginBottom: 12, marginTop: 8 }}>All Devices: Posted within last 24 hours</Title>
-                         <div style={{ fontSize: 28, fontWeight: 700, color: "#5C12A7" }}>{allDevicesPct24Hr}%</div>
-                  </Card>
-                </Col>
-              </Row>
-              <Card style={cardStyle}>
-                <Table
-                  dataSource={sortedDataState}
-                  columns={columnData}
-                scroll={{ x: true }}
-                pagination={allDevicesPagination}
-                onChange={handleAllDevicesTableChange}
-                />
-              </Card>
-            </Col>
           </Row>
+
+        <Modal
+          title={`Branch Details: ${selectedBranch?.branch_name || ''}`}
+          open={branchDetailModalVisible}
+          onCancel={handleCloseBranchModal}
+          footer={[
+            <Button key="close" onClick={handleCloseBranchModal}>
+              Close
+            </Button>
+          ]}
+          width={900}
+        >
+          {selectedBranch && (
+            <div>
+              {selectedBranch.latest_post_by_type && (
+                <div style={{ marginBottom: 24 }}>
+                  <Title level={5} style={{ marginBottom: 12 }}>Latest Post By Type</Title>
+                  <Descriptions bordered column={1}>
+                    {Object.entries(selectedBranch.latest_post_by_type).map(([type, datetime]) => (
+                      <Descriptions.Item key={type} label={type}>
+                        {datetime ? new Date(datetime).toLocaleString() : '-'}
+                      </Descriptions.Item>
+                    ))}
+                  </Descriptions>
+                </div>
+              )}
+
+              {selectedBranch.devices && Array.isArray(selectedBranch.devices) && (
+                <div>
+                  <Title level={5} style={{ marginBottom: 12 }}>Devices List</Title>
+                  <Table
+                    dataSource={selectedBranch.devices}
+                    columns={branchDeviceColumns}
+                    rowKey={(record, index) => record.device_id || `device-${index}`}
+                    pagination={{
+                      pageSize: 10,
+                      showSizeChanger: true,
+                      pageSizeOptions: ['10', '20', '50'],
+                    }}
+                    scroll={{ x: true }}
+                    size="small"
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </Modal>
 
       </Spin>
     </div>
