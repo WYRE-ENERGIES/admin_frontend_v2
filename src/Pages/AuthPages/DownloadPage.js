@@ -747,11 +747,9 @@ const handleCloseBranchModal = () => {
 
   const onSelectAggregateFormSubmit = async (values) => {
     const { dateRange } = values;
-    const downloadUrl = `/api/v1/get_aggregated_device_readings/${deviceId}/${
-      moment(dateRange[0]).format("DD-MM-YYYY HH:mm") +
-      "/" +
-      moment(dateRange[1]).format("DD-MM-YYYY HH:mm")
-    }/`;
+    const startDate = dateRange[0].format("DD-MM-YYYY HH:mm");
+    const endDate = dateRange[1].format("DD-MM-YYYY HH:mm");
+    const downloadUrl = `/api/v1/get_aggregated_device_readings/${deviceId}/${startDate}/${endDate}/`;
 
     form.resetFields();
 
@@ -764,7 +762,11 @@ const handleCloseBranchModal = () => {
   
   const onOperatingTimeSubmit = async (values) => {
     const { deviceId, dateRange, timeRange } = values;
-    const downloadUrl = `/api/v1/get_timed_device_readings/${deviceId}/${moment(dateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(dateRange[1]).format('DD-MM-YYYY HH:mm')}/${moment(timeRange[0]).format('HH') + '/' + moment(timeRange[1]).format('HH')}`;
+    const startDate = dateRange[0].format('DD-MM-YYYY HH:mm');
+    const endDate = dateRange[1].format('DD-MM-YYYY HH:mm');
+    const startHour = timeRange[0].format('HH');
+    const endHour = timeRange[1].format('HH');
+    const downloadUrl = `/api/v1/get_timed_device_readings/${deviceId}/${startDate}/${endDate}/${startHour}/${endHour}`;
 
     form.resetFields();
 
