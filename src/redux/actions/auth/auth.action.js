@@ -69,7 +69,9 @@ export const getDownloadAllDevices = () => async (dispatch) => {
 
 export const getDownloadDeviceReadings = (deviceId, userDateRange) => async (dispatch) => {
   dispatch(getDeviceReadingsLoading(true));
-  const requestUrl = `/api/v1/get_device_readings/${deviceId}/${moment(userDateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(userDateRange[1]).format('DD-MM-YYYY HH:mm')}/`;
+  const startDate = userDateRange[0].format ? userDateRange[0].format('DD-MM-YYYY HH:mm') : moment(userDateRange[0]).format('DD-MM-YYYY HH:mm');
+  const endDate = userDateRange[1].format ? userDateRange[1].format('DD-MM-YYYY HH:mm') : moment(userDateRange[1]).format('DD-MM-YYYY HH:mm');
+  const requestUrl = `/api/v1/get_device_readings/${deviceId}/${startDate}/${endDate}/`;
   try {
     const response = await APIService.get(requestUrl);
     dispatch(getDeviceReadingsSuccess(response.data));
@@ -83,7 +85,11 @@ export const getDownloadDeviceReadings = (deviceId, userDateRange) => async (dis
 
 export const getDownloadDeviceConsumption = (deviceId, userDateRange, operatingTimeRange) => async (dispatch) => {
   dispatch(getDeviceConsumptionLoading(true));
-  const requestUrl = `/api/v1/get_timed_device_readings/${deviceId}/${moment(userDateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(userDateRange[1]).format('DD-MM-YYYY HH:mm')}/${moment(operatingTimeRange[0]).format('HH') + '/' + moment(operatingTimeRange[1]).format('HH')}`;
+  const startDate = userDateRange[0].format ? userDateRange[0].format('DD-MM-YYYY HH:mm') : moment(userDateRange[0]).format('DD-MM-YYYY HH:mm');
+  const endDate = userDateRange[1].format ? userDateRange[1].format('DD-MM-YYYY HH:mm') : moment(userDateRange[1]).format('DD-MM-YYYY HH:mm');
+  const startHour = operatingTimeRange[0].format ? operatingTimeRange[0].format('HH') : moment(operatingTimeRange[0]).format('HH');
+  const endHour = operatingTimeRange[1].format ? operatingTimeRange[1].format('HH') : moment(operatingTimeRange[1]).format('HH');
+  const requestUrl = `/api/v1/get_timed_device_readings/${deviceId}/${startDate}/${endDate}/${startHour}/${endHour}`;
   try {
     const response = await APIService.get(requestUrl);
     dispatch(getDeviceConsumptionSuccess(response.data.authenticatedData));
