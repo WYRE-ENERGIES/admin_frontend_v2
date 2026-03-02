@@ -42,7 +42,7 @@
 
 @media (max-width: 768px) {
   .mobile-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
   }
 }
@@ -56,7 +56,8 @@
 
 @media (max-width: 768px) {
   .mobile-button {
-    padding: 20px 15px;
+    padding: 10px 10px;
+    font-size: 12px;
   }
 }
 
@@ -1985,6 +1986,8 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
   .top-cards-filter-row {
     gap: 8px;
+    flex-direction: column-reverse;
+    /* align-items: flex-start; */
   }
 }
 
