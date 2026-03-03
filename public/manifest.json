@@ -8,12 +8,12 @@
       "type": "image/x-icon"
     },
     {
-      "src": "Images/Wyre-logo.png",
+      "src": "/Images/Wyre-logo.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "Images/Wyre-logo.png",
+      "src": "/Images/Wyre-logo.png",
       "type": "image/png",
       "sizes": "512x512"
     }
