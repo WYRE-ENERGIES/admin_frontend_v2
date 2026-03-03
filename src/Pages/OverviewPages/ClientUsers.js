@@ -1,5 +1,4 @@
-import { Button, Dropdown, Input, Modal, Popconfirm, Space, Table, Typography, notification } from "antd";
-
+import { Button, Dropdown, Input, Modal, Popconfirm, Table, Typography, notification } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { PlusOutlined, UserOutlined, EditOutlined } from "@ant-design/icons";
@@ -26,18 +25,17 @@ const errorNotificationPopUp = (type, formName) => {
 };
 
 function ClientUsers(props) {
-  const [showEditForm, setShowEditForm] = useState(false)
-  const [showAddButton, setShowAddButton] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
   const [clientUserApiData, setClientUserApiData] = useState([])
   const [holdPaginatedData, setHoldPaginatedData] = useState(null)
   const [pageDataHolder, setPageDataHolder] = useState([])
   const [currentPage, setCurrentPage] = useState(1)
   const [showUserBranches, setShowUserBranches] = useState(false)
   const [seletedBranches, setseletedBranches] = useState([])
-  const [holdLocationData, setHoldLocationData] = useState([])
   const [ClientUserTableData, setClientUserTableData] = useState({})
   const pageSize = 10
-  const isNextLoadable = currentPage*pageSize < pageDataHolder.length;
+  const isNextLoadable = currentPage * pageSize < pageDataHolder.length;
 
   const { Search } = Input;
   
@@ -49,11 +47,10 @@ function ClientUsers(props) {
   }, [])
 
   useEffect(() => {
-      if (props.clientUsersPage.fetchedClientUser)
-      {
-        setClientUserApiData(props.clientUsersPage.fetchedClientUser)
-      }
-    }, [props.clientUsersPage.fetchedClientUser])
+    if (props.clientUsersPage.fetchedClientUser) {
+      setClientUserApiData(props.clientUsersPage.fetchedClientUser)
+    }
+  }, [props.clientUsersPage.fetchedClientUser])
 
   useEffect(() => {
     if (ClientUserTableData.id) {
@@ -69,22 +66,18 @@ function ClientUsers(props) {
 
   useEffect(() => {
     const fetchAllLocations = async () => {
-      const userId = ClientUserTableData.id
       const fetchAllLocationsData = await props.getLocationsData(props.auth.userData.client_id)
-      if (fetchAllLocationsData.fulfilled) {
-        setHoldLocationData(fetchAllLocationsData.data.data)
-      }
     }
     fetchAllLocations()
   }, [ClientUserTableData.id])
   
   const handleCancel = async (record) => {
-    const doCancelLocation = await props.assignLocation(ClientUserTableData.id, {user: ClientUserTableData.id, remove: [record.id]})
+    const doCancelLocation = await props.assignLocation(ClientUserTableData.id, { user: ClientUserTableData.id, remove: [record.id] })
     if (doCancelLocation.fulfilled) {
       successNotificationPopUp("success", "user");
       props.getViewUserBranchesData(ClientUserTableData.id)
       props.getClientUsersData(props.auth.userData.client_id);
-    }else{
+    } else {
       errorNotificationPopUp('error', 'user')
     }
   }
@@ -110,235 +103,218 @@ function ClientUsers(props) {
   }, [clientUserApiData])
 
   const fetchNextPaginatedUsersList = () => {
-      if (isNextLoadable)
-      {
-        setCurrentPage(currentPage+ 1);
-      }
+    if (isNextLoadable) {
+      setCurrentPage(currentPage + 1);
+    }
   };
   
   const fetchPrevPaginatedUsersList = () => {
-    if (currentPage > 1)
-    {
+    if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
 
-    const handleMenuClick = () => {
-      setShowUserBranches(true)
-      setShowEditForm(false)
-    }
+  const handleMenuClick = () => {
+    setShowUserBranches(true)
+  }
 
-    const items = [
-      {
-        label: ' View User Branches',
-        key: '1',
-        icon: <UserOutlined />,
-        onClick: () => {
-          // setClientUserTableData()
-          handleMenuClick()
-        }
-      },
-      {
-        label: 'Edit',
-        key: '2',
-        icon: <EditOutlined />,
-        onClick: () => {
-          setShowEditForm(true);
-        }
-      },
-    ];
+  const items = [
+    {
+      label: 'View User Branches',
+      key: '1',
+      icon: <UserOutlined />,
+      onClick: () => handleMenuClick()
+    },
+    {
+      label: 'Edit',
+      key: '2',
+      icon: <EditOutlined />,
+      onClick: () => setShowEditModal(true)
+    },
+  ];
 
-    const menuProps = {
-      items,
-      // onClick: handleMenuClick,
-    };
+  const menuProps = { items };
 
-    const optionsColumn = () => ({
-      key: 'operation',
-      title: 'Options',
-      width: '10%',
-      dataIndex: 'operation',
-      render: (_, record) => {
-        return (
-          <a
-            target="_blank"
-            onClick={(e) => {
-              e.preventDefault();
-              // setShowUserBranches(true);
-              setClientUserTableData(record);
-            }}
-            rel="noopener noreferrer"
-          >
-            <Dropdown
-              menu={menuProps}
-            >
-              <Button
-                style={{
-                  color: "#5C12A7",
-                  width: 44,
-                  height: 25,
-                  backgroundColor: "rgba(92, 18, 167, 0.1)",
-                  borderRadius: 12,
-                }}
-              >
-                <BsThreeDots />
-              </Button>
-            </Dropdown>
-          </a>
-        );
-      }
-    });
+  const optionsColumn = () => ({
+    key: 'operation',
+    title: 'Options',
+    width: '10%',
+    dataIndex: 'operation',
+    render: (_, record) => (
+      <Dropdown
+        menu={menuProps}
+        trigger={['click']}
+      >
+        <Button
+          className="options-dot-btn"
+          onClick={(e) => {
+            e.preventDefault();
+            setClientUserTableData(record);
+          }}
+        >
+          <BsThreeDots />
+        </Button>
+      </Dropdown>
+    )
+  });
 
-    const modalColumns = [
-      {
-        title: "Branches",
-        dataIndex: "name",
-        key: "name",
-      },
-      // {
-      //   title: "Role",
-      //   dataIndex: "role",
-      //   key: "role",
-      // },
-      // {
-      //   title: "Region",
-      //   dataIndex: "region",
-      //   key: "region",
-      // },
-      {
-        title: 'Action',
-        key: 'action',
-        render: (_, record) => (
-          <Popconfirm
-            title="Are you sure you want to remove this location?"
-            onConfirm={() => handleCancel(record)}
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button className="removeBtn">Remove</Button>
-          </Popconfirm>
-        ),
-      },
-    ]
-  
-    const columns = [
-      {
-        title: "Username",
-        dataIndex: "username",
-        key: "username",
-      },
-      {
-        title: "Email",
-        dataIndex: "email",
-        key: "email",
-      },
-      {
-        title: "Phone number",
-        dataIndex: "phone_number",
-        key: "phone_number",
-      },
-      optionsColumn()
-    ];
+  const modalColumns = [
+    {
+      title: "Branches",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: 'Action',
+      key: 'action',
+      render: (_, record) => (
+        <Popconfirm
+          title="Are you sure you want to remove this location?"
+          onConfirm={() => handleCancel(record)}
+          okText="Yes"
+          cancelText="No"
+        >
+          <Button className="removeBtn">Remove</Button>
+        </Popconfirm>
+      ),
+    },
+  ]
 
-    const onChange = (pagination, filters, sorter, extra) => {
+  const columns = [
+    {
+      title: "Username",
+      dataIndex: "username",
+      key: "username",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+    },
+    {
+      title: "Phone number",
+      dataIndex: "phone_number",
+      key: "phone_number",
+    },
+    optionsColumn()
+  ];
 
-    };
-
-    return (
-      <>
-        <div className="AppHeader" style={{ margin: "30px" }}>
-          <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
+  return (
+    <div className="client-users-page">
+      <div className="client-users-header">
+        <div className="client-users-header-top">
+          <Typography.Title className="client-users-title">
             Users
           </Typography.Title>
+          <Button
+            className="add-user-btn add-user-btn--mobile"
+            onClick={() => setShowAddModal(true)}
+          >
+            <PlusOutlined />
+            Add User
+          </Button>
         </div>
-        <div className="AppHeader" style={{ margin: "30px" }}>
-          <Search
-            // onClick={onSearchClientUser}
-            onChange={handleSearch}
-            // enterButton="suffix"
-            // onClick={onSearchClientUser}
-            // enterButton="suffix"
-            allowClear
-            placeholder="Search by username or email or phone number"
-            className="user-search-input"
+        <div className="client-users-header-search-row">
+          <div className="client-users-search-wrapper">
+            <Search
+              onChange={handleSearch}
+              allowClear
+              placeholder="Search by username or email or phone number"
+              className="user-search-input"
+            />
+          </div>
+          <div className="add-user-btn--desktop-wrap">
+            <Button
+              className="add-user-btn add-user-btn--desktop"
+              onClick={() => setShowAddModal(true)}
+            >
+              <PlusOutlined />
+              Add User
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <div className="client-users-table-section">
+        <div className="client-users-table-card">
+          <div className="table-responsive-wrapper">
+            <Table
+              className="custom-row-hover"
+              loading={props.clientUsersPage.fetchClientUserLoading}
+              dataSource={holdPaginatedData}
+              columns={columns}
+              pagination={false}
+              scroll={{ x: true }}
+            />
+          </div>
+          <div className="client-users-pagination">
+            <Button
+              className="pagination-btn"
+              onClick={fetchPrevPaginatedUsersList}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </Button>
+            <span className="pagination-info">
+              Page {currentPage} of {Math.ceil(pageDataHolder.length / pageSize)}
+            </span>
+            <Button
+              className="pagination-btn"
+              onClick={fetchNextPaginatedUsersList}
+              disabled={currentPage * pageSize >= pageDataHolder.length}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      <Modal
+        open={showUserBranches}
+        title="User Branches"
+        onCancel={() => setShowUserBranches(false)}
+        footer={null}
+        width={557}
+        className="client-users-modal"
+      >
+        <div className="table-responsive-wrapper">
+          <Table
+            dataSource={seletedBranches}
+            columns={modalColumns}
+            pagination={false}
+            scroll={{ x: true }}
           />
-          <Space>
-            <div>
-              <Button
-                style={{ width: "183.68px", height: "46.96px", fontWeight: "bold", borderRadius: "12px", backgroundColor: "#5C12A7", color: "white" }}
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowAddButton(true);
-                  setShowEditForm(false);
-                }}
-              >
-                <PlusOutlined />
-                Add User
-              </Button>
-            </div>
-          </Space>
         </div>
-        <div className="##########">
-          <section className="total-energy-bar-chart users-table">
-            <div className="client-page-flex-display">
-              <div className="client-user-table">
-                <div className="table-responsive-wrapper">
-                  <Table
-                    className="custom-row-hover"
-                    loading={props.clientUsersPage.fetchClientUserLoading}
-                    dataSource={holdPaginatedData}
-                    columns={columns}
-                    onChange={onChange}
-                    pagination={false}
-                    scroll={{ x: true }}
-                  />
-                </div>
-                <div className="pagination">
-                  <div>
-                    <Button onClick={fetchPrevPaginatedUsersList} disabled={currentPage===1}>
-                      Previous
-                    </Button>
-                  </div>
-                  <span style={{ margin: '0 8px' }}>
-                    Page {currentPage} of {Math.ceil(pageDataHolder.length / pageSize)}
-                  </span>
-                  <div>
-                    <Button onClick={fetchNextPaginatedUsersList} disabled={currentPage*pageSize >= pageDataHolder.length}>Next</Button>
-                  </div>
-                </div>
-                <Modal
-                  visible={showUserBranches}
-                  title="User Branches"
-                  onCancel={() => setShowUserBranches(false)}
-                  footer={null}
-                  width={557}
-                  height={594}
-                >
-                  <div className="table-responsive-wrapper">
-                    <Table
-                      dataSource={seletedBranches}
-                      columns={modalColumns}
-                      pagination={false}
-                      scroll={{ x: true }}
-                    />
-                  </div>
-                </Modal>
-              </div>
-              {ClientUserTableData ? (
-                <EditClientUserForm
-                  ClientUserTableData={ClientUserTableData}
-                  assignedLocationData={seletedBranches}
-                  showEditForm={showEditForm}
-                />
-              ) : (
-                <AddClientUserForm ClientUserTableData={ClientUserTableData} />
-              )}
-            </div>
-          </section>
-        </div>
-      </>
-    );
-  }
+      </Modal>
+
+      <Modal
+        open={showAddModal}
+        onCancel={() => setShowAddModal(false)}
+        footer={null}
+        width={520}
+        destroyOnClose
+        className="client-users-modal"
+      >
+        <AddClientUserForm onSuccess={() => setShowAddModal(false)} />
+      </Modal>
+
+      <Modal
+        open={showEditModal}
+        onCancel={() => setShowEditModal(false)}
+        footer={null}
+        width={520}
+        destroyOnClose
+        className="client-users-modal"
+      >
+        <EditClientUserForm
+          ClientUserTableData={ClientUserTableData}
+          assignedLocationData={seletedBranches}
+          onSuccess={() => setShowEditModal(false)}
+        />
+      </Modal>
+    </div>
+  );
+}
 
 const mapDispatchToProps = {
   addClientUsersData,
