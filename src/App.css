@@ -712,6 +712,131 @@ a.header-short-button--auth {
     margin-inline: 30px;
   }
 }
+
+/* ===== Diesel Overview Page ===== */
+.diesel-page {
+  padding: 24px 32px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.diesel-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.diesel-page-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  margin-bottom: 0 !important;
+}
+
+.diesel-date-picker {
+  height: 40px;
+  border-radius: 10px;
+}
+
+.diesel-cards-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.diesel-card {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 20px 24px;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.diesel-card-title {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px !important;
+  font-size: 16px !important;
+}
+
+.diesel-card-icon {
+  height: 28px;
+  width: 28px;
+}
+
+.diesel-card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.diesel-card-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.diesel-card-value {
+  font-weight: 600;
+  color: #5C12A7;
+}
+
+.diesel-card-branch-count {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80px;
+}
+
+.diesel-table-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 768px) {
+  .diesel-page {
+    padding: 16px;
+  }
+
+  .diesel-page-header {
+    margin-bottom: 20px;
+  }
+
+  .diesel-page-title {
+    font-size: 24px !important;
+  }
+
+  .diesel-cards-row {
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .diesel-card {
+    padding: 16px 20px;
+  }
+
+  .diesel-card-title {
+    font-size: 15px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .diesel-card-stat-row {
+    font-size: 13px;
+  }
+
+  .diesel-table-section {
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+}
+
 .set_target_page {
   font-family: 'Montserrat';
   font-size: medium;
@@ -719,10 +844,105 @@ a.header-short-button--auth {
   margin: 30px;
 }
 
+.set-target-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.set-target-row--generators {
+  margin-bottom: 40px;
+}
+
+.set-target-field {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.set-target-field--empty {
+  visibility: hidden;
+}
+
+.set-target-input {
+  height: 52px;
+  width: 100%;
+}
+
+.set-target-section-label {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.set-target-submit-btn {
+  background-color: #5C12A7;
+  color: white;
+  width: 100%;
+  height: 52px;
+  font-weight: 600;
+  border-radius: 7px;
+  border: none;
+}
+
+.set-target-submit-btn:hover,
+.set-target-submit-btn:focus {
+  background-color: #4a0f8a !important;
+  color: white !important;
+}
+
+.set-target-submit-btn:disabled {
+  background-color: #d9d9d9;
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.set-target-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.set-target-reset-btn {
+  width: 100%;
+  height: 52px;
+  background-color: #ffffff;
+  color: #c72525;
+  border: 1px solid #e8e8e8;
+  border-radius: 7px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.set-target-reset-btn:hover,
+.set-target-reset-btn:focus {
+  color: #c72525 !important;
+  border-color: #c72525 !important;
+  background-color: #fff5f5 !important;
+}
+
 @media (max-width: 768px) {
   .set_target_page {
     margin: 16px;
-    font-size: 12px;
+    font-size: 13px;
+  }
+
+  .set-target-row {
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  .set-target-row--generators {
+    margin-bottom: 16px;
+  }
+
+  .set-target-field--empty {
+    display: none;
+  }
+
+  .set-target-actions {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 }
 

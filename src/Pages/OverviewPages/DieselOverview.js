@@ -190,8 +190,6 @@ function DieselOverview(props) {
         )
       },
       key: "name",
-      // sorter: (a, b) => a.name.length - b.name.length,
-      // sortDirections: ["descend"],
     },
     {
       title: "Diesel consumed this month(L)",
@@ -278,7 +276,6 @@ function DieselOverview(props) {
     {
       title: "Fuel efficiency ratio(%)",
       dataIndex: "fuel_efficiency_ratio",
-      // render: (value) => <>{value + 'L'}</>,
       key: "fuel_efficiency_ratio",
     },
   ];
@@ -295,153 +292,105 @@ function DieselOverview(props) {
   };
 
   useEffect(() => {
-    // Fetch initial data for current month/year
     const now = dayjs();
     props.getDieselCardData(props.auth.userData.client_id, now.month() + 1, now.year());
   }, []);
 
   return (
-    <div>
-      <div className="AppHeader">
-        <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
+    <div className="diesel-page">
+      <div className="diesel-page-header">
+        <Typography.Title className="diesel-page-title">
           Diesel Overview
         </Typography.Title>
-        <Space>
-          {/* <RangePicker
-            style={{
-              width: 264.29,
-              height: 41.19,
-              borderRadius: 11,
-            }}
-            defaultValue={[dayjs().startOf("month"), dayjs()]}
-            format={dateFormat}
-            onChange={onSelectDateDieselOverview}
-          /> */}
-          <DatePicker
-            className="picker-date"
-            style={{
-              // height: 43
-            }}
-            // defaultValue={[
-            //   // dayjs("01/05/2024", dateFormat),
-            //   // dayjs("31/05/2024", dateFormat),
-            //   dayjs().startOf('month'),
-            //   dayjs(),
-            //   // moment().startOf("month"),
-            //   // moment().endOf("month"),
-            // ]}
-            defaultValue={selectedDate}
-            value={selectedDate}
-            disabledDate={(current) => {
-              return current && current > dayjs().endOf('month');
-            }}
-            picker="month"
-            format={monthFormat}
-            onChange={handleMonthChange}
-          />
-        </Space>
+        <DatePicker
+          className="diesel-date-picker"
+          defaultValue={selectedDate}
+          value={selectedDate}
+          disabledDate={(current) => current && current > dayjs().endOf('month')}
+          picker="month"
+          format={monthFormat}
+          onChange={handleMonthChange}
+        />
       </div>
-      <div className="##########">
-        <Spin spinning={props.dieselCardLoading}>
-          <div style={{ display: 'flex', gap: '24px', paddingInline: "24px" }}>
-            <div style={{
-              flex: 1,
-              paddingInline: '24px',
-              paddingBottom: "10px",
-              borderRadius: '12px',
-              backgroundColor: '#fff',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}>
-              <Typography.Title level={4} style={{display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px"}}>
-               <img src="/icon/monthly-usage.svg" alt="Monthly Usage" style={{height: "30px", width: "30px"}} /> 
-                Monthly Usage
-              </Typography.Title>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Litres</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>{numberFormatter(props.dieselCardData?.monthly_usage?.litres) || 0}L</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Cost</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.monthly_usage?.cost) || 0}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Avg Price/L</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.monthly_usage?.avg_price_per_litre) || 0}</span>
-                </div>
-              </div>
-            </div>
 
-            <div style={{
-              flex: 1,
-              paddingInline: '24px',
-              paddingBottom: "10px",
-              borderRadius: '12px',
-              backgroundColor: '#fff',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}>
-               <Typography.Title level={4} style={{display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px"}}>
-               <img src="/icon/stock-balance.svg" alt="Monthly Usage" style={{height: "30px", width: "30px"}} /> 
-                Stock Balance
-              </Typography.Title>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Litres</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>{numberFormatter(props.dieselCardData?.stock_balance?.litres) || 0}L</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Cost</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.stock_balance?.cost) || 0}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Current Price/L</span>
-                  <span style={{fontWeight: "550", color: "#5C12A7"}}>₦ {numberFormatter(props.dieselCardData?.stock_balance?.current_price_per_litre) || 0}</span>
-                </div>
+      <Spin spinning={props.dieselCardLoading}>
+        <div className="diesel-cards-row">
+          <div className="diesel-card">
+            <Typography.Title level={4} className="diesel-card-title">
+              <img src="/icon/monthly-usage.svg" alt="Monthly Usage" className="diesel-card-icon" />
+              Monthly Usage
+            </Typography.Title>
+            <div className="diesel-card-stats">
+              <div className="diesel-card-stat-row">
+                <span>Litres</span>
+                <span className="diesel-card-value">{numberFormatter(props.dieselCardData?.monthly_usage?.litres) || 0}L</span>
               </div>
-            </div>
-
-            <div style={{
-              flex: 1,
-              paddingInline: '24px',
-              paddingBottom: "10px",
-              borderRadius: '12px',
-              backgroundColor: '#fff',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-            }}>
-            <Typography.Title level={4} style={{display: "flex", alignItems: "center", gap: "5px", marginBottom: "20px"}}>
-               <img src="/icon/branch.svg" alt="Monthly Usage" style={{height: "30px", width: "30px"}} /> 
-                Branches
-              </Typography.Title>
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100px' }}>
-                <Typography.Title level={2} style={{fontWeight: "550", color: "#5C12A7"}}>
-                  {numberFormatter(props.dieselCardData?.branch_count) || 0}
-                </Typography.Title>
+              <div className="diesel-card-stat-row">
+                <span>Cost</span>
+                <span className="diesel-card-value">₦ {numberFormatter(props.dieselCardData?.monthly_usage?.cost) || 0}</span>
+              </div>
+              <div className="diesel-card-stat-row">
+                <span>Avg Price/L</span>
+                <span className="diesel-card-value">₦ {numberFormatter(props.dieselCardData?.monthly_usage?.avg_price_per_litre) || 0}</span>
               </div>
             </div>
           </div>
-        </Spin>
-        <section className="total-energy-bar-chart diesel-overview-table">
-          {/* <div className="client-page-flex-display"> */}
-          {/* <div className="client-user-table"> */}
+
+          <div className="diesel-card">
+            <Typography.Title level={4} className="diesel-card-title">
+              <img src="/icon/stock-balance.svg" alt="Stock Balance" className="diesel-card-icon" />
+              Stock Balance
+            </Typography.Title>
+            <div className="diesel-card-stats">
+              <div className="diesel-card-stat-row">
+                <span>Litres</span>
+                <span className="diesel-card-value">{numberFormatter(props.dieselCardData?.stock_balance?.litres) || 0}L</span>
+              </div>
+              <div className="diesel-card-stat-row">
+                <span>Cost</span>
+                <span className="diesel-card-value">₦ {numberFormatter(props.dieselCardData?.stock_balance?.cost) || 0}</span>
+              </div>
+              <div className="diesel-card-stat-row">
+                <span>Current Price/L</span>
+                <span className="diesel-card-value">₦ {numberFormatter(props.dieselCardData?.stock_balance?.current_price_per_litre) || 0}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="diesel-card diesel-card--branches">
+            <Typography.Title level={4} className="diesel-card-title">
+              <img src="/icon/branch.svg" alt="Branches" className="diesel-card-icon" />
+              Branches
+            </Typography.Title>
+            <div className="diesel-card-branch-count">
+              <Typography.Title level={2} className="diesel-card-value">
+                {numberFormatter(props.dieselCardData?.branch_count) || 0}
+              </Typography.Title>
+            </div>
+          </div>
+        </div>
+      </Spin>
+
+      <section className="diesel-table-section">
+        <div className="table-responsive-wrapper">
+          <Table
+            className="custom-row-hover"
+            loading={props.dieselPage.fetchDieselLoading}
+            dataSource={data}
+            columns={columns}
+            onChange={onChange}
+            pagination={false}
+            scroll={{ x: true }}
+          />
+        </div>
+        <Modal
+          open={showprocurementsModal}
+          title="Procurements Table"
+          onCancel={() => setShowprocurementsModal(false)}
+          footer={null}
+          width={557}
+        >
           <div className="table-responsive-wrapper">
-            <Table
-              className="custom-row-hover"
-              loading={props.dieselPage.fetchDieselLoading}
-              dataSource={data}
-              columns={columns}
-              onChange={onChange}
-              pagination={false}
-              scroll={{ x: true }}
-            />
-          </div>
-          <Modal
-            visible={showprocurementsModal}
-            title="Procurements Table"
-            onCancel={() => setShowprocurementsModal(false)}
-            footer={null}
-            width={557}
-            height={594}
-          >
             <Table
               dataSource={procurementDataSource}
               loading={props.dieselPage.fetchDieselProcurementLoading}
@@ -449,48 +398,42 @@ function DieselOverview(props) {
               pagination={false}
               scroll={{ x: true }}
             />
-            <div className="modal_pagination">
-              <div>
-                <Button onClick={fetchPrevPaginateProcurement}>Previous</Button>
-              </div>
-              <div>
-                <Button onClick={fetchNextPaginateProcurement}>Next</Button>
-              </div>
-            </div>
-          </Modal>
-          <Modal
-            visible={showConsumptionsModal}
-            title="Consumptions Table"
-            onCancel={() => setShowConsumptionsModal(false)}
-            footer={null}
-            width={557}
-            height={594}
-          >
+          </div>
+          <div className="modal_pagination">
+            <Button onClick={fetchPrevPaginateProcurement}>Previous</Button>
+            <Button onClick={fetchNextPaginateProcurement}>Next</Button>
+          </div>
+        </Modal>
+        <Modal
+          open={showConsumptionsModal}
+          title="Consumptions Table"
+          onCancel={() => setShowConsumptionsModal(false)}
+          footer={null}
+          width={557}
+        >
+          <div className="table-responsive-wrapper">
             <Table
               dataSource={consumptionDataSource}
               loading={props.dieselPage.fetchDieselConsumptionLoading}
               columns={consumptionModal}
               pagination={false}
+              scroll={{ x: true }}
             />
-            <div className="modal_pagination">
-              <div>
-                <Button onClick={fetchPrevPaginateConsumption}>Previous</Button>
-              </div>
-              <div>
-                <Button onClick={fetchNextPaginateConsumption}>Next</Button>
-              </div>
-            </div>
-          </Modal>
-          <div className="pagination">
-            <div>
-              <Button onClick={fetchPrevPaginatedUsersList}>Previous</Button>
-            </div>
-            <div>
-              <Button onClick={fetchNextPaginatedUsersList}>Next</Button>
-            </div>
           </div>
-        </section>
-      </div>
+          <div className="modal_pagination">
+            <Button onClick={fetchPrevPaginateConsumption}>Previous</Button>
+            <Button onClick={fetchNextPaginateConsumption}>Next</Button>
+          </div>
+        </Modal>
+        <div className="pagination">
+          <div>
+            <Button onClick={fetchPrevPaginatedUsersList}>Previous</Button>
+          </div>
+          <div>
+            <Button onClick={fetchNextPaginatedUsersList}>Next</Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
