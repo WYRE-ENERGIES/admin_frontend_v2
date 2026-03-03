@@ -918,7 +918,7 @@ a.header-short-button--auth {
   height: 44px;
 }
 
-.add-user-btn {
+.adding-btn {
   height: 40px;
   padding: 0 20px;
   font-weight: 600;
@@ -2109,10 +2109,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .table-responsive-wrapper .ant-table {
   min-width: 100%;
-}
-
-.table-responsive-wrapper .ant-table-container {
-  border-radius: 8px;
 }
 
 @media (max-width: 768px) {

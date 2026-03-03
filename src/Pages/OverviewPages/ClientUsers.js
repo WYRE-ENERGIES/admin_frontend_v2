@@ -207,7 +207,7 @@ function ClientUsers(props) {
             Users
           </Typography.Title>
           <Button
-            className="add-user-btn add-user-btn--mobile"
+            className="adding-btn add-user-btn--mobile"
             onClick={() => setShowAddModal(true)}
           >
             <PlusOutlined />
@@ -225,7 +225,7 @@ function ClientUsers(props) {
           </div>
           <div className="add-user-btn--desktop-wrap">
             <Button
-              className="add-user-btn add-user-btn--desktop"
+              className="adding-btn add-user-btn--desktop"
               onClick={() => setShowAddModal(true)}
             >
               <PlusOutlined />
