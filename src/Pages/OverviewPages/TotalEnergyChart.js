@@ -90,23 +90,20 @@ function TotalEnergyChart(props) {
 
   const chartJsData = {
     labels: displayedData.map(item => item.name),
-    // labels: breakLabels,
     datasets: [
       {
         label: "Generator",
         data: displayedData.map(item => item.generators_energy),
         backgroundColor: "#43D540",
         borderRadius: 6,
-        barThickness: 40,
-        maxBarThickness: 40,
+        maxBarThickness: 60,
       },
       {
         label: "Utility",
         data: displayedData.map(item => item.utility_energy),
         backgroundColor: "#F9CF40",
         borderRadius: 6,
-        barThickness: 40,
-        maxBarThickness: 40,
+        maxBarThickness: 60,
       },
     ]
   };
@@ -368,42 +365,24 @@ function TotalEnergyChart(props) {
           <UtilityCostChart showUtilityCostPage={showUtilityCostPage} />
         )} */}
         <section className="total-energy-bar-chart">
-          <Card
-            style={{
-              // width: 1070,
-              // height: 650,
-              overflow: "hidden",
-              borderRadius: 22,
-            }}
-            // loading={props.overviewPage.fetchTotalEnergyBarChartLoading}
-          >
+          <Card className="chart-card">
             <Spin
               spinning={props.overviewPage.fetchTotalEnergyBarChartLoading}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}>
-                <div>
-                  <h1
-                    style={{
-                      fontSize: "17Px",
-                    }}
-                  >
-                    Total Energy
-                    {/* {moveLegend} */}
-                  </h1>
-                </div>
-                <div className="search-bar-date-picker">
+              <div className="chart-header">
+                <h1 className="chart-header-title">
+                  Total Energy
+                </h1>
+                <div className="chart-filters">
                   <Search
                     placeholder="Search by name"
                     enterButton
-                    className="search-bar"
+                    className="chart-filter-search"
                     onChange={onSearchTotalEnergy}
                     allowClear
-                    style={{
-                      marginRight: 10,
-                    }}
                   />
                   <Select
-                    className="select-bar"
+                    className="chart-filter-branch"
                     mode="multiple"
                     maxTagCount={1}
                     maxTagTextLength={10}
@@ -411,58 +390,39 @@ function TotalEnergyChart(props) {
                     placeholder="Select branches"
                     onChange={handleCompareBranch}
                     value={selectedIds}
-                    style={{ marginRight: 10, background: 'white', color: 'black' }}
                     options={filteredSelectOptions}
                   />
-                  {/* <Button
-                    type="default"
-                    onClick={() => setSelectedIds([])}
-                    disabled={selectedIds.length === 0}
-                    style={{ marginTop: 16 }}
-                  >
-                    Reset Selection
-                  </Button> */}
                   <Select
-              placeholder="Search by Region"
-              allowClear
-              onChange={handleRegionChange}
-              value={selectedRegion}
-              style={{ width: 180, marginRight: 10 }}
-            >
-              {regionOptions.map(region => (
-                <Option key={region} value={region}>{region}</Option>
-              ))}
-            </Select>
+                    className="chart-filter-region"
+                    placeholder="Search by Region"
+                    allowClear
+                    onChange={handleRegionChange}
+                    value={selectedRegion}
+                  >
+                    {regionOptions.map(region => (
+                      <Option key={region} value={region}>{region}</Option>
+                    ))}
+                  </Select>
                   <DatePicker
-                    className="picker-date"
-                    style={{
-                      // height: 43
-                    }}
-                    // defaultValue={[
-                    //   // dayjs("01/05/2024", dateFormat),
-                    //   // dayjs("31/05/2024", dateFormat),
-                    //   dayjs().startOf('month'),
-                    //   dayjs(),
-                    //   // moment().startOf("month"),
-                    //   // moment().endOf("month"),
-                    // ]}
+                    className="chart-filter-date"
                     defaultValue={selectedDate}
-                    disabledDate={(current) => {
-                      return current && current > dayjs().endOf('month');
-                    }}
+                    disabledDate={(current) => current && current > dayjs().endOf('month')}
                     picker="month"
                     format={monthFormat}
                     onChange={handleDateChange}
                   />
                 </div>
               </div>
-              <Bar
-                style={{maxWidth: downloading ? "78vw" : ""}}
-                onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
-                options={options}
-                // data={energyChartData}
-                data={chartJsData}
-              />
+              <div className="chart-scroll-container">
+                <div className="chart-min-width-wrapper">
+                  <Bar
+                    style={{ maxWidth: downloading ? "78vw" : "" }}
+                    onLoad={props.overviewPage.fetchTotalEnergyBarChartLoading}
+                    options={options}
+                    data={chartJsData}
+                  />
+                </div>
+              </div>
               {/* <Pagination
               totalPosts = {chartPages.lenght} 
               postsPerPage = {postsPerPage}
