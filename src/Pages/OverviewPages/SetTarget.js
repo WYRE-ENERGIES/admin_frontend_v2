@@ -1,4 +1,4 @@
-import { Button, Form, Input, Spin, Typography, notification } from "antd";
+import { Button, Form, Input, InputNumber, Spin, Typography, notification } from "antd";
 import { useEffect, useState } from "react";
 import { connect } from "react-redux";
 import { PercentageOutlined, ClockCircleOutlined, FundOutlined, ProjectOutlined } from "@ant-design/icons";
@@ -21,25 +21,18 @@ const errorNotificationPopUp = (type, formName) => {
 const SubmitButton = ({ form }) => {
   const [submittable, setSubmittable] = useState(false);
 
-  // Watch all values
   const values = Form.useWatch([], form);
   useEffect(() => {
     form
-      .validateFields({
-        validateOnly: true,
-      })
+      .validateFields({ validateOnly: true })
       .then(
-        () => {
-          setSubmittable(true);
-        },
-        () => {
-          setSubmittable(false);
-        },
+        () => setSubmittable(true),
+        () => setSubmittable(false),
       );
   }, [values]);
   return (
     <Button
-      style={{ backgroundColor: "#5C12A7", color: "white", width: "404px", height: "52px" }}
+      className="set-target-submit-btn"
       type="primary"
       htmlType="submit"
       disabled={!submittable}
@@ -59,16 +52,22 @@ function SetTarget(props) {
   }
   
   const clientId = props.auth.userData.client_id
-  const submitSetTargetInfo = async (values ) => {
-    const payloadValues= {
+
+  const formatTotalMonthlyCost = (value) =>
+    value != null && value !== "" ? Number(value).toLocaleString("en-US", { maximumFractionDigits: 0 }) : "";
+  const parseTotalMonthlyCost = (value) =>
+    value === "" || value == null ? undefined : parseFloat(String(value).replace(/,/g, "")) || undefined;
+
+  const submitSetTargetInfo = async (values) => {
+    const payloadValues = {
       ...values,
-      client: clientId
-    }
+      total_monthly_cost: values.total_monthly_cost != null ? Number(values.total_monthly_cost) : values.total_monthly_cost,
+      client: clientId,
+    };
     const request = await props.setTargetData(clientId, payloadValues);
 
     if (request.fulfilled) {
       successNotificationPopUp('success', 'Target page')
-      // form.resetFields();
       setSwitchTarget(true)
       return showTargetInfo();
     }
@@ -84,6 +83,7 @@ function SetTarget(props) {
     diesel_usage_accuracy: props.targetPage.fetchedTarget.diesel_usage_accuracy,
     utility_usage_accuracy: props.targetPage.fetchedTarget.utility_usage_accuracy,
     maximum_monthly_deviation_hours: props.targetPage.fetchedTarget.maximum_monthly_deviation_hours,
+    total_monthly_cost: props.targetPage.fetchedTarget.total_monthly_cost,
     papr: props.targetPage.fetchedTarget.papr,
     fuel_efficiency: props.targetPage.fetchedTarget.fuel_efficiency,
     generator_size_efficiency_1: props.targetPage.fetchedTarget.generator_size_efficiency_1,
@@ -100,7 +100,7 @@ function SetTarget(props) {
   return (
     <>
       <div className="AppHeader">
-        <Typography.Title style={{ fontSize: "30Px", fontWeight: "bold" }}>
+        <Typography.Title style={{ fontSize: "30px", fontWeight: "bold" }}>
           Set Target
         </Typography.Title>
       </div>
@@ -108,174 +108,113 @@ function SetTarget(props) {
         <EditTarget />
       ) : (
         <div className="set_target_page">
-          <Spin
-            spinning={props.targetPage.addTargetLoading}
-          >
+          <Spin spinning={props.targetPage.addTargetLoading}>
             <Form
               form={form}
-              // name="validateOnly"
               name="basic"
               layout="vertical"
               autoComplete="off"
               onFinish={submitSetTargetInfo}
             >
-              <div
-                style={{ width: "842", display: "flex", marginBottom: "24px" }}
-              >
-                <div
-                  style={{
-                    width: "405px",
-                    height: "82px",
-                    marginRight: "16px",
-                  }}
-                >
-                  <Form.Item
-                    name="blended_cost_of_energy"
-                    label="Blended cost of energy"
-                  >
+              <div className="set-target-row">
+                <div className="set-target-field">
+                  <Form.Item name="total_monthly_cost" label="Total monthly cost">
+                    <InputNumber
+                      className="set-target-input"
+                      placeholder="enter total monthly cost"
+                      prefix={<FundOutlined />}
+                      formatter={formatTotalMonthlyCost}
+                      parser={parseTotalMonthlyCost}
+                      min={0}
+                    />
+                  </Form.Item>
+                </div>
+                <div className="set-target-field">
+                  <Form.Item name="blended_cost_of_energy" label="Blended cost of energy">
                     <Input
-                      style={{ height: "52px" }}
-                      height="52px"
+                      className="set-target-input"
                       placeholder="enter cost"
                       prefix={<FundOutlined />}
                     />
                   </Form.Item>
                 </div>
-                <div
-                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
-                >
-                  <Form.Item
-                    name="diesel_usage_accuracy"
-                    label="Usage accuracy diesel"
-                  >
+              </div>
+
+              <div className="set-target-row">
+                <div className="set-target-field">
+                  <Form.Item name="diesel_usage_accuracy" label="Usage accuracy diesel">
                     <Input
-                      style={{ height: "52px" }}
+                      className="set-target-input"
+                      placeholder="enter percentage"
+                      prefix={<PercentageOutlined />}
+                    />
+                  </Form.Item>
+                </div>
+                <div className="set-target-field">
+                  <Form.Item name="utility_usage_accuracy" label="Usage accuracy utility">
+                    <Input
+                      className="set-target-input"
                       placeholder="enter percentage"
                       prefix={<PercentageOutlined />}
                     />
                   </Form.Item>
                 </div>
               </div>
-              <div
-                style={{ width: "842", display: "flex", marginBottom: "24px" }}
-              >
-                <div
-                  style={{
-                    width: "405px",
-                    height: "82px",
-                    marginRight: "16px",
-                  }}
-                >
-                  <Form.Item
-                    name="utility_usage_accuracy"
-                    label="Usage accuracy utility"
-                  >
+
+              <div className="set-target-row">
+                <div className="set-target-field">
+                  <Form.Item name="maximum_monthly_deviation_hours" label="Maximum Deviation hours (Month)">
                     <Input
-                      style={{ height: "52px" }}
-                      placeholder="enter percentage"
-                      prefix={<PercentageOutlined />}
-                    />
-                  </Form.Item>
-                </div>
-                <div
-                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
-                >
-                  <Form.Item
-                    name="maximum_monthly_deviation_hours"
-                    label="Maximum Deviation hours (Month)"
-                  >
-                    <Input
-                      style={{ height: "52px" }}
+                      className="set-target-input"
                       placeholder="enter time"
                       prefix={<ClockCircleOutlined />}
                     />
                   </Form.Item>
                 </div>
-              </div>
-              <div
-                style={{ width: "842", display: "flex", marginBottom: "24px" }}
-              >
-                <div
-                  style={{
-                    width: "405px",
-                    height: "82px",
-                    marginRight: "16px",
-                  }}
-                >
+                <div className="set-target-field">
                   <Form.Item name="papr" label="PAPR">
                     <Input
-                      style={{ height: "52px" }}
+                      className="set-target-input"
                       placeholder="enter PAPR"
                       prefix={<ProjectOutlined />}
                     />
                   </Form.Item>
                 </div>
-                <div
-                  style={{ width: "405px", height: "82px", marginLeft: "16px" }}
-                >
-                  <Form.Item
-                    name="fuel_efficiency"
-                    label="Fuel efficiency kWh/L"
-                  >
+              </div>
+
+              <div className="set-target-row">
+                <div className="set-target-field">
+                  <Form.Item name="fuel_efficiency" label="Fuel efficiency kWh/L">
                     <Input
-                      style={{ height: "52px" }}
+                      className="set-target-input"
                       placeholder="enter fuel efficiency"
                       prefix={<ProjectOutlined />}
                     />
                   </Form.Item>
                 </div>
+                <div className="set-target-field set-target-field--empty" />
               </div>
-              <div>
-                <p>Generator Size Efficiency</p>
-              </div>
-              <div
-                style={{ width: "842", display: "flex", marginBottom: "40px" }}
-              >
-                <div
-                  style={{ width: "270px", height: "82px", marginRight: "8px" }}
-                >
-                  <Form.Item
-                    name="generator_size_efficiency_1"
-                    label="Generator 1"
-                  >
-                    <Input
-                      style={{ height: "52px" }}
-                      placeholder="Enter efficiency"
-                    />
+
+              <p className="set-target-section-label">Generator Size Efficiency</p>
+
+              <div className="set-target-row set-target-row--generators">
+                <div className="set-target-field">
+                  <Form.Item name="generator_size_efficiency_1" label="Generator 1">
+                    <Input className="set-target-input" placeholder="Enter efficiency" />
                   </Form.Item>
                 </div>
-                <div
-                  style={{
-                    width: "270px",
-                    height: "82px",
-                    marginRight: "8px",
-                    marginLeft: "8px",
-                  }}
-                >
-                  <Form.Item
-                    name="generator_size_efficiency_2"
-                    label="Generator 2"
-                  >
-                    <Input
-                      style={{ height: "52px" }}
-                      placeholder="Enter efficiency"
-                    />
+                <div className="set-target-field">
+                  <Form.Item name="generator_size_efficiency_2" label="Generator 2">
+                    <Input className="set-target-input" placeholder="Enter efficiency" />
                   </Form.Item>
                 </div>
-                <div
-                  style={{ width: "270px", height: "82px", marginLeft: "8px" }}
-                >
-                  <Form.Item
-                    name="generator_size_efficiency_3"
-                    label="Generator 3"
-                  >
-                    <Input
-                      style={{ height: "52px" }}
-                      placeholder="Enter efficiency"
-                    />
+                <div className="set-target-field">
+                  <Form.Item name="generator_size_efficiency_3" label="Generator 3">
+                    <Input className="set-target-input" placeholder="Enter efficiency" />
                   </Form.Item>
                 </div>
               </div>
+
               <Form.Item>
                 <SubmitButton form={form} />
               </Form.Item>

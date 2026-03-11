@@ -1,10 +1,9 @@
-import { Button, Card, DatePicker, Select } from "antd";
+import { Card, DatePicker } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { useEffect, useState } from "react";
 import { getClientDieselLitresData } from "../../redux/actions/overview/overview.action";
 import { connect } from "react-redux";
-import moment from "moment";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -27,11 +26,9 @@ ChartJS.register(
   Legend
 );
 
-
-function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
-  const {downloading = false} = props
+function DieselLitreChart(props) {
+  const { downloading = false } = props;
   const [selectedDate, setSelectedDate] = useState()
-  const [loading, setLoading] = useState('')
   const [costChartData, setCostChartData] = useState({
     labels: [],
     datasets: []
@@ -51,15 +48,10 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
   const utilityEnergyReducerStates = props.overviewPage.fetchedDieselLitresBarChart
   useEffect(() => {
     if (utilityEnergyReducerStates) {
-      const labels = utilityEnergyReducerStates.diesel_overview.map((reducer) => {
-        return reducer.month;
-      });
+      const labels = utilityEnergyReducerStates.diesel_overview.map((reducer) => reducer.month);
       const litreAverage = utilityEnergyReducerStates.average_diesel_litres
-      const dieselCost_or_Litre = utilityEnergyReducerStates.diesel_overview.map((reducer) => {
-        return reducer.diesel_litres;
-      });
-
-      const averageLitreLine = Array.from({ length: 12 }, (_, i) => litreAverage)
+      const dieselCost_or_Litre = utilityEnergyReducerStates.diesel_overview.map((reducer) => reducer.diesel_litres);
+      const averageLitreLine = Array.from({ length: 12 }, () => litreAverage)
 
       const costDataSource = {
         labels,
@@ -69,36 +61,31 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
             data: dieselCost_or_Litre,
             backgroundColor: "#F9CF40",
             borderRadius: 6,
-            barThickness: 40,
-            maxBarThickness: 40,
+            maxBarThickness: 60,
           },
           {
-            label: "Monthly average usage ",
+            label: "Monthly average usage",
             data: averageLitreLine,
             backgroundColor: "#EF0000",
             type: "line",
             borderColor: "#EF0000",
             borderWidth: 1,
             fill: false,
-            // xAxisID: "axis-bar",
           },
         ],
       };
       setCostChartData(costDataSource);
-      setLoading(props.overviewPage.fetchDieselLitresBarChartLoading)
     }
   }, [utilityEnergyReducerStates]);
 
   const options = {
     responsive: true,
+    maintainAspectRatio: true,
     plugins: {
       legend: {
         position: 'top',
-        // align: 'start',
         display: true,
-        labels: {
-          usePointStyle: true,
-        },
+        labels: { usePointStyle: true },
       },
       title: {
         display: true,
@@ -107,7 +94,6 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
         position: 'left'
       },
     },
-
     scales: {
       x: {
         title: {
@@ -116,25 +102,15 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
           fontWeight: "bold",
           position: "left",
         },
-        ticks: {
-          font: {
-            weight: 'bold',
-          }
-        },
+        ticks: { font: { weight: 'bold' } },
         stacked: false,
-        grid: {
-          drawOnChartArea: false
-        }
+        grid: { drawOnChartArea: false },
       },
       y: {
         stacked: false,
-        grid: {
-          drawOnChartArea: true
-        }
-      }
+        grid: { drawOnChartArea: true },
+      },
     },
-
-
   };
 
   const onDateChange = (select) => {
@@ -144,74 +120,34 @@ function DieselLitreChart(props, showUtilityCostPage, setShowUtilityCostPage) {
     props.getClientDieselLitresData(clientId, getYear(useYear))
   }
 
-
-  
   return (
-    <>
-      <div className="##########">
-        {/* {showUtilityCostPage ? (
-        ) : (
-          setShowUtilityCostPage(false)
-        )} */}
-        <section className="total-energy-bar-chart">
-          <Card
-            style={{
-              borderRadius: 22,
-            }}
-            loading={props.overviewPage.fetchDieselLitresBarChartLoading}
-          >
-            {/* <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <div>
-                <h1
-                  style={{
-                    fontSize: "17Px",
-                  }}
-                >
-                  Diesel Liters
-                </h1>
-              </div>
-              <div>
-                <DatePicker
-                    defaultValue={selectedDate}
-                    picker="year"
-                    style={{ width: 120.65, height: 44 }}
-                    onChange={onDateChange}
-                  />
-              </div>             
-            </div> */}
-            <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap" }}>
-              <div>
-                <h1
-                  style={{
-                    fontSize: "17Px",
-                  }}
-                >
-                  Diesel Liters
-                  {/* {moveLegend} */}
-                </h1>
-              </div>
-              <div className="">
-                {/* <Button
-                  type="default"
-                  onClick={() => setSelectedIds([])}
-                  disabled={selectedIds.length === 0}
-                  style={{ marginTop: 16 }}
-                >
-                  Reset Selection
-                </Button> */}
-                <DatePicker
-                  defaultValue={selectedDate}
-                  picker="year"
-                  style={{}}
-                  onChange={onDateChange}
-                />
-              </div>
+    <div>
+      <section className="total-energy-bar-chart">
+        <Card className="chart-card" loading={props.overviewPage.fetchDieselLitresBarChartLoading}>
+          <div className="chart-header">
+            <h1 className="chart-header-title">Diesel Liters</h1>
+            <div className="chart-filters">
+              <DatePicker
+                className="chart-filter-date"
+                defaultValue={selectedDate}
+                picker="year"
+                onChange={onDateChange}
+                placeholder="Select year"
+              />
             </div>
-            <Bar style={{maxWidth: downloading ? "78vw" : ""}} options={options} data={costChartData} />
-          </Card>
-        </section>
-      </div>
-    </>
+          </div>
+          <div className="chart-scroll-container">
+            <div className="chart-min-width-wrapper">
+              <Bar
+                style={{ maxWidth: downloading ? "78vw" : "" }}
+                options={options}
+                data={costChartData}
+              />
+            </div>
+          </div>
+        </Card>
+      </section>
+    </div>
   );
 }
 

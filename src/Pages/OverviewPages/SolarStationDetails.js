@@ -241,19 +241,21 @@ const SolarStationDetails = ({
   }
 
   return (
-    <div style={{ margin: 30 }}>
+    <div className="page-container">
       <Space direction="vertical" size={24} style={{ width: '100%' }}>
-        <Space align="center" style={{ justifyContent: 'space-between', width: '100%' }}>
-          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
-            Back
-          </Button>
-          <Title level={3} style={{ margin: 0 }}>
-            {stationSummary.station?.name || 'Solar Station Details'}
-          </Title>
+        <div className="page-header">
+          <div className="page-header-left">
+            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate(-1)}>
+              Back
+            </Button>
+            <Title level={3} style={{ margin: 0 }}>
+              {stationSummary.station?.name || 'Solar Station Details'}
+            </Title>
+          </div>
           <Button onClick={() => fetchDetails(false)} loading={refreshing}>
             Refresh
           </Button>
-        </Space>
+        </div>
 
         <Row gutter={[16, 16]}>
           <Col xs={24} md={12}>
@@ -291,22 +293,25 @@ const SolarStationDetails = ({
         </Row>
 
         <Card
-          title={<Space><Title level={4} style={{ margin: 0 }}>Devices</Title><Tag color="blue">Active: {activeDevices.length}</Tag></Space>}
+          title={<Space wrap><Title level={4} style={{ margin: 0 }}>Devices</Title><Tag color="blue">Active: {activeDevices.length}</Tag></Space>}
           extra={
             <Text type="secondary">
               Total devices: {devices.length} | Active: {activeDevices.length}
             </Text>
           }
         >
-          <Table
-            dataSource={devices}
-            columns={tableColumns}
-            rowKey={(record) => record.id || record.serial}
-            pagination={{ pageSize: 10 }}
-            locale={{
-              emptyText: 'No devices found for this branch.',
-            }}
-          />
+          <div className="table-responsive-wrapper">
+            <Table
+              dataSource={devices}
+              columns={tableColumns}
+              rowKey={(record) => record.id || record.serial}
+              pagination={{ pageSize: 10 }}
+              scroll={{ x: true }}
+              locale={{
+                emptyText: 'No devices found for this branch.',
+              }}
+            />
+          </div>
         </Card>
       </Space>
 

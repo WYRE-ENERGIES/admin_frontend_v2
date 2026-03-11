@@ -31,8 +31,8 @@ const SubmitButton = ({ form }) => {
   return (
     <>
       <Button
-        style={{ marginRight:20, backgroundColor: "white", color: "black", height: "40px", borderRadius: "7px", width: "47%" }}
-        // type="primary"
+        className="submitBtn"
+        type="primary"
         htmlType="submit"
       // disabled={!submittable}
       >
@@ -720,15 +720,20 @@ function ViewLocations(props) {
       </div>
       <div className="##########">
         <section className="total-energy-bar-chart">
-          <Table
-            className="custom-row-hover"
-            rowKey={(record) => record.id}
-            loading={props.locationPage.fetchLocationLoading}
-            dataSource={data}
-            columns={columns}
-            onChange={onChange}
-            pagination={false}
-          />
+                 <div className="client-users-table-card">
+          <div className="table-responsive-wrapper">
+            <Table
+              className="custom-row-hover"
+              rowKey={(record) => record.id}
+              loading={props.locationPage.fetchLocationLoading}
+              dataSource={data}
+              columns={columns}
+              onChange={onChange}
+              pagination={false}
+              scroll={{ x: true }}
+            />
+          </div>
+          </div>
           <Modal
             // style={{borderRadius: '40px'}}
             visible={editLocationModal}
@@ -821,9 +826,7 @@ function ViewLocations(props) {
                 </Form.Item>
                 <Form.Item>
                   <SubmitButton form={form} /> <Button
-                    style={{ backgroundColor: "#C72525", color: "#fff", height: "40px", borderRadius: "7px", width: "47%" }}
-                    type="primary"
-                    // htmlType="council"
+                    style={{ height: "40px", borderRadius: "7px", width: "47%" }}
                     // disabled={!submittable}
                     onClick={() => setEditLocationModal(false)}
                   >
@@ -850,7 +853,7 @@ function ViewLocations(props) {
           <Space>
             <div>
               <Button
-                style={{ width: "183.68px", height: "46.96px", fontWeight: "bold", borderRadius: "12px", backgroundColor: "#5C12A7", color: "white" }}
+                className="adding-btn"
                 onClick={(e) => {
                   e.preventDefault();
                   setAddRegionsModal(true);

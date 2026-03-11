@@ -1,5 +1,5 @@
-import { Button, DatePicker, Image, Input, Space, Spin, Table, Select, Typography, message } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
+import { Button, DatePicker, Image, Input, Popover, Space, Spin, Table, Select, Typography, message } from "antd";
+import { SearchOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
 import { DownloadOutlined } from "@ant-design/icons";
@@ -41,6 +41,74 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+const TOP_CARDS_DATE_RANGES = [
+  { value: "this_month", label: "This month" },
+  { value: "last_month", label: "Last month" },
+  { value: "last_3_months", label: "Last 3 months" },
+  { value: "last_6_months", label: "Last 6 months" },
+  { value: "this_year", label: "This year" },
+  { value: "last_year", label: "Last year" },
+];
+
+function getTopCardsDateRange(rangeKey) {
+  const now = moment();
+  let start;
+  let end;
+  switch (rangeKey) {
+    case "this_month":
+      start = now.clone().startOf("month");
+      end = now.clone();
+      break;
+    case "last_month":
+      start = now.clone().subtract(1, "month").startOf("month");
+      end = now.clone().subtract(1, "month").endOf("month");
+      break;
+    case "last_3_months":
+      start = now.clone().subtract(2, "months").startOf("month");
+      end = now.clone();
+      break;
+    case "last_6_months":
+      start = now.clone().subtract(5, "months").startOf("month");
+      end = now.clone();
+      break;
+    case "this_year":
+      start = now.clone().startOf("year");
+      end = now.clone();
+      break;
+    case "last_year":
+      start = now.clone().subtract(1, "year").startOf("year");
+      end = now.clone().subtract(1, "year").endOf("year");
+      break;
+    default:
+      start = now.clone().startOf("month");
+      end = now.clone();
+  }
+  return {
+    startDate: start.format("DD-MM-YYYY HH:mm"),
+    endDate: end.format("DD-MM-YYYY HH:mm"),
+  };
+}
+
+function getTopCardsPeriodLabel(rangeKey) {
+  const now = moment();
+  switch (rangeKey) {
+    case "this_month":
+      return `${now.format("MMMM")}`;
+    case "last_month":
+      return `${now.clone().subtract(1, "month").format("MMMM")}`;
+    case "last_3_months":
+      return `From ${now.clone().subtract(2, "months").format("MMM")} - ${now.format("MMM")}`;
+    case "last_6_months":
+      return `From ${now.clone().subtract(5, "months").format("MMM")} - ${now.format("MMM")}`;
+    case "this_year":
+      return `From ${now.clone().startOf("year").format("MMM YYYY")} - ${now.format("MMM YYYY")}`;
+    case "last_year":
+      return `From ${now.clone().subtract(1, "year").startOf("year").format("MMM YYYY")} - ${now.clone().subtract(1, "year").endOf("year").format("MMM YYYY")}`;
+    default:
+      return `For ${now.format("MMMM")}`;
+  }
+}
 
 const buttons = [
   {
@@ -118,6 +186,7 @@ const handleRegionChange = value => {
     const [regionOptions, setRegionOptions] = useState([]);
     const [regionBranchMap, setRegionBranchMap] = useState({});
     const [selectedRegion, setSelectedRegion] = useState(undefined);
+    const [topCardsDateRange, setTopCardsDateRange] = useState("this_year");
 
     const handleDownloadPdf = async () => {
     if (!reportRef.current) return;
@@ -181,6 +250,15 @@ const handleRegionChange = value => {
   // const endDate = moment().endOf("month").format("DD-MM-YYYY HH:mm");
   const endDate = moment().format("DD-MM-YYYY HH:mm");
 
+  const topCardsRange = useMemo(
+    () => getTopCardsDateRange(topCardsDateRange),
+    [topCardsDateRange]
+  );
+  const topCardsPeriodLabel = useMemo(
+    () => getTopCardsPeriodLabel(topCardsDateRange),
+    [topCardsDateRange]
+  );
+
   // All useSelector hooks are now at the top
   useEffect(() => {
     if (!clientId) return;
@@ -226,10 +304,11 @@ const handleRegionChange = value => {
     };
 
   useEffect(() => {
-    const client_id = clientId
-    props.getTotalEnergyTopCard(client_id, startDate, endDate);
-    props.getTotalCostTopCard(client_id, startDate, endDate);
-  }, []);
+    if (!clientId) return;
+    const { startDate: rangeStart, endDate: rangeEnd } = topCardsRange;
+    props.getTotalEnergyTopCard(clientId, rangeStart, rangeEnd);
+    props.getTotalCostTopCard(clientId, rangeStart, rangeEnd);
+  }, [clientId, topCardsRange]);
   useEffect(() => {
     showKeyMetricsTable()
   }, [])
@@ -551,7 +630,9 @@ const handleRegionChange = value => {
       .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
       .map(branch => ({
         name: branch.branch_name,
-        utility_cost: branch.average_cost,
+        phcn_cost: branch.phcn_cost,
+        wyre_cost: branch.wyre_cost,
+        average_cost: branch.average_cost,
       }));
   };
 
@@ -619,7 +700,8 @@ const handleRegionChange = value => {
       .filter(branch => !genericTabSearch || branch.branch_name.toLowerCase().includes(genericTabSearch.toLowerCase()))
       .map(branch => ({
         name: branch.branch_name,
-        value: branch.wyre_cost,
+        wyre_cost: branch.wyre_cost,
+        client_cost: branch.client_cost,
       }));
   };
 
@@ -699,57 +781,69 @@ const handleRegionChange = value => {
           </div> */}
       </div>
       <div className="##########">
-        <section className="co2 & total-energy-card">
-          <Space>
-            <div 
-              className="top-card-2" 
-              // style={{minWidth: 245, overflow: 'hidden',}}
-            >
+        <section className="total-energy-bar-chart">
+          <div className="top-cards-filter-row">
+            <Select
+              value={topCardsDateRange}
+              onChange={setTopCardsDateRange}
+              options={TOP_CARDS_DATE_RANGES}
+              loading={props.overviewPage?.fetchTotalCostTopCardLoading || props.overviewPage?.fetchTotalEnergyTopCardLoading}
+            />
+            <span className="top-cards-period-label">{topCardsPeriodLabel}</span>
+          </div>
+          <div className="top-cards-grid">
+            <div className="top-card-2" style={{ position: "relative" }}>
+              {props.overviewPage?.fetchedTotalCostTopCard?.cost_display_color === "red" && (
+                <div style={{ position: "absolute", top: 12, right: 12, zIndex: 1 }}>
+                  <Popover
+                    trigger={["hover", "click"]}
+                    content={
+                      <div style={{ minWidth: 220 }}>
+                        <div style={{ fontWeight: 600, marginBottom: 8 }}>Total monthly cost set target exceeded!</div>
+                        <div style={{ fontSize: 12 }}>
+                          <div>Cumulative Target: {props.overviewPage?.fetchedTotalCostTopCard?.total_monthly_cost_target?.toLocaleString(undefined, { maximumFractionDigits: 2 })} Naira</div>
+                          <div>Monthly Target: {(props.overviewPage?.fetchedTotalCostTopCard?.total_monthly_cost_target / props.overviewPage?.fetchedTotalCostTopCard?.months_in_range).toLocaleString(undefined, { maximumFractionDigits: 2 })} Naira</div>
+                          <div>Current: {props.overviewPage?.fetchedTotalCostTopCard?.total_calculated_cost?.toLocaleString(undefined, { maximumFractionDigits: 2 })} Naira</div>
+                        </div>
+                      </div>
+                    }
+                  >
+                    <InfoCircleOutlined style={{ color: "rgba(0, 0, 0, 0.45)", cursor: "pointer", fontSize: 16 }} />
+                  </Popover>
+                </div>
+              )}
               <Space>
-                <div className="card-content">
-                  <Image style={{ height: 30, width: 30 }} className="amount-icon"
+                <div className="top-card-icon-wrap">
+                  <Image
                     src="/admin-icons/Total Cost Naira.png"
                     preview={false}
                   />
                 </div>
-                <div 
-                  className="card-content"
-                  // style={{minWidth: 198, overflow: 'hidden',}}
-                >
-                  <Spin
-                    spinning={
-                      props.overviewPage?.fetchTotalCostTopCardLoading
-                    }
-                  >
-                    <header style={{ fontWeight: "bold" }}>
-                      {props.overviewPage?.fetchedTotalCostTopCard.total_calculated_cost?.toLocaleString(
+                <div>
+                  <Spin spinning={props.overviewPage?.fetchTotalCostTopCardLoading}>
+                    <header className={`top-card-value ${props.overviewPage?.fetchedTotalCostTopCard?.cost_display_color === "red" && "negative-value"}`}>
+                      {props.overviewPage?.fetchedTotalCostTopCard?.total_calculated_cost?.toLocaleString(
                         undefined,
                         { maximumFractionDigits: 2 }
                       )}{" "}
                       Naira
                     </header>
                   </Spin>
-                  <header>Total Cost</header>
+                  <header className="top-card-label">Total Cost</header>
                 </div>
               </Space>
             </div>
             <div className="top-card-1">
               <Space>
-                <div className="card-content">
+                <div className="top-card-icon-wrap">
                   <Image
-                    preview={false}
-                    // style={{ marginLeft: "0px",cursor: "default"  }}
-                    style={{ height: 30, width: 30 }}
                     src="/admin-icons/energy-card.png"
+                    preview={false}
                   />
                 </div>
-                <div className="card-content">
-                  <Spin
-                    spinning={
-                      props.overviewPage?.fetchTotalEnergyTopCardLoading
-                    }
-                  >
-                    <header style={{ fontWeight: "bold" }}>
+                <div>
+                  <Spin spinning={props.overviewPage?.fetchTotalEnergyTopCardLoading}>
+                    <header className="top-card-value">
                       {props.overviewPage?.fetchedTotalEnergyTopCard.total_energy?.toLocaleString(
                         undefined,
                         { maximumFractionDigits: 2 }
@@ -757,27 +851,21 @@ const handleRegionChange = value => {
                       kWh
                     </header>
                   </Spin>
-                  <header>Total Energy</header>
+                  <header className="top-card-label">Total Energy</header>
                 </div>
               </Space>
             </div>
             <div className="top-card-2">
               <Space>
-                <div className="card-content">
+                <div className="top-card-icon-wrap">
                   <Image
-                    preview={false}
-                    // style={{ marginLeft: "0px" }}
-                    style={{ height: 30, width: 30 }}
                     src="/admin-icons/CO2 Emission.png"
+                    preview={false}
                   />
                 </div>
-                <div className="card-content">
-                  <Spin
-                    spinning={
-                      props.overviewPage?.fetchTotalEnergyTopCardLoading
-                    }
-                  >
-                    <header style={{ fontWeight: "bold" }}>
+                <div>
+                  <Spin spinning={props.overviewPage?.fetchTotalEnergyTopCardLoading}>
+                    <header className="top-card-value">
                       {props.overviewPage?.fetchedTotalEnergyTopCard.co2_emmission?.toLocaleString(
                         undefined,
                         { maximumFractionDigits: 2 }
@@ -785,11 +873,11 @@ const handleRegionChange = value => {
                       tons
                     </header>
                   </Spin>
-                  <header>Co2 Emission</header>
+                  <header className="top-card-label">Co2 Emission</header>
                 </div>
               </Space>
             </div>
-          </Space>
+          </div>
         </section>
          {!downloading && (
         <section className="total-energy-bar-chart">
@@ -1095,6 +1183,10 @@ const handleRegionChange = value => {
               tabIndex={isSelectChart}
               chartLabel="Diesel Cost Per Branch"
               data={getDieselCostPerBranchData()}
+              seriesConfig={[
+                { key: "wyre_cost", label: "Wyre Calculated Cost", color: "#5C12A7" },
+                { key: "client_cost", label: "Recorded Cost", color: "#F9CF40" },
+              ]}
               onSearch={handleDieselCostSearch}
               onRegionChange={handleRegionChange}
               regionOptions={regionOptions}

@@ -31,7 +31,7 @@ const DEVICE_TYPES = [
   { id: 8, name: 'FEEDER' },
 ];
 
-const DEVICE_PROVIDERS = ["ACCRELL", "SATEC", "ACREL-ACB"];
+const DEVICE_PROVIDERS = ["ACREL", "SATEC", "ACREL-ACB"];
 
 const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated }) => {
   const [form] = Form.useForm();
@@ -106,7 +106,7 @@ const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated 
       id: Date.now(),
       device_name: '',
       device_type: 1, 
-      provider: 'ACCRELL',
+      provider: 'ACREL',
       device_id: '',
       is_load: false,
       is_source: true
@@ -144,7 +144,7 @@ const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated 
           name: device.device_name,
           type: device.device_type, 
           is_load: device.is_load,
-          provider: device.provider || 'ACCRELL',
+          provider: device.provider || 'ACREL',
           device_id: device.device_id,
           is_source: device.is_source
         }))

@@ -51,7 +51,7 @@ export const fetchPermittedBranches = () => async (dispatch) => {
 export const forceLoginBranchAction = (branchId) => async (dispatch) => {
     dispatch(forceLoginBranchLoading(true));
     try {
-        const res = await APIService.forceLoginBranch(branchId);
+        const res = await APIService.post(`/api/v1/force-login/${branchId}/`, {});
         dispatch(forceLoginBranchSuccess(res.data.data));
         return res.data.data;
     } catch (err) {

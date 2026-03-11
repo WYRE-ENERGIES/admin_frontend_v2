@@ -1,5 +1,5 @@
 import moment from "moment";
-import { addUserBranchLoading, addUserBranchSuccess, addUsersLoading, addUsersSuccess, editUserLoading, editUserSuccess, getAllDevicesLoading, getAllDevicesSuccess, getDeviceConsumptionLoading, getDeviceConsumptionSuccess, getDeviceReadingsLoading, getDeviceReadingsSuccess, getDeviceSwitchLoading, getDeviceSwitchSuccess, getRolesLoading,  getRolesSuccess, loginUserLoading, updateProfileLoading, updateProfileSuccess, updatePasswordLoading, updatePasswordSuccess } from "./auth.creator";
+import { addUserBranchLoading, addUserBranchSuccess, addUsersLoading, addUsersSuccess, editUserLoading, editUserSuccess, getAllDevicesLoading, getAllDevicesSuccess, getDeviceConsumptionLoading, getDeviceConsumptionSuccess, getDeviceReadingsLoading, getDeviceReadingsSuccess, getDeviceSwitchLoading, getDeviceSwitchSuccess, getRolesLoading,  getRolesSuccess, loginUserLoading, updateProfileLoading, updateProfileSuccess, updatePasswordLoading, updatePasswordSuccess, resetPasswordLoading, resetPasswordSuccess, confirmResetPasswordLoading, confirmResetPasswordSuccess, validateResetTokenLoading, validateResetTokenSuccess } from "./auth.creator";
 import { APIService, APIServiceNoAuth } from "../../../config/Api/apiServices";
 import jwt_decode from 'jwt-decode';
 
@@ -69,7 +69,9 @@ export const getDownloadAllDevices = () => async (dispatch) => {
 
 export const getDownloadDeviceReadings = (deviceId, userDateRange) => async (dispatch) => {
   dispatch(getDeviceReadingsLoading(true));
-  const requestUrl = `/api/v1/get_device_readings/${deviceId}/${moment(userDateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(userDateRange[1]).format('DD-MM-YYYY HH:mm')}/`;
+  const startDate = userDateRange[0].format ? userDateRange[0].format('DD-MM-YYYY HH:mm') : moment(userDateRange[0]).format('DD-MM-YYYY HH:mm');
+  const endDate = userDateRange[1].format ? userDateRange[1].format('DD-MM-YYYY HH:mm') : moment(userDateRange[1]).format('DD-MM-YYYY HH:mm');
+  const requestUrl = `/api/v1/get_device_readings/${deviceId}/${startDate}/${endDate}/`;
   try {
     const response = await APIService.get(requestUrl);
     dispatch(getDeviceReadingsSuccess(response.data));
@@ -83,7 +85,11 @@ export const getDownloadDeviceReadings = (deviceId, userDateRange) => async (dis
 
 export const getDownloadDeviceConsumption = (deviceId, userDateRange, operatingTimeRange) => async (dispatch) => {
   dispatch(getDeviceConsumptionLoading(true));
-  const requestUrl = `/api/v1/get_timed_device_readings/${deviceId}/${moment(userDateRange[0]).format('DD-MM-YYYY HH:mm') + '/' + moment(userDateRange[1]).format('DD-MM-YYYY HH:mm')}/${moment(operatingTimeRange[0]).format('HH') + '/' + moment(operatingTimeRange[1]).format('HH')}`;
+  const startDate = userDateRange[0].format ? userDateRange[0].format('DD-MM-YYYY HH:mm') : moment(userDateRange[0]).format('DD-MM-YYYY HH:mm');
+  const endDate = userDateRange[1].format ? userDateRange[1].format('DD-MM-YYYY HH:mm') : moment(userDateRange[1]).format('DD-MM-YYYY HH:mm');
+  const startHour = operatingTimeRange[0].format ? operatingTimeRange[0].format('HH') : moment(operatingTimeRange[0]).format('HH');
+  const endHour = operatingTimeRange[1].format ? operatingTimeRange[1].format('HH') : moment(operatingTimeRange[1]).format('HH');
+  const requestUrl = `/api/v1/get_timed_device_readings/${deviceId}/${startDate}/${endDate}/${startHour}/${endHour}`;
   try {
     const response = await APIService.get(requestUrl);
     dispatch(getDeviceConsumptionSuccess(response.data.authenticatedData));
@@ -210,5 +216,50 @@ export const updateUserPassword = (updatePayload) => async (dispatch) => {
     dispatch(updatePasswordLoading(false));
     let message = error?.response?.data?.detail || error?.response?.data?.message || error.message || 'Failed to update password.';
     return { fulfilled: false, message };
+  }
+};
+
+export const resetPasswordAction = ({ email }) => async (dispatch) => {
+  dispatch(resetPasswordLoading(true));
+  try {
+    const response = await APIServiceNoAuth.post('/api/v1/accounts/reset_password/', { email });
+    dispatch(resetPasswordSuccess(response.data?.message));
+    dispatch(resetPasswordLoading(false));
+    return { fulfilled: true, message: response.data?.message || 'Check your email for reset instructions.' };
+  } catch (error) {
+    dispatch(resetPasswordLoading(false));
+    const message = error.response?.data?.message || error.response?.data?.error || error.message || 'Request failed';
+    return { fulfilled: false, message };
+  }
+};
+
+export const confirmResetPasswordAction = ({ token, new_password }) => async (dispatch) => {
+  dispatch(confirmResetPasswordLoading(true));
+  try {
+    const response = await APIServiceNoAuth.post('/api/v1/accounts/confirm_reset_password/', { token, new_password });
+    dispatch(confirmResetPasswordSuccess(response.data?.message));
+    dispatch(confirmResetPasswordLoading(false));
+    return { fulfilled: true, message: response.data?.message || 'Password reset successfully.' };
+  } catch (error) {
+    dispatch(confirmResetPasswordLoading(false));
+    const message = error.response?.data?.message || error.response?.data?.error || error.message || 'Request failed';
+    return { fulfilled: false, message };
+  }
+};
+
+export const validateResetTokenAction = (token) => async (dispatch) => {
+  dispatch(validateResetTokenLoading(true));
+  try {
+    const response = await APIServiceNoAuth.get(
+      `/api/v1/validate_reset_token/?token=${encodeURIComponent(token)}`
+    );
+    const { valid, reason } = response.data || {};
+    dispatch(validateResetTokenSuccess({ valid: !!valid, reason: reason || null }));
+    dispatch(validateResetTokenLoading(false));
+    return { fulfilled: true, valid: !!valid, reason: reason || null };
+  } catch (error) {
+    dispatch(validateResetTokenSuccess({ valid: false, reason: 'error' }));
+    dispatch(validateResetTokenLoading(false));
+    return { fulfilled: false, valid: false, reason: error.response?.data?.reason || 'error' };
   }
 };

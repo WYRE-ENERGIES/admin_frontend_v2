@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { connect } from 'react-redux';
 import {
   Form,
   Input,
@@ -8,7 +9,7 @@ import {
   Space,
   Divider,
   Typography,
-  Checkbox,
+  Radio,
   Row,
   Col,
   InputNumber,
@@ -22,6 +23,7 @@ import { APIService, instanceMultipart } from '../../config/Api/apiServices';
 import { notification } from 'antd';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { clearClientRegions, getClientRegionsData } from '../../redux/actions/location/location.action';
 
 dayjs.extend(customParseFormat);
 
@@ -44,7 +46,7 @@ const DEVICE_TYPES = [
   { id: 7, name: 'Swimming Pool' },
   { id: 8, name: 'FEEDER' },
 ];
-const DEVICE_PROVIDERS = ["ACCRELL", "SATEC", "ACREL-ACB"];
+const DEVICE_PROVIDERS = ["ACREL", "SATEC", "ACREL-ACB"];
 const FUEL_TYPES = ["diesel", "gas", "other"];
 const USER_ROLES = [
   { id: 3, name: 'CLIENT_ADMIN' },
@@ -57,8 +59,7 @@ const getInitialDeviceForm = () => ({
   type: null, 
   provider: null, 
   deviceId: '', 
-  isLoad: false, 
-  isSource: false, 
+  deviceRole: null, // 'load' | 'source' – mutually exclusive
   genSize: null, 
   fuelType: null,
   // Defaults to full day window: 00:00 - 23:59
@@ -137,15 +138,19 @@ export const createBranches = async (clientId, branchesData) => {
     devices: branch.devices?.map(device => ({
       name: device.name,
       type: device.type,
-      is_load: !!device.isLoad,
+      is_load: device.deviceRole === 'load',
       provider: device.provider,
       device_id: device.deviceId,
-      is_source: !!device.isSource,
+      is_source: device.deviceRole === 'source',
       ...(device.type === 1 ? {
         gen_size: device.genSize,
         fuel_type: device.fuelType,
-        operating_hours_start: device.operationalStartTime,
-        operating_hours_end: device.operationalEndTime,
+        operating_hours_start: device.operationalStartTime
+          ? dayjs(device.operationalStartTime).format('HH:mm')
+          : null,
+        operating_hours_end: device.operationalEndTime
+          ? dayjs(device.operationalEndTime).format('HH:mm')
+          : null,
       } : {})
     })) || []
   }));
@@ -167,18 +172,14 @@ export const createAdditionalUsers = async (clientId, usersData) => {
   return await APIService.post(`/api/v1/accounts/client/${clientId}/additional-user/`, payload);
 };
 
-const getClientRegions = async (clientId) => {
-  return await APIService.get(`/api/v1/accounts/client/${clientId}/regions/`);
-};
-
-const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form }) => {
+const DeviceFields = ({ deviceKey, deviceName, deviceIndex, branchName, deviceRestField, form }) => {
   const deviceType = Form.useWatch(['branches', branchName, 'devices', deviceName, 'type'], form);
 
   return (
     <Card key={deviceKey} size="small" style={{ marginBottom: 10, background: '#fafafa' }}>
       <Row gutter={16} align="middle">
           <Col flex="auto">
-              <Text strong>Device {deviceKey + 1}</Text>
+              <Text strong>Device {deviceIndex}</Text>
           </Col>
       </Row>
       <Row gutter={16}>
@@ -200,7 +201,7 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
             rules={[{ required: true, message: 'Please select a ${label}!' }]}
           >
             <Select placeholder="Select Type">
-              {DEVICE_TYPES.map(dt => <Option key={dt.id} value={dt.id}>{dt.name} ({dt.id})</Option>)}
+              {DEVICE_TYPES.map(dt => <Option key={dt.id} value={dt.id}>{dt.name}</Option>)}
             </Select>
           </Form.Item>
         </Col>
@@ -326,43 +327,35 @@ const DeviceFields = ({ deviceKey, deviceName, branchName, deviceRestField, form
                 </Col>
             </>
         )}
-        <Col xs={12} sm={6} md={3}>
-           <Form.Item
-              {...deviceRestField}
-              name={[deviceName, 'isLoad']}
-              valuePropName="checked"
-              label="Is Load?"
-            >
-              <Checkbox />
-            </Form.Item>
+        <Col xs={24} sm={12} md={6}>
+          <Form.Item
+            {...deviceRestField}
+            name={[deviceName, 'deviceRole']}
+            label="Role"
+          >
+            <Radio.Group>
+              <Radio value="load">Is Load</Radio>
+              <Radio value="source">Is Source</Radio>
+            </Radio.Group>
+          </Form.Item>
         </Col>
-         <Col xs={12} sm={6} md={3}>
-            <Form.Item
-              {...deviceRestField}
-              name={[deviceName, 'isSource']}
-              valuePropName="checked"
-              label="Is Source?"
-            >
-              <Checkbox />
-            </Form.Item>
-         </Col>
       </Row>
     </Card>
   );
 };
 
-const CreateClient = () => {
+const CreateClient = (props) => {
   const [form] = Form.useForm();
   const [currentStep, setCurrentStep] = useState(0);
   const [initialDataLoaded, setInitialDataLoaded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientId, setClientId] = useState(null);
-  const [clientRegions, setClientRegions] = useState([]);
   const [stepData, setStepData] = useState({});
   const [logoFile, setLogoFile] = useState(null);
   const fileInputRef = useRef(null);
-  const [regionsLoading, setRegionsLoading] = useState(false);
   const navigate = useNavigate();
+
+  const { clientRegions = [], regionsLoading = false, getClientRegionsData: fetchClientRegions, clearClientRegions } = props;
 
   useEffect(() => {
     const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -442,13 +435,20 @@ const CreateClient = () => {
       }
     });
     
-    // Prefill time fields on initial load for all devices
+    // Prefill time fields and normalize device role on initial load for all devices
     merged.branches.forEach(branch => {
-      branch.devices = (branch.devices || []).map(device => ({
-        ...device,
-        operationalStartTime: device.operationalStartTime || dayjs('00:00', 'HH:mm'),
-        operationalEndTime: device.operationalEndTime || dayjs('23:59', 'HH:mm')
-      }));
+      branch.devices = (branch.devices || []).map(device => {
+        const role = device.deviceRole != null
+          ? device.deviceRole
+          : (device.isLoad ? 'load' : device.isSource ? 'source' : null);
+        const { isLoad, isSource, ...rest } = device;
+        return {
+          ...rest,
+          deviceRole: role,
+          operationalStartTime: device.operationalStartTime || dayjs('00:00', 'HH:mm'),
+          operationalEndTime: device.operationalEndTime || dayjs('23:59', 'HH:mm')
+        };
+      });
     });
 
     form.setFieldsValue(merged);
@@ -469,7 +469,7 @@ const CreateClient = () => {
     if (clientId && currentStep >= 2 && clientRegions.length === 0 && !regionsLoading) {
       loadClientRegions();
     }
-  }, [clientId, currentStep]);
+  }, [clientId, currentStep, clientRegions.length, regionsLoading]);
 
   const handleValuesChange = (changedValues, allValues) => {
      if (!initialDataLoaded) {
@@ -497,40 +497,10 @@ const CreateClient = () => {
   };
 
   const loadClientRegions = async () => {
-    if (!clientId) {
-      return;
-    }
-    
-    setRegionsLoading(true);
-    try {
-      const response = await getClientRegions(clientId);
-
-      
-      // Ensure we always set an array
-      let regionsData = [];
-      if (response.data) {
-        if (Array.isArray(response.data)) {
-          regionsData = response.data;
-        } else if (response.data.regions && Array.isArray(response.data.regions)) {
-          regionsData = response.data.regions;
-        } else if (response.data.data && Array.isArray(response.data.data)) {
-          regionsData = response.data.data;
-        } else {
-          console.warn('Unexpected regions data structure:', response.data);
-          regionsData = [];
-        }
-      }
-      
-
-      setClientRegions(regionsData);
-
-    } catch (error) {
-      console.error('Failed to load client regions:', error);
-      console.error('Error response:', error.response);
+    if (!clientId) return;
+    const result = await fetchClientRegions(clientId);
+    if (result?.fulfilled === false) {
       message.error('Failed to load client regions');
-      setClientRegions([]); // Set empty array on error
-    } finally {
-      setRegionsLoading(false);
     }
   };
 
@@ -1290,10 +1260,10 @@ const CreateClient = () => {
                   <Form.List {...branchRestField} name={[branchName, 'devices']}>
                     {(deviceFields, { add: addDevice, remove: removeDevice }) => (
                       <div style={{ marginLeft: '20px', marginBottom: '15px' }}> 
-                        {deviceFields.map(({ key: deviceKey, name: deviceName, ...deviceRestField }) => (
+                        {deviceFields.map(({ key: deviceKey, name: deviceName, ...deviceRestField }, index) => (
                           <Row key={deviceKey} gutter={8} align="top" style={{ marginBottom: '5px' }}> 
                             <Col flex="auto">
-                              <DeviceFields deviceKey={deviceKey} deviceName={deviceName} branchName={branchName} deviceRestField={deviceRestField} form={form} />
+                              <DeviceFields deviceKey={deviceKey} deviceName={deviceName} deviceIndex={index + 1} branchName={branchName} deviceRestField={deviceRestField} form={form} />
                             </Col> 
                             <Col style={{ paddingTop: '8px' }}>
                               <MinusCircleOutlined style={{ color: 'red', fontSize: '16px' }} onClick={() => removeDevice(deviceName)} />
@@ -1398,7 +1368,7 @@ const CreateClient = () => {
     setClientId(null);
     setStepData({});
     setLogoFile(null);
-    setClientRegions([]);
+    clearClientRegions();
     form.resetFields();
     
     message.success('Progress cleared. Starting fresh.');
@@ -1434,7 +1404,7 @@ const CreateClient = () => {
       setClientId(null);
       setStepData({});
       setLogoFile(null);
-      setClientRegions([]);
+      clearClientRegions();
       
       message.success('Corrupted data cleared. Form reset to initial state.');
     } catch (error) {
@@ -1521,4 +1491,14 @@ const CreateClient = () => {
   );
 };
 
-export default CreateClient; 
+const mapStateToProps = (state) => ({
+  clientRegions: state.locationPage.fetchedClientRegions || [],
+  regionsLoading: state.locationPage.fetchClientRegionsLoading,
+});
+
+const mapDispatchToProps = {
+  getClientRegionsData,
+  clearClientRegions,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(CreateClient); 

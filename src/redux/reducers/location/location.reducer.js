@@ -22,6 +22,9 @@ const initialState = {
 
     removeRegionLoading: false,
     removedRegion: false,
+
+    fetchClientRegionsLoading: false,
+    fetchedClientRegions: [],
 }
 
 const locationReducers = (state = initialState, action) => {
@@ -101,6 +104,17 @@ const locationReducers = (state = initialState, action) => {
             return {
                 ...state,
                 removedRegion: action.payload
+            }
+
+        case locationTypes.GET_CLIENT_REGIONS_LOADING:
+            return {
+                ...state,
+                fetchClientRegionsLoading: action.payload
+            }
+        case locationTypes.GET_CLIENT_REGIONS_SUCCESS:
+            return {
+                ...state,
+                fetchedClientRegions: Array.isArray(action.payload) ? action.payload : []
             }
     
         default: return state;
