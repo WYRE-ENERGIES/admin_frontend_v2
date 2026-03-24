@@ -7,7 +7,8 @@ import {
     MailOutlined,
   SettingOutlined,
   HolderOutlined,
-  BookOutlined
+  BookOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
@@ -63,6 +64,11 @@ function OperatorsSideMenu({ collapsed, setCollapsed, logUserOut }) {
           key: "/historical-readings",
           icon: <WarningOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
       },
+        {
+            label: "Installations",
+            key: "/installations-checklist",
+            icon: <SafetyCertificateOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+        },
         {
             label: "System",
             key: "/system-constants",

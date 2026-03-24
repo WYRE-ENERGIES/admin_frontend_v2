@@ -7,6 +7,7 @@ import {
   SettingOutlined,
   HolderOutlined,
   ThunderboltOutlined,
+  SafetyCertificateOutlined,
 } from "@ant-design/icons";
 import { Button, Image, Menu, Drawer } from "antd";
 import Sider from "antd/es/layout/Sider";
@@ -71,6 +72,11 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
             label: "Solar Onboarding",
             key: "/solar-onboarding",
             icon: <ThunderboltOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
+        },
+        {
+            label: "Installations",
+            key: "/installations-checklist",
+            icon: <SafetyCertificateOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
         },
         {
             label: "System",

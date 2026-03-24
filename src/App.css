@@ -2654,3 +2654,100 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
     padding: 12px;
   }
 }
+
+/* ── Installations Checklist Page ── */
+
+.ic-page {
+  padding: 24px 32px;
+  margin: 0 auto;
+}
+
+.ic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ic-title {
+  margin: 0 !important;
+}
+
+.ic-search-input {
+  width: 280px;
+  max-width: 100%;
+}
+
+.installations-table .ant-table-thead > tr > th,
+.installations-table .ant-table-tbody > tr > td {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+.ic-clickable-row {
+  cursor: pointer;
+}
+
+.ic-row-eye-icon {
+  color: #5c3592;
+  font-size: 16px;
+}
+
+/* ── Detail Modal ── */
+
+.ic-detail-modal {
+  top: 30px;
+}
+
+.ic-detail-modal .ant-modal-body {
+  padding: 24px 28px;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.ic-modal-title {
+  font-size: 18px;
+}
+
+.ic-modal-spinner {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.ic-info-card {
+  margin-bottom: 20px;
+  background: #fafafa;
+}
+
+.ic-detail-field {
+  margin-bottom: 16px;
+}
+
+.ic-detail-label {
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ic-status-tags {
+  margin-bottom: 12px;
+}
+
+.ic-status-tag {
+  font-size: 13px;
+  padding: 4px 12px;
+}
+
+.ic-status-tag--secondary {
+  margin-left: 6px;
+}
+
+.ic-section-divider {
+  margin: 16px 0 12px !important;
+}
+
+.ic-timestamps-divider {
+  margin: 12px 0 !important;
+}
