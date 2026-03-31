@@ -10,6 +10,7 @@ import branchReducers from "./branch/branch.reducer";
 import overviewReducersBulkMonitoring from "./bulkMonitoring/overview/overview.reducer";
 import systemConstantsReducer from "./systemConstants/system.constants.reducer";
 import solarReducer from "./solar/solar.reducer";
+import installChecklistReducer from "./installChecklist/installChecklist.reducer";
 
 const rootReducers = combineReducers({
     overviewPage: overviewReducers,
@@ -23,6 +24,7 @@ const rootReducers = combineReducers({
     branchPage: branchReducers,
     systemConstants: systemConstantsReducer,
     solar: solarReducer,
+    installChecklist: installChecklistReducer,
 });
 
 export default rootReducers
