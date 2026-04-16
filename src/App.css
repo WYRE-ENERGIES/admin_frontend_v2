@@ -8,8 +8,10 @@
   display: flex;
   flex-direction: column;
   width: 100vw;
-  height: 100vh;
-  overflow-y: scroll;
+  /* min-height allows content taller than the viewport to grow the page so wheel / trackpad scroll works */
+  min-height: 100vh;
+  height: auto;
+  overflow-y: auto;
   /* overflow-y: hidden; */
   /* overflow-x: hidden;  */
   /* background-color: #5C12A7; */
@@ -77,6 +79,92 @@
   background-color: #5C12A7;
 }
 
+/* Investor: let content grow past the viewport so the window (.App) can scroll on desktop */
+.SidemenuAndPagecontent.investor-layout {
+  flex: 0 1 auto;
+  min-height: 100vh;
+  align-self: stretch;
+  width: 100%;
+}
+
+/* Investor sidebar: menu + bottom profile (avatar, name, role) */
+.investor-sider-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.investor-sider-top {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.investor-sider-menu.SideMenuVertical {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 20px;
+}
+
+.investor-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px 22px;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  flex-shrink: 0;
+}
+
+.investor-sidebar-profile--collapsed {
+  justify-content: center;
+  padding: 14px 8px 20px;
+}
+
+.investor-sidebar-avatar {
+  background: #ff9f1c !important;
+  color: #1a1a1a !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700 !important;
+  flex-shrink: 0;
+}
+
+.investor-sidebar-profile-text {
+  min-width: 0;
+}
+
+.investor-sidebar-profile-name {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.25;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.investor-sidebar-profile-role {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.78);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ant-drawer-body .investor-sider-inner {
+  min-height: 100%;
+}
+
 .SideMenu{
   height: 100%;
   /* margin-top: 35px; */
@@ -133,6 +221,13 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   /* height: 2500px; */
   overflow-y: hidden;
   overflow-x: hidden; 
+}
+
+/* Investor: desktop — let the window / .App handle vertical scroll (don’t trap wheel events) */
+.PageContent.investor-shell {
+  min-height: auto;
+  overflow-x: hidden;
+  overflow-y: visible;
 }
 
 /* .admin-energy-top {
@@ -2525,6 +2620,652 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   background: #5C12A7 !important;
   border-color: #5C12A7 !important;
   width: max-content;
+}
+
+/* ===== Investor dashboard ===== */
+
+.investor-shell {
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.investor-shell .ant-typography,
+.investor-shell .ant-card,
+.investor-shell .ant-btn,
+.investor-shell .ant-table,
+.investor-shell .ant-alert,
+.investor-shell .ant-picker,
+.investor-shell .ant-segmented,
+.investor-shell .ant-tag {
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.investor-page {
+  padding: 24px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: min-content;
+}
+
+.investor-page-title {
+  margin: 0 !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.02em;
+  color: #141414 !important;
+}
+
+.investor-page-subtitle {
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  color: rgba(0, 0, 0, 0.52) !important;
+  display: block;
+  max-width: 520px;
+  margin-bottom: 0 !important;
+}
+
+.investor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.investor-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.investor-header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 1 auto;
+}
+
+.investor-range .ant-picker {
+  border-radius: 10px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  min-height: 40px;
+}
+
+.investor-btn-light {
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.investor-header-btn {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  height: 40px;
+  padding: 0 16px;
+}
+
+.investor-header-btn--primary {
+  box-shadow: none;
+}
+
+.investor-alert {
+  border-radius: 14px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.investor-alert .ant-alert-message {
+  font-weight: 500;
+}
+
+.investor-alert .ant-alert-message b {
+  font-weight: 700;
+}
+
+.investor-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.investor-metric-card {
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.investor-metric-card .ant-card-body {
+  padding: 16px 16px 14px;
+}
+
+.investor-metric-card--primary {
+  background: #5C12A7;
+  color: #fff;
+}
+
+.investor-metric-card--primary .investor-metric-label,
+.investor-metric-card--primary .investor-metric-sub {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.investor-metric-card--primary .investor-metric-value {
+  color: #fff;
+}
+
+.investor-metric-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.5);
+  line-height: 1.3;
+}
+
+.investor-metric-value {
+  margin-top: 10px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #141414;
+}
+
+.investor-metric-sub {
+  margin-top: 8px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.investor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(280px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.investor-card {
+  border-radius: 16px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.investor-card .ant-card-head {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  min-height: 56px;
+  padding: 0 20px;
+}
+
+.investor-card .ant-card-head-title {
+  padding: 14px 0;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.35;
+  color: #141414;
+}
+
+.investor-card .ant-card-body {
+  padding: 16px 20px 20px;
+}
+
+.investor-card-heading {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.35;
+  color: #141414;
+}
+
+.investor-card-heading--caps {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.investor-card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.investor-segmented {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.investor-tag-muted {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+.investor-project-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.investor-project-name {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #141414;
+}
+
+.investor-project-branch {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.investor-table-wrap {
+  margin-bottom: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
+  touch-action: pan-x pan-y;
+}
+
+.investor-table-wrap .ant-table,
+.investor-table-wrap .ant-table-container {
+  min-width: 640px;
+}
+
+.investor-table .ant-table {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+}
+
+.investor-table .ant-table-thead > tr > th {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45) !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+  padding: 12px 16px !important;
+}
+
+.investor-table .ant-table-tbody > tr > td {
+  font-weight: 500;
+  padding: 14px 16px !important;
+  vertical-align: top;
+}
+
+.investor-table .ant-table-tbody > tr > td:not(:first-child) {
+  font-size: 13px;
+}
+
+.investor-table .ant-tag {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  margin: 0;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.investor-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.investor-chart-wrap {
+  width: 100%;
+  height: 240px;
+  min-height: 200px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.investor-chart-wrap .recharts-responsive-container {
+  min-width: 320px;
+}
+
+.investor-chart-wrap .recharts-cartesian-axis-tick-value,
+.investor-chart-wrap .recharts-legend-item-text {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.investor-chart-footnote {
+  display: block;
+  margin-top: 12px !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+}
+
+.investor-activity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-activity-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.investor-activity-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.investor-activity-date {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.investor-activity-label {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #141414;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+.investor-activity-amount {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.35;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.investor-activity-amount.is-good {
+  color: #237804;
+}
+
+.investor-activity-amount.is-bad {
+  color: #cf1322;
+}
+
+.investor-support-card {
+  border-radius: 18px;
+  background: linear-gradient(90deg, rgba(92, 18, 167, 0.08), rgba(92, 18, 167, 0.02));
+}
+
+.investor-support-card .ant-card-body {
+  padding: 20px 22px;
+}
+
+.investor-support-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.investor-support-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.35;
+  color: #141414;
+}
+
+.investor-support-sub {
+  margin-top: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.52);
+  max-width: 640px;
+}
+
+.investor-support-cta {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 10px;
+}
+
+.investor-placeholder-page .investor-placeholder-header {
+  margin-bottom: 0;
+}
+
+.investor-placeholder-text {
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+@media (max-width: 1200px) {
+  .investor-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .investor-page-title {
+    font-size: 24px !important;
+  }
+
+  .investor-metric-value {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .PageContent.investor-shell {
+    margin: 12px 10px 16px;
+    max-height: calc(100vh - 88px);
+    max-height: calc(100dvh - 88px);
+    border-radius: 22px 22px 0 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  .investor-page {
+    padding: 14px 12px 18px;
+    gap: 12px;
+  }
+
+  .investor-page-title {
+    font-size: 22px !important;
+    letter-spacing: -0.015em;
+  }
+
+  .investor-page-subtitle {
+    font-size: 13px !important;
+    max-width: none;
+  }
+
+  .investor-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .investor-header-left {
+    flex: 0 1 auto;
+    gap: 4px;
+  }
+
+  .investor-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .investor-range {
+    width: 100%;
+  }
+
+  .investor-range .ant-picker {
+    width: 100%;
+  }
+
+  .investor-header-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .investor-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .investor-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .investor-right {
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .investor-metric-card .ant-card-body {
+    padding: 14px 12px 12px;
+  }
+
+  .investor-metric-value {
+    font-size: 17px;
+  }
+
+  .investor-metric-label {
+    font-size: 10px;
+  }
+
+  .investor-card .ant-card-head {
+    padding: 0 14px;
+    min-height: auto;
+  }
+
+  .investor-card .ant-card-body {
+    padding: 12px 14px 16px;
+  }
+
+  .investor-card-title {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .investor-segmented {
+    width: 100%;
+  }
+
+  .investor-segmented.ant-segmented {
+    display: flex;
+  }
+
+  .investor-segmented .ant-segmented-group {
+    flex: 1;
+    display: flex;
+  }
+
+  .investor-segmented .ant-segmented-item {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+    font-size: 11px;
+    padding: 0 6px;
+  }
+
+  .investor-chart-wrap {
+    height: 220px;
+  }
+
+  .investor-activity-label {
+    white-space: normal;
+    max-width: none;
+  }
+
+  .investor-support-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .investor-support-cta {
+    width: 100%;
+  }
+
+  .investor-table .ant-table-thead > tr > th,
+  .investor-table .ant-table-tbody > tr > td {
+    padding: 10px 12px !important;
+    font-size: 12px;
+  }
+
+  .investor-project-name {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .investor-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .investor-metric-value {
+    font-size: 18px;
+  }
+
+  .investor-page-title {
+    font-size: 20px !important;
+  }
 }
 
 /* ===== System Constants page ===== */
