@@ -148,8 +148,11 @@ function InvestorSideMenu({ collapsed, setCollapsed, logUserOut, basePath = "" }
   const MenuContent = () => (
     <div className="investor-sider-inner">
       <div className="investor-sider-top">
-        <div className="wyre-logo" style={{ textAlign: "center" }}>
+        <div className="wyre-logo investor-sider-brand" style={{ textAlign: "center" }}>
           <Image width={80} preview={false} src="/Images/Wyre white-08 1.png" />
+          {!collapsed && (
+            <div className="investor-sider-role-pill">Investor</div>
+          )}
           {!isMobile && (
             <Button
               type="text"

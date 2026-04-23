@@ -1,0 +1,79 @@
+import investorTypes from "./investor.type";
+import {
+  MOCK_INVESTOR_ACCOUNT_KYC,
+  MOCK_INVESTOR_PAYMENTS,
+  MOCK_INVESTOR_PROJECTS,
+} from "./investor.initialData";
+
+const initialState = {
+  portfolioOverview: {
+    loading: false,
+    error: null,
+    partialErrors: null,
+    alert: null,
+    kpis: {
+      totalInvested: null,
+      portfolioGeneration: null,
+      repaymentTotals: null,
+      co2: null,
+    },
+    financedProjects: [],
+    chartData: [],
+    activity: [],
+  },
+  projectsLoading: false,
+  projects: MOCK_INVESTOR_PROJECTS,
+  paymentsLoading: false,
+  payments: MOCK_INVESTOR_PAYMENTS,
+  accountKycLoading: false,
+  accountKyc: MOCK_INVESTOR_ACCOUNT_KYC,
+};
+
+const investorReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case investorTypes.INVESTOR_PORTFOLIO_OVERVIEW_LOADING:
+      return {
+        ...state,
+        portfolioOverview: {
+          ...state.portfolioOverview,
+          loading: action.payload,
+          ...(action.payload ? { error: null } : {}),
+        },
+      };
+    case investorTypes.INVESTOR_PORTFOLIO_OVERVIEW_SUCCESS:
+      return {
+        ...state,
+        portfolioOverview: {
+          ...state.portfolioOverview,
+          loading: false,
+          error: null,
+          ...action.payload,
+        },
+      };
+    case investorTypes.INVESTOR_PORTFOLIO_OVERVIEW_FAIL:
+      return {
+        ...state,
+        portfolioOverview: {
+          ...state.portfolioOverview,
+          loading: false,
+          error: action.payload,
+        },
+      };
+    case investorTypes.INVESTOR_PROJECTS_LOADING:
+      return { ...state, projectsLoading: action.payload };
+    case investorTypes.INVESTOR_PROJECTS_SUCCESS:
+      return { ...state, projects: action.payload };
+    case investorTypes.INVESTOR_PAYMENTS_LOADING:
+      return { ...state, paymentsLoading: action.payload };
+    case investorTypes.INVESTOR_PAYMENTS_SUCCESS:
+      return { ...state, payments: action.payload };
+    case investorTypes.INVESTOR_ACCOUNT_KYC_LOADING:
+      return { ...state, accountKycLoading: action.payload };
+    case investorTypes.INVESTOR_ACCOUNT_KYC_SUCCESS:
+      return { ...state, accountKyc: action.payload };
+    default:
+      return state;
+  }
+};
+
+export default investorReducer;

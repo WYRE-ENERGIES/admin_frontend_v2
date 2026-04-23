@@ -2,6 +2,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import PortfolioOverview from "../../Pages/InvestorPages/PortfolioOverview";
 import PlaceholderPage from "../../Pages/InvestorPages/PlaceholderPage";
+import InvestorProjects from "../../Pages/InvestorPages/InvestorProjects";
+import InvestorPayments from "../../Pages/InvestorPages/InvestorPayments";
+import InvestorAccountKyc from "../../Pages/InvestorPages/InvestorAccountKyc";
 
 function joinBase(basePath, path) {
   const base = String(basePath || "").replace(/\/+$/, "");
@@ -18,11 +21,11 @@ function InvestorRoute({ basePath = "" }) {
         <Route path={joinBase(basePath, "/")} element={<PortfolioOverview />} />
         <Route
           path={joinBase(basePath, "/projects")}
-          element={<PlaceholderPage title="Projects" />}
+          element={<InvestorProjects />}
         />
         <Route
           path={joinBase(basePath, "/payments")}
-          element={<PlaceholderPage title="Payments" />}
+          element={<InvestorPayments />}
         />
         <Route
           path={joinBase(basePath, "/reports")}
@@ -30,7 +33,7 @@ function InvestorRoute({ basePath = "" }) {
         />
         <Route
           path={joinBase(basePath, "/account-kyc")}
-          element={<PlaceholderPage title="Account & KYC" />}
+          element={<InvestorAccountKyc />}
         />
         <Route
           path={joinBase(basePath, "/support")}

@@ -11,6 +11,8 @@ import overviewReducersBulkMonitoring from "./bulkMonitoring/overview/overview.r
 import systemConstantsReducer from "./systemConstants/system.constants.reducer";
 import solarReducer from "./solar/solar.reducer";
 import installChecklistReducer from "./installChecklist/installChecklist.reducer";
+import investorReducer from "./investor/investor.reducer";
+import accessControlReducer from "./accessControl/accessControl.reducer";
 
 const rootReducers = combineReducers({
     overviewPage: overviewReducers,
@@ -25,6 +27,8 @@ const rootReducers = combineReducers({
     systemConstants: systemConstantsReducer,
     solar: solarReducer,
     installChecklist: installChecklistReducer,
+    investorPage: investorReducer,
+    accessControl: accessControlReducer,
 });
 
 export default rootReducers

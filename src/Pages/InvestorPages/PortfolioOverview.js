@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   Alert,
   Button,
@@ -6,6 +7,7 @@ import {
   DatePicker,
   Segmented,
   Space,
+  Spin,
   Table,
   Tag,
   Typography,
@@ -22,6 +24,7 @@ import {
   YAxis,
 } from "recharts";
 import dayjs from "dayjs";
+import { fetchInvestorPortfolioOverview } from "../../redux/actions/investor/investor.action";
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -49,62 +52,28 @@ function MetricCard({ label, value, subLabel, variant }) {
 }
 
 function PortfolioOverview() {
+  const dispatch = useDispatch();
+  const portfolioOverview = useSelector((s) => s.investorPage.portfolioOverview);
+
   const [range, setRange] = useState([
     dayjs().startOf("month"),
     dayjs().endOf("month"),
   ]);
   const [projectFilter, setProjectFilter] = useState("All");
 
-  const financedProjects = useMemo(
-    () => [
-      {
-        key: "1",
-        project: "Access Ayobo 2",
-        branch: "Branch ID 2104 - Lagos",
-        system: "45 kWp",
-        share: "18%",
-        invested: currency(9200000),
-        status: "On track",
-      },
-      {
-        key: "2",
-        project: "Access Idasho Ibeju",
-        branch: "Branch ID 2841 - Lagos",
-        system: "60 kWp",
-        share: "25%",
-        invested: currency(12000000),
-        status: "Overdue",
-      },
-      {
-        key: "3",
-        project: "Access Akpana",
-        branch: "Branch ID 1988 - Oyo",
-        system: "30 kWp",
-        share: "12%",
-        invested: currency(4000000),
-        status: "On track",
-      },
-      {
-        key: "4",
-        project: "Access Amuwo Odofin",
-        branch: "Branch ID 2230 - Lagos",
-        system: "52 kWp",
-        share: "15%",
-        invested: currency(8400000),
-        status: "On track",
-      },
-      {
-        key: "5",
-        project: "Wyre Office pilot",
-        branch: "Branch ID 9001 - HQ",
-        system: "15 kWp",
-        share: "40%",
-        invested: currency(3500000),
-        status: "Review",
-      },
-    ],
-    []
-  );
+  const rangeKey = `${range[0]?.format("YYYY-MM")}_${range[1]?.format("YYYY-MM")}`;
+
+  useEffect(() => {
+    if (!range[0] || !range[1]) return;
+    dispatch(
+      fetchInvestorPortfolioOverview(
+        range[0].format("YYYY-MM"),
+        range[1].format("YYYY-MM")
+      )
+    );
+  }, [dispatch, rangeKey]);
+
+  const financedProjects = portfolioOverview.financedProjects || [];
 
   const filteredProjects = useMemo(() => {
     if (projectFilter === "All") return financedProjects;
@@ -113,27 +82,9 @@ function PortfolioOverview() {
     return financedProjects.filter((p) => p.status !== "On track");
   }, [financedProjects, projectFilter]);
 
-  const activity = useMemo(
-    () => [
-      { key: "a1", date: "Apr 2", label: "Portfolio credit", amount: "+ ₦842,000" },
-      { key: "a2", date: "Mar 28", label: "Installment (2104)", amount: "+ ₦310,000" },
-      { key: "a3", date: "Mar 15", label: "Missed (2841)", amount: "NO" },
-      { key: "a4", date: "Mar 1", label: "Portfolio credit", amount: "+ ₦1.02M" },
-    ],
-    []
-  );
-
-  const chartData = useMemo(
-    () => [
-      { week: "W1", solar: 18, site: 10 },
-      { week: "W2", solar: 22, site: 9 },
-      { week: "W3", solar: 16, site: 11 },
-      { week: "W4", solar: 25, site: 10 },
-      { week: "W5", solar: 21, site: 12 },
-      { week: "W6", solar: 23, site: 10 },
-    ],
-    []
-  );
+  const activity = portfolioOverview.activity || [];
+  const chartData = portfolioOverview.chartData || [];
+  const kpis = portfolioOverview.kpis || {};
 
   const columns = useMemo(
     () => [
@@ -158,6 +109,7 @@ function PortfolioOverview() {
         render: (status) => {
           const normalized = String(status || "").toLowerCase();
           if (normalized === "on track") return <Tag color="green">On track</Tag>;
+          if (normalized === "on_track") return <Tag color="green">On track</Tag>;
           if (normalized === "overdue") return <Tag color="red">Overdue</Tag>;
           return <Tag color="gold">{status}</Tag>;
         },
@@ -174,7 +126,7 @@ function PortfolioOverview() {
             Portfolio overview
           </Title>
           <Text type="secondary" className="investor-page-subtitle">
-            Solar receivables across financed branches — sample data for UI review
+            Solar receivables across financed branches
           </Text>
         </div>
 
@@ -197,41 +149,70 @@ function PortfolioOverview() {
         </div>
       </div>
 
-      <Alert
-        type="warning"
-        showIcon
-        className="investor-alert"
-        message={
-          <span>
-            <b>1 project</b> has an overdue installment (Branch #2841). Wyre has
-            been notified. Customer-identifying details are hidden per policy.
-          </span>
-        }
-      />
+      {portfolioOverview.error ? (
+        <Alert
+          type="error"
+          showIcon
+          className="investor-alert"
+          message={portfolioOverview.error}
+        />
+      ) : null}
 
-      <div className="investor-metrics">
-        <MetricCard
-          label="Total invested"
-          value={currency(48200000)}
-          subLabel="Across 6 active projects"
-          variant="primary"
+      {!portfolioOverview.error && portfolioOverview.partialErrors?.length ? (
+        <Alert
+          type="info"
+          showIcon
+          className="investor-alert"
+          message="Some sections could not be loaded. You can try another date range or refresh the page."
         />
-        <MetricCard
-          label="Repayments received"
-          value={currency(12400000)}
-          subLabel="Lifetime to date"
+      ) : null}
+
+      {portfolioOverview.alert ? (
+        <Alert
+          type={portfolioOverview.alert.type}
+          showIcon
+          className="investor-alert"
+          message={portfolioOverview.alert.message}
         />
-        <MetricCard
-          label="Outstanding"
-          value={currency(35800000)}
-          subLabel="Principal + scheduled interest"
-        />
-        <MetricCard
-          label="Portfolio generation"
-          value="431.3k kWh"
-          subLabel="Cumulative (period)"
-        />
-      </div>
+      ) : null}
+
+      <Spin spinning={portfolioOverview.loading}>
+        <div className="investor-metrics">
+          <MetricCard
+            label="Total invested"
+            value={
+              kpis.totalInvested?.amount != null
+                ? currency(kpis.totalInvested.amount)
+                : "—"
+            }
+            subLabel={kpis.totalInvested?.sub}
+            variant="primary"
+          />
+          <MetricCard
+            label="Repayments / Outstanding"
+            value={
+              kpis.repaymentTotals?.received != null
+                ? currency(kpis.repaymentTotals.received)
+                : "—"
+            }
+            subLabel={
+              kpis.repaymentTotals?.outstanding != null
+                ? `Outstanding: ${currency(kpis.repaymentTotals.outstanding)}`
+                : kpis.repaymentTotals?.sub
+            }
+          />
+          <MetricCard
+            label="Portfolio generation"
+            value={kpis.portfolioGeneration?.value ?? "—"}
+            subLabel={kpis.portfolioGeneration?.sub}
+          />
+          <MetricCard
+            label="CO₂ offset"
+            value={kpis.co2?.value ?? "—"}
+            subLabel={kpis.co2?.sub}
+          />
+        </div>
+      </Spin>
 
       <div className="investor-grid">
         <Card
@@ -258,6 +239,7 @@ function PortfolioOverview() {
               pagination={false}
               size="middle"
               rowKey="key"
+              loading={portfolioOverview.loading}
             />
           </div>
         </Card>
@@ -274,21 +256,28 @@ function PortfolioOverview() {
             bordered={false}
           >
             <div className="investor-chart-wrap">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} barSize={18}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="week" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Bar dataKey="solar" stackId="a" fill="#5C12A7" name="Solar generation" />
-                  <Bar dataKey="site" stackId="a" fill="#FFC205" name="Site load (proxy)" />
-                </BarChart>
-              </ResponsiveContainer>
+              {chartData.length ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} barSize={18}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                    <XAxis dataKey="week" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="solar" stackId="a" fill="#5C12A7" name="Solar generation" />
+                    <Bar dataKey="site" stackId="a" fill="#FFC205" name="Site load (proxy)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <Text type="secondary">
+                  {portfolioOverview.loading
+                    ? "Loading chart…"
+                    : "No performance data for this range."}
+                </Text>
+              )}
             </div>
             <Text type="secondary" className="investor-chart-footnote">
-              Placeholder chart — live data would come from Datalog / Deye telemetry
-              per branch you finance.
+              Aggregated for branches you finance (telemetry may vary by site).
             </Text>
           </Card>
 
@@ -299,21 +288,27 @@ function PortfolioOverview() {
             style={{ marginTop: 14 }}
           >
             <Space direction="vertical" size={10} style={{ width: "100%" }}>
-              {activity.map((a) => (
-                <div key={a.key} className="investor-activity-row">
-                  <div className="investor-activity-left">
-                    <div className="investor-activity-date">{a.date}</div>
-                    <div className="investor-activity-label">{a.label}</div>
+              {activity.length ? (
+                activity.map((a) => (
+                  <div key={a.key} className="investor-activity-row">
+                    <div className="investor-activity-left">
+                      <div className="investor-activity-date">{a.date}</div>
+                      <div className="investor-activity-label">{a.label}</div>
+                    </div>
+                    <div
+                      className={`investor-activity-amount ${
+                        a.isBad ? "is-bad" : "is-good"
+                      }`}
+                    >
+                      {a.amount}
+                    </div>
                   </div>
-                  <div
-                    className={`investor-activity-amount ${
-                      a.amount === "NO" ? "is-bad" : "is-good"
-                    }`}
-                  >
-                    {a.amount}
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <Text type="secondary">
+                  {portfolioOverview.loading ? "Loading activity…" : "No recent payment activity."}
+                </Text>
+              )}
             </Space>
           </Card>
         </div>
