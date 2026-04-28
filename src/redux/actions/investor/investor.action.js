@@ -16,9 +16,10 @@ import {
   mapNotificationsToAlert,
   mapPerformanceSnapshotChart,
   mapPortfolioGenerationCard,
+  mapPrimaryInvestedCard,
   mapRecentPaymentActivity,
+  mapRepaymentScoreCard,
   mapRepaymentTotalsCard,
-  mapTotalInvestedCard,
 } from "../../../helpers/investorPortfolioMappers";
 import {
   MOCK_INVESTOR_ACCOUNT_KYC,
@@ -72,7 +73,8 @@ export const fetchInvestorPortfolioOverview =
       partialErrors: errors.length ? errors : null,
       alert: mapNotificationsToAlert(raw.notifications),
       kpis: {
-        totalInvested: mapTotalInvestedCard(raw.totalInvested),
+        primaryInvested: mapPrimaryInvestedCard(raw.totalInvested, raw.repaymentTotals),
+        repaymentScore: mapRepaymentScoreCard(raw.repaymentTotals),
         portfolioGeneration: mapPortfolioGenerationCard(raw.portfolioGeneration),
         repaymentTotals: mapRepaymentTotalsCard(raw.repaymentTotals),
         co2: mapCo2Card(raw.co2),

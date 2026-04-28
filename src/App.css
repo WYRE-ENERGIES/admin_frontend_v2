@@ -2783,6 +2783,18 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: #fff;
 }
 
+.investor-metric-primary-stack {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.92);
+}
+
 .investor-metric-label {
   font-family: "Montserrat", sans-serif;
   font-size: 11px;
@@ -2859,6 +2871,149 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(0, 0, 0, 0.45);
+}
+
+.investor-card-heading--financed {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.investor-health-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.investor-health-dot--green {
+  background: #52c41a;
+}
+
+.investor-health-dot--yellow {
+  background: #faad14;
+}
+
+.investor-health-dot--red {
+  background: #ff4d4f;
+}
+
+.investor-financed-status-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.investor-financed-status-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.investor-financed-status-label {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+}
+
+.investor-financed-status-posted {
+  font-size: 12px !important;
+}
+
+.investor-financed-energy-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.investor-financed-energy-kwh {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+}
+
+.investor-financed-energy-ngn {
+  font-size: 12px !important;
+}
+
+.investor-financed-kpi-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.investor-financed-kpi-main {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+  line-height: 1.35;
+}
+
+.investor-financed-kpi-sub {
+  font-size: 12px !important;
+}
+
+.investor-financed-repay-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.investor-financed-repay-main {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+  line-height: 1.35;
+}
+
+.investor-financed-repay-sub {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.investor-financed-repay-sub--overdue {
+  color: #cf1322;
+  font-weight: 600;
+}
+
+.investor-financed-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.investor-financed-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.investor-grid--bottom {
+  margin-top: 16px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+}
+
+.investor-support-modal-subtitle {
+  display: block;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .investor-card-title {
@@ -3405,6 +3560,220 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-projects-support {
   margin-top: 8px;
+}
+
+.investor-projects-instruction {
+  display: block;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  margin-top: 4px;
+  max-width: 920px;
+}
+
+.investor-projects-section-head {
+  margin-top: 8px;
+}
+
+.investor-open-project-tile .investor-open-project-grid {
+  grid-template-columns: 1fr 1fr;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-open-project-tile .investor-project-tile-meta {
+  margin-top: 6px;
+}
+
+.investor-open-pill {
+  border-radius: 999px;
+  font-weight: 600;
+  font-family: "Montserrat", sans-serif;
+}
+
+.investor-open-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-top: 12px;
+}
+
+.investor-open-metric {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(92, 18, 167, 0.05);
+  border: 1px solid rgba(92, 18, 167, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.investor-open-metric-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.investor-open-metric-value {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #141414;
+}
+
+.investor-open-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+}
+
+.investor-open-project-progress {
+  margin-top: 14px;
+}
+
+.investor-open-project-progress .ant-progress-bg {
+  background-color: #fa8c16 !important;
+}
+
+.investor-open-project-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-open-contact-btn {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  border-radius: 10px;
+  height: 38px;
+  padding: 0 18px;
+}
+
+.investor-tickets-card {
+  margin-top: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.investor-tickets-card .ant-card-body {
+  padding: 18px 20px 20px;
+}
+
+.investor-tickets-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.investor-tickets-title {
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700 !important;
+}
+
+.investor-tickets-tag {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  margin: 0;
+}
+
+.investor-tickets-empty {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+}
+
+.investor-ticket-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.investor-ticket-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 800;
+}
+
+.investor-ticket-pill {
+  border-radius: 999px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.investor-ticket-meta {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.investor-ticket-msg {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.investor-modal-remaining {
+  display: block;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+
+.investor-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 14px;
+  margin-bottom: 6px;
+}
+
+.investor-modal-item {
+  margin-bottom: 0 !important;
+}
+
+.investor-modal-remaining-pill {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.investor-modal-remaining-note {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+@media (max-width: 520px) {
+  .investor-modal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.investor-support-card--peach {
+  background: linear-gradient(90deg, rgba(250, 140, 22, 0.12), rgba(92, 18, 167, 0.06));
+  border: 1px solid rgba(250, 140, 22, 0.22);
 }
 
 .investor-payments-note {

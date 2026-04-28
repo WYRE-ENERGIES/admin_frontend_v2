@@ -33,6 +33,17 @@ export function firstString(obj, keys, fallback = "—") {
   return fallback;
 }
 
+/** Compact ₦ for KPI headlines (e.g. ₦48.2M). */
+export function formatCompactNgn(n) {
+  if (n == null || n === "") return "—";
+  const num = Number(n);
+  if (Number.isNaN(num)) return "—";
+  if (num >= 1e9) return `₦${(num / 1e9).toFixed(1)}B`;
+  if (num >= 1e6) return `₦${(num / 1e6).toFixed(1)}M`;
+  if (num >= 1e3) return `₦${(num / 1e3).toFixed(0)}k`;
+  return `₦${num.toLocaleString("en-NG")}`;
+}
+
 /** investors/total-invested */
 export function mapTotalInvestedCard(raw) {
   const o = unwrapListOrObject(raw) || raw;
@@ -72,8 +83,17 @@ export function mapPortfolioGenerationCard(raw) {
     const preset = firstString(o, ["display", "label", "summary"], "");
     if (preset && preset !== "—") value = preset;
   }
+  const ngnVal =
+    firstNumber(o, [
+      "portfolio_generation_value_ngn",
+      "generation_value_ngn",
+      "energy_value_ngn",
+      "yield_value_ngn",
+      "value_ngn",
+    ]) ?? firstNumber(o?.data, ["generation_value_ngn", "value_ngn"]);
+  const nairaSub = ngnVal != null ? `(${formatCompactNgn(ngnVal)})` : null;
   const sub = firstString(o, ["period_label", "subtitle", "description"], "Cumulative (period)");
-  return { value, sub };
+  return { value, sub, nairaSub };
 }
 
 /** investors/me/repayment-totals */
@@ -87,6 +107,51 @@ export function mapRepaymentTotalsCard(raw) {
     firstNumber(o?.data, ["outstanding"]);
   const sub = firstString(o, ["subtitle", "description", "period", "detail"], "Lifetime to date");
   return { received, outstanding, sub };
+}
+
+/**
+ * Primary purple card: total invested + lines for payments received & outstanding.
+ */
+export function mapPrimaryInvestedCard(totalRaw, repaymentTotalsRaw) {
+  const total = mapTotalInvestedCard(totalRaw);
+  const repay = mapRepaymentTotalsCard(repaymentTotalsRaw);
+  return {
+    amount: total.amount,
+    paymentsReceived: repay.received,
+    outstanding: repay.outstanding,
+  };
+}
+
+/** Repayment score KPI: "26/72" + "26 months remitted · 72 remaining" */
+export function mapRepaymentScoreCard(raw) {
+  const o = unwrapListOrObject(raw) || raw;
+  const scoreStr = firstString(o, ["repayment_score", "repayment_score_display", "score"], "");
+  const remitted = firstNumber(o, [
+    "months_remitted",
+    "repayment_months_remitted",
+    "installments_paid",
+    "paid_installments",
+  ]);
+  const remaining = firstNumber(o, [
+    "months_remaining",
+    "repayment_months_remaining",
+    "remaining_installments",
+  ]);
+  const totalMonths = firstNumber(o, ["schedule_months_total", "total_schedule_months", "tenor_months"]);
+
+  let display = "—";
+  if (scoreStr && /\d/.test(scoreStr)) display = scoreStr.replace(/\s/g, "");
+  else if (remitted != null && totalMonths != null) display = `${remitted}/${totalMonths}`;
+  else if (remitted != null && remaining != null) display = `${remitted}/${remitted + remaining}`;
+
+  let sub = "—";
+  if (remitted != null && remaining != null) {
+    sub = `${remitted} months remitted · ${remaining} remaining`;
+  } else {
+    sub = firstString(o, ["repayment_score_subtitle", "score_subtitle", "subtitle"], "—");
+  }
+
+  return { display, sub };
 }
 
 /** investors/me/co2-offset */
@@ -105,7 +170,34 @@ export function mapCo2Card(raw) {
   return { value, sub };
 }
 
-/** investors/me/financed-projects/ */
+function mapProductionHealth(item) {
+  // Backend shape (current): daytime_performance.ratio where < 0.7 => underperforming.
+  // If last_posted_at is null and no daytime generation/load, treat as inactive/no data.
+  const ratioRaw = item?.daytime_performance?.ratio;
+  const ratio = ratioRaw == null ? null : Number(ratioRaw);
+  if (ratio != null && !Number.isNaN(ratio)) {
+    if (ratio < 0.7) return { dot: "yellow", label: "Underperforming" };
+    return { dot: "green", label: "Active" };
+  }
+
+  const gen = Number(item?.daytime_performance?.daytime_generation_kwh ?? NaN);
+  const load = Number(item?.daytime_performance?.daytime_load_kwh ?? NaN);
+  const noEnergy = (!Number.isNaN(gen) && gen === 0) && (!Number.isNaN(load) && load === 0);
+  const lastPostedAt = item?.last_posted_at ?? item?.last_postedAt ?? null;
+  if (!lastPostedAt && noEnergy) return { dot: "red", label: "Inactive" };
+
+  // Fallback to any textual status field.
+  const raw = firstString(
+    item,
+    ["production_health", "telemetry_health", "energy_status", "site_health", "yield_health"],
+    ""
+  ).toLowerCase();
+  if (raw.includes("under")) return { dot: "yellow", label: "Underperforming" };
+  if (raw.includes("inactive") || raw.includes("zero") || raw === "red") return { dot: "red", label: "Inactive" };
+  return { dot: "green", label: "Active" };
+}
+
+/** investors/me/financed-projects/ — portfolio table (installation, status, capacity, cost, yield, CO₂, repayment). */
 export function mapFinancedProjectsTable(rows) {
   const list = unwrapListOrObject(rows);
   const arr = Array.isArray(list) ? list : list ? [list] : [];
@@ -117,62 +209,156 @@ export function mapFinancedProjectsTable(rows) {
       item.branch_id ??
       item.branchId ??
       idx;
-    const project =
-      firstString(item, ["project_name", "name", "title", "project"], "—");
-    const branchIdRaw = item.branch_id ?? item.branchId ?? item.branch;
-    const branchId =
-      branchIdRaw != null && branchIdRaw !== "" ? String(branchIdRaw) : "";
-    const location = firstString(item, ["location", "state", "city"], "");
-    const branch =
-      [branchId && `Branch ID ${branchId}`, location].filter(Boolean).join(" · ") ||
-      firstString(item, ["branch_label", "branchLabel"], "—");
-    const systemKw =
-      firstNumber(item, [
-        "system_capacity_kwp",
-        "system_kwp",
-        "capacity_kwp",
-        "kwp",
-        "system_size_kwp",
-      ]) ??
-      firstNumber(item, ["system_kw", "capacity_kw"]);
-    const system =
-      systemKw != null ? `${systemKw} kWp` : firstString(item, ["system", "system_display"], "—");
-    const shareNum =
-      firstNumber(item, [
-        "your_share_percent",
-        "your_share_pct",
-        "share_pct",
-        "share_percent",
-        "investor_share",
-      ]) ??
-      null;
-    const share = shareNum != null ? `${shareNum}%` : firstString(item, ["share", "your_share"], "—");
-    const investedN =
-      firstNumber(item, [
-        "invested_amount",
-        "invested_ngn",
-        "invested",
-        "amount_invested",
-        "investment_amount",
-      ]) ??
-      null;
-    const invested =
-      investedN != null
-        ? `₦${investedN.toLocaleString("en-NG")}`
-        : firstString(item, ["invested_display", "invested"], "—");
-    const status = firstString(
+    const installationTitle = firstString(
       item,
-      ["payment_health", "investment_status", "status", "health", "payment_status"],
+      ["project_name", "name", "title", "project", "installation_name"],
       "—"
     );
+    const location = firstString(
+      item,
+      ["installation_location", "location", "city", "state", "site_location"],
+      ""
+    );
+    const branchLabel = firstString(item, ["branch_label", "branchLabel"], "");
+    const installationSub =
+      location ||
+      branchLabel ||
+      firstString(item, ["branch_city_line", "location_line"], "—");
+
+    const health = mapProductionHealth(item);
+    const statusPosted =
+      firstString(item, ["last_posted_human", "last_posted_relative"], "") ||
+      firstString(item, ["status_last_posted", "telemetry_last_posted"], "—");
+    const lastPostedIso = firstString(item, ["last_posted_at", "updated_at", "modified_at"], "");
+
+    const capacityKwp =
+      firstNumber(item, ["capacity_kwp", "system_capacity_kwp", "system_kwp", "kwp", "system_size_kwp"]) ??
+      null;
+
+    const projectCostN =
+      firstNumber(item, [
+        "project_cost",
+        "project_cost_ngn",
+        "total_project_cost_ngn",
+        "project_total_cost",
+        "cost_ngn",
+      ]) ?? null;
+    const projectCostDisplay =
+      projectCostN != null ? formatCompactNgn(projectCostN) : "—";
+
+    const kpiRecoveryPct =
+      firstNumber(item?.kpi, ["recovery_percent"]) ??
+      firstNumber(item?.cost_recovery, ["recovery_percent"]) ??
+      null;
+    const kpiPaybackHuman =
+      firstString(item?.kpi?.payback_approx, ["human"], "") ||
+      firstString(item?.payback_estimate, ["human"], "");
+    const kpiRemarkMain =
+      kpiRecoveryPct != null ? `${kpiRecoveryPct}%` : kpiPaybackHuman || "—";
+    const kpiRemarkSub =
+      kpiRecoveryPct != null && kpiPaybackHuman ? kpiPaybackHuman : null;
+
+    const energyKwh =
+      firstNumber(item, [
+        "energy_yield_kwh",
+        "yield_kwh",
+        "generation_kwh_ytd",
+        "portfolio_generation_kwh",
+      ]) ?? null;
+    const energyValueN =
+      firstNumber(item, [
+        "energy_yield_value_naira",
+        "energy_yield_value_ngn",
+        "yield_value_ngn",
+        "energy_value_ngn",
+      ]) ?? null;
+    const energyKwhDisplay =
+      energyKwh != null
+        ? energyKwh.toLocaleString("en-NG", { maximumFractionDigits: 0 })
+        : "—";
+    const energyValueDisplay =
+      energyValueN != null ? `(${formatCompactNgn(energyValueN)})` : "—";
+
+    const carbonN =
+      firstNumber(item, ["carbon_offset_tonnes", "co2_offset_tonnes", "co2_tonnes", "tonnes"]) ??
+      null;
+    const carbonDisplay =
+      carbonN != null
+        ? `${carbonN.toLocaleString("en-NG", { maximumFractionDigits: 1 })} t`
+        : "—";
+
+    const paid =
+      firstNumber(item?.repayment_score, ["paid_installments"]) ??
+      firstNumber(item, ["repayment_installments_paid", "installments_paid", "repayments_paid_count"]);
+    const totalInst =
+      firstNumber(item?.repayment_score, ["total_installments"]) ??
+      firstNumber(item, ["repayment_installments_total", "installments_total", "schedule_installments"]);
+    const remainingInst =
+      firstNumber(item?.repayment_score, ["remaining_installments"]) ??
+      firstNumber(item, ["remaining_installments", "repayment_months_remaining"]);
+    const pct = firstNumber(item, ["repayment_percent_completed", "repayment_pct", "percent_completed"]);
+    let repaymentMain = "—";
+    if (paid != null && totalInst != null) {
+      const p = pct != null ? pct : Math.round((paid / totalInst) * 100);
+      repaymentMain = `${paid}/${totalInst} (${p}% completed)`;
+    } else {
+      const preset = firstString(item, ["repayment_score_display", "repayment_score"], "");
+      if (preset) repaymentMain = preset;
+    }
+
+    const nextPaymentLine = firstString(item, ["next_payment_line", "next_payment_label", "next_payment_due_display"], "");
+    const overdue =
+      Boolean(item.repayment_overdue) ||
+      String(item.payment_health || "").toLowerCase() === "overdue" ||
+      String(item.payment_health || "").toLowerCase() === "past_due";
+    const nextDueRaw = firstString(item, ["next_payment_due", "next_due_date"], "");
+    const paybackHuman =
+      firstString(item?.payback_estimate, ["human"], "") ||
+      firstString(item?.kpi?.payback_approx, ["human"], "");
+    const recoveryPct =
+      firstNumber(item?.cost_recovery, ["recovery_percent"]) ??
+      firstNumber(item?.kpi, ["recovery_percent"]);
+    let repaymentSub = "—";
+    if (overdue && nextDueRaw) repaymentSub = `Overdue: ${nextDueRaw}`;
+    else if (overdue) repaymentSub = "Overdue";
+    else if (nextPaymentLine) repaymentSub = nextPaymentLine;
+    else if (nextDueRaw) repaymentSub = `Next payment: ${nextDueRaw}`;
+    else if (paybackHuman) repaymentSub = `Payback: ${paybackHuman}`;
+    else if (recoveryPct != null) repaymentSub = `Recovery: ${recoveryPct}%`;
+    else if (remainingInst != null && remainingInst !== 0) repaymentSub = `${remainingInst} remaining`;
+
+    const paymentHealth = String(item.payment_health || "").toLowerCase();
+    const repaymentOverdue = overdue || paymentHealth === "overdue";
+
+    const needsAttention =
+      health.dot !== "green" || repaymentOverdue || paymentHealth === "overdue";
+    const isOnTrack =
+      health.dot === "green" &&
+      !repaymentOverdue &&
+      (paymentHealth === "on_track" || paymentHealth === "on track" || paymentHealth === "");
+
     return {
       key: String(id),
-      project,
-      branch,
-      system,
-      share,
-      invested,
-      status,
+      installationTitle,
+      installationSub,
+      healthDot: health.dot,
+      healthLabel: health.label,
+      statusPosted,
+      lastPostedIso,
+      capacityKwp: capacityKwp != null ? String(capacityKwp) : "—",
+      projectCostDisplay,
+      kpiRemarkMain,
+      kpiRemarkSub,
+      energyKwhDisplay,
+      energyValueDisplay,
+      carbonDisplay,
+      repaymentMain,
+      repaymentSub,
+      repaymentOverdue,
+      needsAttention,
+      isOnTrack,
+      project: installationTitle,
+      branch: installationSub,
     };
   });
 }

@@ -5,12 +5,17 @@ import {
   Button,
   Card,
   DatePicker,
+  Form,
+  Input,
+  Modal,
+  Select,
   Segmented,
   Space,
   Spin,
   Table,
   Tag,
   Typography,
+  message,
 } from "antd";
 import { DownloadOutlined, FileTextOutlined } from "@ant-design/icons";
 import {
@@ -24,30 +29,37 @@ import {
   YAxis,
 } from "recharts";
 import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
 import { fetchInvestorPortfolioOverview } from "../../redux/actions/investor/investor.action";
+import { formatCompactNgn } from "../../helpers/investorPortfolioMappers";
+
+dayjs.extend(relativeTime);
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
+const { TextArea } = Input;
 
-const currency = (value) => {
-  if (value === null || value === undefined) return "---";
-  const num = Number(value);
-  if (Number.isNaN(num)) return String(value);
-  return `₦${num.toLocaleString("en-NG")}`;
-};
+function formatPosted(row) {
+  if (row.statusPosted && row.statusPosted !== "—") return row.statusPosted;
+  if (row.lastPostedIso) {
+    const d = dayjs(row.lastPostedIso);
+    if (d.isValid()) return d.fromNow();
+  }
+  return "—";
+}
 
-function MetricCard({ label, value, subLabel, variant }) {
+function HealthCell({ dot, label, posted }) {
+  const dotClass = `investor-health-dot investor-health-dot--${dot}`;
   return (
-    <Card
-      className={`investor-metric-card ${
-        variant === "primary" ? "investor-metric-card--primary" : ""
-      }`}
-      bordered={false}
-    >
-      <div className="investor-metric-label">{label}</div>
-      <div className="investor-metric-value">{value}</div>
-      {subLabel ? <div className="investor-metric-sub">{subLabel}</div> : null}
-    </Card>
+    <div className="investor-financed-status-cell">
+      <div className="investor-financed-status-top">
+        <span className={dotClass} aria-hidden />
+        <span className="investor-financed-status-label">{label}</span>
+      </div>
+      <Text type="secondary" className="investor-financed-status-posted">
+        {posted}
+      </Text>
+    </div>
   );
 }
 
@@ -60,6 +72,8 @@ function PortfolioOverview() {
     dayjs().endOf("month"),
   ]);
   const [projectFilter, setProjectFilter] = useState("All");
+  const [supportOpen, setSupportOpen] = useState(false);
+  const [supportForm] = Form.useForm();
 
   const rangeKey = `${range[0]?.format("YYYY-MM")}_${range[1]?.format("YYYY-MM")}`;
 
@@ -78,8 +92,8 @@ function PortfolioOverview() {
   const filteredProjects = useMemo(() => {
     if (projectFilter === "All") return financedProjects;
     if (projectFilter === "On track")
-      return financedProjects.filter((p) => p.status === "On track");
-    return financedProjects.filter((p) => p.status !== "On track");
+      return financedProjects.filter((p) => p.isOnTrack);
+    return financedProjects.filter((p) => p.needsAttention);
   }, [financedProjects, projectFilter]);
 
   const activity = portfolioOverview.activity || [];
@@ -89,34 +103,114 @@ function PortfolioOverview() {
   const columns = useMemo(
     () => [
       {
-        title: "Project / Branch",
-        key: "project",
+        title: "Installation",
+        key: "installation",
+        width: 200,
         render: (_, row) => (
           <div className="investor-project-cell">
-            <div className="investor-project-name">{row.project}</div>
-            <div className="investor-project-branch">{row.branch}</div>
+            <div className="investor-project-name">{row.installationTitle}</div>
+            <div className="investor-project-branch">{row.installationSub}</div>
           </div>
         ),
       },
-      { title: "System", dataIndex: "system", key: "system", width: 110 },
-      { title: "Your share", dataIndex: "share", key: "share", width: 110 },
-      { title: "Invested", dataIndex: "invested", key: "invested", width: 130 },
       {
-        title: "Status",
-        dataIndex: "status",
+        title: "Status (last posted)",
         key: "status",
+        width: 170,
+        render: (_, row) => (
+          <HealthCell
+            dot={row.healthDot}
+            label={row.healthLabel}
+            posted={formatPosted(row)}
+          />
+        ),
+      },
+      {
+        title: "Capacity (kWp)",
+        dataIndex: "capacityKwp",
+        key: "capacityKwp",
         width: 120,
-        render: (status) => {
-          const normalized = String(status || "").toLowerCase();
-          if (normalized === "on track") return <Tag color="green">On track</Tag>;
-          if (normalized === "on_track") return <Tag color="green">On track</Tag>;
-          if (normalized === "overdue") return <Tag color="red">Overdue</Tag>;
-          return <Tag color="gold">{status}</Tag>;
-        },
+      },
+      {
+        title: "Project cost",
+        dataIndex: "projectCostDisplay",
+        key: "projectCostDisplay",
+        width: 120,
+      },
+      {
+        title: "KPI (remark)",
+        key: "kpiRemark",
+        width: 140,
+        render: (_, row) => (
+          <div className="investor-financed-kpi-cell">
+            <div className="investor-financed-kpi-main">{row.kpiRemarkMain}</div>
+            {row.kpiRemarkSub ? (
+              <Text type="secondary" className="investor-financed-kpi-sub">
+                {row.kpiRemarkSub}
+              </Text>
+            ) : null}
+          </div>
+        ),
+      },
+      {
+        title: "Energy yield (kWh)",
+        key: "energy",
+        width: 140,
+        render: (_, row) => (
+          <div className="investor-financed-energy-cell">
+            <div className="investor-financed-energy-kwh">{row.energyKwhDisplay}</div>
+            <Text type="secondary" className="investor-financed-energy-ngn">
+              {row.energyValueDisplay}
+            </Text>
+          </div>
+        ),
+      },
+      {
+        title: "Carbon offset",
+        dataIndex: "carbonDisplay",
+        key: "carbonDisplay",
+        width: 110,
+      },
+      {
+        title: "Portfolio score",
+        key: "repayment",
+        width: 200,
+        render: (_, row) => (
+          <div className="investor-financed-repay-cell">
+            <div className="investor-financed-repay-main">{row.repaymentMain}</div>
+            <div
+              className={
+                row.repaymentOverdue
+                  ? "investor-financed-repay-sub investor-financed-repay-sub--overdue"
+                  : "investor-financed-repay-sub"
+              }
+            >
+              {row.repaymentSub}
+            </div>
+          </div>
+        ),
       },
     ],
     []
   );
+
+  const openSupport = () => {
+    supportForm.resetFields();
+    supportForm.setFieldsValue({ topic: "General support", priority: "Normal" });
+    setSupportOpen(true);
+  };
+
+  const submitSupport = async () => {
+    try {
+      const values = await supportForm.validateFields();
+      message.success("Support ticket created (mock).");
+      setSupportOpen(false);
+      supportForm.resetFields();
+      return values;
+    } catch {
+      return null;
+    }
+  };
 
   return (
     <div className="investor-page">
@@ -126,7 +220,7 @@ function PortfolioOverview() {
             Portfolio overview
           </Title>
           <Text type="secondary" className="investor-page-subtitle">
-            Solar receivables across financed branches
+            Solar receivables across financed branches — sample data for UI review
           </Text>
         </div>
 
@@ -178,140 +272,187 @@ function PortfolioOverview() {
 
       <Spin spinning={portfolioOverview.loading}>
         <div className="investor-metrics">
-          <MetricCard
-            label="Total invested"
-            value={
-              kpis.totalInvested?.amount != null
-                ? currency(kpis.totalInvested.amount)
-                : "—"
-            }
-            subLabel={kpis.totalInvested?.sub}
-            variant="primary"
-          />
-          <MetricCard
-            label="Repayments / Outstanding"
-            value={
-              kpis.repaymentTotals?.received != null
-                ? currency(kpis.repaymentTotals.received)
-                : "—"
-            }
-            subLabel={
-              kpis.repaymentTotals?.outstanding != null
-                ? `Outstanding: ${currency(kpis.repaymentTotals.outstanding)}`
-                : kpis.repaymentTotals?.sub
-            }
-          />
-          <MetricCard
-            label="Portfolio generation"
-            value={kpis.portfolioGeneration?.value ?? "—"}
-            subLabel={kpis.portfolioGeneration?.sub}
-          />
-          <MetricCard
-            label="CO₂ offset"
-            value={kpis.co2?.value ?? "—"}
-            subLabel={kpis.co2?.sub}
-          />
+          <Card
+            bordered={false}
+            className="investor-metric-card investor-metric-card--primary"
+          >
+            <div className="investor-metric-label">Total invested</div>
+            <div className="investor-metric-value">
+              {kpis.primaryInvested?.amount != null
+                ? formatCompactNgn(kpis.primaryInvested.amount)
+                : "—"}
+            </div>
+            <div className="investor-metric-primary-stack">
+              <div>
+                Payments received{" "}
+                {kpis.primaryInvested?.paymentsReceived != null
+                  ? formatCompactNgn(kpis.primaryInvested.paymentsReceived)
+                  : "—"}
+              </div>
+              <div>
+                Outstanding{" "}
+                {kpis.primaryInvested?.outstanding != null
+                  ? formatCompactNgn(kpis.primaryInvested.outstanding)
+                  : "—"}
+              </div>
+            </div>
+          </Card>
+
+          <Card bordered={false} className="investor-metric-card">
+            <div className="investor-metric-label">Repayment score</div>
+            <div className="investor-metric-value">{kpis.repaymentScore?.display ?? "—"}</div>
+            <div className="investor-metric-sub">{kpis.repaymentScore?.sub}</div>
+          </Card>
+
+          <Card bordered={false} className="investor-metric-card">
+            <div className="investor-metric-label">Portfolio generation</div>
+            <div className="investor-metric-value">
+              {kpis.portfolioGeneration?.value ?? "—"}
+            </div>
+            <div className="investor-metric-sub">
+              {kpis.portfolioGeneration?.nairaSub ||
+                kpis.portfolioGeneration?.sub}
+            </div>
+          </Card>
+
+          <Card bordered={false} className="investor-metric-card">
+            <div className="investor-metric-label">CO₂ offset</div>
+            <div className="investor-metric-value">{kpis.co2?.value ?? "—"}</div>
+            <div className="investor-metric-sub">{kpis.co2?.sub}</div>
+          </Card>
         </div>
       </Spin>
 
-      <div className="investor-grid">
+      <Card
+        title={
+          <div className="investor-card-title">
+            <span className="investor-card-heading investor-card-heading--financed">
+              Financed
+            </span>
+            <Segmented
+              options={["All", "On track", "Attention"]}
+              value={projectFilter}
+              onChange={setProjectFilter}
+              size="small"
+              className="investor-segmented"
+            />
+          </div>
+        }
+        className="investor-card"
+        bordered={false}
+      >
+        <div className="table-responsive-wrapper investor-table-wrap">
+          <Table
+            className="investor-table investor-financed-table"
+            columns={columns}
+            dataSource={filteredProjects}
+            pagination={false}
+            size="middle"
+            rowKey="key"
+            loading={portfolioOverview.loading}
+            scroll={{ x: 1100 }}
+          />
+        </div>
+        <div className="investor-financed-legend">
+          <span className="investor-financed-legend-item">
+            <span className="investor-health-dot investor-health-dot--green" />{" "}
+            Active (normal production)
+          </span>
+          <span className="investor-financed-legend-item">
+            <span className="investor-health-dot investor-health-dot--yellow" />{" "}
+            Underperforming (production {"<"} 70%)
+          </span>
+          <span className="investor-financed-legend-item">
+            <span className="investor-health-dot investor-health-dot--red" />{" "}
+            Inactive (zero output during daylight)
+          </span>
+        </div>
+      </Card>
+
+      <div className="investor-grid investor-grid--bottom">
         <Card
           title={
             <div className="investor-card-title">
-              <span className="investor-card-heading">Financed projects</span>
-              <Segmented
-                options={["All", "On track", "Attention"]}
-                value={projectFilter}
-                onChange={setProjectFilter}
-                size="small"
-                className="investor-segmented"
-              />
+              <span className="investor-card-heading">Performance snapshot</span>
+              <Tag color="default" className="investor-tag-muted">
+                This quarter
+              </Tag>
             </div>
           }
           className="investor-card"
           bordered={false}
         >
-          <div className="table-responsive-wrapper investor-table-wrap">
-            <Table
-              className="investor-table"
-              columns={columns}
-              dataSource={filteredProjects}
-              pagination={false}
-              size="middle"
-              rowKey="key"
-              loading={portfolioOverview.loading}
-            />
+          <div className="investor-chart-wrap">
+            {chartData.length ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} barSize={18}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis dataKey="week" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar
+                    dataKey="solar"
+                    stackId="a"
+                    fill="#FFC205"
+                    name="Solar generation"
+                  />
+                  <Bar
+                    dataKey="site"
+                    stackId="a"
+                    fill="#B39DDB"
+                    name="Site load (proxy)"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <Text type="secondary">
+                {portfolioOverview.loading
+                  ? "Loading chart…"
+                  : "No performance data for this range."}
+              </Text>
+            )}
           </div>
+          <Text type="secondary" className="investor-chart-footnote">
+            Aggregated for branches you finance (telemetry may vary by site).
+          </Text>
         </Card>
 
-        <div className="investor-right">
-          <Card
-            title={
-              <div className="investor-card-title">
-                <span className="investor-card-heading">Performance snapshot</span>
-                <Tag color="default" className="investor-tag-muted">This quarter</Tag>
-              </div>
-            }
-            className="investor-card"
-            bordered={false}
-          >
-            <div className="investor-chart-wrap">
-              {chartData.length ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} barSize={18}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="week" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="solar" stackId="a" fill="#5C12A7" name="Solar generation" />
-                    <Bar dataKey="site" stackId="a" fill="#FFC205" name="Site load (proxy)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <Text type="secondary">
-                  {portfolioOverview.loading
-                    ? "Loading chart…"
-                    : "No performance data for this range."}
-                </Text>
-              )}
-            </div>
-            <Text type="secondary" className="investor-chart-footnote">
-              Aggregated for branches you finance (telemetry may vary by site).
-            </Text>
-          </Card>
-
-          <Card
-            title={<span className="investor-card-heading investor-card-heading--caps">Recent payment activity</span>}
-            className="investor-card"
-            bordered={false}
-            style={{ marginTop: 14 }}
-          >
-            <Space direction="vertical" size={10} style={{ width: "100%" }}>
-              {activity.length ? (
-                activity.map((a) => (
-                  <div key={a.key} className="investor-activity-row">
-                    <div className="investor-activity-left">
-                      <div className="investor-activity-date">{a.date}</div>
-                      <div className="investor-activity-label">{a.label}</div>
-                    </div>
-                    <div
-                      className={`investor-activity-amount ${
-                        a.isBad ? "is-bad" : "is-good"
-                      }`}
-                    >
-                      {a.amount}
-                    </div>
+        <Card
+          title={
+            <span className="investor-card-heading investor-card-heading--caps">
+              Recent payment activity
+            </span>
+          }
+          className="investor-card"
+          bordered={false}
+        >
+          <Space direction="vertical" size={10} style={{ width: "100%" }}>
+            {activity.length ? (
+              activity.map((a) => (
+                <div key={a.key} className="investor-activity-row">
+                  <div className="investor-activity-left">
+                    <div className="investor-activity-date">{a.date}</div>
+                    <div className="investor-activity-label">{a.label}</div>
                   </div>
-                ))
-              ) : (
-                <Text type="secondary">
-                  {portfolioOverview.loading ? "Loading activity…" : "No recent payment activity."}
-                </Text>
-              )}
-            </Space>
-          </Card>
-        </div>
+                  <div
+                    className={`investor-activity-amount ${
+                      a.isBad ? "is-bad" : "is-good"
+                    }`}
+                  >
+                    {a.amount}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <Text type="secondary">
+                {portfolioOverview.loading
+                  ? "Loading activity…"
+                  : "No recent payment activity."}
+              </Text>
+            )}
+          </Space>
+        </Card>
       </div>
 
       <Card className="investor-support-card" bordered={false}>
@@ -321,16 +462,79 @@ function PortfolioOverview() {
               Questions about a project or repayment?
             </div>
             <div className="investor-support-sub">
-              Investors contact Wyre only — we coordinate with the customer. This
-              opens your existing support ticket flow when implemented.
+              Investors contact Wyre only — we coordinate with the customer. Opens
+              your existing support ticket flow when implemented.
             </div>
           </div>
-          <Button type="primary" className="investor-support-cta">Contact Wyre support</Button>
+          <Button type="primary" className="investor-support-cta" onClick={openSupport}>
+            Contact Wyre support
+          </Button>
         </div>
       </Card>
+
+      <Modal
+        title="Contact Wyre support"
+        open={supportOpen}
+        onCancel={() => setSupportOpen(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setSupportOpen(false)}>
+            Cancel
+          </Button>,
+          <Button key="create" type="primary" onClick={submitSupport}>
+            Create support ticket
+          </Button>,
+        ]}
+        destroyOnClose
+        width={560}
+      >
+        <Text type="secondary" className="investor-support-modal-subtitle">
+          Creates a general support ticket (separate from investment tickets).
+        </Text>
+
+        <Form form={supportForm} layout="vertical" style={{ marginTop: 14 }}>
+          <div className="investor-modal-grid">
+            <Form.Item
+              name="topic"
+              label="Topic"
+              className="investor-modal-item"
+              rules={[{ required: true, message: "Select a topic" }]}
+            >
+              <Select
+                options={[
+                  { value: "General support", label: "General support" },
+                  { value: "Project inquiry", label: "Project inquiry" },
+                  { value: "Repayment inquiry", label: "Repayment inquiry" },
+                  { value: "Generation dispute", label: "Generation dispute" },
+                ]}
+              />
+            </Form.Item>
+            <Form.Item
+              name="priority"
+              label="Priority"
+              className="investor-modal-item"
+              rules={[{ required: true, message: "Select a priority" }]}
+            >
+              <Select
+                options={[
+                  { value: "Normal", label: "Normal" },
+                  { value: "High", label: "High" },
+                  { value: "Urgent", label: "Urgent" },
+                ]}
+              />
+            </Form.Item>
+          </div>
+
+          <Form.Item name="message" label="Message">
+            <TextArea rows={4} placeholder="Write your request to Wyre (optional)" />
+          </Form.Item>
+
+          <Text type="secondary" className="investor-modal-remaining-note">
+            In production, this becomes the SupportTicket description.
+          </Text>
+        </Form>
+      </Modal>
     </div>
   );
 }
 
 export default PortfolioOverview;
-
