@@ -1,5 +1,6 @@
 import {
   UserOutlined,
+  TeamOutlined,
   MenuOutlined,
   WarningOutlined,
   LoginOutlined,
@@ -89,9 +90,9 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
         ...(isSuperAdmin
           ? [
               {
-                label: "Access control",
-                key: "/access-control",
-                icon: <SafetyCertificateOutlined style={{ scale: collapsed ? "1.1" : "1" }} />,
+                label: "Investors Mgt",
+                key: "/investors-mgt",
+                icon: <TeamOutlined style={{ scale: collapsed ? "1.1" : "1" }} />,
               },
             ]
           : []),

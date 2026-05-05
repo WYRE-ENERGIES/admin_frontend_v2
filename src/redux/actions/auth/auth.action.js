@@ -5,7 +5,7 @@ import jwt_decode from 'jwt-decode';
 
 export const loginAUser = (parameters) => async (dispatch) => {
   dispatch(loginUserLoading(true));
-  const requestUrl = '/api/v1/auth/'; 
+  const requestUrl = '/api/v1/admin_auth/'; 
   try {
     const response = await APIServiceNoAuth.post(requestUrl, parameters);
     
