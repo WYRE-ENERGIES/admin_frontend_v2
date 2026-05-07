@@ -10,6 +10,9 @@ import {
   getAdminInvestorPayoutDetailSuccess,
   getAdminInvestorPayoutsLoading,
   getAdminInvestorPayoutsSuccess,
+  getAdminInvestorPaymentSchedulesListLoading,
+  getAdminInvestorPaymentSchedulesListSuccess,
+  updateAdminInvestorPayoutLoading,
 } from "./adminInvestorPayout.creator";
 
 const PAYOUTS_BASE = INVESTOR_ADMIN_API.investorPayouts;
@@ -110,6 +113,49 @@ export const deleteAdminInvestorPayout = (id) => async (dispatch) => {
     return { fulfilled: true, message: body.message || "Deactivated", data: body.data };
   } catch (error) {
     dispatch(deleteAdminInvestorPayoutLoading(false));
+    return { fulfilled: false, message: readErrorMessage(error) };
+  }
+};
+
+/** GET all investor repayment schedule lines (paginated). Optional: investment_id, investor_id, project_id, page, page_size */
+export const fetchAdminInvestorPaymentSchedulesList = (params = {}) => async (dispatch) => {
+  dispatch(getAdminInvestorPaymentSchedulesListLoading(true));
+  try {
+    const search = new URLSearchParams();
+    if (params.page != null) search.set("page", String(params.page));
+    if (params.page_size != null) search.set("page_size", String(params.page_size));
+    if (params.investment_id != null) search.set("investment_id", String(params.investment_id));
+    if (params.investor_id != null) search.set("investor_id", String(params.investor_id));
+    if (params.project_id != null) search.set("project_id", String(params.project_id));
+    const qs = search.toString();
+    const url = qs ? `${SCHEDULES_BASE}?${qs}` : SCHEDULES_BASE;
+    const response = await APIService.get(url);
+    const body = response.data;
+    dispatch(getAdminInvestorPaymentSchedulesListLoading(false));
+    if (body.status === false) {
+      return { fulfilled: false, message: body.message || "Failed to load schedules" };
+    }
+    dispatch(getAdminInvestorPaymentSchedulesListSuccess(body.data));
+    return { fulfilled: true, data: body.data };
+  } catch (error) {
+    dispatch(getAdminInvestorPaymentSchedulesListLoading(false));
+    return { fulfilled: false, message: readErrorMessage(error) };
+  }
+};
+
+export const updateAdminInvestorPayout = (id, payload) => async (dispatch) => {
+  dispatch(updateAdminInvestorPayoutLoading(true));
+  try {
+    const response = await APIService.patch(`${PAYOUTS_BASE}${id}/`, payload);
+    const body = response.data;
+    dispatch(updateAdminInvestorPayoutLoading(false));
+    if (body.status === false) {
+      return { fulfilled: false, message: body.message || "Update failed" };
+    }
+    dispatch(getAdminInvestorPayoutDetailSuccess(body.data));
+    return { fulfilled: true, message: body.message || "Updated", data: body.data };
+  } catch (error) {
+    dispatch(updateAdminInvestorPayoutLoading(false));
     return { fulfilled: false, message: readErrorMessage(error) };
   }
 };

@@ -10,6 +10,16 @@ export const getAdminInvestorProjectsSuccess = (payload) => ({
   payload,
 });
 
+export const getAdminProjectsPerformanceLoading = (payload = true) => ({
+  type: adminInvestorProjectTypes.GET_ADMIN_PROJECTS_PERFORMANCE_LOADING,
+  payload,
+});
+
+export const getAdminProjectsPerformanceSuccess = (payload) => ({
+  type: adminInvestorProjectTypes.GET_ADMIN_PROJECTS_PERFORMANCE_SUCCESS,
+  payload,
+});
+
 export const createAdminInvestorProjectLoading = (payload = true) => ({
   type: adminInvestorProjectTypes.CREATE_ADMIN_INVESTOR_PROJECT_LOADING,
   payload,

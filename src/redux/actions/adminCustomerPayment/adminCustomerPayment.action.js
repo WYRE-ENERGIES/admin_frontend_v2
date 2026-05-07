@@ -10,9 +10,13 @@ import {
   getAdminCustomerPaymentDetailSuccess,
   getAdminCustomerPaymentsLoading,
   getAdminCustomerPaymentsSuccess,
+  getAdminCustomerPaymentSchedulesLoading,
+  getAdminCustomerPaymentSchedulesSuccess,
+  updateAdminCustomerPaymentLoading,
 } from "./adminCustomerPayment.creator";
 
 const BASE = INVESTOR_ADMIN_API.customerPayments;
+const SCHEDULES_BASE = INVESTOR_ADMIN_API.customerPaymentSchedules;
 
 const readErrorMessage = (error) => {
   const data = error.response?.data;
@@ -93,6 +97,47 @@ export const deleteAdminCustomerPayment = (id) => async (dispatch) => {
     return { fulfilled: true, message: body.message || "Deactivated", data: body.data };
   } catch (error) {
     dispatch(deleteAdminCustomerPaymentLoading(false));
+    return { fulfilled: false, message: readErrorMessage(error) };
+  }
+};
+
+/** GET paginated customer repayment schedule lines (upcoming / all lines). */
+export const fetchAdminCustomerPaymentSchedules = (params = {}) => async (dispatch) => {
+  dispatch(getAdminCustomerPaymentSchedulesLoading(true));
+  try {
+    const search = new URLSearchParams();
+    if (params.page != null) search.set("page", String(params.page));
+    if (params.page_size != null) search.set("page_size", String(params.page_size));
+    if (params.project_id != null) search.set("project_id", String(params.project_id));
+    const qs = search.toString();
+    const url = qs ? `${SCHEDULES_BASE}?${qs}` : SCHEDULES_BASE;
+    const response = await APIService.get(url);
+    const body = response.data;
+    dispatch(getAdminCustomerPaymentSchedulesLoading(false));
+    if (body.status === false) {
+      return { fulfilled: false, message: body.message || "Failed to load schedules" };
+    }
+    dispatch(getAdminCustomerPaymentSchedulesSuccess(body.data));
+    return { fulfilled: true, data: body.data };
+  } catch (error) {
+    dispatch(getAdminCustomerPaymentSchedulesLoading(false));
+    return { fulfilled: false, message: readErrorMessage(error) };
+  }
+};
+
+export const updateAdminCustomerPayment = (id, payload) => async (dispatch) => {
+  dispatch(updateAdminCustomerPaymentLoading(true));
+  try {
+    const response = await APIService.patch(`${BASE}${id}/`, payload);
+    const body = response.data;
+    dispatch(updateAdminCustomerPaymentLoading(false));
+    if (body.status === false) {
+      return { fulfilled: false, message: body.message || "Update failed" };
+    }
+    dispatch(getAdminCustomerPaymentDetailSuccess(body.data));
+    return { fulfilled: true, message: body.message || "Updated", data: body.data };
+  } catch (error) {
+    dispatch(updateAdminCustomerPaymentLoading(false));
     return { fulfilled: false, message: readErrorMessage(error) };
   }
 };

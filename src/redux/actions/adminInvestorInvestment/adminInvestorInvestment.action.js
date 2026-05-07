@@ -12,7 +12,8 @@ import {
   getAdminInvestorInvestmentsSuccess,
 } from "./adminInvestorInvestment.creator";
 
-const BASE = INVESTOR_ADMIN_API.investments;
+const LIST_BASE = INVESTOR_ADMIN_API.directory.investments;
+const DETAIL_BASE = INVESTOR_ADMIN_API.investments;
 
 const readErrorMessage = (error) => {
   const data = error.response?.data;
@@ -28,7 +29,7 @@ const readErrorMessage = (error) => {
 export const fetchAdminInvestorInvestmentsList = () => async (dispatch) => {
   dispatch(getAdminInvestorInvestmentsLoading(true));
   try {
-    const response = await APIService.get(BASE);
+    const response = await APIService.get(LIST_BASE);
     const body = response.data;
     dispatch(getAdminInvestorInvestmentsLoading(false));
     if (body.status === false) {
@@ -45,7 +46,7 @@ export const fetchAdminInvestorInvestmentsList = () => async (dispatch) => {
 export const createAdminInvestorInvestment = (payload) => async (dispatch) => {
   dispatch(createAdminInvestorInvestmentLoading(true));
   try {
-    const response = await APIService.post(BASE, payload);
+    const response = await APIService.post(DETAIL_BASE, payload);
     const body = response.data;
     dispatch(createAdminInvestorInvestmentLoading(false));
     if (body.status === false) {
@@ -62,7 +63,7 @@ export const createAdminInvestorInvestment = (payload) => async (dispatch) => {
 export const fetchAdminInvestorInvestmentDetail = (id) => async (dispatch) => {
   dispatch(getAdminInvestorInvestmentDetailLoading(true));
   try {
-    const response = await APIService.get(`${BASE}${id}/`);
+    const response = await APIService.get(`${DETAIL_BASE}${id}/`);
     const body = response.data;
     dispatch(getAdminInvestorInvestmentDetailLoading(false));
     if (body.status === false) {
@@ -83,7 +84,7 @@ export const clearInvestorInvestmentDetail = () => (dispatch) => {
 export const deleteAdminInvestorInvestment = (id) => async (dispatch) => {
   dispatch(deleteAdminInvestorInvestmentLoading(true));
   try {
-    const response = await APIService.delete(`${BASE}${id}/`);
+    const response = await APIService.delete(`${DETAIL_BASE}${id}/`);
     const body = response.data;
     dispatch(deleteAdminInvestorInvestmentLoading(false));
     if (body.status === false) {

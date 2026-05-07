@@ -6,6 +6,8 @@ import {
   createAdminInvestorProjectSuccess,
   deleteAdminInvestorProjectLoading,
   deleteAdminInvestorProjectSuccess,
+  getAdminProjectsPerformanceLoading,
+  getAdminProjectsPerformanceSuccess,
   getAdminInvestorProjectDetailLoading,
   getAdminInvestorProjectDetailSuccess,
   getAdminInvestorProjectsLoading,
@@ -13,6 +15,7 @@ import {
 } from "./adminInvestorProject.creator";
 
 const BASE = INVESTOR_ADMIN_API.projects;
+const PERFORMANCE_BASE = `${INVESTOR_ADMIN_API.projects}performance/`;
 
 const readErrorMessage = (error) => {
   const data = error.response?.data;
@@ -96,3 +99,22 @@ export const deleteAdminInvestorProject = (id) => async (dispatch) => {
     return { fulfilled: false, message: readErrorMessage(error) };
   }
 };
+
+export const fetchAdminInvestorProjectsPerformance =
+  ({ rank_by = "average_daily_generation_kwh" } = {}) =>
+  async (dispatch) => {
+    dispatch(getAdminProjectsPerformanceLoading(true));
+    try {
+      const response = await APIService.get(`${PERFORMANCE_BASE}?rank_by=${encodeURIComponent(String(rank_by))}`);
+      const body = response.data;
+      dispatch(getAdminProjectsPerformanceLoading(false));
+      if (body.status === false) {
+        return { fulfilled: false, message: body.message || "Failed to load project performance" };
+      }
+      dispatch(getAdminProjectsPerformanceSuccess(body.data));
+      return { fulfilled: true, data: body.data };
+    } catch (error) {
+      dispatch(getAdminProjectsPerformanceLoading(false));
+      return { fulfilled: false, message: readErrorMessage(error) };
+    }
+  };

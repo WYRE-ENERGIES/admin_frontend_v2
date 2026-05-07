@@ -12,7 +12,8 @@ import {
   getAdminInvestorUsersSuccess,
 } from "./adminInvestorUser.creator";
 
-const BASE = INVESTOR_ADMIN_API.investorUsers;
+const LIST_BASE = INVESTOR_ADMIN_API.directory.investors;
+const DETAIL_BASE = INVESTOR_ADMIN_API.investorUsers;
 
 const readErrorMessage = (error) => {
   const data = error.response?.data;
@@ -28,7 +29,7 @@ const readErrorMessage = (error) => {
 export const fetchAdminInvestorUsersList = () => async (dispatch) => {
   dispatch(getAdminInvestorUsersLoading(true));
   try {
-    const response = await APIService.get(BASE);
+    const response = await APIService.get(LIST_BASE);
     const body = response.data;
     dispatch(getAdminInvestorUsersLoading(false));
     if (body.status === false) {
@@ -45,7 +46,7 @@ export const fetchAdminInvestorUsersList = () => async (dispatch) => {
 export const createAdminInvestorUser = (payload) => async (dispatch) => {
   dispatch(createAdminInvestorUserLoading(true));
   try {
-    const response = await APIService.post(BASE, payload);
+    const response = await APIService.post(DETAIL_BASE, payload);
     const body = response.data;
     dispatch(createAdminInvestorUserLoading(false));
     if (body.status === false) {
@@ -62,7 +63,7 @@ export const createAdminInvestorUser = (payload) => async (dispatch) => {
 export const fetchAdminInvestorUserDetail = (id) => async (dispatch) => {
   dispatch(getAdminInvestorUserDetailLoading(true));
   try {
-    const response = await APIService.get(`${BASE}${id}/`);
+    const response = await APIService.get(`${DETAIL_BASE}${id}/`);
     const body = response.data;
     dispatch(getAdminInvestorUserDetailLoading(false));
     if (body.status === false) {
@@ -83,7 +84,7 @@ export const clearInvestorUserDetail = () => (dispatch) => {
 export const deleteAdminInvestorUser = (id) => async (dispatch) => {
   dispatch(deleteAdminInvestorUserLoading(true));
   try {
-    const response = await APIService.delete(`${BASE}${id}/`);
+    const response = await APIService.delete(`${DETAIL_BASE}${id}/`);
     const body = response.data;
     dispatch(deleteAdminInvestorUserLoading(false));
     if (body.status === false) {
@@ -93,6 +94,23 @@ export const deleteAdminInvestorUser = (id) => async (dispatch) => {
     return { fulfilled: true, message: body.message || "Deactivated", data: body.data };
   } catch (error) {
     dispatch(deleteAdminInvestorUserLoading(false));
+    return { fulfilled: false, message: readErrorMessage(error) };
+  }
+};
+
+export const updateAdminInvestorUser = (id, payload) => async (dispatch) => {
+  dispatch(getAdminInvestorUserDetailLoading(true));
+  try {
+    const response = await APIService.patch(`${DETAIL_BASE}${id}/`, payload);
+    const body = response.data;
+    dispatch(getAdminInvestorUserDetailLoading(false));
+    if (body.status === false) {
+      return { fulfilled: false, message: body.message || "Update failed" };
+    }
+    dispatch(getAdminInvestorUserDetailSuccess(body.data));
+    return { fulfilled: true, message: body.message || "Updated", data: body.data };
+  } catch (error) {
+    dispatch(getAdminInvestorUserDetailLoading(false));
     return { fulfilled: false, message: readErrorMessage(error) };
   }
 };

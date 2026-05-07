@@ -3,6 +3,8 @@ import adminInvestorProjectTypes from "./adminInvestorProject.type";
 const initialState = {
   listLoading: false,
   list: null,
+  performanceLoading: false,
+  performance: null,
   createLoading: false,
   lastCreated: null,
   detailLoading: false,
@@ -17,6 +19,11 @@ const adminInvestorProjectReducer = (state = initialState, action) => {
       return { ...state, listLoading: action.payload };
     case adminInvestorProjectTypes.GET_ADMIN_INVESTOR_PROJECTS_SUCCESS:
       return { ...state, list: action.payload };
+
+    case adminInvestorProjectTypes.GET_ADMIN_PROJECTS_PERFORMANCE_LOADING:
+      return { ...state, performanceLoading: action.payload };
+    case adminInvestorProjectTypes.GET_ADMIN_PROJECTS_PERFORMANCE_SUCCESS:
+      return { ...state, performance: action.payload };
 
     case adminInvestorProjectTypes.CREATE_ADMIN_INVESTOR_PROJECT_LOADING:
       return { ...state, createLoading: action.payload };

@@ -2,16 +2,28 @@
   font-family: 'Montserrat', sans-serif;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+  height: 100%;
+}
+
 .App {
   font-family: 'Montserrat';
   font-style: normal;
   display: flex;
   flex-direction: column;
-  width: 100vw;
-  /* min-height allows content taller than the viewport to grow the page so wheel / trackpad scroll works */
+  /* Avoid 100vw causing horizontal overflow on Windows */
+  width: 100%;
+  /* Make .App the scroll container (body is overflow:hidden) */
+  height: 100vh;
   min-height: 100vh;
-  height: auto;
   overflow-y: auto;
+  overflow-x: hidden;
+  /* Hide scrollbar across browsers (keep scroll behaviour) */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+  scrollbar-width: none; /* Firefox */
   /* overflow-y: hidden; */
   /* overflow-x: hidden;  */
   /* background-color: #5C12A7; */
@@ -19,6 +31,16 @@
 
 .App::-webkit-scrollbar {
   display: none;
+}
+
+/* Prevent the browser window from being the scroller */
+body {
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
 }
 
 .AppHeader {
@@ -230,12 +252,17 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   background-color: #F2F2F8;
   border-radius: 40px;
   width: 100%;
-  /* min-height: 100vh; */
-  min-height: 1173px;
+  /* Occupy remaining row width beside the sidebar and allow shrinking so wide
+     children (e.g. Ant Table + fixed columns) get a bounded width and can
+     show horizontal scroll instead of clipping at the purple edge. */
+  flex: 1 1 0%;
+  min-width: 0;
+  /* let content define height (page scrolls on .App) */
+  min-height: calc(100vh - 70px);
   /* width: 1100px; */
   /* height: 2500px; */
-  overflow-y: hidden;
-  overflow-x: hidden; 
+  overflow-y: visible;
+  overflow-x: hidden;
 }
 
 /* Investor: desktop — let the window / .App handle vertical scroll (don’t trap wheel events) */
@@ -3019,6 +3046,25 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 /* SUPERADMIN: Investors Mgt (mock admin module) */
 .admin-investor-page {
   padding: 18px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Tabs + cards: break min-width:auto chain so tables scroll inside the white panel */
+.admin-investor-tabs-card .ant-card-body,
+.admin-investor-tabs-card .ant-tabs,
+.admin-investor-tabs-card .ant-tabs-content-holder,
+.admin-investor-tabs-card .ant-tabs-content,
+.admin-investor-tabs-card .ant-tabs-tabpane {
+  min-width: 0;
+}
+
+.admin-investor-stack > .admin-investor-panel {
+  min-width: 0;
+}
+
+.admin-investor-stack > .admin-investor-panel .ant-card-body {
+  min-width: 0;
 }
 
 .admin-investor-topbar {

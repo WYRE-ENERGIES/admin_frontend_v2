@@ -9,6 +9,9 @@ const initialState = {
   detail: null,
   deleteLoading: false,
   lastDeleted: null,
+  updateLoading: false,
+  investorSchedulesLoading: false,
+  investorSchedulesList: null,
 };
 
 const adminInvestorPayoutReducer = (state = initialState, action) => {
@@ -34,6 +37,14 @@ const adminInvestorPayoutReducer = (state = initialState, action) => {
       return { ...state, deleteLoading: action.payload };
     case adminInvestorPayoutTypes.DELETE_ADMIN_INVESTOR_PAYOUT_SUCCESS:
       return { ...state, lastDeleted: action.payload };
+
+    case adminInvestorPayoutTypes.UPDATE_ADMIN_INVESTOR_PAYOUT_LOADING:
+      return { ...state, updateLoading: action.payload };
+
+    case adminInvestorPayoutTypes.GET_ADMIN_INVESTOR_PAYMENT_SCHEDULES_LIST_LOADING:
+      return { ...state, investorSchedulesLoading: action.payload };
+    case adminInvestorPayoutTypes.GET_ADMIN_INVESTOR_PAYMENT_SCHEDULES_LIST_SUCCESS:
+      return { ...state, investorSchedulesList: action.payload };
 
     default:
       return state;

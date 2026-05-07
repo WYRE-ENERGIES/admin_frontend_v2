@@ -9,6 +9,9 @@ const initialState = {
   detail: null,
   deleteLoading: false,
   lastDeleted: null,
+  updateLoading: false,
+  customerSchedulesLoading: false,
+  customerSchedules: null,
 };
 
 const adminCustomerPaymentReducer = (state = initialState, action) => {
@@ -34,6 +37,14 @@ const adminCustomerPaymentReducer = (state = initialState, action) => {
       return { ...state, deleteLoading: action.payload };
     case adminCustomerPaymentTypes.DELETE_ADMIN_CUSTOMER_PAYMENT_SUCCESS:
       return { ...state, lastDeleted: action.payload };
+
+    case adminCustomerPaymentTypes.UPDATE_ADMIN_CUSTOMER_PAYMENT_LOADING:
+      return { ...state, updateLoading: action.payload };
+
+    case adminCustomerPaymentTypes.GET_ADMIN_CUSTOMER_PAYMENT_SCHEDULES_LOADING:
+      return { ...state, customerSchedulesLoading: action.payload };
+    case adminCustomerPaymentTypes.GET_ADMIN_CUSTOMER_PAYMENT_SCHEDULES_SUCCESS:
+      return { ...state, customerSchedules: action.payload };
 
     default:
       return state;

@@ -17,6 +17,9 @@ import adminInvestorProjectReducer from "./adminInvestorProject/adminInvestorPro
 import adminInvestorInvestmentReducer from "./adminInvestorInvestment/adminInvestorInvestment.reducer";
 import adminCustomerPaymentReducer from "./adminCustomerPayment/adminCustomerPayment.reducer";
 import adminInvestorPayoutReducer from "./adminInvestorPayout/adminInvestorPayout.reducer";
+import adminInvestorOverviewReducer from "./adminInvestorOverview/adminInvestorOverview.reducer";
+import adminInvestorDirectoryReducer from "./adminInvestorDirectory/adminInvestorDirectory.reducer";
+import adminInvestorSupportTicketReducer from "./adminInvestorSupportTicket/adminInvestorSupportTicket.reducer";
 
 const rootReducers = combineReducers({
     overviewPage: overviewReducers,
@@ -37,6 +40,9 @@ const rootReducers = combineReducers({
     adminInvestorInvestmentsPage: adminInvestorInvestmentReducer,
     adminCustomerPaymentsPage: adminCustomerPaymentReducer,
     adminInvestorPayoutsPage: adminInvestorPayoutReducer,
+    adminInvestorOverviewPage: adminInvestorOverviewReducer,
+    adminInvestorDirectoryPage: adminInvestorDirectoryReducer,
+    adminInvestorSupportTicketsPage: adminInvestorSupportTicketReducer,
 });
 
 export default rootReducers

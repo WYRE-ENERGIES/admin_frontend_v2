@@ -38,6 +38,7 @@ import {
   fetchAdminInvestorUserDetail,
   fetchAdminInvestorUsersList,
   clearInvestorUserDetail,
+  updateAdminInvestorUser,
 } from "../../redux/actions/adminInvestorUser/adminInvestorUser.action";
 import {
   createAdminInvestorProject,
@@ -45,6 +46,7 @@ import {
   fetchAdminInvestorProjectDetail,
   fetchAdminInvestorProjectsList,
   clearInvestorProjectDetail,
+  fetchAdminInvestorProjectsPerformance,
 } from "../../redux/actions/adminInvestorProject/adminInvestorProject.action";
 import {
   createAdminInvestorInvestment,
@@ -58,6 +60,8 @@ import {
   deleteAdminCustomerPayment,
   fetchAdminCustomerPaymentDetail,
   fetchAdminCustomerPaymentsList,
+  fetchAdminCustomerPaymentSchedules,
+  updateAdminCustomerPayment,
   clearCustomerPaymentDetail,
 } from "../../redux/actions/adminCustomerPayment/adminCustomerPayment.action";
 import {
@@ -65,9 +69,19 @@ import {
   deleteAdminInvestorPayout,
   fetchAdminInvestorPayoutDetail,
   fetchAdminInvestorPayoutsList,
+  fetchAdminInvestorPaymentSchedulesList,
+  updateAdminInvestorPayout,
   clearInvestorPayoutDetail,
   fetchInvestorPaymentSchedules,
 } from "../../redux/actions/adminInvestorPayout/adminInvestorPayout.action";
+import { fetchAdminInvestorOverview } from "../../redux/actions/adminInvestorOverview/adminInvestorOverview.action";
+import { fetchAdminFinanceByInvestor } from "../../redux/actions/adminInvestorDirectory/adminInvestorDirectory.action";
+import {
+  fetchAdminSupportTicketsList,
+  fetchAdminSupportTicketDetail,
+  createAdminSupportTicketResponse,
+  clearSupportTicketDetail,
+} from "../../redux/actions/adminInvestorSupportTicket/adminInvestorSupportTicket.action";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -89,12 +103,14 @@ const KYC_TIER_OPTIONS = [
 
 const KYC_STATUS_OPTIONS = [
   { value: "pending", label: "Pending" },
+  { value: "under_review", label: "Under review" },
   { value: "verified", label: "Verified" },
 ];
 
 const kycStatusTagColor = (status) => {
   const s = String(status || "").toLowerCase();
   if (s === "verified") return "green";
+  if (s.includes("review")) return "gold";
   if (s === "pending") return "gold";
   return "default";
 };
@@ -139,11 +155,14 @@ const REPAYMENT_INTEREST_BASIS_OPTIONS = [
 
 const CUSTOMER_PAYMENT_METHOD_OPTIONS = [
   { value: "Transfer", label: "Transfer" },
+  { value: "bank_transfer", label: "Bank transfer" },
   { value: "Cash", label: "Cash" },
   { value: "POS", label: "POS" },
 ];
 
 const ngn = (n) => `₦${Number(n).toLocaleString("en-NG")}`;
+/** Overview tab: show this many rows per highlight table (full lists live on Payments / Projects / Investors). */
+const OVERVIEW_HIGHLIGHT_LIMIT = 5;
 const ngnCompact = (n) => {
   const num = Number(n);
   if (Number.isNaN(num)) return "—";
@@ -199,6 +218,8 @@ function InvestorAdministration() {
   const investorUserDetail = useSelector((s) => s.adminInvestorUsersPage?.detail);
   const detailLoading = useSelector((s) => s.adminInvestorUsersPage?.detailLoading);
   const deleteLoading = useSelector((s) => s.adminInvestorUsersPage?.deleteLoading);
+  const financeByInvestorList = useSelector((s) => s.adminInvestorDirectoryPage?.financeByInvestor);
+  const financeByInvestorLoading = useSelector((s) => s.adminInvestorDirectoryPage?.financeByInvestorLoading);
 
   const adminProjectsList = useSelector((s) => s.adminInvestorProjectsPage?.list);
   const projectsListLoading = useSelector((s) => s.adminInvestorProjectsPage?.listLoading);
@@ -206,6 +227,8 @@ function InvestorAdministration() {
   const projectDetail = useSelector((s) => s.adminInvestorProjectsPage?.detail);
   const projectDetailLoading = useSelector((s) => s.adminInvestorProjectsPage?.detailLoading);
   const projectDeleteLoading = useSelector((s) => s.adminInvestorProjectsPage?.deleteLoading);
+  const projectsPerformance = useSelector((s) => s.adminInvestorProjectsPage?.performance);
+  const projectsPerformanceLoading = useSelector((s) => s.adminInvestorProjectsPage?.performanceLoading);
 
   const adminInvestmentsList = useSelector((s) => s.adminInvestorInvestmentsPage?.list);
   const investmentsListLoading = useSelector((s) => s.adminInvestorInvestmentsPage?.listLoading);
@@ -220,6 +243,9 @@ function InvestorAdministration() {
   const customerPaymentDetail = useSelector((s) => s.adminCustomerPaymentsPage?.detail);
   const customerPaymentDetailLoading = useSelector((s) => s.adminCustomerPaymentsPage?.detailLoading);
   const customerPaymentDeleteLoading = useSelector((s) => s.adminCustomerPaymentsPage?.deleteLoading);
+  const customerPaymentUpdateLoading = useSelector((s) => s.adminCustomerPaymentsPage?.updateLoading);
+  const customerSchedules = useSelector((s) => s.adminCustomerPaymentsPage?.customerSchedules);
+  const customerSchedulesLoading = useSelector((s) => s.adminCustomerPaymentsPage?.customerSchedulesLoading);
 
   const adminInvestorPayoutsList = useSelector((s) => s.adminInvestorPayoutsPage?.list);
   const payoutsListLoading = useSelector((s) => s.adminInvestorPayoutsPage?.listLoading);
@@ -227,10 +253,27 @@ function InvestorAdministration() {
   const payoutDetail = useSelector((s) => s.adminInvestorPayoutsPage?.detail);
   const payoutDetailLoading = useSelector((s) => s.adminInvestorPayoutsPage?.detailLoading);
   const payoutDeleteLoading = useSelector((s) => s.adminInvestorPayoutsPage?.deleteLoading);
+  const payoutUpdateLoading = useSelector((s) => s.adminInvestorPayoutsPage?.updateLoading);
+  const investorSchedulesList = useSelector((s) => s.adminInvestorPayoutsPage?.investorSchedulesList);
+  const investorSchedulesLoading = useSelector((s) => s.adminInvestorPayoutsPage?.investorSchedulesLoading);
+
+  const overviewTotalInvested = useSelector((s) => s.adminInvestorOverviewPage?.totalInvested);
+  const overviewCustomersExpected = useSelector((s) => s.adminInvestorOverviewPage?.customersExpected);
+  const overviewActiveProjects = useSelector((s) => s.adminInvestorOverviewPage?.activeProjects);
+  const overviewActiveInvestors = useSelector((s) => s.adminInvestorOverviewPage?.activeInvestors);
+  const overviewNearestPayments = useSelector((s) => s.adminInvestorOverviewPage?.nearestPayments);
+  const overviewLoading = useSelector((s) => s.adminInvestorOverviewPage?.loading);
+
+  const supportTicketsList = useSelector((s) => s.adminInvestorSupportTicketsPage?.list);
+  const supportTicketsListLoading = useSelector((s) => s.adminInvestorSupportTicketsPage?.listLoading);
+  const supportTicketDetail = useSelector((s) => s.adminInvestorSupportTicketsPage?.detail);
+  const supportTicketDetailLoading = useSelector((s) => s.adminInvestorSupportTicketsPage?.detailLoading);
+  const supportTicketResponseLoading = useSelector((s) => s.adminInvestorSupportTicketsPage?.createResponseLoading);
 
   const [perfMode, setPerfMode] = useState("Top");
   const [activeModal, setActiveModal] = useState(MODAL.NONE);
   const [investorDetailOpen, setInvestorDetailOpen] = useState(false);
+  const [investorEditOpen, setInvestorEditOpen] = useState(false);
   const [projectDetailOpen, setProjectDetailOpen] = useState(false);
   const [investmentDetailOpen, setInvestmentDetailOpen] = useState(false);
   const [customerPaymentDetailOpen, setCustomerPaymentDetailOpen] = useState(false);
@@ -248,40 +291,23 @@ function InvestorAdministration() {
   const [activeTicketId, setActiveTicketId] = useState(null);
   const [ticketResponseDraft, setTicketResponseDraft] = useState("");
   const [activeTicketMeta, setActiveTicketMeta] = useState(null);
-  const [ticketResponses, setTicketResponses] = useState(() => {
-    try {
-      const raw = sessionStorage.getItem("wyre_admin_investor_ticket_responses_v1");
-      const parsed = raw ? JSON.parse(raw) : {};
-      // Back-compat: earlier versions stored { [id]: { text } }. Normalize to { [id]: [{...}] }.
-      const normalized = {};
-      Object.entries(parsed || {}).forEach(([k, v]) => {
-        if (Array.isArray(v)) normalized[k] = v;
-        else if (v && typeof v === "object" && typeof v.text === "string") {
-          normalized[k] = [
-            {
-              id: `${k}-seed`,
-              at: v.updatedAt || new Date().toISOString(),
-              by: "admin@wyreenergy.com",
-              text: v.text,
-            },
-          ];
-        } else normalized[k] = [];
-      });
-      return normalized;
-    } catch {
-      return {};
-    }
-  });
-  const [ticketStatuses, setTicketStatuses] = useState(() => ({}));
+  /** Staff responses posted this session (API returns each POST result; list refreshes for `responded`). */
+  const [ticketPostResponses, setTicketPostResponses] = useState({});
   const [customerRepaymentOpen, setCustomerRepaymentOpen] = useState(false);
   const [investorPaymentOpen, setInvestorPaymentOpen] = useState(false);
   const [activePaymentMeta, setActivePaymentMeta] = useState(null);
   const [investorForm] = Form.useForm();
+  const [investorEditForm] = Form.useForm();
   const [projectForm] = Form.useForm();
   const [investmentForm] = Form.useForm();
   const [recordPaymentForm] = Form.useForm();
   const [payoutForm] = Form.useForm();
+  const [customerPaymentEditForm] = Form.useForm();
+  const [payoutEditForm] = Form.useForm();
+  const [customerPaymentEditing, setCustomerPaymentEditing] = useState(false);
+  const [payoutEditing, setPayoutEditing] = useState(false);
   const recordPaymentEntryMode = Form.useWatch("entryMode", recordPaymentForm) ?? "single";
+  const recordPaymentProjectId = Form.useWatch("project_id", recordPaymentForm);
   const payoutInvestmentId = Form.useWatch("investment_id", payoutForm);
   const createInvestmentProjectId = Form.useWatch("project_id", investmentForm);
   const createProjectTotalCost = Form.useWatch("totalProjectCost", projectForm);
@@ -311,52 +337,76 @@ function InvestorAdministration() {
     if (isSuperAdmin) dispatch(fetchAdminInvestorPayoutsList());
   }, [dispatch, isSuperAdmin]);
 
+  const refreshPaymentSchedules = useCallback(() => {
+    if (!isSuperAdmin) return undefined;
+    return Promise.all([
+      dispatch(fetchAdminCustomerPaymentSchedules({ page: 1, page_size: 100 })),
+      dispatch(fetchAdminInvestorPaymentSchedulesList({ page: 1, page_size: 100 })),
+    ]);
+  }, [dispatch, isSuperAdmin]);
+
   useEffect(() => {
     refreshInvestorUsers();
     refreshAdminProjects();
     refreshAdminInvestments();
-  }, [refreshInvestorUsers, refreshAdminProjects, refreshAdminInvestments]);
+    refreshCustomerPayments();
+    refreshInvestorPayouts();
+  }, [refreshInvestorUsers, refreshAdminProjects, refreshAdminInvestments, refreshCustomerPayments, refreshInvestorPayouts]);
 
-  // Note: Payments + Tickets tabs are mock-only for now.
-  // Backend team is updating endpoints; we'll map real endpoints later.
+  useEffect(() => {
+    if (!isSuperAdmin) return undefined;
+    let cancelled = false;
+    (async () => {
+      const results = await refreshPaymentSchedules();
+      if (cancelled || !results) return;
+      const [r1, r2] = results;
+      if (r1 && !r1.fulfilled) message.error(r1.message || "Could not load customer payment schedules");
+      if (r2 && !r2.fulfilled) message.error(r2.message || "Could not load investor payment schedules");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isSuperAdmin, refreshPaymentSchedules]);
 
-  const mockCustomerPaymentsReceived = useMemo(
-    () => [
-      { key: "mcp-1", when: "07 May 2026", branch: "Eko", event: "Customer installment", amount: "₦4.08B", status: "Paid" },
-      { key: "mcp-2", when: "06 May 2026", branch: "Eko", event: "Customer installment", amount: "₦1.20B", status: "Paid" },
-      { key: "mcp-3", when: "15 Mar 2026", branch: "Maid", event: "Overdue fine", amount: "₦1.72B", status: "Missed" },
-      { key: "mcp-4", when: "In 3 days", branch: "Ib", event: "Due soon", amount: "₦1.02B", status: "Pending" },
-      { key: "mcp-5", when: "05 May 2026", branch: "Enu", event: "Customer installment", amount: "₦0.89B", status: "Paid" },
-      { key: "mcp-6", when: "Yesterday", branch: "Eko", event: "Underpaid", amount: "₦0.65B", status: "Partial" },
-      { key: "mcp-7", when: "12 Apr 2026", branch: "Ph", event: "Overdue fine", amount: "₦0.73B", status: "Missed" },
-      { key: "mcp-8", when: "01 May 2026", branch: "Abj", event: "Due", amount: "₦0.98B", status: "Pending" },
-    ],
-    []
-  );
+  useEffect(() => {
+    if (!isSuperAdmin) return undefined;
+    let cancelled = false;
+    (async () => {
+      const rank_by = perfMode === "Bottom" ? "average_daily_generation_kwh" : "average_daily_generation_kwh";
+      const res = await dispatch(fetchAdminInvestorProjectsPerformance({ rank_by }));
+      if (cancelled) return;
+      if (!res.fulfilled) message.error(res.message || "Could not load project performance");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch, isSuperAdmin, perfMode]);
 
-  const mockInvestorRepaymentsReceived = useMemo(
-    () => [
-      { key: "mir-1", when: "07 May 2026", investor: "INV-10042", investment: "#IT-062", amount: "₦0.11B", status: "Paid" },
-      { key: "mir-2", when: "06 May 2026", investor: "INV-10088", investment: "#IT-088", amount: "₦0.32B", status: "Paid" },
-      { key: "mir-3", when: "15 Mar 2026", investor: "INV-10102", investment: "#IT-091", amount: "₦0.29B", status: "Missed" },
-      { key: "mir-4", when: "05 May 2026", investor: "INV-10088", investment: "#IT-088", amount: "₦0.13B", status: "Scheduled" },
-      { key: "mir-5", when: "01 May 2026", investor: "INV-10042", investment: "#IT-094", amount: "₦0.26B", status: "Paid" },
-      { key: "mir-6", when: "12 Apr 2026", investor: "INV-10102", investment: "#IT-091", amount: "₦0.14B", status: "Missed" },
-    ],
-    []
-  );
+  useEffect(() => {
+    if (!isSuperAdmin) return undefined;
+    let cancelled = false;
+    (async () => {
+      const res = await dispatch(fetchAdminInvestorOverview());
+      if (cancelled) return;
+      if (!res.fulfilled) message.error(res.message || "Could not load investor overview");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch, isSuperAdmin]);
 
-  const filteredMockCustomerPaymentsReceived = useMemo(() => {
-    const q = String(customerPaymentSearch || "").trim().toLowerCase();
-    if (!q) return mockCustomerPaymentsReceived;
-    return mockCustomerPaymentsReceived.filter((r) => Object.values(r).some((v) => String(v || "").toLowerCase().includes(q)));
-  }, [customerPaymentSearch, mockCustomerPaymentsReceived]);
-
-  const filteredMockInvestorRepaymentsReceived = useMemo(() => {
-    const q = String(payoutSearch || "").trim().toLowerCase();
-    if (!q) return mockInvestorRepaymentsReceived;
-    return mockInvestorRepaymentsReceived.filter((r) => Object.values(r).some((v) => String(v || "").toLowerCase().includes(q)));
-  }, [payoutSearch, mockInvestorRepaymentsReceived]);
+  useEffect(() => {
+    if (!isSuperAdmin) return undefined;
+    let cancelled = false;
+    (async () => {
+      const res = await dispatch(fetchAdminFinanceByInvestor());
+      if (cancelled) return;
+      if (!res.fulfilled) message.error(res.message || "Could not load finance by investor");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch, isSuperAdmin]);
 
   useEffect(() => {
     if (activeModal !== MODAL.POST_PAYOUT || payoutInvestmentId == null || payoutInvestmentId === "") {
@@ -382,22 +432,20 @@ function InvestorAdministration() {
     };
   }, [activeModal, payoutInvestmentId, dispatch]);
 
-  useEffect(() => {
-    try {
-      sessionStorage.setItem("wyre_admin_investor_ticket_responses_v1", JSON.stringify(ticketResponses));
-    } catch {
-      // best-effort only
-    }
-  }, [ticketResponses]);
-
   const openTicketResponse = useCallback(
-    (ticketId, meta) => {
-      setActiveTicketId(ticketId);
+    async (ticketId, meta) => {
+      const idStr = String(ticketId);
+      setActiveTicketId(idStr);
       setActiveTicketMeta(meta || null);
       setTicketResponseDraft("");
+      dispatch(clearSupportTicketDetail());
       setTicketResponseOpen(true);
+      const res = await dispatch(fetchAdminSupportTicketDetail(ticketId));
+      if (!res.fulfilled) {
+        message.error(res.message || "Could not load ticket details");
+      }
     },
-    []
+    [dispatch]
   );
 
   const closeTicketResponse = useCallback(() => {
@@ -405,29 +453,55 @@ function InvestorAdministration() {
     setActiveTicketId(null);
     setActiveTicketMeta(null);
     setTicketResponseDraft("");
-  }, []);
+    dispatch(clearSupportTicketDetail());
+  }, [dispatch]);
 
-  const saveTicketResponse = useCallback(() => {
+  const saveTicketResponse = useCallback(async () => {
     if (!activeTicketId) return;
     const trimmed = String(ticketResponseDraft || "").trim();
     if (!trimmed) return;
-    setTicketResponses((prev) => {
-      const existing = Array.isArray(prev?.[activeTicketId]) ? prev[activeTicketId] : [];
-      return {
-        ...(prev || {}),
-        [activeTicketId]: [
-          ...existing,
-          {
-            id: `${activeTicketId}-${Date.now()}`,
-            at: new Date().toISOString(),
-            by: "admin@wyreenergy.com",
-            text: trimmed,
-          },
-        ],
-      };
-    });
-    setTicketResponseOpen(false);
-  }, [activeTicketId, ticketResponseDraft]);
+    const res = await dispatch(createAdminSupportTicketResponse(Number(activeTicketId), { body: trimmed }));
+    if (res.fulfilled) {
+      message.success(res.message || "Created");
+      const result = res.data?.result;
+      if (result) {
+        setTicketPostResponses((prev) => {
+          const key = String(activeTicketId);
+          const existing = prev[key] || [];
+          return {
+            ...prev,
+            [key]: [
+              ...existing,
+              {
+                id: String(result.id),
+                text: result.body,
+                by: result.author_display,
+                at: result.created_at_display || result.created_at,
+              },
+            ],
+          };
+        });
+      }
+      await dispatch(fetchAdminSupportTicketsList({ page: 1, page_size: 50 }));
+      setTicketResponseOpen(false);
+      setTicketResponseDraft("");
+    } else {
+      message.error(res.message || "Failed to post response");
+    }
+  }, [activeTicketId, dispatch, ticketResponseDraft]);
+
+  useEffect(() => {
+    if (!isSuperAdmin) return undefined;
+    let cancelled = false;
+    (async () => {
+      const res = await dispatch(fetchAdminSupportTicketsList({ page: 1, page_size: 50 }));
+      if (cancelled) return;
+      if (!res.fulfilled) message.error(res.message || "Could not load support tickets");
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [dispatch, isSuperAdmin]);
 
   const copyToClipboard = useCallback(async (value) => {
     try {
@@ -438,27 +512,59 @@ function InvestorAdministration() {
     }
   }, []);
 
-  const openCustomerRepayment = useCallback(() => {
-    setActivePaymentMeta({
-      type: "customer",
-      title: "Access Ayobo 2 — customer repayment",
-      subtitle: "Access Ayobo 2  •  Branch 2104  •  Northwind Energy LP",
-      ref: "CRP-2198",
-      cadence: "36 × monthly",
-      actionLabel: "Record customer payment",
-    });
+  const openCustomerRepayment = useCallback((row) => {
+    if (row && typeof row === "object" && row.projectName != null) {
+      const branchPart = row.branchId != null && row.branchId !== "" ? `Branch ${row.branchId}` : null;
+      const schedPart = row.scheduleId != null ? `Schedule line #${row.scheduleId}` : null;
+      const progress =
+        row.paymentScoreLabel != null
+          ? `Progress: ${row.paymentScoreLabel}${row.paymentScorePercent != null ? ` (${row.paymentScorePercent}%)` : ""}`
+          : null;
+      setActivePaymentMeta({
+        type: "customer",
+        title: `${row.projectName} — customer repayment`,
+        subtitle: [row.projectName, branchPart, schedPart].filter(Boolean).join("  •  "),
+        ref: row.reference || (row.id != null ? `Payment #${row.id}` : "—"),
+        cadence: progress || "—",
+        actionLabel: "Record customer payment",
+        customerScheduleLineId: row.scheduleId ?? row.customerScheduleLineId,
+      });
+    } else {
+      setActivePaymentMeta({
+        type: "customer",
+        title: "Customer repayment schedule",
+        subtitle: "Select a payment row to anchor the plan",
+        ref: "—",
+        cadence: "—",
+        actionLabel: "Record customer payment",
+        customerScheduleLineId: undefined,
+      });
+    }
     setCustomerRepaymentOpen(true);
   }, []);
 
-  const openInvestorPayment = useCallback(() => {
-    setActivePaymentMeta({
-      type: "investor",
-      title: "Lekki Coldroom PV + Battery — investor payment",
-      subtitle: "Lekki Coldroom PV + Battery  •  Branch 3188  •  Atlantic Renewables",
-      ref: "RP-9012",
-      cadence: null,
-      actionLabel: "Post investor payout",
-    });
+  const openInvestorPayment = useCallback((row) => {
+    if (row && typeof row === "object" && row.investmentId != null) {
+      setActivePaymentMeta({
+        type: "investor",
+        title: `${row.projectName || "Project"} — investor repayment`,
+        subtitle: [row.projectName, row.investorName ? `Investor: ${row.investorName}` : null].filter(Boolean).join("  •  "),
+        ref: row.reference || `Investment #${row.investmentId}`,
+        cadence: row.repaymentScoreLabel || null,
+        actionLabel: "Post investor payout",
+        investmentId: row.investmentId,
+      });
+    } else {
+      setActivePaymentMeta({
+        type: "investor",
+        title: "Investor repayment schedule",
+        subtitle: "Select a payout or upcoming line with an investment",
+        ref: "—",
+        cadence: null,
+        actionLabel: "Post investor payout",
+        investmentId: undefined,
+      });
+    }
     setInvestorPaymentOpen(true);
   }, []);
 
@@ -534,6 +640,57 @@ function InvestorAdministration() {
     setInvestorDetailOpen(false);
     dispatch(clearInvestorUserDetail());
   };
+
+  const openInvestorEdit = useCallback(() => {
+    if (!investorUserDetail) return;
+    investorEditForm.setFieldsValue({
+      legal_name: investorUserDetail.legal_name,
+      kyc_tier: investorUserDetail.kyc_tier,
+      kyc_status: investorUserDetail.kyc_status,
+      phone: investorUserDetail.phone,
+      is_active: investorUserDetail.is_active,
+      user_email: investorUserDetail.user?.email,
+      user_first_name: investorUserDetail.user?.first_name,
+      user_last_name: investorUserDetail.user?.last_name,
+      user_is_active: investorUserDetail.user?.is_active,
+    });
+    setInvestorEditOpen(true);
+  }, [investorEditForm, investorUserDetail]);
+
+  const closeInvestorEdit = useCallback(() => {
+    setInvestorEditOpen(false);
+    investorEditForm.resetFields();
+  }, [investorEditForm]);
+
+  const submitInvestorEdit = useCallback(async () => {
+    if (!investorUserDetail?.id) return;
+    try {
+      const values = await investorEditForm.validateFields();
+      const payload = {
+        legal_name: values.legal_name?.trim() || "",
+        kyc_tier: values.kyc_tier,
+        kyc_status: values.kyc_status,
+        phone: values.phone?.trim() || "",
+        is_active: Boolean(values.is_active),
+        user: {
+          email: values.user_email?.trim() || "",
+          first_name: values.user_first_name?.trim() || "",
+          last_name: values.user_last_name?.trim() || "",
+          is_active: Boolean(values.user_is_active),
+        },
+      };
+      const res = await dispatch(updateAdminInvestorUser(investorUserDetail.id, payload));
+      if (res.fulfilled) {
+        message.success(res.message || "Updated");
+        closeInvestorEdit();
+        refreshInvestorUsers();
+      } else {
+        message.error(res.message || "Update failed");
+      }
+    } catch {
+      /* validation */
+    }
+  }, [closeInvestorEdit, dispatch, investorEditForm, investorUserDetail, refreshInvestorUsers]);
 
   const handleDeactivateProject = useCallback(
     (record) => {
@@ -630,6 +787,7 @@ function InvestorAdministration() {
           if (res.fulfilled) {
             message.success(res.message || "Deactivated");
             refreshCustomerPayments();
+            void refreshPaymentSchedules();
           } else {
             message.error(res.message || "Request failed");
             throw new Error(res.message);
@@ -637,11 +795,13 @@ function InvestorAdministration() {
         },
       });
     },
-    [dispatch, customerPaymentDeleteLoading, refreshCustomerPayments]
+    [dispatch, customerPaymentDeleteLoading, refreshCustomerPayments, refreshPaymentSchedules]
   );
 
   const handleViewCustomerPayment = useCallback(
     async (id) => {
+      setCustomerPaymentEditing(false);
+      customerPaymentEditForm.resetFields();
       setCustomerPaymentDetailOpen(true);
       dispatch(clearCustomerPaymentDetail());
       const res = await dispatch(fetchAdminCustomerPaymentDetail(id));
@@ -650,11 +810,13 @@ function InvestorAdministration() {
         setCustomerPaymentDetailOpen(false);
       }
     },
-    [dispatch]
+    [customerPaymentEditForm, dispatch]
   );
 
   const closeCustomerPaymentDetail = () => {
     setCustomerPaymentDetailOpen(false);
+    setCustomerPaymentEditing(false);
+    customerPaymentEditForm.resetFields();
     dispatch(clearCustomerPaymentDetail());
   };
 
@@ -686,6 +848,7 @@ function InvestorAdministration() {
       }
 
       const values = recordPaymentForm.getFieldsValue(true);
+      const selectedScheduleIds = Array.isArray(values.customer_schedule_ids) ? values.customer_schedule_ids : [];
       const branch_id = parseBranch(values.branch_id);
       if (values.branch_id != null && String(values.branch_id).trim() !== "" && branch_id === null) {
         message.error("Branch ID must be numeric or empty");
@@ -730,7 +893,11 @@ function InvestorAdministration() {
           })
           .filter(Boolean);
         if (!line_items.length) {
-          message.error("Add at least one line with schedule ID, amount, and payment date");
+          message.error(
+            selectedScheduleIds.length
+              ? "Fill amount and payment date for the selected schedule lines"
+              : "Add at least one line with schedule ID, amount, and payment date"
+          );
           return;
         }
         payload = {
@@ -749,6 +916,7 @@ function InvestorAdministration() {
         closeModal();
         recordPaymentForm.resetFields();
         refreshCustomerPayments();
+        void refreshPaymentSchedules();
       } else {
         message.error(res.message || "Create failed");
       }
@@ -770,6 +938,7 @@ function InvestorAdministration() {
           if (res.fulfilled) {
             message.success(res.message || "Deactivated");
             refreshInvestorPayouts();
+            void refreshPaymentSchedules();
           } else {
             message.error(res.message || "Request failed");
             throw new Error(res.message);
@@ -782,6 +951,8 @@ function InvestorAdministration() {
 
   const handleViewPayout = useCallback(
     async (id) => {
+      setPayoutEditing(false);
+      payoutEditForm.resetFields();
       setPayoutDetailOpen(true);
       dispatch(clearInvestorPayoutDetail());
       const res = await dispatch(fetchAdminInvestorPayoutDetail(id));
@@ -790,18 +961,70 @@ function InvestorAdministration() {
         setPayoutDetailOpen(false);
       }
     },
-    [dispatch]
+    [dispatch, payoutEditForm]
   );
 
   const closePayoutDetail = () => {
     setPayoutDetailOpen(false);
+    setPayoutEditing(false);
+    payoutEditForm.resetFields();
     dispatch(clearInvestorPayoutDetail());
   };
+
+  const submitCustomerPaymentEdit = useCallback(async () => {
+    if (!customerPaymentDetail?.id) return;
+    try {
+      const values = await customerPaymentEditForm.validateFields();
+      const payload = {
+        amount_received: String(Number(values.amount_received)),
+        payment_date: dayjs(values.payment_date).format("YYYY-MM-DD"),
+        payment_method: values.payment_method,
+        reference: values.reference?.trim() || "",
+        notes: values.notes?.trim() || "",
+      };
+      const res = await dispatch(updateAdminCustomerPayment(customerPaymentDetail.id, payload));
+      if (res.fulfilled) {
+        message.success(res.message || "Updated");
+        setCustomerPaymentEditing(false);
+        refreshCustomerPayments();
+        void refreshPaymentSchedules();
+      } else {
+        message.error(res.message || "Update failed");
+      }
+    } catch {
+      /* validation */
+    }
+  }, [customerPaymentDetail, customerPaymentEditForm, dispatch, refreshCustomerPayments, refreshPaymentSchedules]);
+
+  const submitPayoutEdit = useCallback(async () => {
+    if (!payoutDetail?.id) return;
+    try {
+      const values = await payoutEditForm.validateFields();
+      const payload = {
+        amount_paid: String(Number(values.amount_paid)),
+        paid_date: dayjs(values.paid_date).format("YYYY-MM-DD"),
+        payment_method: values.payment_method,
+        reference: values.reference?.trim() || "",
+      };
+      const res = await dispatch(updateAdminInvestorPayout(payoutDetail.id, payload));
+      if (res.fulfilled) {
+        message.success(res.message || "Updated");
+        setPayoutEditing(false);
+        refreshInvestorPayouts();
+        void refreshPaymentSchedules();
+      } else {
+        message.error(res.message || "Update failed");
+      }
+    } catch {
+      /* validation */
+    }
+  }, [dispatch, payoutDetail, payoutEditForm, refreshInvestorPayouts, refreshPaymentSchedules]);
 
   const submitPostPayout = async () => {
     try {
       await payoutForm.validateFields(["investment_id", "payment_method", "reference"]);
       const values = payoutForm.getFieldsValue(true);
+      const selectedScheduleIds = Array.isArray(values.schedule_ids) ? values.schedule_ids : [];
       const rawLines = values.line_items || [];
       const line_items = rawLines
         .map((li) => {
@@ -817,7 +1040,11 @@ function InvestorAdministration() {
         })
         .filter(Boolean);
       if (!line_items.length) {
-        message.error("Add at least one line with schedule ID, amount paid, and paid date");
+        message.error(
+          selectedScheduleIds.length
+            ? "Fill amount and paid date for the selected schedule lines"
+            : "Add at least one line with schedule ID, amount paid, and paid date"
+        );
         return;
       }
       const payload = {
@@ -833,6 +1060,7 @@ function InvestorAdministration() {
         payoutForm.resetFields();
         setPayoutSchedules([]);
         refreshInvestorPayouts();
+        void refreshPaymentSchedules();
       } else {
         message.error(res.message || "Create failed");
       }
@@ -991,51 +1219,105 @@ function InvestorAdministration() {
     }
   };
 
-  const metrics = useMemo(
-    () => [
+  const metrics = useMemo(() => {
+    const dash = () => (overviewLoading ? "…" : "—");
+    const ti = overviewTotalInvested;
+    const ce = overviewCustomersExpected;
+    const ap = overviewActiveProjects;
+    const ai = overviewActiveInvestors;
+    const np = overviewNearestPayments;
+
+    const totalInvestedVal =
+      ti?.total_invested != null && ti.total_invested !== "" ? ngnCompact(Number(ti.total_invested)) : dash();
+    const totalRepaidSub =
+      ti?.total_repaid_to_investors != null && ti.total_repaid_to_investors !== ""
+        ? `Total repaid: ${ngnCompact(Number(ti.total_repaid_to_investors))}`
+        : undefined;
+
+    const expectedVal =
+      ce?.expected != null && ce.expected !== "" ? ngnCompact(Number(ce.expected)) : dash();
+    const expectedSub =
+      ce?.paid != null && ce.left != null && ce.paid !== "" && ce.left !== ""
+        ? `Paid: ${ngnCompact(Number(ce.paid))} · Left: ${ngnCompact(Number(ce.left))}`
+        : undefined;
+
+    const projectsVal =
+      ap?.count != null && ap.count !== "" ? String(ap.count) : dash();
+    const projectsSub =
+      ap?.financed_count != null && ap?.open_for_investment_count != null
+        ? `Financed: ${ap.financed_count} · Open: ${ap.open_for_investment_count}`
+        : undefined;
+
+    const investorsVal =
+      ai?.count != null && ai.count !== "" ? String(ai.count) : dash();
+    const investorsSub =
+      ai?.verified_count != null && ai?.under_review_count != null
+        ? `Verified: ${ai.verified_count} · Under review: ${ai.under_review_count}`
+        : undefined;
+
+    const nearestHeadline =
+      np?.headline_relative_label || np?.to_investor?.relative_label || dash();
+    const toInv = np?.to_investor;
+    const fromCust = np?.from_customer;
+    const nearestSub =
+      toInv?.amount != null && fromCust?.amount != null
+        ? `To investor: ${ngnCompact(Number(toInv.amount))}${
+            toInv.relative_label ? ` (${toInv.relative_label})` : ""
+          } · From customer: ${ngnCompact(Number(fromCust.amount))}${
+            fromCust.relative_label ? ` (${fromCust.relative_label})` : ""
+          }`
+        : undefined;
+
+    return [
       {
         key: "a",
         icon: <DollarOutlined />,
         label: "Total invested (investors)",
-        value: ngnCompact(127_400_000_000),
-        sub: `Total repaid: ${ngnCompact(36_800_000_000)}`,
+        value: totalInvestedVal,
+        sub: totalRepaidSub,
         variant: "purple",
       },
       {
         key: "b",
         icon: <FundOutlined />,
         label: "Customers expected (all-in)",
-        value: ngnCompact(152_900_000_000),
-        sub: `Paid: ${ngnCompact(64_100_000_000)} · Left: ${ngnCompact(88_800_000_000)}`,
+        value: expectedVal,
+        sub: expectedSub,
         variant: "blue",
       },
       {
         key: "c",
         icon: <ProjectOutlined />,
         label: "Active projects",
-        value: "18",
-        sub: "Financed: 14 · Open: 4",
+        value: projectsVal,
+        sub: projectsSub,
         variant: "teal",
       },
       {
         key: "d",
         icon: <UserAddOutlined />,
         label: "Active investors",
-        value: "9",
-        sub: "Verified: 7 · Under review: 2",
+        value: investorsVal,
+        sub: investorsSub,
         variant: "mint",
       },
       {
         key: "e",
         icon: <ThunderboltOutlined />,
         label: "Nearest payments",
-        value: "Today",
-        sub: "To investor: ₦0.31B (28 Apr) · From customer: ₦2.10B (28 Apr)",
+        value: nearestHeadline,
+        sub: nearestSub,
         variant: "amber",
       },
-    ],
-    []
-  );
+    ];
+  }, [
+    overviewLoading,
+    overviewTotalInvested,
+    overviewCustomersExpected,
+    overviewActiveProjects,
+    overviewActiveInvestors,
+    overviewNearestPayments,
+  ]);
 
   const customerRepaymentColumns = useMemo(
     () => [
@@ -1083,20 +1365,23 @@ function InvestorAdministration() {
     []
   );
 
-  const customerRepaymentRows = useMemo(
-    () => [
-      { key: "r1", branch: "2104", status: "Paid", event: "Customer installment", amount: "₦2.40B", when: "Today", next: "30 Apr" },
-      { key: "r2", branch: "2230", status: "Paid", event: "Customer installment", amount: "₦1.20B", when: "Yesterday", next: "05 May" },
-      { key: "r3", branch: "2841", status: "Missed", event: "Overdue line", amount: "₦1.72B", when: "15 Mar", next: "Past due" },
-      { key: "r4", branch: "1988", status: "Pending", event: "Due soon", amount: "₦1.02B", when: "In 3 days", next: "01 May" },
-      { key: "r5", branch: "9001", status: "Partial", event: "Underpaid", amount: "₦0.61B", when: "2 days ago", next: "09 May" },
-      { key: "r6", branch: "2170", status: "Pending", event: "Due soon", amount: "₦0.88B", when: "In 1 week", next: "07 May" },
-      { key: "r7", branch: "2281", status: "Paid", event: "Customer installment", amount: "₦1.11B", when: "4 days ago", next: "12 May" },
-      { key: "r8", branch: "2401", status: "Partial", event: "Underpaid", amount: "₦0.73B", when: "Yesterday", next: "14 May" },
-      { key: "r9", branch: "3102", status: "Missed", event: "Overdue line", amount: "₦0.94B", when: "12 Apr", next: "Past due" },
-    ],
-    []
-  );
+  const overviewCustomerRepaymentRows = useMemo(() => {
+    const results = adminCustomerPaymentsList?.results || [];
+    return results.slice(0, OVERVIEW_HIGHLIGHT_LIMIT).map((r) => {
+      const st = String(r.line_status || "").toLowerCase();
+      const status =
+        st === "paid" ? "Paid" : st.includes("partial") ? "Partial" : st.includes("miss") ? "Missed" : "Pending";
+      return {
+        key: String(r.id),
+        branch: r.branch_id != null && r.branch_id !== "" ? String(r.branch_id) : "—",
+        status,
+        event: r.project_name || "Customer payment",
+        amount: ngnCompact(Number(r.amount_received)),
+        when: r.payment_date ? dayjs(r.payment_date).format("DD MMM YYYY") : "—",
+        next: r.payment_score?.label ?? "—",
+      };
+    });
+  }, [adminCustomerPaymentsList]);
 
   const disbursementColumns = useMemo(
     () => [
@@ -1109,34 +1394,32 @@ function InvestorAdministration() {
         dataIndex: "status",
         key: "status",
         width: 120,
-        render: (v) => (
-          <Tag
-            color={
-              v === "Pending" ? "gold" : v === "Scheduled" ? "green" : v === "Missed" ? "red" : "default"
-            }
-            className="admin-investor-pill"
-          >
-            {v}
-          </Tag>
-        ),
+        render: (v) => {
+          const s = String(v || "").toLowerCase();
+          const color = s.includes("miss") ? "red" : s.includes("pending") ? "gold" : s.includes("sched") ? "green" : "default";
+          return (
+            <Tag color={color} className="admin-investor-pill">
+              {v}
+            </Tag>
+          );
+        },
       },
     ],
     []
   );
 
-  const disbursementRows = useMemo(
-    () => [
-      { key: "d1", due: "28 Apr", investor: "INV-10042", investment: "#1042", amount: "₦0.31B", status: "Pending" },
-      { key: "d2", due: "30 Apr", investor: "INV-10088", investment: "#1088", amount: "₦0.35B", status: "Pending" },
-      { key: "d3", due: "05 May", investor: "INV-10042", investment: "#1091", amount: "₦0.29B", status: "Scheduled" },
-      { key: "d4", due: "15 Mar", investor: "INV-10088", investment: "#1088", amount: "₦0.33B", status: "Missed" },
-      { key: "d5", due: "01 Mar", investor: "INV-10102", investment: "#1102", amount: "₦0.18B", status: "Missed" },
-      { key: "d6", due: "09 May", investor: "INV-10042", investment: "#1094", amount: "₦0.26B", status: "Scheduled" },
-      { key: "d7", due: "12 May", investor: "INV-10088", investment: "#1090", amount: "₦0.22B", status: "Pending" },
-      { key: "d8", due: "18 May", investor: "INV-10102", investment: "#1102", amount: "₦0.14B", status: "Pending" },
-    ],
-    []
-  );
+  const overviewDisbursementRows = useMemo(() => {
+    const results = investorSchedulesList?.results || [];
+    const sorted = [...results].sort((a, b) => dayjs(a.due_date).valueOf() - dayjs(b.due_date).valueOf());
+    return sorted.slice(0, OVERVIEW_HIGHLIGHT_LIMIT).map((r) => ({
+      key: String(r.id),
+      due: r.due_date ? dayjs(r.due_date).format("DD MMM YYYY") : "—",
+      investor: r.investor_name || "—",
+      investment: `#${r.investment_id}`,
+      amount: ngnCompact(Number(r.amount_due_investor_share ?? r.amount_due_total)),
+      status: r.status ? String(r.status).replace(/^\w/, (c) => c.toUpperCase()) : "—",
+    }));
+  }, [investorSchedulesList]);
 
   const perfColumns = useMemo(
     () => [
@@ -1152,7 +1435,7 @@ function InvestorAdministration() {
         width: 100,
         render: (v) => (
           <Tag
-            color={v === "Active" ? "green" : v === "Watch" ? "gold" : "default"}
+            color={String(v).toLowerCase() === "active" ? "green" : String(v).toLowerCase().includes("watch") ? "gold" : "default"}
             className="admin-investor-pill"
           >
             {v}
@@ -1164,17 +1447,33 @@ function InvestorAdministration() {
   );
 
   const perfRows = useMemo(
-    () => [
-      { key: "p1", project: "Access Ayobo 2", capacityKwp: "85.5000", totalGenKwh: "418,200", avgDailyKwh: "11,450", solarPct: "41%", status: "Active" },
-      { key: "p2", project: "Access Aknaran", capacityKwp: "72.0000", totalGenKwh: "401,800", avgDailyKwh: "11,020", solarPct: "38%", status: "Active" },
-      { key: "p3", project: "Access Surulere Retail", capacityKwp: "120.0000", totalGenKwh: "395,400", avgDailyKwh: "10,880", solarPct: "36%", status: "Active" },
-      { key: "p4", project: "Kaduna Hospital Retrofit", capacityKwp: "200.0000", totalGenKwh: "388,100", avgDailyKwh: "10,640", solarPct: "29%", status: "Watch" },
-      { key: "p5", project: "Lekki Coldroom PV + Battery", capacityKwp: "64.2500", totalGenKwh: "362,900", avgDailyKwh: "9,940", solarPct: "33%", status: "Active" },
-      { key: "p6", project: "Access Ekiti 2", capacityKwp: "55.0000", totalGenKwh: "310,200", avgDailyKwh: "8,500", solarPct: "27%", status: "Watch" },
-      { key: "p7", project: "Access Abuja Logistics Hub", capacityKwp: "48.0000", totalGenKwh: "298,700", avgDailyKwh: "8,180", solarPct: "31%", status: "Active" },
-      { key: "p8", project: "Access Ikoyi Node", capacityKwp: "42.0000", totalGenKwh: "276,500", avgDailyKwh: "7,570", solarPct: "28%", status: "Active" },
-    ],
-    []
+    () =>
+      (projectsPerformance?.results || []).map((r) => ({
+        key: String(r.project_id),
+        project: r.project_name,
+        capacityKwp: r.system_capacity_kwp,
+        totalGenKwh: Number(r.total_generation_kwh ?? 0).toLocaleString("en-NG"),
+        avgDailyKwh: Number(r.average_daily_generation_kwh ?? 0).toLocaleString("en-NG"),
+        solarPct: r.solar_percent_of_branch_energy != null ? `${Number(r.solar_percent_of_branch_energy).toFixed(2)}%` : "—",
+        status: r.status,
+      })),
+    [projectsPerformance]
+  );
+
+  const overviewPerfRows = useMemo(() => perfRows.slice(0, OVERVIEW_HIGHLIGHT_LIMIT), [perfRows]);
+
+  const overviewFinanceByInvestorRows = useMemo(
+    () =>
+      (financeByInvestorList?.results || []).slice(0, OVERVIEW_HIGHLIGHT_LIMIT).map((r) => ({
+        key: String(r.id),
+        investor: r.legal_name,
+        ref: r.investor_ref,
+        capital: ngnCompact(Number(r.capital_deployed)),
+        interest: ngnCompact(Number(r.interest_flat_amount)),
+        paid: ngnCompact(Number(r.paid_to_investor_ytd)),
+        health: r.health,
+      })),
+    [financeByInvestorList]
   );
 
   const filteredInvestorResults = useMemo(() => {
@@ -1185,8 +1484,8 @@ function InvestorAdministration() {
       (r) =>
         r.legal_name?.toLowerCase().includes(q) ||
         r.investor_ref?.toLowerCase().includes(q) ||
-        r.user?.email?.toLowerCase().includes(q) ||
-        r.user?.username?.toLowerCase().includes(q)
+        String(r.user_email || "").toLowerCase().includes(q) ||
+        String(r.user_username || "").toLowerCase().includes(q)
     );
   }, [investorUsersList, investorSearch]);
 
@@ -1196,14 +1495,14 @@ function InvestorAdministration() {
         key: String(r.id),
         id: r.id,
         name: r.legal_name,
-        user: r.user?.email || r.user?.username || "—",
+        user: r.user_email || r.user_username || "—",
         ref: r.investor_ref,
         kyc: r.kyc_status,
         kycTier: r.kyc_tier,
-        count: "—",
-        status: r.is_active ? "Active" : "Inactive",
-        userActive: r.user?.is_active,
-        last: "—",
+        count: r.investments_count ?? "—",
+        status: r.account_active ? "Active" : "Inactive",
+        userActive: r.account_active,
+        last: r.last_activity ? dayjs(r.last_activity).format("DD MMM YYYY") : "—",
       })),
     [filteredInvestorResults]
   );
@@ -1291,14 +1590,14 @@ function InvestorAdministration() {
       );
     }
     if (projectProgrammeStateFilter === "all") return next;
-    return next.filter((r) => mapAdminProjectProgrammeState(r.status) === projectProgrammeStateFilter);
+    return next.filter((r) => mapAdminProjectProgrammeState(r.programme_state || r.status) === projectProgrammeStateFilter);
   }, [adminProjectsList, projectSearch, projectProgrammeStateFilter]);
 
   const projectsTableRows = useMemo(
     () =>
       filteredProjectResults.map((r) => {
         const typeLabel = r.project_type ? String(r.project_type).replace(/^\w/, (c) => c.toUpperCase()) : "—";
-        const stateUi = mapAdminProjectProgrammeState(r.status);
+        const stateUi = mapAdminProjectProgrammeState(r.programme_state || r.status);
         return {
           key: String(r.id),
           id: r.id,
@@ -1310,7 +1609,7 @@ function InvestorAdministration() {
           clientContr: r.client_contribution,
           investorTarget: r.investor_funding_target,
           stateUi,
-          investorName: "—",
+          investorName: r.investor_summary || r.primary_investor || (Array.isArray(r.investors) ? r.investors.join(", ") : "—") || "—",
         };
       }),
     [filteredProjectResults]
@@ -1429,7 +1728,7 @@ function InvestorAdministration() {
             pagination={false}
             size="small"
             rowKey="key"
-            scroll={{ x: 1280 }}
+            scroll={{ x: 1500 }}
           />
           <Text type="secondary" className="admin-investor-footnote">
             Maps to investors.Project: capacity, costs, branch link, investor target, and linked Investor when financed.
@@ -1449,10 +1748,11 @@ function InvestorAdministration() {
           <Table
             columns={perfColumns}
             dataSource={perfRows}
+            loading={projectsPerformanceLoading}
             pagination={false}
             size="small"
             rowKey="key"
-            scroll={{ x: 1100 }}
+            scroll={{ x: 1300 }}
           />
           <Text type="secondary" className="admin-investor-footnote">
             Branch telemetry blend: total / average daily generation, solar share of branch load, and operational status.
@@ -1469,6 +1769,7 @@ function InvestorAdministration() {
       perfMode,
       perfColumns,
       perfRows,
+      projectsPerformanceLoading,
     ]
   );
 
@@ -1541,6 +1842,21 @@ function InvestorAdministration() {
       })),
     [payoutSchedules]
   );
+
+  const customerScheduleSelectOptions = useMemo(() => {
+    const results = customerSchedules?.results || [];
+    const pid = recordPaymentProjectId;
+    const filtered =
+      pid != null && pid !== ""
+        ? results.filter((r) => String(r.project_id) === String(pid))
+        : results;
+    return filtered.map((s) => ({
+      value: s.id,
+      label: `${s.label || `ID ${s.id}`} · ${s.project_name || `Project ${s.project_id}`} · due ${s.due_date} · rem ${ngnCompact(
+        Number(s.amount_remaining ?? s.amount_due ?? 0)
+      )}`,
+    }));
+  }, [customerSchedules, recordPaymentProjectId]);
 
   const filteredInvestmentResults = useMemo(() => {
     const results = adminInvestmentsList?.results || [];
@@ -1639,7 +1955,13 @@ function InvestorAdministration() {
         r.project_name?.toLowerCase().includes(q) ||
         String(r.customer_schedule_id || "").includes(q) ||
         r.reference?.toLowerCase().includes(q) ||
-        r.notes?.toLowerCase().includes(q)
+        r.notes?.toLowerCase().includes(q) ||
+        String(r.line_status || "")
+          .toLowerCase()
+          .includes(q) ||
+        String(r.payment_score?.label || "")
+          .toLowerCase()
+          .includes(q)
     );
   }, [adminCustomerPaymentsList, customerPaymentSearch]);
 
@@ -1649,6 +1971,7 @@ function InvestorAdministration() {
         key: String(r.id),
         id: r.id,
         projectName: r.project_name,
+        branchId: r.branch_id,
         scheduleId: r.customer_schedule_id,
         amount: r.amount_received,
         paymentDate: r.payment_date,
@@ -1656,6 +1979,9 @@ function InvestorAdministration() {
         reference: r.reference,
         notes: r.notes,
         createdAt: r.created_at,
+        paymentScoreLabel: r.payment_score?.label ?? "—",
+        paymentScorePercent: r.payment_score?.percent ?? null,
+        lineStatus: r.line_status ?? "—",
       })),
     [filteredCustomerPaymentResults]
   );
@@ -1663,7 +1989,13 @@ function InvestorAdministration() {
   const customerPaymentsListColumns = useMemo(
     () => [
       { title: "ID", dataIndex: "id", width: 72 },
-      { title: "Project", dataIndex: "projectName", ellipsis: true },
+      { title: "Project", dataIndex: "projectName", ellipsis: true, width: 220 },
+      {
+        title: "Branch",
+        dataIndex: "branchId",
+        width: 88,
+        render: (v) => (v != null && v !== "" ? String(v) : "—"),
+      },
       { title: "Schedule", dataIndex: "scheduleId", width: 90 },
       {
         title: "Amount",
@@ -1674,6 +2006,50 @@ function InvestorAdministration() {
       { title: "Date", dataIndex: "paymentDate", width: 110 },
       { title: "Method", dataIndex: "method", width: 100 },
       { title: "Reference", dataIndex: "reference", ellipsis: true, width: 130 },
+      {
+        title: "Progress",
+        key: "progress",
+        width: 100,
+        render: (_, row) => (
+          <span>
+            {row.paymentScoreLabel}
+            {row.paymentScorePercent != null ? (
+              <Text type="secondary" style={{ fontSize: 11, marginLeft: 4 }}>
+                ({row.paymentScorePercent}%)
+              </Text>
+            ) : null}
+          </span>
+        ),
+      },
+      {
+        title: "Line",
+        dataIndex: "lineStatus",
+        width: 100,
+        render: (v) => (
+          <Tag
+            color={
+              String(v).toLowerCase() === "paid"
+                ? "green"
+                : String(v).toLowerCase().includes("partial")
+                  ? "gold"
+                  : "default"
+            }
+            className="admin-investor-pill"
+          >
+            {v}
+          </Tag>
+        ),
+      },
+      {
+        title: "",
+        key: "schedule",
+        width: 130,
+        render: (_, record) => (
+          <Button size="small" className="admin-investor-action-btn" onClick={() => openCustomerRepayment(record)}>
+            View schedule
+          </Button>
+        ),
+      },
       {
         title: "Actions",
         key: "actions",
@@ -1701,55 +2077,75 @@ function InvestorAdministration() {
         ),
       },
     ],
-    [handleDeactivateCustomerPayment, handleViewCustomerPayment]
+    [handleDeactivateCustomerPayment, handleViewCustomerPayment, openCustomerRepayment]
   );
 
-  const filteredPayoutResults = useMemo(() => {
+  const investorRepaymentsReceivedRows = useMemo(() => {
     const results = adminInvestorPayoutsList?.results || [];
     const q = payoutSearch.trim().toLowerCase();
-    if (!q) return results;
-    return results.filter(
-      (r) =>
-        String(r.id).includes(q) ||
-        String(r.investment_id || "").includes(q) ||
-        String(r.schedule_id || "").includes(q) ||
-        r.reference?.toLowerCase().includes(q) ||
-        r.project?.name?.toLowerCase().includes(q)
-    );
+    let next = results;
+    if (q) {
+      next = results.filter(
+        (r) =>
+          String(r.id).includes(q) ||
+          String(r.investment_id || "").includes(q) ||
+          String(r.schedule_id || "").includes(q) ||
+          r.reference?.toLowerCase().includes(q) ||
+          r.investor_name?.toLowerCase().includes(q) ||
+          r.project?.name?.toLowerCase().includes(q)
+      );
+    }
+    return next.map((r) => ({
+      key: String(r.id),
+      id: r.id,
+      when: r.paid_date ? dayjs(r.paid_date).format("DD MMM YYYY") : "—",
+      investor: r.investor_name || "—",
+      investment: `#${r.investment_id}`,
+      amount: ngnCompact(Number(r.amount_paid)),
+      status: "Paid",
+      investmentId: r.investment_id,
+      projectName: r.project?.name,
+      investorName: r.investor_name,
+      reference: r.reference,
+      repaymentScoreLabel: r.repayment_score?.label,
+    }));
   }, [adminInvestorPayoutsList, payoutSearch]);
 
-  const payoutsListRows = useMemo(
-    () =>
-      filteredPayoutResults.map((r) => ({
-        key: String(r.id),
-        id: r.id,
-        investmentId: r.investment_id,
-        projectName: r.project?.name,
-        scheduleId: r.schedule_id,
-        amountPaid: r.amount_paid,
-        paidDate: r.paid_date,
-        paymentMethod: r.payment_method,
-        reference: r.reference,
-        createdAt: r.created_at,
-      })),
-    [filteredPayoutResults]
-  );
-
-  const payoutsListColumns = useMemo(
+  const investorRepaymentsReceivedColumns = useMemo(
     () => [
-      { title: "ID", dataIndex: "id", width: 72 },
-      { title: "Investment", dataIndex: "investmentId", width: 100 },
-      { title: "Project", dataIndex: "projectName", ellipsis: true },
-      { title: "Schedule", dataIndex: "scheduleId", width: 90 },
+      { title: "When", dataIndex: "when", key: "when", width: 120 },
+      { title: "Investor", dataIndex: "investor", key: "investor", width: 160, ellipsis: true },
+      { title: "Investment", dataIndex: "investment", key: "investment", width: 100 },
+      { title: "Amount", dataIndex: "amount", key: "amount", width: 120 },
       {
-        title: "Amount paid",
-        dataIndex: "amountPaid",
-        width: 120,
-        render: (v) => ngnCompact(Number(v)),
+        title: "Progress",
+        dataIndex: "repaymentScoreLabel",
+        key: "repaymentScoreLabel",
+        width: 200,
+        ellipsis: true,
+        render: (v) => v || "—",
       },
-      { title: "Paid date", dataIndex: "paidDate", width: 110 },
-      { title: "Method", dataIndex: "paymentMethod", width: 120 },
-      { title: "Reference", dataIndex: "reference", ellipsis: true, width: 130 },
+      {
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
+        width: 100,
+        render: (v) => (
+          <Tag color="green" className="admin-investor-pill">
+            {v}
+          </Tag>
+        ),
+      },
+      {
+        title: "",
+        key: "view",
+        width: 170,
+        render: (_, record) => (
+          <Button size="small" className="admin-investor-action-btn" onClick={() => openInvestorPayment(record)}>
+            View schedule
+          </Button>
+        ),
+      },
       {
         title: "Actions",
         key: "actions",
@@ -1777,8 +2173,108 @@ function InvestorAdministration() {
         ),
       },
     ],
-    [handleDeactivatePayout, handleViewPayout]
+    [handleDeactivatePayout, handleViewPayout, openInvestorPayment]
   );
+
+  const upcomingCustomerPaymentRows = useMemo(() => {
+    const results = customerSchedules?.results || [];
+    const today = dayjs().startOf("day");
+    return results
+      .filter((r) => {
+        const st = String(r.status || "").toLowerCase();
+        if (st !== "scheduled") return false;
+        return !dayjs(r.due_date).startOf("day").isBefore(today);
+      })
+      .sort((a, b) => dayjs(a.due_date).valueOf() - dayjs(b.due_date).valueOf())
+      .map((r) => ({
+        key: String(r.id),
+        when: dayjs(r.due_date).format("DD MMM YYYY"),
+        branch: r.project_name || "—",
+        event: r.label || `Installment ${r.installment_number}`,
+        amount: ngnCompact(Number(r.amount_remaining ?? r.amount_due)),
+        status: r.status,
+        scheduleId: r.id,
+        projectName: r.project_name,
+        branchId: null,
+        paymentScoreLabel: null,
+        paymentScorePercent: null,
+        reference: r.label,
+      }));
+  }, [customerSchedules]);
+
+  const upcomingInvestorRepaymentRows = useMemo(() => {
+    const results = investorSchedulesList?.results || [];
+    const today = dayjs().startOf("day");
+    return results
+      .filter((r) => {
+        const st = String(r.status || "").toLowerCase();
+        if (st !== "scheduled") return false;
+        return !dayjs(r.due_date).startOf("day").isBefore(today);
+      })
+      .sort((a, b) => dayjs(a.due_date).valueOf() - dayjs(b.due_date).valueOf())
+      .map((r) => ({
+        key: String(r.id),
+        due: dayjs(r.due_date).format("DD MMM YYYY"),
+        investor: r.investor_name || "—",
+        investment: `#${r.investment_id}`,
+        dueAmount: ngnCompact(Number(r.amount_due_investor_share ?? r.amount_due_total)),
+        status: r.status,
+        investmentId: r.investment_id,
+        projectName: r.project_name,
+        investorName: r.investor_name,
+        reference: r.label,
+      }));
+  }, [investorSchedulesList]);
+
+  const customerScheduleModalRows = useMemo(() => {
+    const results = customerSchedules?.results || [];
+    const lineId = activePaymentMeta?.customerScheduleLineId;
+    if (activePaymentMeta?.type !== "customer") return mockCustomerRepaymentSchedule;
+    if (lineId != null && results.length) {
+      const anchor = results.find((r) => r.id === lineId || String(r.id) === String(lineId));
+      if (anchor) {
+        const pid = anchor.customer_repayment_plan_id;
+        return results
+          .filter((r) => r.customer_repayment_plan_id === pid)
+          .sort((a, b) => (a.installment_number || 0) - (b.installment_number || 0))
+          .map((r) => ({
+            key: String(r.id),
+            idx: r.installment_number,
+            due: r.due_date ? dayjs(r.due_date).format("DD MMM YYYY") : "—",
+            dueAmount: ngnCompact(Number(r.amount_due)),
+            paid: Number(r.amount_paid) > 0 ? ngnCompact(Number(r.amount_paid)) : "—",
+            left: ngnCompact(Number(r.amount_remaining)),
+            status: r.status,
+          }));
+      }
+      return [];
+    }
+    return mockCustomerRepaymentSchedule;
+  }, [activePaymentMeta, customerSchedules, mockCustomerRepaymentSchedule]);
+
+  const investorScheduleModalRows = useMemo(() => {
+    const results = investorSchedulesList?.results || [];
+    const invId = activePaymentMeta?.investmentId;
+    if (activePaymentMeta?.type !== "investor") return mockInvestorPaymentSchedule;
+    if (invId != null && results.length) {
+      const lines = results
+        .filter((r) => r.investment_id === invId || String(r.investment_id) === String(invId))
+        .sort((a, b) => (a.installment_number || 0) - (b.installment_number || 0));
+      if (lines.length) {
+        return lines.map((r) => ({
+          key: String(r.id),
+          idx: r.installment_number,
+          due: r.due_date ? dayjs(r.due_date).format("DD MMM YYYY") : "—",
+          dueAmount: ngnCompact(Number(r.amount_due_investor_share ?? r.amount_due_total)),
+          paid: Number(r.amount_paid) > 0 ? ngnCompact(Number(r.amount_paid)) : "—",
+          left: ngnCompact(Number(r.amount_remaining)),
+          status: r.status,
+        }));
+      }
+      return [];
+    }
+    return mockInvestorPaymentSchedule;
+  }, [activePaymentMeta, investorSchedulesList, mockInvestorPaymentSchedule]);
 
   const paymentsTabPanel = useMemo(
     () => (
@@ -1800,50 +2296,17 @@ function InvestorAdministration() {
             </Space>
           </div>
           <Table
-            columns={[
-              { title: "When", dataIndex: "when", key: "when", width: 120 },
-              { title: "Branch", dataIndex: "branch", key: "branch", width: 140 },
-              { title: "Event", dataIndex: "event", key: "event" },
-              { title: "Amount", dataIndex: "amount", key: "amount", width: 120 },
-              {
-                title: "Status",
-                dataIndex: "status",
-                key: "status",
-                width: 130,
-                render: (v) => (
-                  <Tag
-                    color={
-                      String(v).toLowerCase().includes("missed")
-                        ? "red"
-                        : String(v).toLowerCase().includes("pending") || String(v).toLowerCase().includes("partial")
-                          ? "gold"
-                          : "green"
-                    }
-                    className="admin-investor-pill"
-                  >
-                    {v}
-                  </Tag>
-                ),
-              },
-              {
-                title: "",
-                key: "view",
-                width: 170,
-                render: () => (
-                  <Button size="small" className="admin-investor-action-btn" onClick={openCustomerRepayment}>
-                    View schedule
-                  </Button>
-                ),
-              },
-            ]}
-            dataSource={filteredMockCustomerPaymentsReceived}
+            columns={customerPaymentsListColumns}
+            dataSource={customerPaymentsListRows}
+            loading={customerPaymentsListLoading}
             pagination={false}
             size="small"
             rowKey="key"
-            scroll={{ x: 980 }}
+            scroll={{ x: 1480 }}
           />
           <Text type="secondary" className="admin-investor-footnote">
-            Mock data only. Backend will provide the proper endpoint(s) for this table.
+            GET <Text code>/api/v1/investors/admin/customer-payments/</Text> — list; detail via{" "}
+            <Text code>/customer-payments/&lt;id&gt;/</Text>.
           </Text>
         </Card>
 
@@ -1864,50 +2327,17 @@ function InvestorAdministration() {
             </Space>
           </div>
           <Table
-            columns={[
-              { title: "When", dataIndex: "when", key: "when", width: 120 },
-              { title: "Investor", dataIndex: "investor", key: "investor", width: 120 },
-              { title: "Investment", dataIndex: "investment", key: "investment", width: 120 },
-              { title: "Amount", dataIndex: "amount", key: "amount", width: 120 },
-              {
-                title: "Status",
-                dataIndex: "status",
-                key: "status",
-                width: 130,
-                render: (v) => (
-                  <Tag
-                    color={
-                      String(v).toLowerCase().includes("missed")
-                        ? "red"
-                        : String(v).toLowerCase().includes("scheduled")
-                          ? "blue"
-                          : "green"
-                    }
-                    className="admin-investor-pill"
-                  >
-                    {v}
-                  </Tag>
-                ),
-              },
-              {
-                title: "",
-                key: "view",
-                width: 170,
-                render: () => (
-                  <Button size="small" className="admin-investor-action-btn" onClick={openInvestorPayment}>
-                    View schedule
-                  </Button>
-                ),
-              },
-            ]}
-            dataSource={filteredMockInvestorRepaymentsReceived}
+            columns={investorRepaymentsReceivedColumns}
+            dataSource={investorRepaymentsReceivedRows}
+            loading={payoutsListLoading}
             pagination={false}
             size="small"
             rowKey="key"
-            scroll={{ x: 1100 }}
+            scroll={{ x: 1400 }}
           />
           <Text type="secondary" className="admin-investor-footnote">
-            Mock data only. Backend will provide the proper endpoint(s) for this table.
+            GET <Text code>/api/v1/investors/admin/investor-payouts/</Text> — detail, PATCH, and DELETE on{" "}
+            <Text code>/investor-payouts/&lt;id&gt;/</Text>.
           </Text>
         </Card>
 
@@ -1921,8 +2351,8 @@ function InvestorAdministration() {
           <Table
             columns={[
               { title: "When", dataIndex: "when", key: "when", width: 120 },
-              { title: "Branch", dataIndex: "branch", key: "branch", width: 140 },
-              { title: "Event", dataIndex: "event", key: "event" },
+              { title: "Project", dataIndex: "branch", key: "branch", width: 220, ellipsis: true },
+              { title: "Line", dataIndex: "event", key: "event", ellipsis: true },
               { title: "Amount", dataIndex: "amount", key: "amount", width: 120 },
               {
                 title: "Status",
@@ -1931,11 +2361,27 @@ function InvestorAdministration() {
                 width: 130,
                 render: (v) => (
                   <Tag
-                    color={String(v).toLowerCase().includes("overdue") ? "red" : String(v).toLowerCase().includes("due") ? "gold" : "green"}
+                    color={
+                      String(v).toLowerCase().includes("overdue")
+                        ? "red"
+                        : String(v).toLowerCase() === "scheduled"
+                          ? "blue"
+                          : "green"
+                    }
                     className="admin-investor-pill"
                   >
                     {v}
                   </Tag>
+                ),
+              },
+              {
+                title: "",
+                key: "sched",
+                width: 130,
+                render: (_, record) => (
+                  <Button size="small" className="admin-investor-action-btn" onClick={() => openCustomerRepayment(record)}>
+                    View schedule
+                  </Button>
                 ),
               },
               {
@@ -1949,20 +2395,15 @@ function InvestorAdministration() {
                 ),
               },
             ]}
-            dataSource={[
-              { key: "upc-1", when: "Today", branch: "Eko", event: "Customer installment", amount: "₦0.21B", status: "Due soon" },
-              { key: "upc-2", when: "In 3 days", branch: "Ib", event: "Due soon", amount: "₦1.02B", status: "Due soon" },
-              { key: "upc-3", when: "07 May", branch: "Abj", event: "Customer installment", amount: "₦0.68B", status: "Scheduled" },
-              { key: "upc-4", when: "09 May", branch: "Ph", event: "Underpaid follow-up", amount: "₦0.41B", status: "Scheduled" },
-              { key: "upc-5", when: "12 May", branch: "Enu", event: "Customer installment", amount: "₦0.54B", status: "Scheduled" },
-            ]}
+            dataSource={upcomingCustomerPaymentRows}
+            loading={customerSchedulesLoading}
             pagination={false}
             size="small"
             rowKey="key"
-            scroll={{ x: 980 }}
+            scroll={{ x: 1100 }}
           />
           <Text type="secondary" className="admin-investor-footnote">
-            Mock data only. Backend will confirm the correct schedule endpoint for upcoming customer payments.
+            GET <Text code>/api/v1/investors/admin/customer-payment-schedules/</Text> — scheduled lines from today onward.
           </Text>
         </Card>
 
@@ -1976,8 +2417,8 @@ function InvestorAdministration() {
           <Table
             columns={[
               { title: "Due", dataIndex: "due", key: "due", width: 120 },
-              { title: "Investor", dataIndex: "investor", key: "investor", width: 120 },
-              { title: "Investment", dataIndex: "investment", key: "investment", width: 120 },
+              { title: "Investor", dataIndex: "investor", key: "investor", width: 160, ellipsis: true },
+              { title: "Investment", dataIndex: "investment", key: "investment", width: 100 },
               { title: "Due amount", dataIndex: "dueAmount", key: "dueAmount", width: 120 },
               {
                 title: "Status",
@@ -1985,9 +2426,28 @@ function InvestorAdministration() {
                 key: "status",
                 width: 130,
                 render: (v) => (
-                  <Tag color={String(v).toLowerCase().includes("missed") ? "red" : String(v).toLowerCase().includes("pending") ? "gold" : "green"} className="admin-investor-pill">
+                  <Tag
+                    color={
+                      String(v).toLowerCase().includes("missed")
+                        ? "red"
+                        : String(v).toLowerCase() === "scheduled"
+                          ? "blue"
+                          : "green"
+                    }
+                    className="admin-investor-pill"
+                  >
                     {v}
                   </Tag>
+                ),
+              },
+              {
+                title: "",
+                key: "viewsched",
+                width: 130,
+                render: (_, record) => (
+                  <Button size="small" className="admin-investor-action-btn" onClick={() => openInvestorPayment(record)}>
+                    View schedule
+                  </Button>
                 ),
               },
               {
@@ -2001,20 +2461,15 @@ function InvestorAdministration() {
                 ),
               },
             ]}
-            dataSource={[
-              { key: "upi-1", due: "28 Apr", investor: "INV-10042", investment: "#IT-062", dueAmount: "₦0.11B", status: "Pending" },
-              { key: "upi-2", due: "30 Apr", investor: "INV-10088", investment: "#IT-088", dueAmount: "₦0.32B", status: "Pending" },
-              { key: "upi-3", due: "02 May", investor: "INV-10102", investment: "#IT-091", dueAmount: "₦0.29B", status: "Scheduled" },
-              { key: "upi-4", due: "15 May", investor: "INV-10042", investment: "#IT-094", dueAmount: "₦0.26B", status: "Missed" },
-              { key: "upi-5", due: "18 May", investor: "INV-10102", investment: "#IT-102", dueAmount: "₦0.14B", status: "Pending" },
-            ]}
+            dataSource={upcomingInvestorRepaymentRows}
+            loading={investorSchedulesLoading}
             pagination={false}
             size="small"
             rowKey="key"
-            scroll={{ x: 980 }}
+            scroll={{ x: 1100 }}
           />
           <Text type="secondary" className="admin-investor-footnote">
-            Mock data only. Backend will provide the proper endpoint(s) for upcoming investor repayments.
+            GET <Text code>/api/v1/investors/admin/investor-payment-schedules/</Text> — scheduled investor lines from today onward.
           </Text>
         </Card>
       </div>
@@ -2022,61 +2477,52 @@ function InvestorAdministration() {
     [
       customerPaymentSearch,
       payoutSearch,
-      filteredMockCustomerPaymentsReceived,
-      filteredMockInvestorRepaymentsReceived,
+      customerPaymentsListColumns,
+      customerPaymentsListRows,
+      customerPaymentsListLoading,
+      openCustomerRepayment,
+      openInvestorPayment,
+      investorRepaymentsReceivedColumns,
+      investorRepaymentsReceivedRows,
+      payoutsListLoading,
+      upcomingCustomerPaymentRows,
+      customerSchedulesLoading,
+      upcomingInvestorRepaymentRows,
+      investorSchedulesLoading,
     ]
   );
 
   const ticketsTabPanel = useMemo(() => {
-    const baseTickets = [
-      {
-        key: "TCK-402118",
-        id: "TCK-402118",
-        subjectTag: "[INVESTMENT]",
-        investor: "Northwind Energy LP",
-        ref: "INV-10042",
-        investorEmail: "northwind.lp@example.com",
-        subject: "Interest in Access Ayobo 2",
-        status: "Resolved",
-        created: "24 Apr 2026 · 09:14",
-        updated: "27 Apr 2026 · 11:02",
-      },
-      {
-        key: "SUP-883201",
-        id: "SUP-883201",
-        subjectTag: "[SUPPORT]",
-        investor: "Lagos Solar Holdings",
-        ref: "INV-10088",
-        investorEmail: "support@lagossolar.example.com",
-        subject: "Account access",
-        status: "Closed",
-        created: "18 Apr 2026 · 16:40",
-        updated: "22 Apr 2026 · 08:55",
-      },
-      {
-        key: "TCK-410902",
-        id: "TCK-410902",
-        subjectTag: "[INVESTMENT]",
-        investor: "Helio Partners",
-        ref: "INV-10244",
-        investorEmail: "desk@heliopartners.example.com",
-        subject: "Wyre Office pilot allocation",
-        status: "Reactivated",
-        created: "28 Apr 2026 · 07:51",
-        updated: "—",
-      },
-    ];
+    const raw = supportTicketsList?.results || [];
+    const mapped = raw.map((t) => {
+      const idStr = String(t.id);
+      const tag = t.subject_tag ? String(t.subject_tag).toUpperCase() : "—";
+      return {
+        key: idStr,
+        id: t.id,
+        idStr,
+        subjectTag: tag,
+        subjectTagDisplay: `[${tag}]`,
+        subject: t.subject,
+        investor: t.investor_name,
+        ref: t.investor_ref,
+        investorEmail: t.investor_email,
+        status: t.status,
+        priority: t.priority,
+        created: t.created_at_display || t.created_at,
+        updated: t.updated_at_display || t.updated_at,
+        responded: Boolean(t.responded),
+        staffNoteCount: t.staff_note_count ?? 0,
+      };
+    });
 
-    const rows = baseTickets
-      .map((t) => ({
-        ...t,
-        status: ticketStatuses?.[t.id] || t.status,
-      }))
-      .filter((t) => {
-        if (ticketsTableMode === "responded") return Boolean((ticketResponses?.[t.id] || []).length);
-        if (ticketsTableMode === "open") return !["resolved", "closed"].includes(String(t.status).toLowerCase());
-        return true;
-      });
+    const rows = mapped.filter((t) => {
+      const localNotes = ticketPostResponses[t.idStr]?.length ?? 0;
+      const hasResponse = t.responded || t.staffNoteCount > 0 || localNotes > 0;
+      if (ticketsTableMode === "responded") return hasResponse;
+      if (ticketsTableMode === "open") return !["resolved", "closed"].includes(String(t.status || "").toLowerCase());
+      return true;
+    });
 
     return (
       <div className="admin-investor-stack">
@@ -2095,20 +2541,20 @@ function InvestorAdministration() {
                   { value: "responded", label: "Responded" },
                 ]}
               />
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                Responses are stored in this browser session (mock)
-              </Text>
             </Space>
           </div>
 
           <Table
             columns={[
-              { title: "ID", dataIndex: "id", key: "id", width: 130 },
-              { title: "SUBJECT TAG", dataIndex: "subjectTag", key: "subjectTag", width: 140 },
+              { title: "ID", dataIndex: "id", key: "id", width: 72 },
+              { title: "Tag", dataIndex: "subjectTagDisplay", key: "subjectTagDisplay", width: 120 },
+              { title: "Subject", dataIndex: "subject", key: "subject", ellipsis: true },
               {
-                title: "INVESTOR",
+                title: "Investor",
                 dataIndex: "investor",
                 key: "investor",
+                width: 180,
+                ellipsis: true,
                 render: (_, r) => (
                   <div className="admin-investor-ticket-investor">
                     <div className="admin-investor-ticket-investor-name">{r.investor}</div>
@@ -2117,27 +2563,30 @@ function InvestorAdministration() {
                 ),
               },
               {
-                title: "STATUS",
+                title: "Status",
                 dataIndex: "status",
                 key: "status",
-                width: 120,
-                render: (v) => (
-                  <Tag
-                    color={String(v).toLowerCase() === "resolved" ? "green" : String(v).toLowerCase() === "closed" ? "gold" : "blue"}
-                    className="admin-investor-pill"
-                  >
-                    {v}
-                  </Tag>
-                ),
+                width: 110,
+                render: (v) => {
+                  const s = String(v || "").toLowerCase();
+                  const color = s === "resolved" ? "green" : s === "closed" ? "default" : s === "pending" ? "gold" : "blue";
+                  return (
+                    <Tag color={color} className="admin-investor-pill">
+                      {v}
+                    </Tag>
+                  );
+                },
               },
-              { title: "CREATED", dataIndex: "created", key: "created", width: 150 },
-              { title: "UPDATED", dataIndex: "updated", key: "updated", width: 150 },
+              { title: "Priority", dataIndex: "priority", key: "priority", width: 100 },
+              { title: "Created", dataIndex: "created", key: "created", width: 150 },
+              { title: "Updated", dataIndex: "updated", key: "updated", width: 150 },
               {
-                title: "RESPOND",
+                title: "Respond",
                 key: "respond",
-                width: 170,
+                width: 190,
                 render: (_, r) => {
-                  const has = Boolean((ticketResponses?.[r.id] || []).length);
+                  const localNotes = ticketPostResponses[r.idStr]?.length ?? 0;
+                  const has = r.responded || r.staffNoteCount > 0 || localNotes > 0;
                   return (
                     <Space size={8}>
                       {has ? (
@@ -2155,8 +2604,8 @@ function InvestorAdministration() {
                         className="admin-investor-action-btn"
                         onClick={() =>
                           openTicketResponse(r.id, {
-                            ticketId: r.id,
-                            subjectTag: r.subjectTag,
+                            ticketId: `#${r.id}`,
+                            subjectTag: r.subjectTagDisplay,
                             subject: r.subject,
                             investor: r.investor,
                             investorRef: r.ref,
@@ -2170,35 +2619,23 @@ function InvestorAdministration() {
                   );
                 },
               },
-              {
-                title: "ACTIONS",
-                key: "actions",
-                width: 140,
-                render: (_, r) => (
-                  <Select
-                    size="small"
-                    value={String(r.status || "Open")}
-                    style={{ width: "100%" }}
-                    options={["Open", "Reactivated", "Resolved", "Closed"].map((v) => ({ value: v, label: v }))}
-                    onChange={(v) => setTicketStatuses((prev) => ({ ...(prev || {}), [r.id]: v }))}
-                  />
-                ),
-              },
             ]}
             dataSource={rows}
+            loading={supportTicketsListLoading}
             pagination={false}
             size="small"
             rowKey="key"
-            scroll={{ x: 1080 }}
+            scroll={{ x: 1320 }}
           />
 
           <Text type="secondary" className="admin-investor-footnote">
-            Production maps SupportTicket to the portal user’s email. Respond shows staff notes for this ticket; after the first note, the row shows Responded.
+            GET <Text code>/api/v1/investors/admin/support-tickets/</Text> — respond via POST{" "}
+            <Text code>/support-tickets/&lt;id&gt;/responses/</Text> with <Text code>body</Text>.
           </Text>
         </Card>
       </div>
     );
-  }, [openTicketResponse, ticketResponses, ticketStatuses, ticketsTableMode]);
+  }, [openTicketResponse, supportTicketsList, supportTicketsListLoading, ticketPostResponses, ticketsTableMode]);
 
   if (!isSuperAdmin) {
     return (
@@ -2274,13 +2711,15 @@ function InvestorAdministration() {
                   >
                     <Table
                       columns={customerRepaymentColumns}
-                      dataSource={customerRepaymentRows}
+                      dataSource={overviewCustomerRepaymentRows}
+                      loading={customerPaymentsListLoading}
                       pagination={false}
                       size="small"
                       rowKey="key"
                     />
                     <Text type="secondary" className="admin-investor-footnote">
-                      Based on CustomerPayment + CustomerRepaymentSchedule. Keep customer PII hidden.
+                      Latest {OVERVIEW_HIGHLIGHT_LIMIT} from{" "}
+                      <Text code>/api/v1/investors/admin/customer-payments/</Text> — see Payments for the full list.
                     </Text>
                   </Card>
 
@@ -2299,13 +2738,15 @@ function InvestorAdministration() {
                     >
                       <Table
                         columns={disbursementColumns}
-                        dataSource={disbursementRows}
+                        dataSource={overviewDisbursementRows}
+                        loading={investorSchedulesLoading}
                         pagination={false}
                         size="small"
                         rowKey="key"
                       />
                       <Text type="secondary" className="admin-investor-footnote">
-                        Based on PaymentSchedule and linked InvestorDisbursement reconciliation.
+                        Next {OVERVIEW_HIGHLIGHT_LIMIT} lines by due date from{" "}
+                        <Text code>/api/v1/investors/admin/investor-payment-schedules/</Text>.
                       </Text>
                     </Card>
 
@@ -2331,13 +2772,16 @@ function InvestorAdministration() {
                     >
                       <Table
                         columns={perfColumns}
-                        dataSource={perfRows}
+                        dataSource={overviewPerfRows}
+                        loading={projectsPerformanceLoading}
                         pagination={false}
                         size="small"
                         rowKey="key"
+                        scroll={{ x: 1300 }}
                       />
                       <Text type="secondary" className="admin-investor-footnote">
-                        Branch telemetry blend: total / average daily generation, solar share of branch load, and operational status.
+                        Up to {OVERVIEW_HIGHLIGHT_LIMIT} rows from{" "}
+                        <Text code>/api/v1/investors/admin/projects/performance/</Text> (same Top/Bottom toggle as Projects tab).
                       </Text>
                     </Card>
                   </div>
@@ -2360,7 +2804,13 @@ function InvestorAdministration() {
                           width: 140,
                           render: (v) => (
                             <Tag
-                              color={v === "On track" ? "green" : v === "Watch" ? "gold" : "red"}
+                              color={
+                                String(v).toLowerCase().includes("overdue")
+                                  ? "red"
+                                  : String(v).toLowerCase().includes("kyc")
+                                    ? "gold"
+                                    : "green"
+                              }
                               className="admin-investor-pill"
                             >
                               {v}
@@ -2368,18 +2818,16 @@ function InvestorAdministration() {
                           ),
                         },
                       ]}
-                      dataSource={[
-                        { key: "f1", investor: "Northwind Energy LP", ref: "INV-10042", capital: "₦48.20B", interest: "₦3.30B", paid: "₦12.40B", health: "On track" },
-                        { key: "f2", investor: "Lagos Solar Holdings", ref: "INV-10088", capital: "₦22.10B", interest: "₦1.80B", paid: "₦6.20B", health: "Watch" },
-                        { key: "f3", investor: "GreenGrid Africa", ref: "INV-10102", capital: "₦15.60B", interest: "₦0.90B", paid: "₦4.10B", health: "Overdue link" },
-                        { key: "f4", investor: "Atlantic Renewables", ref: "INV-10201", capital: "₦9.30B", interest: "₦0.52B", paid: "₦2.80B", health: "On track" },
-                        { key: "f5", investor: "Helio Partners", ref: "INV-10244", capital: "₦8.20B", interest: "₦0.41B", paid: "₦2.10B", health: "Watch" },
-                        { key: "f6", investor: "Kaduna Green Fund", ref: "INV-10310", capital: "₦6.70B", interest: "₦0.28B", paid: "₦1.20B", health: "Overdue link" },
-                      ]}
+                      dataSource={overviewFinanceByInvestorRows}
+                      loading={financeByInvestorLoading}
                       pagination={false}
                       size="small"
                       rowKey="key"
                     />
+                    <Text type="secondary" className="admin-investor-footnote">
+                      First {OVERVIEW_HIGHLIGHT_LIMIT} from{" "}
+                      <Text code>/api/v1/investors/admin/directory/finance-by-investor/</Text>.
+                    </Text>
                   </Card>
                 </div>
               ),
@@ -2425,10 +2873,10 @@ function InvestorAdministration() {
                     <Table
                       columns={[
                         { title: "Investor", dataIndex: "investor", key: "investor" },
-                        { title: "Ref", dataIndex: "ref", key: "ref", width: 120 },
-                        { title: "Capital deployed", dataIndex: "capital", key: "capital", width: 140 },
-                        { title: "Interest (flat %)", dataIndex: "interest", key: "interest", width: 130 },
-                        { title: "Paid to investor YTD", dataIndex: "paid", key: "paid", width: 160 },
+                        { title: "Ref", dataIndex: "ref", key: "ref", width: 140 },
+                        { title: "Capital deployed", dataIndex: "capital", key: "capital", width: 160 },
+                        { title: "Interest (flat)", dataIndex: "interest", key: "interest", width: 140 },
+                        { title: "Paid to investor YTD", dataIndex: "paid", key: "paid", width: 170 },
                         {
                           title: "Health",
                           dataIndex: "health",
@@ -2450,13 +2898,16 @@ function InvestorAdministration() {
                           ),
                         },
                       ]}
-                      dataSource={[
-                        { key: "ip1", investor: "Northwind Energy LP", ref: "INV-10042", capital: "₦48.20B", interest: "₦3.30B", paid: "₦12.40B", health: "1 overdue" },
-                        { key: "ip2", investor: "Lagos Solar Holdings", ref: "INV-10088", capital: "₦22.10B", interest: "₦1.80B", paid: "₦6.20B", health: "On track" },
-                        { key: "ip3", investor: "GreenGrid Africa", ref: "INV-10102", capital: "₦15.60B", interest: "₦0.90B", paid: "₦4.10B", health: "KYC review" },
-                        { key: "ip4", investor: "Atlantic Renewables", ref: "INV-10201", capital: "₦9.30B", interest: "₦0.52B", paid: "₦2.80B", health: "On track" },
-                        { key: "ip5", investor: "Helio Partners", ref: "INV-10244", capital: "₦8.20B", interest: "₦0.41B", paid: "₦2.10B", health: "Low telemetry" },
-                      ]}
+                      loading={financeByInvestorLoading}
+                      dataSource={(financeByInvestorList?.results || []).map((r) => ({
+                        key: String(r.id),
+                        investor: r.legal_name,
+                        ref: r.investor_ref,
+                        capital: ngnCompact(Number(r.capital_deployed)),
+                        interest: ngnCompact(Number(r.interest_flat_amount)),
+                        paid: ngnCompact(Number(r.paid_to_investor_ytd)),
+                        health: r.health,
+                      }))}
                       pagination={false}
                       size="small"
                       rowKey="key"
@@ -2513,7 +2964,13 @@ function InvestorAdministration() {
           <Button key="close" onClick={closeTicketResponse}>
             Close
           </Button>,
-          <Button key="save" type="primary" onClick={saveTicketResponse} disabled={!activeTicketId || !String(ticketResponseDraft || "").trim()}>
+          <Button
+            key="save"
+            type="primary"
+            loading={supportTicketResponseLoading}
+            onClick={saveTicketResponse}
+            disabled={!activeTicketId || !String(ticketResponseDraft || "").trim()}
+          >
             Save response
           </Button>,
         ]}
@@ -2527,6 +2984,18 @@ function InvestorAdministration() {
         <Text type="secondary" style={{ display: "block", marginBottom: 10 }}>
           Use the investor&apos;s login email for replies (same address they use on the Wyre investor portal).
         </Text>
+
+        {supportTicketDetailLoading ? (
+          <Spin size="small" style={{ display: "block", marginBottom: 12 }} />
+        ) : supportTicketDetail?.description ? (
+          <>
+            <Text className="admin-investor-ticket-section-label">TICKET DESCRIPTION</Text>
+            <div className="admin-investor-ticket-responses-box" style={{ marginBottom: 12 }}>
+              <Text style={{ whiteSpace: "pre-wrap" }}>{supportTicketDetail.description}</Text>
+            </div>
+            <Divider className="admin-modal-divider" />
+          </>
+        ) : null}
 
         <div className="admin-investor-ticket-email-box">
           <div className="admin-investor-ticket-email-top">
@@ -2548,11 +3017,11 @@ function InvestorAdministration() {
         <div className="admin-investor-ticket-responses">
           <Text className="admin-investor-ticket-section-label">PREVIOUS RESPONSES</Text>
           <div className="admin-investor-ticket-responses-box">
-            {(ticketResponses?.[activeTicketId] || []).length ? (
-              (ticketResponses?.[activeTicketId] || []).map((r) => (
+            {(ticketPostResponses?.[activeTicketId] || []).length ? (
+              (ticketPostResponses?.[activeTicketId] || []).map((r) => (
                 <div key={r.id} className="admin-investor-ticket-response-item">
                   <Text type="secondary" style={{ fontSize: 12 }}>
-                    {dayjs(r.at).format("DD MMM YYYY · HH:mm")} · {r.by}
+                    {r.at} · {r.by}
                   </Text>
                   <div style={{ marginTop: 2 }}>{r.text}</div>
                 </div>
@@ -2609,16 +3078,17 @@ function InvestorAdministration() {
         <Table
           size="small"
           rowKey="key"
+          loading={customerSchedulesLoading && activePaymentMeta?.type === "customer"}
           pagination={{ pageSize: 10, showSizeChanger: false }}
-          dataSource={mockCustomerRepaymentSchedule}
+          dataSource={customerScheduleModalRows}
           columns={[
             { title: "#", dataIndex: "idx", width: 60 },
-            { title: "DUE", dataIndex: "due", width: 140 },
-            { title: "DUE", dataIndex: "dueAmount", width: 140 },
-            { title: "PAID", dataIndex: "paid", width: 140 },
-            { title: "LEFT", dataIndex: "left", width: 120 },
+            { title: "Due date", dataIndex: "due", width: 140 },
+            { title: "Due amount", dataIndex: "dueAmount", width: 140 },
+            { title: "Paid", dataIndex: "paid", width: 140 },
+            { title: "Remaining", dataIndex: "left", width: 120 },
             {
-              title: "STATUS",
+              title: "Status",
               dataIndex: "status",
               width: 140,
               render: (v) => (
@@ -2633,7 +3103,8 @@ function InvestorAdministration() {
           ]}
         />
         <Text type="secondary" className="admin-investor-footnote">
-          Mock excerpt near today. Production loads full CustomerRepaymentSchedule with pagination.
+          Rows for the same <Text code>customer_repayment_plan_id</Text> as the selected payment&apos;s schedule line (from{" "}
+          <Text code>/customer-payment-schedules/</Text>).
         </Text>
       </Modal>
 
@@ -2666,16 +3137,17 @@ function InvestorAdministration() {
         <Table
           size="small"
           rowKey="key"
+          loading={investorSchedulesLoading && activePaymentMeta?.type === "investor"}
           pagination={{ pageSize: 10, showSizeChanger: false }}
-          dataSource={mockInvestorPaymentSchedule}
+          dataSource={investorScheduleModalRows}
           columns={[
             { title: "#", dataIndex: "idx", width: 60 },
-            { title: "DUE", dataIndex: "due", width: 140 },
-            { title: "DUE", dataIndex: "dueAmount", width: 140 },
-            { title: "PAID", dataIndex: "paid", width: 140 },
-            { title: "LEFT", dataIndex: "left", width: 120 },
+            { title: "Due date", dataIndex: "due", width: 140 },
+            { title: "Due (investor)", dataIndex: "dueAmount", width: 140 },
+            { title: "Paid", dataIndex: "paid", width: 140 },
+            { title: "Remaining", dataIndex: "left", width: 120 },
             {
-              title: "STATUS",
+              title: "Status",
               dataIndex: "status",
               width: 140,
               render: (v) => (
@@ -2690,7 +3162,7 @@ function InvestorAdministration() {
           ]}
         />
         <Text type="secondary" className="admin-investor-footnote">
-          Mock excerpt near today. Production loads full PaymentSchedule (investor) with pagination.
+          Schedule lines for the selected <Text code>investment_id</Text> from <Text code>/investor-payment-schedules/</Text>.
         </Text>
       </Modal>
 
@@ -2800,6 +3272,9 @@ function InvestorAdministration() {
         width={720}
         className="admin-investor-modal"
         footer={[
+          <Button key="edit" onClick={openInvestorEdit} disabled={!investorUserDetail}>
+            Edit
+          </Button>,
           <Button key="close" type="primary" onClick={closeInvestorDetail}>
             Close
           </Button>,
@@ -2835,6 +3310,62 @@ function InvestorAdministration() {
         ) : (
           <Text type="secondary">No data.</Text>
         )}
+      </Modal>
+
+      <Modal
+        open={investorEditOpen}
+        onCancel={closeInvestorEdit}
+        title="Update investor"
+        width={820}
+        className="admin-investor-modal"
+        destroyOnClose
+        footer={[
+          <Button key="cancel" onClick={closeInvestorEdit}>
+            Cancel
+          </Button>,
+          <Button key="save" type="primary" loading={detailLoading} onClick={submitInvestorEdit}>
+            Save
+          </Button>,
+        ]}
+      >
+        <Text type="secondary" className="admin-modal-subtitle">
+          Updates <Text code>investors/admin/investor-users/{investorUserDetail?.id || "…"}/</Text> via PATCH.
+        </Text>
+        <Form form={investorEditForm} layout="vertical" className="admin-modal-form">
+          <div className="admin-modal-grid">
+            <Form.Item name="legal_name" label="Legal name" rules={[{ required: true, message: "Required" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="phone" label="Phone">
+              <Input placeholder="+234…" />
+            </Form.Item>
+
+            <Form.Item name="kyc_tier" label="KYC tier" rules={[{ required: true, message: "Required" }]}>
+              <Select options={KYC_TIER_OPTIONS} />
+            </Form.Item>
+            <Form.Item name="kyc_status" label="KYC status" rules={[{ required: true, message: "Required" }]}>
+              <Select options={KYC_STATUS_OPTIONS} />
+            </Form.Item>
+
+            <Form.Item name="is_active" label="Investor active" rules={[{ required: true, message: "Required" }]}>
+              <Select options={[{ value: true, label: "Yes" }, { value: false, label: "No" }]} />
+            </Form.Item>
+            <Form.Item name="user_is_active" label="User active" rules={[{ required: true, message: "Required" }]}>
+              <Select options={[{ value: true, label: "Yes" }, { value: false, label: "No" }]} />
+            </Form.Item>
+
+            <Form.Item name="user_email" label="User email" className="admin-modal-wide" rules={[{ required: true, message: "Required" }]}>
+              <Input placeholder="investor@example.com" />
+            </Form.Item>
+
+            <Form.Item name="user_first_name" label="First name">
+              <Input />
+            </Form.Item>
+            <Form.Item name="user_last_name" label="Last name">
+              <Input />
+            </Form.Item>
+          </div>
+        </Form>
       </Modal>
 
       {/* Create project */}
@@ -3247,6 +3778,7 @@ function InvestorAdministration() {
           initialValues={{
             entryMode: "single",
             payment_method: "Transfer",
+            customer_schedule_ids: [],
             line_items: [{ customer_schedule_id: undefined, amount_received: undefined, payment_date: undefined }],
           }}
         >
@@ -3301,13 +3833,49 @@ function InvestorAdministration() {
               <Text type="secondary" className="admin-modal-section-sub">
                 Each line: schedule ID, amount (decimal string on API), and payment date. Shared reference/notes apply to all created rows.
               </Text>
+
+              <Form.Item
+                name="customer_schedule_ids"
+                label="Payment schedules (select one or more)"
+                extra="Optional: select schedules to auto-create line items below. Filtered by the selected project."
+              >
+                <Select
+                  mode="multiple"
+                  allowClear
+                  showSearch
+                  optionFilterProp="label"
+                  placeholder={customerScheduleSelectOptions.length ? "Select schedules" : "No schedules loaded yet"}
+                  options={customerScheduleSelectOptions}
+                  onChange={(ids) => {
+                    const uniq = Array.from(new Set((ids || []).map((v) => Number(v)).filter((n) => Number.isFinite(n))));
+                    recordPaymentForm.setFieldsValue({
+                      line_items: uniq.length
+                        ? uniq.map((id) => ({ customer_schedule_id: id, amount_received: undefined, payment_date: undefined }))
+                        : [{ customer_schedule_id: undefined, amount_received: undefined, payment_date: undefined }],
+                    });
+                  }}
+                />
+              </Form.Item>
+
               <Form.List name="line_items">
                 {(fields, { add, remove }) => (
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {fields.map(({ key, name, ...restField }) => (
                       <Space key={key} align="baseline" wrap style={{ marginBottom: 8 }}>
                         <Form.Item {...restField} name={[name, "customer_schedule_id"]}>
-                          <InputNumber min={1} step={1} placeholder="Schedule ID" style={{ width: 140 }} />
+                          {customerScheduleSelectOptions.length ? (
+                            <Select
+                              disabled={Boolean((recordPaymentForm.getFieldValue("customer_schedule_ids") || []).length)}
+                              allowClear
+                              showSearch
+                              optionFilterProp="label"
+                              placeholder="Schedule"
+                              style={{ width: 280 }}
+                              options={customerScheduleSelectOptions}
+                            />
+                          ) : (
+                            <InputNumber min={1} step={1} placeholder="Schedule ID" style={{ width: 140 }} />
+                          )}
                         </Form.Item>
                         <Form.Item {...restField} name={[name, "amount_received"]}>
                           <InputNumber min={0} style={{ width: 160 }} placeholder="Amount ₦" />
@@ -3337,32 +3905,103 @@ function InvestorAdministration() {
         title="Customer payment details"
         width={640}
         className="admin-investor-modal"
-        footer={[
-          <Button key="close" type="primary" onClick={closeCustomerPaymentDetail}>
-            Close
-          </Button>,
-        ]}
+        footer={
+          customerPaymentEditing
+            ? [
+                <Button
+                  key="cancel"
+                  onClick={() => {
+                    setCustomerPaymentEditing(false);
+                    customerPaymentEditForm.resetFields();
+                  }}
+                >
+                  Cancel edit
+                </Button>,
+                <Button key="save" type="primary" loading={customerPaymentUpdateLoading} onClick={submitCustomerPaymentEdit}>
+                  Save changes
+                </Button>,
+              ]
+            : [
+                <Button
+                  key="edit"
+                  onClick={() => {
+                    if (!customerPaymentDetail) return;
+                    setCustomerPaymentEditing(true);
+                    customerPaymentEditForm.setFieldsValue({
+                      amount_received: Number(customerPaymentDetail.amount_received),
+                      payment_date: customerPaymentDetail.payment_date ? dayjs(customerPaymentDetail.payment_date) : null,
+                      payment_method: customerPaymentDetail.payment_method,
+                      reference: customerPaymentDetail.reference,
+                      notes: customerPaymentDetail.notes,
+                    });
+                  }}
+                >
+                  Edit
+                </Button>,
+                <Button key="close" type="primary" onClick={closeCustomerPaymentDetail}>
+                  Close
+                </Button>,
+              ]
+        }
         destroyOnClose
       >
         {customerPaymentDetailLoading ? (
           <Text type="secondary">Loading…</Text>
         ) : customerPaymentDetail ? (
-          <Descriptions bordered size="small" column={1} className="admin-investor-detail-desc">
-            <Descriptions.Item label="ID">{customerPaymentDetail.id}</Descriptions.Item>
-            <Descriptions.Item label="Project">{customerPaymentDetail.project_name}</Descriptions.Item>
-            <Descriptions.Item label="Project ID">{customerPaymentDetail.project_id}</Descriptions.Item>
-            <Descriptions.Item label="Branch ID">{customerPaymentDetail.branch_id ?? "—"}</Descriptions.Item>
-            <Descriptions.Item label="Customer schedule ID">{customerPaymentDetail.customer_schedule_id}</Descriptions.Item>
-            <Descriptions.Item label="Amount received">
-              {ngnCompact(Number(customerPaymentDetail.amount_received))}
-            </Descriptions.Item>
-            <Descriptions.Item label="Payment date">{customerPaymentDetail.payment_date}</Descriptions.Item>
-            <Descriptions.Item label="Method">{customerPaymentDetail.payment_method}</Descriptions.Item>
-            <Descriptions.Item label="Reference">{customerPaymentDetail.reference || "—"}</Descriptions.Item>
-            <Descriptions.Item label="Notes">{customerPaymentDetail.notes || "—"}</Descriptions.Item>
-            <Descriptions.Item label="Recorded by">{customerPaymentDetail.recorded_by ?? "—"}</Descriptions.Item>
-            <Descriptions.Item label="Created">{customerPaymentDetail.created_at || "—"}</Descriptions.Item>
-          </Descriptions>
+          <>
+            {!customerPaymentEditing ? (
+              <Descriptions bordered size="small" column={1} className="admin-investor-detail-desc">
+                <Descriptions.Item label="ID">{customerPaymentDetail.id}</Descriptions.Item>
+                <Descriptions.Item label="Project">{customerPaymentDetail.project_name}</Descriptions.Item>
+                <Descriptions.Item label="Project ID">{customerPaymentDetail.project_id}</Descriptions.Item>
+                <Descriptions.Item label="Branch ID">{customerPaymentDetail.branch_id ?? "—"}</Descriptions.Item>
+                <Descriptions.Item label="Customer schedule ID">{customerPaymentDetail.customer_schedule_id}</Descriptions.Item>
+                <Descriptions.Item label="Amount received">
+                  {ngnCompact(Number(customerPaymentDetail.amount_received))}
+                </Descriptions.Item>
+                <Descriptions.Item label="Payment date">{customerPaymentDetail.payment_date}</Descriptions.Item>
+                <Descriptions.Item label="Method">{customerPaymentDetail.payment_method}</Descriptions.Item>
+                <Descriptions.Item label="Reference">{customerPaymentDetail.reference || "—"}</Descriptions.Item>
+                <Descriptions.Item label="Notes">{customerPaymentDetail.notes || "—"}</Descriptions.Item>
+                <Descriptions.Item label="Recorded by">{customerPaymentDetail.recorded_by ?? "—"}</Descriptions.Item>
+                <Descriptions.Item label="Created">{customerPaymentDetail.created_at || "—"}</Descriptions.Item>
+                <Descriptions.Item label="Installment progress">
+                  {customerPaymentDetail.payment_score?.label ?? "—"}
+                  {customerPaymentDetail.payment_score?.percent != null
+                    ? ` (${customerPaymentDetail.payment_score.percent}%)`
+                    : ""}
+                  {customerPaymentDetail.payment_score?.paid_installments != null &&
+                  customerPaymentDetail.payment_score?.total_installments != null
+                    ? ` — ${customerPaymentDetail.payment_score.paid_installments}/${customerPaymentDetail.payment_score.total_installments} paid`
+                    : ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Line status">{customerPaymentDetail.line_status ?? "—"}</Descriptions.Item>
+              </Descriptions>
+            ) : (
+              <Form form={customerPaymentEditForm} layout="vertical" className="admin-modal-form">
+                <div className="admin-modal-grid">
+                  <Form.Item name="amount_received" label="Amount received (₦)" rules={[{ required: true, message: "Required" }]}>
+                    <InputNumber min={0} style={{ width: "100%" }} />
+                  </Form.Item>
+                  <Form.Item name="payment_date" label="Payment date" rules={[{ required: true, message: "Required" }]}>
+                    <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
+                  </Form.Item>
+                  <Form.Item name="payment_method" label="Payment method" rules={[{ required: true, message: "Required" }]}>
+                    <Select options={CUSTOMER_PAYMENT_METHOD_OPTIONS} />
+                  </Form.Item>
+                  <Form.Item name="reference" label="Reference" rules={[{ required: true, message: "Required" }]}>
+                    <Input />
+                  </Form.Item>
+                  <Form.Item name="notes" label="Notes" className="admin-modal-wide">
+                    <Input.TextArea rows={2} />
+                  </Form.Item>
+                </div>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  PATCH <Text code>/api/v1/investors/admin/customer-payments/&lt;id&gt;/</Text>
+                </Text>
+              </Form>
+            )}
+          </>
         ) : (
           <Text type="secondary">No data.</Text>
         )}
@@ -3395,6 +4034,7 @@ function InvestorAdministration() {
           className="admin-modal-form"
           initialValues={{
             payment_method: "Bank sweep",
+            schedule_ids: [],
             line_items: [{ schedule_id: undefined, amount_paid: undefined, paid_date: undefined }],
           }}
         >
@@ -3421,13 +4061,39 @@ function InvestorAdministration() {
                 <Spin size="small" />
               ) : payoutSchedules.length ? (
                 <Text type="secondary">
-                  {payoutSchedules.length} schedule line(s) — pick <Text code>schedule_id</Text> below or from the list.
+                  {payoutSchedules.length} schedule line(s) — select one or more schedules below.
                 </Text>
               ) : (
                 <Text type="secondary">No schedule rows returned for this investment.</Text>
               )}
             </div>
           ) : null}
+
+          <Divider className="admin-modal-divider" />
+          <div className="admin-modal-section-title">Payment schedules</div>
+
+          <Form.Item
+            name="schedule_ids"
+            label="Payment schedules (select one or more)"
+            extra="Selecting schedules will auto-create line items below."
+          >
+            <Select
+              mode="multiple"
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder={payoutScheduleSelectOptions.length ? "Select schedules" : "No schedules loaded yet"}
+              options={payoutScheduleSelectOptions}
+              onChange={(ids) => {
+                const uniq = Array.from(new Set((ids || []).map((v) => Number(v)).filter((n) => Number.isFinite(n))));
+                payoutForm.setFieldsValue({
+                  line_items: uniq.length
+                    ? uniq.map((id) => ({ schedule_id: id, amount_paid: undefined, paid_date: undefined }))
+                    : [{ schedule_id: undefined, amount_paid: undefined, paid_date: undefined }],
+                });
+              }}
+            />
+          </Form.Item>
 
           <Divider className="admin-modal-divider" />
           <div className="admin-modal-section-title">Line items</div>
@@ -3439,6 +4105,7 @@ function InvestorAdministration() {
                     <Form.Item {...restField} name={[name, "schedule_id"]} label={fields.length > 1 ? "Schedule" : undefined}>
                       {payoutScheduleSelectOptions.length ? (
                         <Select
+                          disabled={Boolean((payoutForm.getFieldValue("schedule_ids") || []).length)}
                           allowClear
                           showSearch
                           optionFilterProp="label"
@@ -3476,28 +4143,89 @@ function InvestorAdministration() {
         title="Investor payout details"
         width={720}
         className="admin-investor-modal"
-        footer={[
-          <Button key="close" type="primary" onClick={closePayoutDetail}>
-            Close
-          </Button>,
-        ]}
+        footer={
+          payoutEditing
+            ? [
+                <Button
+                  key="cancel"
+                  onClick={() => {
+                    setPayoutEditing(false);
+                    payoutEditForm.resetFields();
+                  }}
+                >
+                  Cancel edit
+                </Button>,
+                <Button key="save" type="primary" loading={payoutUpdateLoading} onClick={submitPayoutEdit}>
+                  Save changes
+                </Button>,
+              ]
+            : [
+                <Button
+                  key="edit"
+                  onClick={() => {
+                    if (!payoutDetail) return;
+                    setPayoutEditing(true);
+                    payoutEditForm.setFieldsValue({
+                      amount_paid: Number(payoutDetail.amount_paid),
+                      paid_date: payoutDetail.paid_date ? dayjs(payoutDetail.paid_date) : null,
+                      payment_method: payoutDetail.payment_method,
+                      reference: payoutDetail.reference,
+                    });
+                  }}
+                >
+                  Edit
+                </Button>,
+                <Button key="close" type="primary" onClick={closePayoutDetail}>
+                  Close
+                </Button>,
+              ]
+        }
         destroyOnClose
       >
         {payoutDetailLoading ? (
           <Text type="secondary">Loading…</Text>
         ) : payoutDetail ? (
-          <Descriptions bordered size="small" column={1} className="admin-investor-detail-desc">
-            <Descriptions.Item label="ID">{payoutDetail.id}</Descriptions.Item>
-            <Descriptions.Item label="Investment ID">{payoutDetail.investment_id}</Descriptions.Item>
-            <Descriptions.Item label="Project">{payoutDetail.project?.name || "—"}</Descriptions.Item>
-            <Descriptions.Item label="Schedule ID">{payoutDetail.schedule_id}</Descriptions.Item>
-            <Descriptions.Item label="Amount paid">{ngnCompact(Number(payoutDetail.amount_paid))}</Descriptions.Item>
-            <Descriptions.Item label="Paid date">{payoutDetail.paid_date}</Descriptions.Item>
-            <Descriptions.Item label="Payment method">{payoutDetail.payment_method}</Descriptions.Item>
-            <Descriptions.Item label="Reference">{payoutDetail.reference || "—"}</Descriptions.Item>
-            <Descriptions.Item label="Disbursed by">{payoutDetail.disbursed_by ?? "—"}</Descriptions.Item>
-            <Descriptions.Item label="Created">{payoutDetail.created_at || "—"}</Descriptions.Item>
-          </Descriptions>
+          <>
+            {!payoutEditing ? (
+              <Descriptions bordered size="small" column={1} className="admin-investor-detail-desc">
+                <Descriptions.Item label="ID">{payoutDetail.id}</Descriptions.Item>
+                <Descriptions.Item label="Investor">{payoutDetail.investor_name || "—"}</Descriptions.Item>
+                <Descriptions.Item label="Investment ID">{payoutDetail.investment_id}</Descriptions.Item>
+                <Descriptions.Item label="Project">{payoutDetail.project?.name || "—"}</Descriptions.Item>
+                <Descriptions.Item label="Schedule ID">{payoutDetail.schedule_id}</Descriptions.Item>
+                <Descriptions.Item label="Amount paid">{ngnCompact(Number(payoutDetail.amount_paid))}</Descriptions.Item>
+                <Descriptions.Item label="Paid date">{payoutDetail.paid_date}</Descriptions.Item>
+                <Descriptions.Item label="Payment method">{payoutDetail.payment_method}</Descriptions.Item>
+                <Descriptions.Item label="Reference">{payoutDetail.reference || "—"}</Descriptions.Item>
+                <Descriptions.Item label="Repayment progress">
+                  {payoutDetail.repayment_score?.label ?? "—"}
+                  {payoutDetail.repayment_score?.percent != null ? ` (${payoutDetail.repayment_score.percent}%)` : ""}
+                </Descriptions.Item>
+                <Descriptions.Item label="Disbursed by">{payoutDetail.disbursed_by ?? "—"}</Descriptions.Item>
+                <Descriptions.Item label="Created">{payoutDetail.created_at || "—"}</Descriptions.Item>
+              </Descriptions>
+            ) : (
+              <Form form={payoutEditForm} layout="vertical" className="admin-modal-form">
+                <div className="admin-modal-grid">
+                  <Form.Item name="amount_paid" label="Amount paid (₦)" rules={[{ required: true, message: "Required" }]}>
+                    <InputNumber min={0} style={{ width: "100%" }} />
+                  </Form.Item>
+                  <Form.Item name="paid_date" label="Paid date" rules={[{ required: true, message: "Required" }]}>
+                    <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
+                  </Form.Item>
+                  <Form.Item name="payment_method" label="Payment method" rules={[{ required: true, message: "Required" }]}>
+                    <Input placeholder="e.g. bank_transfer" />
+                  </Form.Item>
+                  <Form.Item name="reference" label="Reference" rules={[{ required: true, message: "Required" }]}>
+                    <Input />
+                  </Form.Item>
+                </div>
+                <Text type="secondary" style={{ fontSize: 12 }}>
+                  PATCH <Text code>/api/v1/investors/admin/investor-payouts/&lt;id&gt;/</Text>
+                </Text>
+              </Form>
+            )}
+          </>
         ) : (
           <Text type="secondary">No data.</Text>
         )}

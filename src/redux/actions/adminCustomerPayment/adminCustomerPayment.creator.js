@@ -43,3 +43,18 @@ export const deleteAdminCustomerPaymentSuccess = (payload) => ({
   type: adminCustomerPaymentTypes.DELETE_ADMIN_CUSTOMER_PAYMENT_SUCCESS,
   payload,
 });
+
+export const updateAdminCustomerPaymentLoading = (payload = true) => ({
+  type: adminCustomerPaymentTypes.UPDATE_ADMIN_CUSTOMER_PAYMENT_LOADING,
+  payload,
+});
+
+export const getAdminCustomerPaymentSchedulesLoading = (payload = true) => ({
+  type: adminCustomerPaymentTypes.GET_ADMIN_CUSTOMER_PAYMENT_SCHEDULES_LOADING,
+  payload,
+});
+
+export const getAdminCustomerPaymentSchedulesSuccess = (payload) => ({
+  type: adminCustomerPaymentTypes.GET_ADMIN_CUSTOMER_PAYMENT_SCHEDULES_SUCCESS,
+  payload,
+});

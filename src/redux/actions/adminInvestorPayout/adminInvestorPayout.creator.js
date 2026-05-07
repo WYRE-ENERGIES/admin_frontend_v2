@@ -43,3 +43,18 @@ export const deleteAdminInvestorPayoutSuccess = (payload) => ({
   type: adminInvestorPayoutTypes.DELETE_ADMIN_INVESTOR_PAYOUT_SUCCESS,
   payload,
 });
+
+export const updateAdminInvestorPayoutLoading = (payload = true) => ({
+  type: adminInvestorPayoutTypes.UPDATE_ADMIN_INVESTOR_PAYOUT_LOADING,
+  payload,
+});
+
+export const getAdminInvestorPaymentSchedulesListLoading = (payload = true) => ({
+  type: adminInvestorPayoutTypes.GET_ADMIN_INVESTOR_PAYMENT_SCHEDULES_LIST_LOADING,
+  payload,
+});
+
+export const getAdminInvestorPaymentSchedulesListSuccess = (payload) => ({
+  type: adminInvestorPayoutTypes.GET_ADMIN_INVESTOR_PAYMENT_SCHEDULES_LIST_SUCCESS,
+  payload,
+});
