@@ -72,6 +72,8 @@ function DownloadPage(props) {
   const [branchPostingLoading, setBranchPostingLoading] = useState(false);
   const [branchDetailModalVisible, setBranchDetailModalVisible] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState(null);
+  const [branchPostingSearch, setBranchPostingSearch] = useState("");
+  const [monitorSearch, setMonitorSearch] = useState("");
   const [monitorPagination, setMonitorPagination] = useState({
   current: 1,
   pageSize: 10,
@@ -298,9 +300,9 @@ const handleCloseBranchModal = () => {
       try {
         const response = await APIService.get('/api/v1/branch-posting-status/');
         const data = Array.isArray(response?.data) ? response.data : [];
-        // Sort by hours_since_last_post descending
+        // Sort by hours_since_last_post ascending (most recent posts first)
         const sortedData = data.sort(
-          (a, b) => parseFloat(b.hours_since_last_post || 999) - parseFloat(a.hours_since_last_post || 999)
+          (a, b) => parseFloat(a.hours_since_last_post ?? 999) - parseFloat(b.hours_since_last_post ?? 999)
         );
         setBranchPostingData(sortedData);
       } catch (error) {
@@ -440,6 +442,11 @@ const handleCloseBranchModal = () => {
       title: "Hours Since Last Post",
       dataIndex: "hours_since_last_post",
       key: "hours_since_last_post",
+      sorter: (a, b) =>
+        parseFloat(a.hours_since_last_post ?? 999) -
+        parseFloat(b.hours_since_last_post ?? 999),
+      defaultSortOrder: "ascend",
+      sortDirections: ["ascend", "descend"],
       render: (value) => {
         if (value === null || value === undefined || value === 999) return "Null";
         return (
@@ -839,6 +846,25 @@ const handleCloseBranchModal = () => {
     [branchPostingData]
   );
 
+  // Filtered data based on search input
+  const filteredBranchPostingData = useMemo(() => {
+    if (!branchPostingSearch) return branchPostingData;
+    const query = branchPostingSearch.toLowerCase();
+    return branchPostingData.filter((item) =>
+      (item.branch_name || "").toString().toLowerCase().includes(query)
+    );
+  }, [branchPostingData, branchPostingSearch]);
+
+  const filteredMonitorData = useMemo(() => {
+    if (!monitorSearch) return monitorDataState;
+    const query = monitorSearch.toLowerCase();
+    return monitorDataState.filter((item) =>
+      (item.name || "").toString().toLowerCase().includes(query) ||
+      (item.branch_name || "").toString().toLowerCase().includes(query) ||
+      (item.client_name || "").toString().toLowerCase().includes(query)
+    );
+  }, [monitorDataState, monitorSearch]);
+
   return (
     <div className="download-page-container" style={{ padding: "24px" }}>
       <Spin spinning={props.auth.allDevicesfetchLoading || props.auth.fetchDeviceReadingsLoading || branchPostingLoading}>
@@ -1014,8 +1040,20 @@ const handleCloseBranchModal = () => {
                 </Col>
               </Row>
               <Card style={cardStyle}>
+                <Input
+                  placeholder="Search by branch name"
+                  prefix={<SearchOutlined />}
+                  allowClear
+                  value={branchPostingSearch}
+                  onChange={(e) => {
+                    setBranchPostingSearch(e.target.value);
+                    setBranchPostingPagination((prev) => ({ ...prev, current: 1 }));
+                  }}
+                  size="large"
+                  style={{ marginBottom: 16, maxWidth: 360 }}
+                />
                 <Table
-                  dataSource={branchPostingData}
+                  dataSource={filteredBranchPostingData}
                   columns={branchPostingColumns}
                   loading={branchPostingLoading}
                   scroll={{ x: true }}
@@ -1055,8 +1093,20 @@ const handleCloseBranchModal = () => {
                 </Col>
               </Row>
               <Card style={cardStyle}>
+                <Input
+                  placeholder="Search by name, branch or client"
+                  prefix={<SearchOutlined />}
+                  allowClear
+                  value={monitorSearch}
+                  onChange={(e) => {
+                    setMonitorSearch(e.target.value);
+                    setMonitorPagination((prev) => ({ ...prev, current: 1 }));
+                  }}
+                  size="large"
+                  style={{ marginBottom: 16, maxWidth: 360 }}
+                />
                 <Table
-                  dataSource={monitorDataState}
+                  dataSource={filteredMonitorData}
                   columns={monitorColumn}
                   scroll={{ x: true }}
                 pagination={monitorPagination}
