@@ -300,10 +300,20 @@ const handleCloseBranchModal = () => {
       try {
         const response = await APIService.get('/api/v1/branch-posting-status/');
         const data = Array.isArray(response?.data) ? response.data : [];
-        // Sort by hours_since_last_post ascending (most recent posts first)
-        const sortedData = data.sort(
-          (a, b) => parseFloat(a.hours_since_last_post ?? 999) - parseFloat(b.hours_since_last_post ?? 999)
-        );
+        // Sort by hours_since_last_post descending: longest-not-posted (incl. nulls) first
+        const sortedData = data.sort((a, b) => {
+          const aVal =
+            a.hours_since_last_post === null ||
+            a.hours_since_last_post === undefined
+              ? Number.POSITIVE_INFINITY
+              : parseFloat(a.hours_since_last_post);
+          const bVal =
+            b.hours_since_last_post === null ||
+            b.hours_since_last_post === undefined
+              ? Number.POSITIVE_INFINITY
+              : parseFloat(b.hours_since_last_post);
+          return bVal - aVal;
+        });
         setBranchPostingData(sortedData);
       } catch (error) {
         notification.error({
@@ -442,11 +452,21 @@ const handleCloseBranchModal = () => {
       title: "Hours Since Last Post",
       dataIndex: "hours_since_last_post",
       key: "hours_since_last_post",
-      sorter: (a, b) =>
-        parseFloat(a.hours_since_last_post ?? 999) -
-        parseFloat(b.hours_since_last_post ?? 999),
-      defaultSortOrder: "ascend",
-      sortDirections: ["ascend", "descend"],
+      sorter: (a, b) => {
+        const aVal =
+          a.hours_since_last_post === null ||
+          a.hours_since_last_post === undefined
+            ? Number.POSITIVE_INFINITY
+            : parseFloat(a.hours_since_last_post);
+        const bVal =
+          b.hours_since_last_post === null ||
+          b.hours_since_last_post === undefined
+            ? Number.POSITIVE_INFINITY
+            : parseFloat(b.hours_since_last_post);
+        return aVal - bVal;
+      },
+      defaultSortOrder: "descend",
+      sortDirections: ["descend", "ascend"],
       render: (value) => {
         if (value === null || value === undefined || value === 999) return "Null";
         return (
