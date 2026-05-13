@@ -11,7 +11,7 @@ import SystemConstants from "../../Pages/OverviewPages/SystemContants";
 import HistoricalReadings from "../../Pages/OverviewPages/HistoricalReadings";
 import SolarOnboarding from "../../Pages/OverviewPages/SolarOnboarding";
 import SolarStationDetails from "../../Pages/OverviewPages/SolarStationDetails";
-import SolarMgt from "../../Pages/OverviewPages/SolarMgt";
+import SolarManagement from "../../Pages/OverviewPages/SolarMgt";
 import InstallationsChecklist from "../../Pages/OverviewPages/InstallationsChecklist";
 
 function OtherRoute() {
@@ -29,7 +29,7 @@ function OtherRoute() {
           <Route path="/client/:clientId" element={<ClientDetails />} />
           <Route path="/solar-onboarding" element={<SolarOnboarding />} />
           <Route path="/solar-onboarding/stations/:branchId" element={<SolarStationDetails />} />
-          <Route path="/solar-mgt" element={<SolarMgt />} />
+          <Route path="/solar-management" element={<SolarManagement />} />
           <Route path="/installations-checklist" element={<InstallationsChecklist />} />
           <Route path="/settings" element={<Settings />}></Route>
           <Route path="/historical-readings" element={<HistoricalReadings />}></Route>

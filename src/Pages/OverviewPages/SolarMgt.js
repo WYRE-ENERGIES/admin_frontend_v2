@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { connect } from 'react-redux';
 import {
   Typography,
   Input,
@@ -6,6 +7,8 @@ import {
   Checkbox,
   Tooltip,
   Select,
+  Spin,
+  notification,
 } from 'antd';
 import {
   SearchOutlined,
@@ -17,6 +20,16 @@ import {
   CaretDownFilled,
 } from '@ant-design/icons';
 import { ResponsiveContainer, LineChart, Line, YAxis } from 'recharts';
+import {
+  fetchRealtimePower,
+  fetchDailyProduction,
+  fetchMonthlyProduction,
+  fetchTotalProduction,
+  fetchStatusCounts,
+  fetchSolarPlants,
+  toggleFavourite as toggleFavouriteAction,
+  fetchSolarClients,
+} from '../../redux/actions/solarMgt/solarMgt.action';
 import './SolarMgt.css';
 
 const { Title, Text } = Typography;
@@ -37,196 +50,155 @@ const TAG_OPTIONS = [
 ];
 
 const STATUS_FILTERS = [
-  { key: 'total', label: 'Total', color: '#5C12A7' },
-  { key: 'online', label: 'Online', color: '#22c55e' },
-  { key: 'incomplete', label: 'Incomplete', color: '#3b82f6' },
-  { key: 'offline', label: 'Offline', color: '#ef4444' },
-  { key: 'partially_offline', label: 'Partially Offline', color: '#f59e0b' },
-  { key: 'no_alerts', label: 'No Alerts', color: '#22c55e' },
-  { key: 'alerts', label: 'Alerts', color: '#ef4444' },
+  { key: 'total', label: 'Total', color: '#5C12A7', countKey: 'total' },
+  { key: 'online', label: 'Online', color: '#22c55e', countKey: 'online' },
+  { key: 'incomplete', label: 'Incomplete', color: '#3b82f6', countKey: 'incomplete' },
+  { key: 'offline', label: 'Offline', color: '#ef4444', countKey: 'offline' },
+  { key: 'partially_offline', label: 'Partially Offline', color: '#f59e0b', countKey: 'partial' },
+  { key: 'no_alerts', label: 'No Alerts', color: '#22c55e', countKey: 'no_alerts' },
+  { key: 'alerts', label: 'Alerts', color: '#ef4444', countKey: 'alerts' },
 ];
 
-const generateTrend = (seed, points = 12) => {
-  const data = [];
-  let value = (seed % 5) + 1;
-  for (let i = 0; i < points; i++) {
-    const wave = Math.sin((i / points) * Math.PI * 2 + seed) * 1.5;
-    const peak = Math.exp(-Math.pow((i - points / 2) / 2.2, 2)) * 4;
-    value = Math.max(0, peak + wave * 0.4 + (seed % 3) * 0.2);
-    data.push({ x: i, y: Number(value.toFixed(2)) });
-  }
-  return data;
+const STATUS_DOT_COLORS = {
+  online: '#22c55e',
+  offline: '#ef4444',
+  incomplete: '#3b82f6',
+  partially_offline: '#f59e0b',
+  partial: '#f59e0b',
+  never: '#3b82f6',
 };
 
-const PLANTS = [
-  {
-    id: 1,
-    name: 'Ikeja City Mall Annex',
-    address: 'Obafemi Awolowo Way, Ikeja, Lagos',
-    statusKey: 'online',
-    lastPostedLabel: '1m ago',
-    lastPostedDotColor: '#22c55e',
-    alerts: 'ok',
-    capacity: 175.0,
-    production: 3.20,
-    dailyProduction: 112.0,
-    tag: 'Retail',
-    capacityBand: '100-500',
-    favourite: false,
-  },
-  {
-    id: 2,
-    name: 'Epe Fish Harbour Cold Store',
-    address: 'Epe Marina Road, Lagos',
-    statusKey: 'online',
-    lastPostedLabel: '2m ago',
-    lastPostedDotColor: '#22c55e',
-    alerts: 'ok',
-    capacity: 44.4,
-    production: 0.11,
-    dailyProduction: 3.0,
-    tag: null,
-    capacityBand: '30-100',
-    favourite: false,
-  },
-  {
-    id: 3,
-    name: 'Badagry Border Customs Yard',
-    address: 'Seme Border Road, Badagry, Lagos',
-    statusKey: 'offline',
-    lastPostedLabel: '3h ago',
-    lastPostedDotColor: '#ef4444',
-    alerts: 'ok',
-    capacity: 26.0,
-    production: 0,
-    dailyProduction: 0,
-    tag: null,
-    capacityBand: '16-30',
-    favourite: false,
-    flatTrend: true,
-  },
-  {
-    id: 4,
-    name: 'Sokoto Central Market Roof',
-    address: 'Kano Road, Sokoto',
-    statusKey: 'online',
-    lastPostedLabel: 'Just now',
-    lastPostedDotColor: '#22c55e',
-    alerts: 'ok',
-    capacity: 67.2,
-    production: 0.44,
-    dailyProduction: 18.9,
-    tag: 'Retail',
-    capacityBand: '30-100',
-    favourite: false,
-  },
-  {
-    id: 5,
-    name: 'Benin Sapele Road Industrial',
-    address: 'Sapele Road, Benin City, Edo',
-    statusKey: 'online',
-    lastPostedLabel: '7m ago',
-    lastPostedDotColor: '#22c55e',
-    alerts: 'ok',
-    capacity: 91.0,
-    production: 0.67,
-    dailyProduction: 22.3,
-    tag: null,
-    capacityBand: '30-100',
-    favourite: false,
-  },
-  {
-    id: 6,
-    name: 'Abeokuta',
-    address: 'Dr. Leke Badmus Street, Obasanjo Hilltop, Abeokuta',
-    statusKey: 'never',
-    lastPostedLabel: 'Never',
-    lastPostedDotColor: '#3b82f6',
-    alerts: 'ok',
-    capacity: 19.5,
-    production: null,
-    dailyProduction: null,
-    tag: null,
-    capacityBand: '16-30',
-    favourite: false,
-    noTrend: true,
-  },
-];
+const getStatusDotColor = (statusKey) => STATUS_DOT_COLORS[statusKey] || '#9ca3af';
 
-const CARD_DATA = [
-  {
-    key: 'realtime',
-    icon: '/Images/wyre-power-icon.png',
-    label: 'Real-time generating power',
-    value: '91',
-    unit: 'W',
-    sub: 'Installed capacity: 423.44 kWp',
-    bg: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
-    decorationColor: 'rgba(255,255,255,0.08)',
-  },
-  {
-    key: 'daily',
-    icon: '/Images/wyre-power-icon.png',
-    label: 'Daily Production',
-    value: '0',
-    unit: 'kWh',
-    sub: 'vs yesterday: —',
-    bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-    decorationColor: 'rgba(255,255,255,0.08)',
-  },
-  {
-    key: 'monthly',
-    icon: '/Images/wyre-power-icon.png',
-    label: 'Monthly Production',
-    value: '7.73',
-    unit: 'MWh',
-    sub: 'May 2026 month-to-date',
-    bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
-    decorationColor: 'rgba(255,255,255,0.08)',
-  },
-  {
-    key: 'total',
-    icon: '/Images/wyre-power-icon.png',
-    label: 'Total Production',
-    value: '156.35',
-    unit: 'MWh',
-    sub: 'Lifetime across 34 plants',
-    bg: 'linear-gradient(135deg, #fb923c 0%, #ea580c 100%)',
-    decorationColor: 'rgba(255,255,255,0.12)',
-  },
-];
-
-const STATUS_COUNTS = {
-  total: 34,
-  online: 19,
-  incomplete: 3,
-  offline: 5,
-  partially_offline: 3,
-  no_alerts: 28,
-  alerts: 5,
+const formatNumber = (value, decimals = 2) => {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return null;
+  const num = Number(value);
+  return num.toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 };
 
-const SolarMgt = () => {
+const formatCompact = (value, decimals = 2) => {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+  return Number(value).toLocaleString(undefined, {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
+};
+
+const normalizeTrend = (trend) => {
+  if (!Array.isArray(trend) || trend.length === 0) return null;
+  return trend.map((y, i) => ({ x: i, y: Number(y) || 0 }));
+};
+
+const SolarMgt = ({
+  solarMgt,
+  fetchRealtimePower: fetchRealtimePowerAction,
+  fetchDailyProduction: fetchDailyProductionAction,
+  fetchMonthlyProduction: fetchMonthlyProductionAction,
+  fetchTotalProduction: fetchTotalProductionAction,
+  fetchStatusCounts: fetchStatusCountsAction,
+  fetchSolarPlants: fetchSolarPlantsAction,
+  toggleFavourite: toggleFavouriteThunk,
+  fetchSolarClients: fetchSolarClientsAction,
+}) => {
+  const {
+    realtimePower,
+    realtimePowerLoading,
+    dailyProduction,
+    dailyProductionLoading,
+    monthlyProduction,
+    monthlyProductionLoading,
+    totalProduction,
+    totalProductionLoading,
+    statusCounts,
+    statusCountsLoading,
+    plants,
+    plantsCount,
+    plantsLoading,
+    plantsError,
+    toggleFavouriteLoadingId,
+    clients,
+    clientsLoading,
+  } = solarMgt;
+
   const [searchText, setSearchText] = useState('');
   const [activeStatus, setActiveStatus] = useState('total');
   const [filtersExpanded, setFiltersExpanded] = useState(true);
   const [capacityMin, setCapacityMin] = useState('');
   const [capacityMax, setCapacityMax] = useState('');
+  const [appliedCapacity, setAppliedCapacity] = useState({ min: '', max: '' });
   const [selectedPresets, setSelectedPresets] = useState([]);
   const [selectedTags, setSelectedTags] = useState([]);
+  const [appliedTags, setAppliedTags] = useState([]);
   const [selectedClient, setSelectedClient] = useState('all');
-  const [favourites, setFavourites] = useState({});
+  const [appliedClient, setAppliedClient] = useState('all');
   const [selectedRows, setSelectedRows] = useState({});
   const [sortAsc, setSortAsc] = useState(true);
   const [pageSize, setPageSize] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalCount = STATUS_COUNTS.total;
+  // Initial KPI / status counts / clients fetch
+  useEffect(() => {
+    fetchRealtimePowerAction();
+    fetchDailyProductionAction();
+    fetchMonthlyProductionAction();
+    fetchTotalProductionAction();
+    fetchStatusCountsAction();
+    fetchSolarClientsAction();
+  }, [
+    fetchRealtimePowerAction,
+    fetchDailyProductionAction,
+    fetchMonthlyProductionAction,
+    fetchTotalProductionAction,
+    fetchStatusCountsAction,
+    fetchSolarClientsAction,
+  ]);
 
-  const togglePreset = (label) => {
-    setSelectedPresets((prev) =>
-      prev.includes(label) ? prev.filter((p) => p !== label) : [...prev, label]
-    );
+  // Plants fetch reacts to filters/pagination
+  useEffect(() => {
+    fetchSolarPlantsAction({
+      page: currentPage,
+      page_size: pageSize,
+      search: searchText.trim(),
+      status: activeStatus,
+      client: appliedClient,
+      min_capacity: appliedCapacity.min,
+      max_capacity: appliedCapacity.max,
+      tags: appliedTags,
+    });
+  }, [
+    fetchSolarPlantsAction,
+    currentPage,
+    pageSize,
+    searchText,
+    activeStatus,
+    appliedClient,
+    appliedCapacity,
+    appliedTags,
+  ]);
+
+  useEffect(() => {
+    if (plantsError) {
+      notification.warning({
+        message: 'Could not load plants',
+        description: plantsError,
+      });
+    }
+  }, [plantsError]);
+
+  const togglePreset = (preset) => {
+    const isSelected = selectedPresets.includes(preset.label);
+    if (isSelected) {
+      setSelectedPresets(selectedPresets.filter((p) => p !== preset.label));
+      setCapacityMin('');
+      setCapacityMax('');
+    } else {
+      setSelectedPresets([preset.label]);
+      setCapacityMin(String(preset.min));
+      setCapacityMax(preset.max != null ? String(preset.max) : '');
+    }
   };
 
   const toggleTag = (tag) => {
@@ -235,16 +207,52 @@ const SolarMgt = () => {
     );
   };
 
-  const resetFilters = () => {
+  const handleApply = () => {
+    setAppliedCapacity({ min: capacityMin, max: capacityMax });
+    setAppliedTags(selectedTags);
+    setAppliedClient(selectedClient);
+    setCurrentPage(1);
+  };
+
+  const handleReset = () => {
     setCapacityMin('');
     setCapacityMax('');
     setSelectedPresets([]);
     setSelectedTags([]);
     setSelectedClient('all');
+    setAppliedCapacity({ min: '', max: '' });
+    setAppliedTags([]);
+    setAppliedClient('all');
+    setCurrentPage(1);
   };
 
-  const toggleFavourite = (id) => {
-    setFavourites((prev) => ({ ...prev, [id]: !prev[id] }));
+  const handleToggleFavourite = async (plantId) => {
+    if (!plantId) return;
+    const result = await toggleFavouriteThunk(plantId);
+    if (!result?.fulfilled) {
+      notification.error({
+        message: 'Failed to update favourite',
+        description: result?.message || 'Please try again.',
+      });
+    }
+  };
+
+  const handleRefresh = () => {
+    fetchRealtimePowerAction();
+    fetchDailyProductionAction();
+    fetchMonthlyProductionAction();
+    fetchTotalProductionAction();
+    fetchStatusCountsAction();
+    fetchSolarPlantsAction({
+      page: currentPage,
+      page_size: pageSize,
+      search: searchText.trim(),
+      status: activeStatus,
+      client: appliedClient,
+      min_capacity: appliedCapacity.min,
+      max_capacity: appliedCapacity.max,
+      tags: appliedTags,
+    });
   };
 
   const toggleSelectRow = (id) => {
@@ -252,53 +260,127 @@ const SolarMgt = () => {
   };
 
   const allSelected = useMemo(() => {
-    if (!PLANTS.length) return false;
-    return PLANTS.every((p) => selectedRows[p.id]);
-  }, [selectedRows]);
+    if (!plants.length) return false;
+    return plants.every((p) => selectedRows[p.id]);
+  }, [selectedRows, plants]);
 
   const someSelected = useMemo(() => {
-    return PLANTS.some((p) => selectedRows[p.id]);
-  }, [selectedRows]);
+    return plants.some((p) => selectedRows[p.id]);
+  }, [selectedRows, plants]);
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
       const all = {};
-      PLANTS.forEach((p) => { all[p.id] = true; });
+      plants.forEach((p) => {
+        all[p.id] = true;
+      });
       setSelectedRows(all);
     } else {
       setSelectedRows({});
     }
   };
 
-  const filteredPlants = useMemo(() => {
-    const text = searchText.trim().toLowerCase();
-    let rows = PLANTS.filter((p) => {
-      if (text) {
-        const matches =
-          p.name.toLowerCase().includes(text) ||
-          p.address.toLowerCase().includes(text);
-        if (!matches) return false;
-      }
-      if (activeStatus !== 'total') {
-        if (activeStatus === 'online' && p.statusKey !== 'online') return false;
-        if (activeStatus === 'offline' && p.statusKey !== 'offline') return false;
-        if (activeStatus === 'incomplete' && p.statusKey !== 'incomplete') return false;
-        if (activeStatus === 'partially_offline' && p.statusKey !== 'partially_offline') return false;
-      }
-      return true;
-    });
-
-    rows = [...rows].sort((a, b) => {
-      const cmp = a.name.localeCompare(b.name);
-      return sortAsc ? cmp : -cmp;
-    });
-
-    return rows;
-  }, [searchText, activeStatus, sortAsc]);
-
-  const watchlistCount = Object.values(favourites).filter(Boolean).length || 1;
+  const watchlistCount = useMemo(() => {
+    return plants.filter((p) => p.is_favourited).length;
+  }, [plants]);
 
   const anySelected = Object.values(selectedRows).some(Boolean);
+
+  // Build the table rows from the plants response, sorted by name client-side.
+  const tableRows = useMemo(() => {
+    const rows = [...plants];
+    rows.sort((a, b) => {
+      const cmp = (a?.name || '').localeCompare(b?.name || '');
+      return sortAsc ? cmp : -cmp;
+    });
+    return rows;
+  }, [plants, sortAsc]);
+
+  const totalCount = statusCounts?.total ?? plantsCount ?? tableRows.length;
+
+  const cards = useMemo(() => {
+    const installedCapacity = realtimePower?.installed_capacity_kwp;
+    const powerW = realtimePower?.power_w;
+    const dailyKwh = dailyProduction?.kwh;
+    const deltaPct = dailyProduction?.delta_pct;
+    const monthlyMwh = monthlyProduction?.mwh;
+    const monthLabel = monthlyProduction?.month;
+    const totalMwh = totalProduction?.mwh;
+    const plantCount = totalProduction?.plant_count;
+
+    const formatMonth = (m) => {
+      if (!m) return '';
+      const [year, month] = String(m).split('-');
+      if (!year || !month) return m;
+      const monthNames = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December',
+      ];
+      const idx = Number(month) - 1;
+      const name = monthNames[idx] || month;
+      return `${name} ${year}`;
+    };
+
+    return [
+      {
+        key: 'realtime',
+        label: 'Real-time generating power',
+        value: powerW != null ? formatNumber(powerW, 0) : '—',
+        unit: 'W',
+        sub: installedCapacity != null
+          ? `Installed capacity: ${formatNumber(installedCapacity, 2)} kWp`
+          : 'Installed capacity: —',
+        bg: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+        decorationColor: 'rgba(255,255,255,0.08)',
+        loading: realtimePowerLoading,
+      },
+      {
+        key: 'daily',
+        label: 'Daily Production',
+        value: dailyKwh != null ? formatNumber(dailyKwh, dailyKwh >= 100 ? 1 : 2) : '—',
+        unit: 'kWh',
+        sub: deltaPct != null
+          ? `vs yesterday: ${deltaPct > 0 ? '+' : ''}${formatNumber(deltaPct, 1)}%`
+          : 'vs yesterday: —',
+        bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+        decorationColor: 'rgba(255,255,255,0.08)',
+        loading: dailyProductionLoading,
+      },
+      {
+        key: 'monthly',
+        label: 'Monthly Production',
+        value: monthlyMwh != null ? formatNumber(monthlyMwh, 2) : '—',
+        unit: 'MWh',
+        sub: monthLabel
+          ? `${formatMonth(monthLabel)} month-to-date`
+          : 'Month-to-date',
+        bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+        decorationColor: 'rgba(255,255,255,0.08)',
+        loading: monthlyProductionLoading,
+      },
+      {
+        key: 'total',
+        label: 'Total Production',
+        value: totalMwh != null ? formatNumber(totalMwh, 2) : '—',
+        unit: 'MWh',
+        sub: plantCount != null
+          ? `Lifetime across ${plantCount} plant${plantCount === 1 ? '' : 's'}`
+          : 'Lifetime',
+        bg: 'linear-gradient(135deg, #fb923c 0%, #ea580c 100%)',
+        decorationColor: 'rgba(255,255,255,0.12)',
+        loading: totalProductionLoading,
+      },
+    ];
+  }, [
+    realtimePower,
+    realtimePowerLoading,
+    dailyProduction,
+    dailyProductionLoading,
+    monthlyProduction,
+    monthlyProductionLoading,
+    totalProduction,
+    totalProductionLoading,
+  ]);
 
   return (
     <div className="solar-mgt-page">
@@ -310,7 +392,7 @@ const SolarMgt = () => {
       </div>
 
       <div className="solar-mgt-cards">
-        {CARD_DATA.map((card) => (
+        {cards.map((card) => (
           <div
             key={card.key}
             className="solar-kpi-card"
@@ -326,8 +408,14 @@ const SolarMgt = () => {
               <Text className="solar-kpi-label">{card.label}</Text>
             </div>
             <div className="solar-kpi-value-row">
-              <span className="solar-kpi-value">{card.value}</span>
-              <span className="solar-kpi-unit">{card.unit}</span>
+              {card.loading ? (
+                <Spin size="small" style={{ color: '#fff' }} />
+              ) : (
+                <>
+                  <span className="solar-kpi-value">{card.value}</span>
+                  <span className="solar-kpi-unit">{card.unit}</span>
+                </>
+              )}
             </div>
             <Text className="solar-kpi-sub">{card.sub}</Text>
           </div>
@@ -344,7 +432,10 @@ const SolarMgt = () => {
           placeholder="Please enter plant name"
           suffix={<SearchOutlined style={{ color: '#9ca3af' }} />}
           value={searchText}
-          onChange={(e) => setSearchText(e.target.value)}
+          onChange={(e) => {
+            setSearchText(e.target.value);
+            setCurrentPage(1);
+          }}
           allowClear
         />
       </div>
@@ -352,14 +443,17 @@ const SolarMgt = () => {
       <div className="solar-filters-card">
         <div className="solar-status-tabs">
           {STATUS_FILTERS.map((status) => {
-            const count = STATUS_COUNTS[status.key];
+            const count = statusCounts?.[status.countKey] ?? 0;
             const isActive = activeStatus === status.key;
             return (
               <button
                 key={status.key}
                 type="button"
                 className={`solar-status-tab ${isActive ? 'is-active' : ''}`}
-                onClick={() => setActiveStatus(status.key)}
+                onClick={() => {
+                  setActiveStatus(status.key);
+                  setCurrentPage(1);
+                }}
               >
                 {status.key !== 'total' && (
                   <span
@@ -368,7 +462,9 @@ const SolarMgt = () => {
                   />
                 )}
                 <span className="solar-status-label">{status.label}</span>
-                <span className="solar-status-count">({count})</span>
+                <span className="solar-status-count">
+                  ({statusCountsLoading ? '…' : count})
+                </span>
               </button>
             );
           })}
@@ -392,8 +488,9 @@ const SolarMgt = () => {
             type="button"
             className="solar-refresh-btn"
             aria-label="Refresh"
+            onClick={handleRefresh}
           >
-            <ReloadOutlined />
+            <ReloadOutlined spin={plantsLoading} />
           </button>
         </div>
 
@@ -406,7 +503,10 @@ const SolarMgt = () => {
                   <Input
                     placeholder="Minimum kWp"
                     value={capacityMin}
-                    onChange={(e) => setCapacityMin(e.target.value)}
+                    onChange={(e) => {
+                      setCapacityMin(e.target.value);
+                      setSelectedPresets([]);
+                    }}
                     type="number"
                     className="solar-capacity-input"
                   />
@@ -414,7 +514,10 @@ const SolarMgt = () => {
                   <Input
                     placeholder="Maximum kWp"
                     value={capacityMax}
-                    onChange={(e) => setCapacityMax(e.target.value)}
+                    onChange={(e) => {
+                      setCapacityMax(e.target.value);
+                      setSelectedPresets([]);
+                    }}
                     type="number"
                     className="solar-capacity-input"
                   />
@@ -427,7 +530,7 @@ const SolarMgt = () => {
                         key={preset.label}
                         type="button"
                         className={`solar-chip ${selected ? 'is-selected' : ''}`}
-                        onClick={() => togglePreset(preset.label)}
+                        onClick={() => togglePreset(preset)}
                       >
                         {preset.label}
                       </button>
@@ -446,8 +549,10 @@ const SolarMgt = () => {
                   className="solar-client-select"
                   value={selectedClient}
                   onChange={setSelectedClient}
+                  loading={clientsLoading}
                   options={[
                     { value: 'all', label: 'All clients' },
+                    ...clients.map((c) => ({ value: c.id, label: c.name })),
                   ]}
                 />
                 <Text className="solar-filter-hint">
@@ -480,10 +585,10 @@ const SolarMgt = () => {
             </div>
 
             <div className="solar-filter-actions">
-              <button type="button" className="solar-reset-btn" onClick={resetFilters}>
+              <button type="button" className="solar-reset-btn" onClick={handleReset}>
                 Reset
               </button>
-              <Button type="primary" className="solar-apply-btn">
+              <Button type="primary" className="solar-apply-btn" onClick={handleApply}>
                 Apply
               </Button>
             </div>
@@ -497,6 +602,7 @@ const SolarMgt = () => {
                 indeterminate={someSelected && !allSelected}
                 checked={allSelected}
                 onChange={handleSelectAll}
+                disabled={!plants.length}
               />
             </div>
             <div
@@ -519,62 +625,84 @@ const SolarMgt = () => {
           </div>
 
           <div className="solar-table-body">
-            {filteredPlants.map((plant) => {
-              const trendData = plant.noTrend
-                ? null
-                : plant.flatTrend
-                  ? Array(12).fill(0).map((_, i) => ({ x: i, y: 0 }))
-                  : generateTrend(plant.id);
-              const isSelected = !!selectedRows[plant.id];
-              return (
-                <div key={plant.id} className={`solar-tr ${isSelected ? 'is-selected' : ''}`}>
-                  <div className="solar-td solar-td-checkbox">
-                    <Checkbox
-                      checked={isSelected}
-                      onChange={() => toggleSelectRow(plant.id)}
-                    />
-                  </div>
-                  <div className="solar-td solar-td-name">
-                    <div className="solar-plant-name">
-                      <span className="solar-plant-name-text">{plant.name}</span>
-                      <ArrowUpOutlined className="solar-plant-arrow" />
+            {plantsLoading ? (
+              <div className="solar-empty-state">
+                <Spin />
+              </div>
+            ) : tableRows.length === 0 ? (
+              <div className="solar-empty-state">
+                <Text type="secondary">No plants match the current filters.</Text>
+              </div>
+            ) : (
+              tableRows.map((plant) => {
+                const statusCom = plant?.status?.com || 'unknown';
+                const lastPostedLabel = plant?.status?.last_posted_label || '—';
+                const lastPostedAt = plant?.status?.last_posted_at;
+                const alertsState = plant?.status?.alerts || 'unknown';
+                const capacityKwp = plant?.capacity?.installed_pv_kwp;
+                const powerKw = plant?.now?.power_kw;
+                const dailyKwh = plant?.production?.daily_kwh;
+                const trendData = normalizeTrend(plant?.trend);
+                const tagsArr = Array.isArray(plant?.tags) ? plant.tags : [];
+                const isSelected = !!selectedRows[plant.id];
+                const isFavLoading = String(toggleFavouriteLoadingId) === String(plant.id);
+                const isNever = !lastPostedAt && (lastPostedLabel === 'Never' || lastPostedLabel === '—');
+                const statusKey = isNever ? 'never' : statusCom;
+                const dotColor = getStatusDotColor(statusKey);
+                const alertsDotColor = alertsState === 'ok'
+                  ? '#22c55e'
+                  : alertsState === 'warn'
+                  ? '#f59e0b'
+                  : alertsState === 'crit' || alertsState === 'critical'
+                  ? '#ef4444'
+                  : '#9ca3af';
+
+                return (
+                  <div key={plant.id} className={`solar-tr ${isSelected ? 'is-selected' : ''}`}>
+                    <div className="solar-td solar-td-checkbox">
+                      <Checkbox
+                        checked={isSelected}
+                        onChange={() => toggleSelectRow(plant.id)}
+                      />
                     </div>
-                    <div className="solar-plant-address">
-                      <LocationPin /> {plant.address}
+                    <div className="solar-td solar-td-name">
+                      <div className="solar-plant-name">
+                        <span className="solar-plant-name-text">{plant.name || '—'}</span>
+                        <ArrowUpOutlined className="solar-plant-arrow" />
+                      </div>
+                      {plant.address && (
+                        <div className="solar-plant-address">
+                          <LocationPin /> {plant.address}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                  <div className="solar-td solar-td-status">
-                    <span
-                      className="solar-status-dot solar-status-dot--lg"
-                      style={{ background: plant.lastPostedDotColor }}
-                    />
-                    <span
-                      className="solar-status-time"
-                      style={plant.statusKey === 'never' ? { color: plant.lastPostedDotColor } : undefined}
-                    >
-                      {plant.lastPostedLabel}
-                    </span>
-                  </div>
-                  <div className="solar-td solar-td-alerts">
-                    <span
-                      className="solar-status-dot solar-status-dot--lg"
-                      style={{ background: '#22c55e' }}
-                    />
-                  </div>
-                  <div className="solar-td solar-td-capacity">
-                    {plant.capacity.toFixed(1)}
-                  </div>
-                  <div className="solar-td solar-td-production">
-                    {plant.production === null ? '—' : (
-                      plant.production === 0 ? 0 : plant.production.toFixed(2)
-                    )}
-                  </div>
-                  <div className="solar-td solar-td-trend">
-                    {trendData ? (
-                      <div className="solar-trend-wrap">
-                        {plant.flatTrend ? (
-                          <span className="solar-trend-flat">—</span>
-                        ) : (
+                    <div className="solar-td solar-td-status">
+                      <span
+                        className="solar-status-dot solar-status-dot--lg"
+                        style={{ background: dotColor }}
+                      />
+                      <span
+                        className="solar-status-time"
+                        style={statusKey === 'never' ? { color: dotColor } : undefined}
+                      >
+                        {lastPostedLabel}
+                      </span>
+                    </div>
+                    <div className="solar-td solar-td-alerts">
+                      <span
+                        className="solar-status-dot solar-status-dot--lg"
+                        style={{ background: alertsDotColor }}
+                      />
+                    </div>
+                    <div className="solar-td solar-td-capacity">
+                      {formatCompact(capacityKwp, 1)}
+                    </div>
+                    <div className="solar-td solar-td-production">
+                      {formatCompact(powerKw, 2)}
+                    </div>
+                    <div className="solar-td solar-td-trend">
+                      {trendData ? (
+                        <div className="solar-trend-wrap">
                           <ResponsiveContainer width="100%" height={36}>
                             <LineChart data={trendData} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
                               <YAxis hide domain={[0, 'dataMax + 0.5']} />
@@ -588,38 +716,41 @@ const SolarMgt = () => {
                               />
                             </LineChart>
                           </ResponsiveContainer>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="solar-trend-flat">—</span>
-                    )}
-                  </div>
-                  <div className="solar-td solar-td-daily">
-                    {plant.dailyProduction === null ? '—' : plant.dailyProduction.toFixed(1)}
-                  </div>
-                  <div className="solar-td solar-td-tag">
-                    {plant.tag && (
-                      <span className="solar-tag-pill">{plant.tag}</span>
-                    )}
-                    <button type="button" className="solar-tag-edit">Edit</button>
-                  </div>
-                  <div className="solar-td solar-td-fav">
-                    <button
-                      type="button"
-                      className="solar-fav-btn"
-                      onClick={() => toggleFavourite(plant.id)}
-                      aria-label="Toggle favourite"
-                    >
-                      {favourites[plant.id] ? (
-                        <StarFilled style={{ color: '#f59e0b' }} />
+                        </div>
                       ) : (
-                        <StarOutlined style={{ color: '#9ca3af' }} />
+                        <span className="solar-trend-flat">—</span>
                       )}
-                    </button>
+                    </div>
+                    <div className="solar-td solar-td-daily">
+                      {formatCompact(dailyKwh, 1)}
+                    </div>
+                    <div className="solar-td solar-td-tag">
+                      {tagsArr.length > 0 && (
+                        <span className="solar-tag-pill">{tagsArr[0]}</span>
+                      )}
+                      <button type="button" className="solar-tag-edit">Edit</button>
+                    </div>
+                    <div className="solar-td solar-td-fav">
+                      <button
+                        type="button"
+                        className="solar-fav-btn"
+                        onClick={() => handleToggleFavourite(plant.id)}
+                        aria-label="Toggle favourite"
+                        disabled={isFavLoading}
+                      >
+                        {isFavLoading ? (
+                          <Spin size="small" />
+                        ) : plant.is_favourited ? (
+                          <StarFilled style={{ color: '#f59e0b' }} />
+                        ) : (
+                          <StarOutlined style={{ color: '#9ca3af' }} />
+                        )}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -657,6 +788,7 @@ const SolarMgt = () => {
               <button
                 type="button"
                 className="solar-page-btn"
+                disabled={currentPage * pageSize >= (plantsCount || totalCount)}
                 onClick={() => setCurrentPage((p) => p + 1)}
               >
                 <CaretDownFilled style={{ transform: 'rotate(-90deg)', fontSize: 10 }} />
@@ -665,7 +797,10 @@ const SolarMgt = () => {
             <Select
               className="solar-page-size"
               value={pageSize}
-              onChange={setPageSize}
+              onChange={(value) => {
+                setPageSize(value);
+                setCurrentPage(1);
+              }}
               options={[
                 { value: 10, label: '10/page' },
                 { value: 20, label: '20/page' },
@@ -698,9 +833,24 @@ const SunIcon = () => (
 
 const LocationPin = () => (
   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ verticalAlign: -1, marginRight: 3 }}>
-    <path d="M12 22s7-7.58 7-13a7 7 0 1 0-14 0c0 5.42 7 13 7 13Z" stroke="#9ca3af" strokeWidth="1.6" strokeLinejoin="round"/>
-    <circle cx="12" cy="9" r="2.5" stroke="#9ca3af" strokeWidth="1.6"/>
+    <path d="M12 22s7-7.58 7-13a7 7 0 1 0-14 0c0 5.42 7 13 7 13Z" stroke="#9ca3af" strokeWidth="1.6" strokeLinejoin="round" />
+    <circle cx="12" cy="9" r="2.5" stroke="#9ca3af" strokeWidth="1.6" />
   </svg>
 );
 
-export default SolarMgt;
+const mapStateToProps = (state) => ({
+  solarMgt: state.solarMgt,
+});
+
+const mapDispatchToProps = {
+  fetchRealtimePower,
+  fetchDailyProduction,
+  fetchMonthlyProduction,
+  fetchTotalProduction,
+  fetchStatusCounts,
+  fetchSolarPlants,
+  toggleFavourite: toggleFavouriteAction,
+  fetchSolarClients,
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(SolarMgt);
