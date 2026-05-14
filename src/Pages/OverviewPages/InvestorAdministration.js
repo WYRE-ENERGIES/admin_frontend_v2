@@ -14,6 +14,7 @@ import {
   Modal,
   Select,
   Spin,
+  Switch,
   Table,
   Tabs,
   Tag,
@@ -47,6 +48,7 @@ import {
   fetchAdminInvestorProjectsList,
   clearInvestorProjectDetail,
   fetchAdminInvestorProjectsPerformance,
+  updateAdminInvestorProject,
 } from "../../redux/actions/adminInvestorProject/adminInvestorProject.action";
 import {
   createAdminInvestorInvestment,
@@ -54,6 +56,7 @@ import {
   fetchAdminInvestorInvestmentDetail,
   fetchAdminInvestorInvestmentsList,
   clearInvestorInvestmentDetail,
+  updateAdminInvestorInvestment,
 } from "../../redux/actions/adminInvestorInvestment/adminInvestorInvestment.action";
 import {
   createAdminCustomerPayment,
@@ -136,12 +139,6 @@ const projectStatusTagColor = (status) => {
   return "default";
 };
 
-const INVESTMENT_STATUS_OPTIONS = [
-  { value: "active", label: "Active" },
-  { value: "paused", label: "Paused" },
-  { value: "closed", label: "Closed" },
-];
-
 const REPAYMENT_PLAN_TYPE_OPTIONS = [
   { value: "monthly", label: "Monthly" },
   { value: "quarterly", label: "Quarterly" },
@@ -151,6 +148,20 @@ const REPAYMENT_PLAN_TYPE_OPTIONS = [
 const REPAYMENT_INTEREST_BASIS_OPTIONS = [
   { value: "total", label: "Total" },
   { value: "annual", label: "Annual (per year)" },
+];
+
+const SCHEDULE_LINE_STATUS_OPTIONS = [
+  { value: "scheduled", label: "Scheduled" },
+  { value: "paid", label: "Paid" },
+  { value: "partial", label: "Partial" },
+  { value: "overdue", label: "Overdue" },
+];
+
+const INVESTMENT_STATUS_OPTIONS = [
+  { value: "active", label: "Active" },
+  { value: "pending", label: "Pending" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
 ];
 
 const CUSTOMER_PAYMENT_METHOD_OPTIONS = [
@@ -227,6 +238,7 @@ function InvestorAdministration() {
   const projectDetail = useSelector((s) => s.adminInvestorProjectsPage?.detail);
   const projectDetailLoading = useSelector((s) => s.adminInvestorProjectsPage?.detailLoading);
   const projectDeleteLoading = useSelector((s) => s.adminInvestorProjectsPage?.deleteLoading);
+  const projectUpdateLoading = useSelector((s) => s.adminInvestorProjectsPage?.updateLoading);
   const projectsPerformance = useSelector((s) => s.adminInvestorProjectsPage?.performance);
   const projectsPerformanceLoading = useSelector((s) => s.adminInvestorProjectsPage?.performanceLoading);
 
@@ -236,6 +248,7 @@ function InvestorAdministration() {
   const investmentDetail = useSelector((s) => s.adminInvestorInvestmentsPage?.detail);
   const investmentDetailLoading = useSelector((s) => s.adminInvestorInvestmentsPage?.detailLoading);
   const investmentDeleteLoading = useSelector((s) => s.adminInvestorInvestmentsPage?.deleteLoading);
+  const investmentUpdateLoading = useSelector((s) => s.adminInvestorInvestmentsPage?.updateLoading);
 
   const adminCustomerPaymentsList = useSelector((s) => s.adminCustomerPaymentsPage?.list);
   const customerPaymentsListLoading = useSelector((s) => s.adminCustomerPaymentsPage?.listLoading);
@@ -276,6 +289,10 @@ function InvestorAdministration() {
   const [investorEditOpen, setInvestorEditOpen] = useState(false);
   const [projectDetailOpen, setProjectDetailOpen] = useState(false);
   const [investmentDetailOpen, setInvestmentDetailOpen] = useState(false);
+  const [projectEditOpen, setProjectEditOpen] = useState(false);
+  const [investmentEditOpen, setInvestmentEditOpen] = useState(false);
+  const [projectCustomerSchedules, setProjectCustomerSchedules] = useState([]);
+  const [investmentPaymentSchedules, setInvestmentPaymentSchedules] = useState([]);
   const [customerPaymentDetailOpen, setCustomerPaymentDetailOpen] = useState(false);
   const [investorSearch, setInvestorSearch] = useState("");
   const [projectSearch, setProjectSearch] = useState("");
@@ -299,7 +316,9 @@ function InvestorAdministration() {
   const [investorForm] = Form.useForm();
   const [investorEditForm] = Form.useForm();
   const [projectForm] = Form.useForm();
+  const [projectEditForm] = Form.useForm();
   const [investmentForm] = Form.useForm();
+  const [investmentEditForm] = Form.useForm();
   const [recordPaymentForm] = Form.useForm();
   const [payoutForm] = Form.useForm();
   const [customerPaymentEditForm] = Form.useForm();
@@ -730,8 +749,174 @@ function InvestorAdministration() {
 
   const closeProjectDetail = () => {
     setProjectDetailOpen(false);
+    setProjectEditOpen(false);
+    projectEditForm.resetFields();
+    setProjectCustomerSchedules([]);
     dispatch(clearInvestorProjectDetail());
   };
+
+  const closeProjectEdit = useCallback(() => {
+    setProjectEditOpen(false);
+    projectEditForm.resetFields();
+    setProjectCustomerSchedules([]);
+  }, [projectEditForm]);
+
+  const openProjectEdit = useCallback(() => {
+    const d = projectDetail;
+    if (!d?.id) return;
+    const plan = d.customer_repayment_plan || {};
+    const principalFromPlan = Number(plan.principal_amount);
+    const totalN = Number(d.total_project_cost ?? 0);
+    const clientN = Number(d.client_contribution ?? 0);
+    const principalDefault =
+      Number.isFinite(principalFromPlan) && principalFromPlan > 0
+        ? principalFromPlan
+        : Math.max(0, totalN - clientN);
+    const schedules = Array.isArray(d.customer_payment_schedules) ? d.customer_payment_schedules : [];
+    setProjectCustomerSchedules(
+      schedules.map((s) => ({
+        ...s,
+        due_date: s.due_date ? dayjs(s.due_date) : null,
+        paid_date: s.paid_date ? dayjs(s.paid_date) : null,
+      }))
+    );
+    projectEditForm.setFieldsValue({
+      projectName: d.name,
+      branchId: d.branch_id != null ? String(d.branch_id) : "",
+      description: d.description || "",
+      locationLabel: d.location_label || "",
+      systemCapacityKwp: Number(d.system_capacity_kwp ?? 0),
+      projectType: d.project_type || "solar",
+      status: d.status || "planning",
+      totalProjectCost: Number(d.total_project_cost ?? 0),
+      clientContribution: Number(d.client_contribution ?? 0),
+      installationDate: d.installation_date ? dayjs(d.installation_date) : null,
+      projectDurationMonths: d.project_duration_months ?? 12,
+      is_active: d.is_active !== false,
+      crPlanType: plan.plan_type || "monthly",
+      crPrincipalAmount: principalDefault,
+      crFirstDueDate: plan.first_due_date ? dayjs(plan.first_due_date) : null,
+      crInterestRatePa: Number(plan.interest_rate_pa ?? 0),
+      crGracePeriodDays: plan.grace_period_days ?? 0,
+      crNotes: plan.notes || "",
+    });
+    setProjectEditOpen(true);
+  }, [projectDetail, projectEditForm]);
+
+  const submitProjectEdit = useCallback(async () => {
+    const d = projectDetail;
+    if (!d?.id) return;
+    try {
+      const values = await projectEditForm.validateFields();
+      const branchRaw =
+        values.branchId != null && values.branchId !== "" ? String(values.branchId).trim() : "";
+      let branch_id = null;
+      if (branchRaw) {
+        const n = Number(branchRaw);
+        if (!Number.isFinite(n)) {
+          message.error("Branch ID must be a number");
+          return;
+        }
+        branch_id = n;
+      }
+      const total = Number(values.totalProjectCost);
+      const client = Number(values.clientContribution ?? 0);
+      const kwp = Number(values.systemCapacityKwp ?? 0);
+      if (!Number.isFinite(total) || total < 0) {
+        message.error("Enter a valid total project cost");
+        return;
+      }
+      const durationMonths = Math.floor(Number(values.projectDurationMonths));
+      if (!Number.isFinite(durationMonths) || durationMonths < 1) {
+        message.error("Enter a valid project duration (months)");
+        return;
+      }
+      if (!values.installationDate) {
+        message.error("Installation date is required");
+        return;
+      }
+      if (!values.crFirstDueDate && d.customer_repayment_plan?.id) {
+        message.error("First due date is required for the customer repayment plan");
+        return;
+      }
+      const principal = Number(values.crPrincipalAmount);
+      if (d.customer_repayment_plan?.id && (!Number.isFinite(principal) || principal < 0)) {
+        message.error("Enter a valid principal amount");
+        return;
+      }
+
+      const projectPayload = {
+        id: d.id,
+        name: String(values.projectName || "").trim(),
+        branch_id,
+        description: String(values.description || "").trim(),
+        location_label: String(values.locationLabel || "").trim(),
+        system_capacity_kwp: (Number.isFinite(kwp) ? kwp : 0).toFixed(4),
+        project_type: values.projectType,
+        status: values.status,
+        total_project_cost: total.toFixed(2),
+        client_contribution: (Number.isFinite(client) ? client : 0).toFixed(2),
+        installation_date: dayjs(values.installationDate).format("YYYY-MM-DD"),
+        project_duration_months: durationMonths,
+        is_active: Boolean(values.is_active),
+      };
+
+      const planId = d.customer_repayment_plan?.id;
+      const customer_repayment_plan = planId
+        ? {
+            id: planId,
+            plan_type: values.crPlanType,
+            principal_amount: principal.toFixed(2),
+            first_due_date: dayjs(values.crFirstDueDate).format("YYYY-MM-DD"),
+            interest_rate_pa: Number(values.crInterestRatePa ?? 0).toFixed(4),
+            grace_period_days: Math.max(0, Math.floor(Number(values.crGracePeriodDays ?? 0))),
+            notes: values.crNotes?.trim() || "",
+          }
+        : undefined;
+
+      const customer_payment_schedules = projectCustomerSchedules
+        .filter((row) => row.id != null)
+        .map((row) => {
+          const amtDue = Number(row.amount_due);
+          const amtPaid = Number(row.amount_paid ?? 0);
+          return {
+            id: row.id,
+            installment_number: Math.floor(Number(row.installment_number)),
+            due_date: row.due_date ? dayjs(row.due_date).format("YYYY-MM-DD") : null,
+            amount_due: Number.isFinite(amtDue) ? amtDue.toFixed(2) : "0.00",
+            amount_paid: Number.isFinite(amtPaid) ? amtPaid.toFixed(2) : "0.00",
+            paid_date: row.paid_date ? dayjs(row.paid_date).format("YYYY-MM-DD") : null,
+            status: row.status || "scheduled",
+          };
+        });
+
+      const payload = { project: projectPayload };
+      if (customer_repayment_plan) {
+        payload.customer_repayment_plan = customer_repayment_plan;
+        payload.customer_payment_schedules = customer_payment_schedules;
+      }
+
+      const res = await dispatch(updateAdminInvestorProject(d.id, payload));
+      if (res.fulfilled) {
+        message.success(res.message || "Updated");
+        closeProjectEdit();
+        refreshAdminProjects();
+        void refreshPaymentSchedules();
+      } else {
+        message.error(res.message || "Update failed");
+      }
+    } catch {
+      /* validation */
+    }
+  }, [
+    closeProjectEdit,
+    dispatch,
+    projectCustomerSchedules,
+    projectDetail,
+    projectEditForm,
+    refreshAdminProjects,
+    refreshPaymentSchedules,
+  ]);
 
   const handleDeactivateInvestment = useCallback(
     (record) => {
@@ -771,8 +956,144 @@ function InvestorAdministration() {
 
   const closeInvestmentDetail = () => {
     setInvestmentDetailOpen(false);
+    setInvestmentEditOpen(false);
+    investmentEditForm.resetFields();
+    setInvestmentPaymentSchedules([]);
     dispatch(clearInvestorInvestmentDetail());
   };
+
+  const closeInvestmentEdit = useCallback(() => {
+    setInvestmentEditOpen(false);
+    investmentEditForm.resetFields();
+    setInvestmentPaymentSchedules([]);
+  }, [investmentEditForm]);
+
+  const openInvestmentEdit = useCallback(() => {
+    const d = investmentDetail;
+    if (!d?.id) return;
+    const plan = d.repayment_plan || {};
+    const schedules = Array.isArray(d.payment_schedules) ? d.payment_schedules : [];
+    setInvestmentPaymentSchedules(
+      schedules.map((s) => ({
+        ...s,
+        due_date: s.due_date ? dayjs(s.due_date) : null,
+        paid_date: s.paid_date ? dayjs(s.paid_date) : null,
+      }))
+    );
+    investmentEditForm.setFieldsValue({
+      capitalAmount: Number(d.capital_amount ?? 0),
+      sharePercent: Number(d.share_percent ?? 0),
+      contractStart: d.contract_start_date ? dayjs(d.contract_start_date) : null,
+      contractEnd: d.contract_end_date ? dayjs(d.contract_end_date) : null,
+      invStatus: d.status || "active",
+      invNotes: d.notes || "",
+      planType: plan.plan_type || "monthly",
+      firstDueDate: plan.first_due_date ? dayjs(plan.first_due_date) : null,
+      interestPercent: Number(plan.interest_percent ?? 0),
+      interestBasis: plan.interest_basis || "annual",
+      totalRepayable: Number(plan.total_repayable ?? 0),
+    });
+    setInvestmentEditOpen(true);
+  }, [investmentDetail, investmentEditForm]);
+
+  const submitInvestmentEdit = useCallback(async () => {
+    const d = investmentDetail;
+    if (!d?.id) return;
+    try {
+      const values = await investmentEditForm.validateFields();
+      const cap = Number(values.capitalAmount);
+      const share = Number(values.sharePercent);
+      if (!Number.isFinite(cap) || cap < 0) {
+        message.error("Enter a valid capital amount");
+        return;
+      }
+      if (!Number.isFinite(share) || share < 0) {
+        message.error("Enter a valid share percent");
+        return;
+      }
+      if (!values.contractStart) {
+        message.error("Contract start date is required");
+        return;
+      }
+      if (!values.firstDueDate && d.repayment_plan?.id) {
+        message.error("First due date is required for the repayment plan");
+        return;
+      }
+      const totalRep = Number(values.totalRepayable);
+      if (d.repayment_plan?.id && (!Number.isFinite(totalRep) || totalRep < 0)) {
+        message.error("Enter a valid total repayable");
+        return;
+      }
+
+      const investmentPayload = {
+        id: d.id,
+        investor_id: d.investor_id,
+        project_id: d.project_id,
+        capital_amount: cap.toFixed(2),
+        share_percent: share.toFixed(4),
+        contract_start_date: dayjs(values.contractStart).format("YYYY-MM-DD"),
+        contract_end_date: values.contractEnd ? dayjs(values.contractEnd).format("YYYY-MM-DD") : null,
+        status: values.invStatus,
+        notes: values.invNotes?.trim() || "",
+      };
+
+      const planId = d.repayment_plan?.id;
+      const repayment_plan = planId
+        ? {
+            id: planId,
+            plan_type: values.planType,
+            first_due_date: dayjs(values.firstDueDate).format("YYYY-MM-DD"),
+            interest_percent: Number(values.interestPercent ?? 0).toFixed(4),
+            interest_basis: values.interestBasis || "annual",
+            total_repayable: totalRep.toFixed(2),
+          }
+        : undefined;
+
+      const payment_schedules = investmentPaymentSchedules
+        .filter((row) => row.id != null)
+        .map((row) => {
+          const amtTotal = Number(row.amount_due_total);
+          const amtInv = Number(row.amount_due_investor_share);
+          const amtPaid = Number(row.amount_paid ?? 0);
+          return {
+            id: row.id,
+            installment_number: Math.floor(Number(row.installment_number)),
+            due_date: row.due_date ? dayjs(row.due_date).format("YYYY-MM-DD") : null,
+            amount_due_total: Number.isFinite(amtTotal) ? amtTotal.toFixed(2) : "0.00",
+            amount_due_investor_share: Number.isFinite(amtInv) ? amtInv.toFixed(2) : "0.00",
+            amount_paid: Number.isFinite(amtPaid) ? amtPaid.toFixed(2) : "0.00",
+            paid_date: row.paid_date ? dayjs(row.paid_date).format("YYYY-MM-DD") : null,
+            status: row.status || "scheduled",
+          };
+        });
+
+      const payload = { investment: investmentPayload };
+      if (repayment_plan) {
+        payload.repayment_plan = repayment_plan;
+        payload.payment_schedules = payment_schedules;
+      }
+
+      const res = await dispatch(updateAdminInvestorInvestment(d.id, payload));
+      if (res.fulfilled) {
+        message.success(res.message || "Updated");
+        closeInvestmentEdit();
+        refreshAdminInvestments();
+        void refreshPaymentSchedules();
+      } else {
+        message.error(res.message || "Update failed");
+      }
+    } catch {
+      /* validation */
+    }
+  }, [
+    closeInvestmentEdit,
+    dispatch,
+    investmentDetail,
+    investmentEditForm,
+    investmentPaymentSchedules,
+    refreshAdminInvestments,
+    refreshPaymentSchedules,
+  ]);
 
   const handleDeactivateCustomerPayment = useCallback(
     (record) => {
@@ -1072,21 +1393,29 @@ function InvestorAdministration() {
   const submitCreateInvestment = async () => {
     try {
       const values = await investmentForm.validateFields();
+      const cap = Number(createInvestmentCapitalAmount);
+      if (!Number.isFinite(cap) || cap <= 0) {
+        message.error("Select a project with a valid funding target / principal");
+        return;
+      }
+      const totalRep = Number(createInvestmentTotalRepayable);
+      if (!Number.isFinite(totalRep) || totalRep <= 0) {
+        message.error("Enter a valid interest percent");
+        return;
+      }
       const payload = {
         investor_id: values.investor_id,
         project_id: values.project_id,
         contract_start_date: dayjs(values.contractStart).format("YYYY-MM-DD"),
-        contract_end_date: dayjs(values.contractEnd).format("YYYY-MM-DD"),
-        status: values.status,
+        capital_amount: cap.toFixed(2),
         notes: values.notes?.trim() || "",
-      };
-
-      payload.repayment_plan = {
-        plan_type: values.planType,
-        first_due_date: dayjs(values.firstDueDate).format("YYYY-MM-DD"),
-        interest_percent: String(values.interestPercent ?? "").trim(),
-        interest_basis: values.interestBasis || "total",
-        number_of_installments: Number(values.numberOfInstallments),
+        repayment_plan: {
+          plan_type: values.planType,
+          first_due_date: dayjs(values.firstDueDate).format("YYYY-MM-DD"),
+          interest_percent: String(values.interestPercent ?? "").trim(),
+          interest_basis: values.interestBasis || "annual",
+          total_repayable: totalRep.toFixed(2),
+        },
       };
 
       const res = await dispatch(createAdminInvestorInvestment(payload));
@@ -1152,11 +1481,15 @@ function InvestorAdministration() {
         })
         .filter(Boolean);
 
+      const durationMonths = Math.floor(Number(values.crProjectDurationMonths));
+      if (!Number.isFinite(durationMonths) || durationMonths < 1) {
+        message.error("Enter a valid project duration (months)");
+        return;
+      }
       payload.customer_repayment_plan = {
         plan_type: values.crPlanType,
         first_due_date: dayjs(values.crFirstDueDate).format("YYYY-MM-DD"),
-        interest_rate_pa: String(values.crInterestRatePa ?? "").trim(),
-        number_of_installments: Number(values.crNumberOfInstallments),
+        project_duration_months: durationMonths,
         grace_period_days: Math.max(0, Math.floor(Number(values.crGracePeriodDays ?? 0))),
         notes: values.crNotes?.trim() || "",
       };
@@ -1817,11 +2150,8 @@ function InvestorAdministration() {
     const pct = Number(createInvestmentInterestPercent ?? 0);
     if (!Number.isFinite(cap) || cap <= 0) return null;
     if (!Number.isFinite(pct) || pct < 0) return null;
-    const basis = String(createInvestmentInterestBasis || "total").toLowerCase();
-    if (basis === "total") return cap * (1 + pct / 100);
-    // annual basis: keep UI-only; backend will define compounding rules.
-    return cap;
-  }, [createInvestmentCapitalAmount, createInvestmentInterestPercent, createInvestmentInterestBasis]);
+    return cap * (1 + pct / 100);
+  }, [createInvestmentCapitalAmount, createInvestmentInterestPercent]);
 
   const investmentIdSelectOptions = useMemo(
     () =>
@@ -3519,12 +3849,9 @@ function InvestorAdministration() {
               <InputNumber disabled value={createProjectPrincipalAmount} style={{ width: "100%" }} />
             </Form.Item>
 
-            <Form.Item name="crInterestRatePa" label="Interest rate P.A. (%)" rules={[{ required: true, message: "Required" }]}>
-              <InputNumber min={0} max={100} step={0.0001} style={{ width: "100%" }} placeholder="e.g. 12.5" />
-            </Form.Item>
             <Form.Item
-              name="crNumberOfInstallments"
-              label="Number of installments"
+              name="crProjectDurationMonths"
+              label="Project duration (months)"
               rules={[{ required: true, message: "Required" }]}
             >
               <InputNumber min={1} step={1} style={{ width: "100%" }} placeholder="e.g. 24" />
@@ -3547,6 +3874,13 @@ function InvestorAdministration() {
         width={800}
         className="admin-investor-modal"
         footer={[
+          <Button
+            key="edit"
+            onClick={openProjectEdit}
+            disabled={!projectDetail || projectDetailLoading}
+          >
+            Edit project and payment
+          </Button>,
           <Button key="close" type="primary" onClick={closeProjectDetail}>
             Close
           </Button>,
@@ -3605,6 +3939,210 @@ function InvestorAdministration() {
         )}
       </Modal>
 
+      <Modal
+        open={projectEditOpen}
+        onCancel={closeProjectEdit}
+        title="Update project and payment"
+        width={960}
+        className="admin-investor-modal"
+        destroyOnClose
+        footer={[
+          <Button key="cancel" onClick={closeProjectEdit} disabled={projectUpdateLoading}>
+            Cancel
+          </Button>,
+          <Button key="save" type="primary" loading={projectUpdateLoading} onClick={submitProjectEdit}>
+            Save
+          </Button>,
+        ]}
+      >
+        <Text type="secondary" className="admin-modal-subtitle">
+          PATCH <Text code>/api/v1/investors/admin/projects/:id/</Text> with <Text code>project</Text>,{" "}
+          <Text code>customer_repayment_plan</Text>, and <Text code>customer_payment_schedules</Text>.
+        </Text>
+        {!projectDetail?.customer_repayment_plan?.id ? (
+          <Text type="warning" className="admin-modal-section-sub">
+            No customer repayment plan on this project yet — save will send only the <Text code>project</Text> block.
+          </Text>
+        ) : null}
+        <Form form={projectEditForm} layout="vertical" className="admin-modal-form">
+          <div className="admin-modal-section-title">Project</div>
+          <div className="admin-modal-grid">
+            <Form.Item name="projectName" label="Project name" rules={[{ required: true, message: "Required" }]}>
+              <Input />
+            </Form.Item>
+            <Form.Item name="branchId" label="Branch ID">
+              <Input placeholder="Numeric or empty" />
+            </Form.Item>
+            <Form.Item name="projectType" label="Project type" rules={[{ required: true, message: "Required" }]}>
+              <Select options={PROJECT_TYPE_OPTIONS} />
+            </Form.Item>
+            <Form.Item name="status" label="Status" rules={[{ required: true, message: "Required" }]}>
+              <Select options={PROJECT_STATUS_OPTIONS} />
+            </Form.Item>
+            <Form.Item name="locationLabel" label="Location label">
+              <Input />
+            </Form.Item>
+            <Form.Item name="systemCapacityKwp" label="System capacity (kWp)">
+              <InputNumber min={0} step={0.0001} style={{ width: "100%" }} />
+            </Form.Item>
+            <Form.Item name="totalProjectCost" label="Total project cost (₦)" rules={[{ required: true, message: "Required" }]}>
+              <InputNumber min={0} style={{ width: "100%" }} />
+            </Form.Item>
+            <Form.Item name="clientContribution" label="Client contribution (₦)">
+              <InputNumber min={0} style={{ width: "100%" }} />
+            </Form.Item>
+            <Form.Item name="installationDate" label="Installation date" rules={[{ required: true, message: "Required" }]}>
+              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+            </Form.Item>
+            <Form.Item name="projectDurationMonths" label="Project duration (months)" rules={[{ required: true, message: "Required" }]}>
+              <InputNumber min={1} step={1} style={{ width: "100%" }} />
+            </Form.Item>
+            <Form.Item name="is_active" label="Active" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+            <Form.Item name="description" label="Description" className="admin-modal-wide">
+              <Input.TextArea rows={3} />
+            </Form.Item>
+          </div>
+
+          {projectDetail?.customer_repayment_plan?.id ? (
+            <>
+              <Divider className="admin-modal-divider" />
+              <div className="admin-modal-section-title">Customer repayment plan</div>
+              <div className="admin-modal-grid">
+                <Form.Item name="crPlanType" label="Plan type" rules={[{ required: true, message: "Required" }]}>
+                  <Select options={REPAYMENT_PLAN_TYPE_OPTIONS} />
+                </Form.Item>
+                <Form.Item name="crFirstDueDate" label="First due date" rules={[{ required: true, message: "Required" }]}>
+                  <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+                </Form.Item>
+                <Form.Item name="crPrincipalAmount" label="Principal amount (₦)" rules={[{ required: true, message: "Required" }]}>
+                  <InputNumber min={0} style={{ width: "100%" }} />
+                </Form.Item>
+                <Form.Item name="crInterestRatePa" label="Interest rate % p.a." rules={[{ required: true, message: "Required" }]}>
+                  <InputNumber min={0} max={100} step={0.0001} style={{ width: "100%" }} />
+                </Form.Item>
+                <Form.Item name="crGracePeriodDays" label="Grace period (days)">
+                  <InputNumber min={0} step={1} style={{ width: "100%" }} />
+                </Form.Item>
+                <Form.Item name="crNotes" label="Plan notes" className="admin-modal-wide">
+                  <Input placeholder="Optional" />
+                </Form.Item>
+              </div>
+
+              <Divider className="admin-modal-divider" />
+              <div className="admin-modal-section-title">Customer payment schedules</div>
+              <Table
+                size="small"
+                pagination={false}
+                scroll={{ x: 900 }}
+                rowKey={(row, i) => String(row.id ?? i)}
+                dataSource={projectCustomerSchedules}
+                columns={[
+                  { title: "#", dataIndex: "installment_number", width: 48 },
+                  {
+                    title: "Due date",
+                    dataIndex: "due_date",
+                    width: 150,
+                    render: (v, row, index) => (
+                      <DatePicker
+                        style={{ width: "100%" }}
+                        format="DD/MM/YYYY"
+                        value={v ? dayjs(v) : null}
+                        onChange={(d) => {
+                          setProjectCustomerSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], due_date: d };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    title: "Amount due",
+                    dataIndex: "amount_due",
+                    width: 130,
+                    render: (v, row, index) => (
+                      <InputNumber
+                        min={0}
+                        style={{ width: "100%" }}
+                        value={v != null ? Number(v) : undefined}
+                        onChange={(n) => {
+                          setProjectCustomerSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], amount_due: n };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    title: "Amount paid",
+                    dataIndex: "amount_paid",
+                    width: 130,
+                    render: (v, row, index) => (
+                      <InputNumber
+                        min={0}
+                        style={{ width: "100%" }}
+                        value={v != null ? Number(v) : undefined}
+                        onChange={(n) => {
+                          setProjectCustomerSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], amount_paid: n };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    title: "Paid date",
+                    dataIndex: "paid_date",
+                    width: 150,
+                    render: (v, row, index) => (
+                      <DatePicker
+                        style={{ width: "100%" }}
+                        format="DD/MM/YYYY"
+                        allowClear
+                        value={v ? dayjs(v) : null}
+                        onChange={(d) => {
+                          setProjectCustomerSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], paid_date: d };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    title: "Status",
+                    dataIndex: "status",
+                    width: 120,
+                    render: (v, row, index) => (
+                      <Select
+                        style={{ width: "100%" }}
+                        value={v || "scheduled"}
+                        options={SCHEDULE_LINE_STATUS_OPTIONS}
+                        onChange={(s) => {
+                          setProjectCustomerSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], status: s };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </>
+          ) : null}
+        </Form>
+      </Modal>
+
       {/* Create investment */}
       <Modal
         open={activeModal === MODAL.CREATE_INVESTMENT}
@@ -3623,19 +4161,18 @@ function InvestorAdministration() {
         ]}
       >
         <Text type="secondary" className="admin-modal-subtitle">
-          Fill the form below (mock only).
+          POST <Text code>/api/v1/investors/admin/investments/</Text> with nested <Text code>repayment_plan</Text>.
         </Text>
         <Text type="secondary" className="admin-modal-section-sub">
-          Contract block matches Investment. The section below is the linked RepaymentPlan (Wyre → investor).
+          Installment count follows the linked project&apos;s <Text code>project_duration_months</Text> and this plan type. Set duration on the project before creating the investment.
         </Text>
         <Form
           form={investmentForm}
           layout="vertical"
           className="admin-modal-form"
           initialValues={{
-            status: "active",
-            planType: "quarterly",
-            interestBasis: "total",
+            planType: "monthly",
+            interestBasis: "annual",
           }}
         >
           <div className="admin-modal-grid">
@@ -3656,62 +4193,68 @@ function InvestorAdministration() {
               />
             </Form.Item>
 
-            <Form.Item label="Capital amount (₦)">
-              <InputNumber disabled value={createInvestmentCapitalAmount ?? 18400000000} style={{ width: "100%" }} />
+            <Form.Item
+              className="admin-modal-wide"
+              label="Capital amount (₦)"
+              extra="Principal from the selected project (investor funding target, or total cost − client contribution)."
+            >
+              <InputNumber
+                disabled
+                value={createInvestmentCapitalAmount ?? undefined}
+                style={{ width: "100%" }}
+              />
             </Form.Item>
 
             <Form.Item name="contractStart" label="Contract start date" rules={[{ required: true, message: "Required" }]}>
               <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
             </Form.Item>
-            <Form.Item name="contractEnd" label="Contract end date" rules={[{ required: true, message: "Required" }]}>
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
-            </Form.Item>
 
-            <Form.Item name="status" label="Status">
-              <Select options={INVESTMENT_STATUS_OPTIONS} />
-            </Form.Item>
-            <Form.Item name="notes" label="Notes">
+            <Form.Item name="notes" label="Notes" className="admin-modal-wide">
               <Input.TextArea rows={3} placeholder="Optional" />
             </Form.Item>
           </div>
 
           <Divider className="admin-modal-divider" />
-          <div className="admin-modal-section-title">
-            Investor repayment plan
-          </div>
+          <div className="admin-modal-section-title">Investor repayment plan</div>
           <Text type="secondary" className="admin-modal-section-sub">
-            Fields submit as nested <Text code>repayment_plan</Text>.
+            Required on <Text code>repayment_plan</Text> when creating an investment.
           </Text>
 
           <div className="admin-modal-grid">
             <Form.Item name="planType" label="Plan type" rules={[{ required: true, message: "Required" }]}>
               <Select options={REPAYMENT_PLAN_TYPE_OPTIONS} />
             </Form.Item>
-            <Form.Item name="firstDueDate" label="First due date" rules={[{ required: true, message: "Required" }]}>
+            <Form.Item
+              name="firstDueDate"
+              label="First due date"
+              rules={[{ required: true, message: "Required" }]}
+              extra="Required on RepaymentPlan"
+            >
               <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
             </Form.Item>
 
-            <Form.Item name="interestPercent" label="Interest percent" rules={[{ required: true, message: "Required" }]}>
-              <InputNumber min={0} max={100} step={0.0001} style={{ width: "100%" }} placeholder="e.g. 20" />
+            <Form.Item
+              name="interestPercent"
+              label="Interest percent"
+              rules={[{ required: true, message: "Required" }]}
+              extra="Percentage figure; see interest basis below."
+            >
+              <InputNumber min={0} max={100} step={0.0001} style={{ width: "100%" }} placeholder="e.g. 10" />
             </Form.Item>
             <Form.Item name="interestBasis" label="Interest basis">
               <Select options={REPAYMENT_INTEREST_BASIS_OPTIONS} />
             </Form.Item>
 
-            <Form.Item label="Total repayable (₦)">
+            <Form.Item
+              className="admin-modal-wide"
+              label="Total repayable (₦)"
+              extra="Read-only: capital × (1 + interest percent ÷ 100)."
+            >
               <InputNumber
                 disabled
-                value={createInvestmentTotalRepayable ?? (createInvestmentCapitalAmount ?? 18400000000)}
+                value={createInvestmentTotalRepayable ?? undefined}
                 style={{ width: "100%" }}
               />
-            </Form.Item>
-
-            <Form.Item
-              name="numberOfInstallments"
-              label="Number of installments"
-              rules={[{ required: true, message: "Required" }]}
-            >
-              <InputNumber min={1} step={1} style={{ width: "100%" }} placeholder="e.g. 6" />
             </Form.Item>
           </div>
         </Form>
@@ -3724,6 +4267,13 @@ function InvestorAdministration() {
         width={720}
         className="admin-investor-modal"
         footer={[
+          <Button
+            key="edit"
+            onClick={openInvestmentEdit}
+            disabled={!investmentDetail || investmentDetailLoading}
+          >
+            Edit investment and repayment
+          </Button>,
           <Button key="close" type="primary" onClick={closeInvestmentDetail}>
             Close
           </Button>,
@@ -3749,6 +4299,216 @@ function InvestorAdministration() {
         ) : (
           <Text type="secondary">No data.</Text>
         )}
+      </Modal>
+
+      <Modal
+        open={investmentEditOpen}
+        onCancel={closeInvestmentEdit}
+        title="Update investment and repayment"
+        width={960}
+        className="admin-investor-modal"
+        destroyOnClose
+        footer={[
+          <Button key="cancel" onClick={closeInvestmentEdit} disabled={investmentUpdateLoading}>
+            Cancel
+          </Button>,
+          <Button key="save" type="primary" loading={investmentUpdateLoading} onClick={submitInvestmentEdit}>
+            Save
+          </Button>,
+        ]}
+      >
+        <Text type="secondary" className="admin-modal-subtitle">
+          PATCH <Text code>/api/v1/investors/admin/investments/:id/</Text> with <Text code>investment</Text>,{" "}
+          <Text code>repayment_plan</Text>, and <Text code>payment_schedules</Text>.
+        </Text>
+        {investmentDetail ? (
+          <div className="admin-modal-section-sub" style={{ marginBottom: 12 }}>
+            <Text type="secondary">
+              Investor <Text strong>{investmentDetail.investor_name}</Text> · Project{" "}
+              <Text strong>{investmentDetail.project_name}</Text> (IDs are fixed on save).
+            </Text>
+          </div>
+        ) : null}
+        {!investmentDetail?.repayment_plan?.id ? (
+          <Text type="warning" className="admin-modal-section-sub">
+            No repayment plan on this investment yet — save will send only the <Text code>investment</Text> block.
+          </Text>
+        ) : null}
+        <Form form={investmentEditForm} layout="vertical" className="admin-modal-form">
+          <div className="admin-modal-section-title">Investment</div>
+          <div className="admin-modal-grid">
+            <Form.Item name="capitalAmount" label="Capital amount (₦)" rules={[{ required: true, message: "Required" }]}>
+              <InputNumber min={0} style={{ width: "100%" }} />
+            </Form.Item>
+            <Form.Item name="sharePercent" label="Share %" rules={[{ required: true, message: "Required" }]}>
+              <InputNumber min={0} max={100} step={0.0001} style={{ width: "100%" }} />
+            </Form.Item>
+            <Form.Item name="contractStart" label="Contract start" rules={[{ required: true, message: "Required" }]}>
+              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+            </Form.Item>
+            <Form.Item name="contractEnd" label="Contract end (optional)">
+              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" allowClear />
+            </Form.Item>
+            <Form.Item name="invStatus" label="Status" rules={[{ required: true, message: "Required" }]}>
+              <Select options={INVESTMENT_STATUS_OPTIONS} />
+            </Form.Item>
+            <Form.Item name="invNotes" label="Notes" className="admin-modal-wide">
+              <Input.TextArea rows={3} />
+            </Form.Item>
+          </div>
+
+          {investmentDetail?.repayment_plan?.id ? (
+            <>
+              <Divider className="admin-modal-divider" />
+              <div className="admin-modal-section-title">Investor repayment plan</div>
+              <div className="admin-modal-grid">
+                <Form.Item name="planType" label="Plan type" rules={[{ required: true, message: "Required" }]}>
+                  <Select options={REPAYMENT_PLAN_TYPE_OPTIONS} />
+                </Form.Item>
+                <Form.Item name="firstDueDate" label="First due date" rules={[{ required: true, message: "Required" }]}>
+                  <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+                </Form.Item>
+                <Form.Item name="interestPercent" label="Interest percent" rules={[{ required: true, message: "Required" }]}>
+                  <InputNumber min={0} max={100} step={0.0001} style={{ width: "100%" }} />
+                </Form.Item>
+                <Form.Item name="interestBasis" label="Interest basis">
+                  <Select options={REPAYMENT_INTEREST_BASIS_OPTIONS} />
+                </Form.Item>
+                <Form.Item name="totalRepayable" label="Total repayable (₦)" rules={[{ required: true, message: "Required" }]}>
+                  <InputNumber min={0} style={{ width: "100%" }} />
+                </Form.Item>
+              </div>
+
+              <Divider className="admin-modal-divider" />
+              <div className="admin-modal-section-title">Investor payment schedules</div>
+              <Table
+                size="small"
+                pagination={false}
+                scroll={{ x: 1020 }}
+                rowKey={(row, i) => String(row.id ?? i)}
+                dataSource={investmentPaymentSchedules}
+                columns={[
+                  { title: "#", dataIndex: "installment_number", width: 44 },
+                  {
+                    title: "Due date",
+                    dataIndex: "due_date",
+                    width: 150,
+                    render: (v, row, index) => (
+                      <DatePicker
+                        style={{ width: "100%" }}
+                        format="DD/MM/YYYY"
+                        value={v ? dayjs(v) : null}
+                        onChange={(d) => {
+                          setInvestmentPaymentSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], due_date: d };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    title: "Due total",
+                    dataIndex: "amount_due_total",
+                    width: 120,
+                    render: (v, row, index) => (
+                      <InputNumber
+                        min={0}
+                        style={{ width: "100%" }}
+                        value={v != null ? Number(v) : undefined}
+                        onChange={(n) => {
+                          setInvestmentPaymentSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], amount_due_total: n };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    title: "Investor share",
+                    dataIndex: "amount_due_investor_share",
+                    width: 120,
+                    render: (v, row, index) => (
+                      <InputNumber
+                        min={0}
+                        style={{ width: "100%" }}
+                        value={v != null ? Number(v) : undefined}
+                        onChange={(n) => {
+                          setInvestmentPaymentSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], amount_due_investor_share: n };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    title: "Amount paid",
+                    dataIndex: "amount_paid",
+                    width: 120,
+                    render: (v, row, index) => (
+                      <InputNumber
+                        min={0}
+                        style={{ width: "100%" }}
+                        value={v != null ? Number(v) : undefined}
+                        onChange={(n) => {
+                          setInvestmentPaymentSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], amount_paid: n };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    title: "Paid date",
+                    dataIndex: "paid_date",
+                    width: 150,
+                    render: (v, row, index) => (
+                      <DatePicker
+                        style={{ width: "100%" }}
+                        format="DD/MM/YYYY"
+                        allowClear
+                        value={v ? dayjs(v) : null}
+                        onChange={(d) => {
+                          setInvestmentPaymentSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], paid_date: d };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                  {
+                    title: "Status",
+                    dataIndex: "status",
+                    width: 120,
+                    render: (v, row, index) => (
+                      <Select
+                        style={{ width: "100%" }}
+                        value={v || "scheduled"}
+                        options={SCHEDULE_LINE_STATUS_OPTIONS}
+                        onChange={(s) => {
+                          setInvestmentPaymentSchedules((prev) => {
+                            const next = [...prev];
+                            next[index] = { ...next[index], status: s };
+                            return next;
+                          });
+                        }}
+                      />
+                    ),
+                  },
+                ]}
+              />
+            </>
+          ) : null}
+        </Form>
       </Modal>
 
       {/* Record customer payment */}

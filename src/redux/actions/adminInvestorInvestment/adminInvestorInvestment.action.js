@@ -10,6 +10,7 @@ import {
   getAdminInvestorInvestmentDetailSuccess,
   getAdminInvestorInvestmentsLoading,
   getAdminInvestorInvestmentsSuccess,
+  updateAdminInvestorInvestmentLoading,
 } from "./adminInvestorInvestment.creator";
 
 const LIST_BASE = INVESTOR_ADMIN_API.directory.investments;
@@ -94,6 +95,23 @@ export const deleteAdminInvestorInvestment = (id) => async (dispatch) => {
     return { fulfilled: true, message: body.message || "Deactivated", data: body.data };
   } catch (error) {
     dispatch(deleteAdminInvestorInvestmentLoading(false));
+    return { fulfilled: false, message: readErrorMessage(error) };
+  }
+};
+
+export const updateAdminInvestorInvestment = (id, payload) => async (dispatch) => {
+  dispatch(updateAdminInvestorInvestmentLoading(true));
+  try {
+    const response = await APIService.patch(`${DETAIL_BASE}${id}/`, payload);
+    const body = response.data;
+    dispatch(updateAdminInvestorInvestmentLoading(false));
+    if (body.status === false) {
+      return { fulfilled: false, message: body.message || "Update failed" };
+    }
+    dispatch(getAdminInvestorInvestmentDetailSuccess(body.data));
+    return { fulfilled: true, message: body.message || "Updated", data: body.data };
+  } catch (error) {
+    dispatch(updateAdminInvestorInvestmentLoading(false));
     return { fulfilled: false, message: readErrorMessage(error) };
   }
 };

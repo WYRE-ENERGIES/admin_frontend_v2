@@ -11,6 +11,7 @@ const initialState = {
   detail: null,
   deleteLoading: false,
   lastDeleted: null,
+  updateLoading: false,
 };
 
 const adminInvestorProjectReducer = (state = initialState, action) => {
@@ -41,6 +42,9 @@ const adminInvestorProjectReducer = (state = initialState, action) => {
       return { ...state, deleteLoading: action.payload };
     case adminInvestorProjectTypes.DELETE_ADMIN_INVESTOR_PROJECT_SUCCESS:
       return { ...state, lastDeleted: action.payload };
+
+    case adminInvestorProjectTypes.UPDATE_ADMIN_INVESTOR_PROJECT_LOADING:
+      return { ...state, updateLoading: action.payload };
 
     default:
       return state;

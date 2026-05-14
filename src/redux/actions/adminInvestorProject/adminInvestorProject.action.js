@@ -12,6 +12,7 @@ import {
   getAdminInvestorProjectDetailSuccess,
   getAdminInvestorProjectsLoading,
   getAdminInvestorProjectsSuccess,
+  updateAdminInvestorProjectLoading,
 } from "./adminInvestorProject.creator";
 
 const BASE = INVESTOR_ADMIN_API.projects;
@@ -96,6 +97,23 @@ export const deleteAdminInvestorProject = (id) => async (dispatch) => {
     return { fulfilled: true, message: body.message || "Deactivated", data: body.data };
   } catch (error) {
     dispatch(deleteAdminInvestorProjectLoading(false));
+    return { fulfilled: false, message: readErrorMessage(error) };
+  }
+};
+
+export const updateAdminInvestorProject = (id, payload) => async (dispatch) => {
+  dispatch(updateAdminInvestorProjectLoading(true));
+  try {
+    const response = await APIService.patch(`${BASE}${id}/`, payload);
+    const body = response.data;
+    dispatch(updateAdminInvestorProjectLoading(false));
+    if (body.status === false) {
+      return { fulfilled: false, message: body.message || "Update failed" };
+    }
+    dispatch(getAdminInvestorProjectDetailSuccess(body.data));
+    return { fulfilled: true, message: body.message || "Updated", data: body.data };
+  } catch (error) {
+    dispatch(updateAdminInvestorProjectLoading(false));
     return { fulfilled: false, message: readErrorMessage(error) };
   }
 };

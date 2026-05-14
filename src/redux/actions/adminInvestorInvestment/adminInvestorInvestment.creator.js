@@ -43,3 +43,8 @@ export const deleteAdminInvestorInvestmentSuccess = (payload) => ({
   type: adminInvestorInvestmentTypes.DELETE_ADMIN_INVESTOR_INVESTMENT_SUCCESS,
   payload,
 });
+
+export const updateAdminInvestorInvestmentLoading = (payload = true) => ({
+  type: adminInvestorInvestmentTypes.UPDATE_ADMIN_INVESTOR_INVESTMENT_LOADING,
+  payload,
+});
