@@ -124,16 +124,29 @@ const buildPlantsQuery = (params = {}) => {
   if (params.page) query.page = params.page;
   if (params.page_size) query.page_size = params.page_size;
   if (params.search) query.search = params.search;
-  if (params.status && params.status !== 'total') query.status = params.status;
-  if (params.client && params.client !== 'all') query.client = params.client;
+  if (params.status && params.status !== 'total') {
+    query.status = params.status;
+    query.com = params.status;
+  }
+  if (params.client && params.client !== 'all') {
+    query.client = params.client;
+    query.client_id = params.client;
+  }
   if (params.min_capacity != null && params.min_capacity !== '') {
     query.min_capacity = params.min_capacity;
+    query.min_pv_kwp = params.min_capacity;
   }
   if (params.max_capacity != null && params.max_capacity !== '') {
     query.max_capacity = params.max_capacity;
+    query.max_pv_kwp = params.max_capacity;
   }
   if (Array.isArray(params.tags) && params.tags.length) {
     query.tags = params.tags.join(',');
+    query.tag_in = params.tags.join(',');
+  }
+  if (params.watchlist) {
+    query.watchlist = true;
+    query.is_favourited = true;
   }
   return query;
 };

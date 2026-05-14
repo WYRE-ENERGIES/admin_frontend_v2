@@ -144,13 +144,31 @@
 }
 
 .solar-watchlist-label {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 10px;
   font-size: 13px;
   color: #374151;
   font-weight: 500;
   white-space: nowrap;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 4px 10px 4px 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.solar-watchlist-label:hover {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.solar-watchlist-label.is-active {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: #f59e0b;
+  color: #b45309;
 }
 
 .solar-watchlist-label .anticon-star {
@@ -166,9 +184,11 @@
 }
 
 .solar-watchlist-search {
-  max-width: 320px;
-  height: 32px;
-  border-radius: 6px;
+  flex: 1;
+  max-width: 360px;
+  height: 34px;
+  border-radius: 8px;
+  margin-left: auto;
 }
 
 .solar-watchlist-search.ant-input-affix-wrapper {

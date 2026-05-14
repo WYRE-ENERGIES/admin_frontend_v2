@@ -134,6 +134,7 @@ const SolarMgt = ({
   const [appliedTags, setAppliedTags] = useState([]);
   const [selectedClient, setSelectedClient] = useState('all');
   const [appliedClient, setAppliedClient] = useState('all');
+  const [watchlistOnly, setWatchlistOnly] = useState(false);
   const [selectedRows, setSelectedRows] = useState({});
   const [sortAsc, setSortAsc] = useState(true);
   const [pageSize, setPageSize] = useState(50);
@@ -167,6 +168,7 @@ const SolarMgt = ({
       min_capacity: appliedCapacity.min,
       max_capacity: appliedCapacity.max,
       tags: appliedTags,
+      watchlist: watchlistOnly,
     });
   }, [
     fetchSolarPlantsAction,
@@ -177,10 +179,12 @@ const SolarMgt = ({
     appliedClient,
     appliedCapacity,
     appliedTags,
+    watchlistOnly,
   ]);
 
   useEffect(() => {
-    if (plantsError) {
+    if (plantsError)
+    {
       notification.warning({
         message: 'Could not load plants',
         description: plantsError,
@@ -190,11 +194,13 @@ const SolarMgt = ({
 
   const togglePreset = (preset) => {
     const isSelected = selectedPresets.includes(preset.label);
-    if (isSelected) {
+    if (isSelected)
+    {
       setSelectedPresets(selectedPresets.filter((p) => p !== preset.label));
       setCapacityMin('');
       setCapacityMax('');
-    } else {
+    } else
+    {
       setSelectedPresets([preset.label]);
       setCapacityMin(String(preset.min));
       setCapacityMax(preset.max != null ? String(preset.max) : '');
@@ -223,17 +229,23 @@ const SolarMgt = ({
     setAppliedCapacity({ min: '', max: '' });
     setAppliedTags([]);
     setAppliedClient('all');
+    setWatchlistOnly(false);
     setCurrentPage(1);
   };
 
   const handleToggleFavourite = async (plantId) => {
     if (!plantId) return;
     const result = await toggleFavouriteThunk(plantId);
-    if (!result?.fulfilled) {
+    if (!result?.fulfilled)
+    {
       notification.error({
         message: 'Failed to update favourite',
         description: result?.message || 'Please try again.',
       });
+    } else
+    {
+      // Refresh status counts so the watchlist badge stays in sync
+      fetchStatusCountsAction();
     }
   };
 
@@ -252,6 +264,7 @@ const SolarMgt = ({
       min_capacity: appliedCapacity.min,
       max_capacity: appliedCapacity.max,
       tags: appliedTags,
+      watchlist: watchlistOnly,
     });
   };
 
@@ -269,34 +282,103 @@ const SolarMgt = ({
   }, [selectedRows, plants]);
 
   const handleSelectAll = (e) => {
-    if (e.target.checked) {
+    if (e.target.checked)
+    {
       const all = {};
       plants.forEach((p) => {
         all[p.id] = true;
       });
       setSelectedRows(all);
-    } else {
+    } else
+    {
       setSelectedRows({});
     }
   };
 
-  const watchlistCount = useMemo(() => {
-    return plants.filter((p) => p.is_favourited).length;
-  }, [plants]);
+  const localFavCount = useMemo(
+    () => plants.filter((p) => p.is_favourited).length,
+    [plants]
+  );
+
+  const watchlistCount = statusCounts?.watchlist ?? localFavCount;
 
   const anySelected = Object.values(selectedRows).some(Boolean);
 
-  // Build the table rows from the plants response, sorted by name client-side.
+  // Build the table rows from the plants response with client-side filter
+  // fallback (in case the backend ignores some query params), then sort by name.
   const tableRows = useMemo(() => {
-    const rows = [...plants];
+    const text = (searchText || '').trim().toLowerCase();
+    const minCap = appliedCapacity.min !== '' ? Number(appliedCapacity.min) : null;
+    const maxCap = appliedCapacity.max !== '' ? Number(appliedCapacity.max) : null;
+    const tagsLower = appliedTags.map((t) => String(t).toLowerCase());
+
+    const rows = plants.filter((p) => {
+      if (watchlistOnly && !p?.is_favourited) return false;
+
+      if (text)
+      {
+        const haystack = `${p?.name || ''} ${p?.address || ''} ${p?.client || ''} ${p?.station_id || ''}`.toLowerCase();
+        if (!haystack.includes(text)) return false;
+      }
+
+      if (activeStatus !== 'total')
+      {
+        const com = p?.status?.com;
+        const alerts = p?.status?.alerts;
+        if (activeStatus === 'online' && com !== 'online') return false;
+        if (activeStatus === 'offline' && com !== 'offline') return false;
+        if (activeStatus === 'incomplete' && com !== 'incomplete') return false;
+        if (activeStatus === 'partially_offline' && com !== 'partial' && com !== 'partially_offline') return false;
+        if (activeStatus === 'alerts' && (!alerts || alerts === 'ok')) return false;
+        if (activeStatus === 'no_alerts' && alerts && alerts !== 'ok') return false;
+      }
+
+      if (appliedClient && appliedClient !== 'all')
+      {
+        const plantClient = p?.client;
+        const plantClientId = p?.client_id;
+        if (
+          String(plantClient) !== String(appliedClient) &&
+          String(plantClientId) !== String(appliedClient)
+        )
+        {
+          return false;
+        }
+      }
+
+      const capacityKwp = Number(p?.capacity?.installed_pv_kwp);
+      if (minCap != null && !Number.isNaN(capacityKwp) && capacityKwp < minCap) return false;
+      if (maxCap != null && !Number.isNaN(capacityKwp) && capacityKwp > maxCap) return false;
+
+      if (tagsLower.length > 0)
+      {
+        const plantTags = Array.isArray(p?.tags) ? p.tags.map((t) => String(t).toLowerCase()) : [];
+        const hasAny = tagsLower.some((t) => plantTags.includes(t));
+        if (!hasAny) return false;
+      }
+
+      return true;
+    });
+
     rows.sort((a, b) => {
       const cmp = (a?.name || '').localeCompare(b?.name || '');
       return sortAsc ? cmp : -cmp;
     });
     return rows;
-  }, [plants, sortAsc]);
+  }, [
+    plants,
+    sortAsc,
+    searchText,
+    activeStatus,
+    appliedClient,
+    appliedCapacity,
+    appliedTags,
+    watchlistOnly,
+  ]);
 
-  const totalCount = statusCounts?.total ?? plantsCount ?? tableRows.length;
+  const totalCount = watchlistOnly
+    ? tableRows.length
+    : (statusCounts?.total ?? plantsCount ?? tableRows.length);
 
   const cards = useMemo(() => {
     const installedCapacity = realtimePower?.installed_capacity_kwp;
@@ -385,7 +467,7 @@ const SolarMgt = ({
   return (
     <div className="solar-mgt-page">
       <div className="solar-mgt-header">
-        <Title level={2} className="solar-mgt-title">Solar Mgt</Title>
+        <Title level={2} className="solar-mgt-title">Solar Management</Title>
         <Text className="solar-mgt-subtitle">
           Live snapshot across all Wyre-managed plants
         </Text>
@@ -423,13 +505,22 @@ const SolarMgt = ({
       </div>
 
       <div className="solar-watchlist-bar">
-        <div className="solar-watchlist-label">
+        <button
+          type="button"
+          className={`solar-watchlist-label ${watchlistOnly ? 'is-active' : ''}`}
+          onClick={() => {
+            setWatchlistOnly((prev) => !prev);
+            setCurrentPage(1);
+          }}
+          aria-pressed={watchlistOnly}
+          title={watchlistOnly ? 'Show all plants' : 'Show only favourited plants'}
+        >
           <StarFilled style={{ color: '#f59e0b' }} />
           <span>My Watchlist({watchlistCount})</span>
-        </div>
+        </button>
         <Input
           className="solar-watchlist-search"
-          placeholder="Please enter plant name"
+          placeholder={watchlistOnly ? 'Search watchlist by name, address, client' : 'Search all plants by name, address, client'}
           suffix={<SearchOutlined style={{ color: '#9ca3af' }} />}
           value={searchText}
           onChange={(e) => {
@@ -652,10 +743,10 @@ const SolarMgt = ({
                 const alertsDotColor = alertsState === 'ok'
                   ? '#22c55e'
                   : alertsState === 'warn'
-                  ? '#f59e0b'
-                  : alertsState === 'crit' || alertsState === 'critical'
-                  ? '#ef4444'
-                  : '#9ca3af';
+                    ? '#f59e0b'
+                    : alertsState === 'crit' || alertsState === 'critical'
+                      ? '#ef4444'
+                      : '#9ca3af';
 
                 return (
                   <div key={plant.id} className={`solar-tr ${isSelected ? 'is-selected' : ''}`}>
