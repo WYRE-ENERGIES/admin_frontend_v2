@@ -293,6 +293,7 @@ function InvestorAdministration() {
   const [investmentEditOpen, setInvestmentEditOpen] = useState(false);
   const [projectCustomerSchedules, setProjectCustomerSchedules] = useState([]);
   const [investmentPaymentSchedules, setInvestmentPaymentSchedules] = useState([]);
+  const [showProjectCostBreakdown, setShowProjectCostBreakdown] = useState(false);
   const [customerPaymentDetailOpen, setCustomerPaymentDetailOpen] = useState(false);
   const [investorSearch, setInvestorSearch] = useState("");
   const [projectSearch, setProjectSearch] = useState("");
@@ -334,7 +335,25 @@ function InvestorAdministration() {
   const createInvestmentInterestPercent = Form.useWatch("interestPercent", investmentForm);
   const createInvestmentInterestBasis = Form.useWatch("interestBasis", investmentForm);
 
-  const closeModal = () => setActiveModal(MODAL.NONE);
+  const closeModal = () => {
+    setShowProjectCostBreakdown(false);
+    setActiveModal(MODAL.NONE);
+  };
+
+  const openProjectCostBreakdown = () => {
+    setShowProjectCostBreakdown(true);
+    const existing = projectForm.getFieldValue("cost_items");
+    if (!Array.isArray(existing) || existing.length === 0) {
+      projectForm.setFieldsValue({
+        cost_items: [{ category: "materials", label: "", amount: undefined, notes: "" }],
+      });
+    }
+  };
+
+  const hideProjectCostBreakdown = () => {
+    setShowProjectCostBreakdown(false);
+    projectForm.setFieldsValue({ cost_items: [] });
+  };
 
   const refreshInvestorUsers = useCallback(() => {
     if (isSuperAdmin) dispatch(fetchAdminInvestorUsersList());
@@ -1434,7 +1453,15 @@ function InvestorAdministration() {
 
   const submitCreateProject = async () => {
     try {
-      const values = await projectForm.validateFields();
+      const values = await projectForm.validateFields([
+        "projectName",
+        "totalProjectCost",
+        "installationDate",
+        "crProjectDurationMonths",
+        "crPlanType",
+        "crFirstDueDate",
+        "crInterestRatePa",
+      ]);
       const branchRaw =
         values.branchId != null && values.branchId !== "" ? String(values.branchId).trim() : "";
       let branch_id = null;
@@ -1453,49 +1480,82 @@ function InvestorAdministration() {
         message.error("Enter a valid total project cost");
         return;
       }
-      const payload = {
-        name: values.projectName.trim(),
-        branch_id,
-        description: values.description?.trim() || "",
-        location_label: values.locationLabel?.trim() || "",
-        system_capacity_kwp: (Number.isFinite(kwp) ? kwp : 0).toFixed(4),
-        project_type: values.projectType,
-        status: values.status,
-        total_project_cost: total.toFixed(2),
-        client_contribution: (Number.isFinite(client) ? client : 0).toFixed(2),
-        installation_date: dayjs(values.installationDate).format("YYYY-MM-DD"),
-      };
-
-      const rawCostItems = Array.isArray(values.cost_items) ? values.cost_items : [];
-      payload.cost_items = rawCostItems
-        .map((ci) => {
-          const amount = Number(ci?.amount);
-          if (!ci?.category || !ci?.label) return null;
-          if (!Number.isFinite(amount) || amount < 0) return null;
-          return {
-            category: String(ci.category).trim(),
-            label: String(ci.label).trim(),
-            amount: amount.toFixed(2),
-            notes: ci?.notes ? String(ci.notes).trim() : "",
-          };
-        })
-        .filter(Boolean);
+      if (!values.installationDate) {
+        message.error("Installation date is required");
+        return;
+      }
+      if (!values.crFirstDueDate) {
+        message.error("First due date is required for the customer repayment plan");
+        return;
+      }
 
       const durationMonths = Math.floor(Number(values.crProjectDurationMonths));
       if (!Number.isFinite(durationMonths) || durationMonths < 1) {
         message.error("Enter a valid project duration (months)");
         return;
       }
-      payload.customer_repayment_plan = {
-        plan_type: values.crPlanType,
-        first_due_date: dayjs(values.crFirstDueDate).format("YYYY-MM-DD"),
+
+      const principal = total - (Number.isFinite(client) ? client : 0);
+      if (!Number.isFinite(principal) || principal < 0) {
+        message.error("Principal (total cost − client contribution) must be zero or positive");
+        return;
+      }
+
+      const interestRatePa = Number(values.crInterestRatePa);
+      if (!Number.isFinite(interestRatePa) || interestRatePa < 0) {
+        message.error("Enter a valid interest rate % p.a.");
+        return;
+      }
+
+      const formatDecimalField = (n) => String(parseFloat(Number(n).toFixed(4)));
+
+      const rawCostItems =
+        showProjectCostBreakdown && Array.isArray(values.cost_items) ? values.cost_items : [];
+      const cost_items = [];
+      for (const ci of rawCostItems) {
+        const category = ci?.category ? String(ci.category).trim() : "";
+        const label = ci?.label ? String(ci.label).trim() : "";
+        const amount = Number(ci?.amount);
+        const hasAny = category || label || Number.isFinite(amount);
+        if (!hasAny) continue;
+        if (!category || !label || !Number.isFinite(amount) || amount < 0) {
+          message.error("Each cost item needs category, label, and amount — or remove the row");
+          return;
+        }
+        cost_items.push({
+          category,
+          label,
+          amount: amount.toFixed(2),
+          notes: ci?.notes ? String(ci.notes).trim() : "",
+        });
+      }
+
+      const payload = {
+        name: values.projectName.trim(),
+        total_project_cost: total.toFixed(2),
+        client_contribution: (Number.isFinite(client) ? client : 0).toFixed(2),
+        branch_id,
+        description: values.description?.trim() || "",
+        location_label: values.locationLabel?.trim() || "",
+        system_capacity_kwp: formatDecimalField(Number.isFinite(kwp) ? kwp : 0),
+        project_type: values.projectType,
+        status: values.status,
+        installation_date: dayjs(values.installationDate).format("YYYY-MM-DD"),
         project_duration_months: durationMonths,
-        grace_period_days: Math.max(0, Math.floor(Number(values.crGracePeriodDays ?? 0))),
-        notes: values.crNotes?.trim() || "",
+        customer_repayment_plan: {
+          plan_type: values.crPlanType,
+          first_due_date: dayjs(values.crFirstDueDate).format("YYYY-MM-DD"),
+          interest_rate_pa: formatDecimalField(interestRatePa),
+          principal_amount: principal.toFixed(2),
+          grace_period_days: Math.max(0, Math.floor(Number(values.crGracePeriodDays ?? 0))),
+          notes: values.crNotes?.trim() || "",
+        },
+        cost_items,
       };
       const res = await dispatch(createAdminInvestorProject(payload));
       if (res.fulfilled) {
         message.success(res.message || "Created");
+        setShowProjectCostBreakdown(false);
         closeModal();
         projectForm.resetFields();
         refreshAdminProjects();
@@ -3728,9 +3788,10 @@ function InvestorAdministration() {
             systemCapacityKwp: 0,
             clientContribution: 0,
             totalProjectCost: undefined,
-            cost_items: [{ category: "materials", label: "", amount: undefined, notes: "" }],
+            cost_items: [],
             crPlanType: "monthly",
             crGracePeriodDays: 0,
+            crInterestRatePa: undefined,
           }}
         >
           <div className="admin-modal-grid">
@@ -3766,70 +3827,98 @@ function InvestorAdministration() {
               <InputNumber min={0} style={{ width: "100%" }} />
             </Form.Item>
 
-            <Form.Item name="installationDate" label="Installation date">
+            <Form.Item
+              name="installationDate"
+              label="Installation date"
+              rules={[{ required: true, message: "Required" }]}
+            >
               <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+            </Form.Item>
+            <Form.Item
+              name="crProjectDurationMonths"
+              label="Project duration (months)"
+              rules={[{ required: true, message: "Required" }]}
+            >
+              <InputNumber min={1} step={1} style={{ width: "100%" }} placeholder="e.g. 36" />
             </Form.Item>
             <Form.Item name="description" label="Description">
               <Input.TextArea rows={3} placeholder="Optional" />
             </Form.Item>
           </div>
 
-          <Divider className="admin-modal-divider" />
-          <div className="admin-modal-section-title">Cost breakdown (optional)</div>
-          <Text type="secondary" className="admin-modal-section-sub">
-            Amounts are sent as decimal strings.
-          </Text>
-
-          <Form.List name="cost_items">
-            {(fields, { add, remove }) => (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Space key={key} align="baseline" wrap style={{ marginBottom: 8 }}>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "category"]}
-                      rules={[{ required: true, message: "Category required" }]}
-                    >
-                      <Select
-                        style={{ width: 160 }}
-                        placeholder="Category"
-                        options={[
-                          { value: "materials", label: "materials" },
-                          { value: "labor", label: "labor" },
-                          { value: "logistics", label: "logistics" },
-                          { value: "services", label: "services" },
-                          { value: "other", label: "other" },
-                        ]}
-                      />
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "label"]}
-                      rules={[{ required: true, message: "Label required" }]}
-                    >
-                      <Input style={{ width: 220 }} placeholder="e.g. PV modules" />
-                    </Form.Item>
-                    <Form.Item
-                      {...restField}
-                      name={[name, "amount"]}
-                      rules={[{ required: true, message: "Amount required" }]}
-                    >
-                      <InputNumber min={0} style={{ width: 180 }} placeholder="Amount ₦" />
-                    </Form.Item>
-                    <Form.Item {...restField} name={[name, "notes"]}>
-                      <Input style={{ width: 220 }} placeholder="Notes (optional)" />
-                    </Form.Item>
-                    {fields.length > 1 ? (
-                      <MinusCircleOutlined onClick={() => remove(name)} style={{ color: "#ff4d4f", cursor: "pointer" }} />
-                    ) : null}
-                  </Space>
-                ))}
-                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                  Add cost item
+          {!showProjectCostBreakdown ? (
+            <Button
+              type="dashed"
+              block
+              icon={<PlusOutlined />}
+              onClick={openProjectCostBreakdown}
+              style={{ marginBottom: 8 }}
+            >
+              Add cost breakdown (optional)
+            </Button>
+          ) : (
+            <>
+              <Divider className="admin-modal-divider" />
+              <div
+                className="admin-modal-section-title"
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}
+              >
+                <span>Cost breakdown</span>
+                <Button type="link" size="small" onClick={hideProjectCostBreakdown} style={{ padding: 0 }}>
+                  Remove
                 </Button>
               </div>
-            )}
-          </Form.List>
+              <Text type="secondary" className="admin-modal-section-sub">
+                Optional. Empty rows are ignored; remove this section to submit with an empty list.
+              </Text>
+
+              <Form.List name="cost_items">
+                {(fields, { add, remove }) => (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {fields.map(({ key, name, ...restField }) => (
+                      <Space key={key} align="baseline" wrap style={{ marginBottom: 8 }}>
+                        <Form.Item {...restField} name={[name, "category"]}>
+                          <Select
+                            style={{ width: 160 }}
+                            placeholder="Category"
+                            allowClear
+                            options={[
+                              { value: "materials", label: "materials" },
+                              { value: "labor", label: "labor" },
+                              { value: "logistics", label: "logistics" },
+                              { value: "services", label: "services" },
+                              { value: "other", label: "other" },
+                            ]}
+                          />
+                        </Form.Item>
+                        <Form.Item {...restField} name={[name, "label"]}>
+                          <Input style={{ width: 220 }} placeholder="e.g. PV modules" />
+                        </Form.Item>
+                        <Form.Item {...restField} name={[name, "amount"]}>
+                          <InputNumber min={0} style={{ width: 180 }} placeholder="Amount ₦" />
+                        </Form.Item>
+                        <Form.Item {...restField} name={[name, "notes"]}>
+                          <Input style={{ width: 220 }} placeholder="Notes (optional)" />
+                        </Form.Item>
+                        <MinusCircleOutlined
+                          onClick={() => remove(name)}
+                          style={{ color: "#ff4d4f", cursor: "pointer" }}
+                        />
+                      </Space>
+                    ))}
+                    <Button
+                      type="dashed"
+                      onClick={() => add({ category: "materials", label: "", amount: undefined, notes: "" })}
+                      block
+                      icon={<PlusOutlined />}
+                    >
+                      Add cost item
+                    </Button>
+                  </div>
+                )}
+              </Form.List>
+            </>
+          )}
 
           <Divider className="admin-modal-divider" />
           <div className="admin-modal-section-title">Customer repayment plan</div>
@@ -3850,11 +3939,11 @@ function InvestorAdministration() {
             </Form.Item>
 
             <Form.Item
-              name="crProjectDurationMonths"
-              label="Project duration (months)"
+              name="crInterestRatePa"
+              label="Interest rate % p.a."
               rules={[{ required: true, message: "Required" }]}
             >
-              <InputNumber min={1} step={1} style={{ width: "100%" }} placeholder="e.g. 24" />
+              <InputNumber min={0} max={100} step={0.1} style={{ width: "100%" }} placeholder="e.g. 12.5" />
             </Form.Item>
 
             <Form.Item name="crGracePeriodDays" label="Grace period (days)">
