@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Alert,
   Button,
   Card,
+  Descriptions,
   Form,
   Input,
   InputNumber,
@@ -11,6 +12,8 @@ import {
   Segmented,
   Select,
   Space,
+  Spin,
+  Table,
   Tag,
   Typography,
   message,
@@ -19,7 +22,12 @@ import { ArrowRightOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
-import { fetchInvestorProjects } from "../../redux/actions/investor/investor.action";
+import { mapProjectDetail } from "../../helpers/investorProjectsMappers";
+import {
+  fetchInvestorProjectDetail,
+  fetchInvestorProjects,
+  submitInvestorProjectContactWyre,
+} from "../../redux/actions/investor/investor.action";
 
 const { Text, Title } = Typography;
 const { TextArea } = Input;
@@ -73,31 +81,36 @@ const REPAYMENT_OPTIONS = [
 
 function InvestorProjects() {
   const dispatch = useDispatch();
-  const { projects: bundle } = useSelector((s) => s.investorPage);
+  const {
+    projects: bundle,
+    projectsLoading,
+    projectsPartialErrors,
+  } = useSelector((s) => s.investorPage);
   const [range, setRange] = useState([
     dayjs().month(0).date(1),
     dayjs().month(3).endOf("month"),
   ]);
   const [projectTab, setProjectTab] = useState("Financed");
-  const [tickets, setTickets] = useState([]);
   const [investModalOpen, setInvestModalOpen] = useState(false);
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+  const [projectDetail, setProjectDetail] = useState(null);
+  const [contactSubmitting, setContactSubmitting] = useState(false);
   const [selectedOpenProject, setSelectedOpenProject] = useState(null);
   const [form] = Form.useForm();
 
-  useEffect(() => {
+  const refreshProjects = useCallback(() => {
     dispatch(fetchInvestorProjects());
   }, [dispatch]);
 
   useEffect(() => {
-    const incoming = bundle?.investmentTickets;
-    if (Array.isArray(incoming) && incoming.length > 0) {
-      setTickets(incoming);
-    }
-  }, [bundle?.investmentTickets]);
+    refreshProjects();
+  }, [refreshProjects]);
 
   const summary = bundle?.summary;
   const list = bundle?.projects || [];
   const openList = bundle?.openProjects || [];
+  const tickets = bundle?.investmentTickets || [];
 
   const kpis = useMemo(
     () => [
@@ -124,7 +137,7 @@ function InvestorProjects() {
           summary?.portfolioGenerationYtdKwh != null
             ? `${Math.round(summary.portfolioGenerationYtdKwh / 1000)}k kWh`
             : "—",
-        sub: "Telemetry-weighted mock",
+        sub: "Year to date",
       },
       {
         key: "d",
@@ -146,6 +159,22 @@ function InvestorProjects() {
     setInvestModalOpen(true);
   };
 
+  const openProjectDetail = async (project) => {
+    const projectId = project.projectId ?? project.id;
+    if (!projectId) return;
+    setDetailModalOpen(true);
+    setDetailLoading(true);
+    setProjectDetail(null);
+    const res = await dispatch(fetchInvestorProjectDetail(projectId));
+    setDetailLoading(false);
+    if (!res.fulfilled) {
+      message.error(res.message || "Could not load project detail");
+      setDetailModalOpen(false);
+      return;
+    }
+    setProjectDetail(mapProjectDetail(res.data));
+  };
+
   const submitInvestmentTicket = async () => {
     try {
       const values = await form.validateFields();
@@ -155,22 +184,26 @@ function InvestorProjects() {
         message.warning("This pool has no remaining allocation.");
         return;
       }
-      const amount = Number(values.amount_intended);
-      const ticket = {
-        id: `t_${Date.now()}`,
-        projectName: proj.name,
-        amountIntendedNgn: amount,
-        repaymentPreference: values.repayment_preference,
+      const projectId = proj.projectId ?? proj.id;
+      const payload = {
+        amount_intended: Number(values.amount_intended),
         message: values.message || "",
-        createdAt: new Date().toISOString(),
-        status: "Open",
       };
-      setTickets((prev) => [ticket, ...prev]);
-      message.success("Investment ticket created (mock — will map to SupportTicket when wired).");
+      if (values.repayment_preference && values.repayment_preference !== "no_preference") {
+        payload.repayment_preference = values.repayment_preference;
+      }
+      setContactSubmitting(true);
+      const res = await dispatch(submitInvestorProjectContactWyre(projectId, payload));
+      setContactSubmitting(false);
+      if (!res.fulfilled) {
+        message.error(res.message || "Could not submit investment interest");
+        return;
+      }
+      message.success(res.message || "Wyre has received your investment interest.");
       setInvestModalOpen(false);
       setSelectedOpenProject(null);
     } catch {
-      /* validation */
+      setContactSubmitting(false);
     }
   };
 
@@ -179,18 +212,37 @@ function InvestorProjects() {
       ? "Financed projects"
       : "Open projects (available to invest)";
 
+  const breakdownColumns = useMemo(
+    () => [
+      { title: "Category", dataIndex: "category", key: "category", width: 120 },
+      { title: "Item", dataIndex: "label", key: "label" },
+      {
+        title: "Amount",
+        dataIndex: "amountDisplay",
+        key: "amount",
+        align: "right",
+        width: 120,
+      },
+    ],
+    []
+  );
+
   return (
     <div className="investor-page investor-projects-page">
-      <Alert
-        type="info"
-        showIcon
-        className="investor-mock-banner"
-        message="Temporary mockup only — not connected to Wyre backend. For investor dashboard visualization."
-      />
+      {projectsPartialErrors?.length ? (
+        <Alert
+          type="warning"
+          showIcon
+          closable
+          style={{ marginBottom: 16 }}
+          message="Some project data could not be loaded"
+          description={`Missing: ${projectsPartialErrors.join(", ")}. Showing available sections.`}
+        />
+      ) : null}
 
       <InvestorPageHeader
         title="Projects"
-        subtitle="Financed sites, capacity, and performance signals — sample data only."
+        subtitle="Financed sites, open pools, and investment tickets from your Wyre portfolio."
         range={range}
         onRangeChange={setRange}
       />
@@ -202,6 +254,7 @@ function InvestorProjects() {
         team.
       </Text>
 
+      <Spin spinning={projectsLoading}>
       <div className="investor-metrics investor-metrics--four">
         {kpis.map((k) => (
           <Card
@@ -233,6 +286,9 @@ function InvestorProjects() {
 
       {projectTab === "Financed" ? (
         <div className="investor-project-grid">
+          {!projectsLoading && list.length === 0 ? (
+            <Text type="secondary">No financed projects yet.</Text>
+          ) : null}
           {list.map((p) => (
             <Card key={p.id} className="investor-project-tile" bordered={false}>
               <div className="investor-project-tile-head">
@@ -247,7 +303,9 @@ function InvestorProjects() {
               <div className="investor-project-tile-grid">
                 <div>
                   <span className="investor-mini-label">Your share (%)</span>
-                  <span className="investor-mini-value">{p.sharePct}%</span>
+                  <span className="investor-mini-value">
+                    {typeof p.sharePct === "number" ? `${p.sharePct}%` : p.sharePct}
+                  </span>
                 </div>
                 <div>
                   <span className="investor-mini-label">System size (kWp)</span>
@@ -283,6 +341,9 @@ function InvestorProjects() {
         </div>
       ) : (
         <div className="investor-project-grid">
+          {!projectsLoading && openList.length === 0 ? (
+            <Text type="secondary">No open projects available right now.</Text>
+          ) : null}
           {openList.map((p) => (
             <Card
               key={p.id}
@@ -318,11 +379,28 @@ function InvestorProjects() {
                 </div>
               </div>
 
+              {p.raisedPct != null ? (
+                <div className="investor-open-project-progress">
+                  <Progress
+                    percent={p.raisedPct}
+                    showInfo
+                    strokeColor="#5BB56F"
+                    format={(pct) => `${pct}% raised`}
+                  />
+                </div>
+              ) : null}
+
+              <div className="investor-open-project-foot">
+                <Button type="link" size="small" onClick={() => openProjectDetail(p)}>
+                  View cost breakdown
+                </Button>
+              </div>
+
               <div className="investor-open-cta">
                 <Button
                   type="primary"
                   className="investor-open-contact-btn"
-                  disabled={!(Number(p.remainingNgn) > 0)}
+                  disabled={!(Number(p.remainingNgn) > 0) || p.isAvailable === false}
                   onClick={() => openInvestModal(p)}
                 >
                   Contact Wyre to invest
@@ -353,16 +431,21 @@ function InvestorProjects() {
               <div key={t.id} className="investor-ticket-row">
                 <div>
                   <Text strong className="investor-ticket-title">
-                    [INVESTMENT] {t.projectName}
+                    {t.subject || `[INVESTMENT] ${t.projectName}`}
                   </Text>
                   <div className="investor-ticket-meta">
                     <Text type="secondary">
-                      Ticket {String(t.id).replace(/^t_/, "TCK-")} · {formatTicketTime(t.createdAt)}
+                      Ticket {t.ticketId ?? t.id}
+                      {t.priority ? ` · ${t.priority}` : ""}
+                      {" · "}
+                      {formatTicketTime(t.createdAt)}
                     </Text>
                   </div>
-                  <div className="investor-ticket-meta">
-                    <Text type="secondary">Amount intended: {ngn(t.amountIntendedNgn)}</Text>
-                  </div>
+                  {t.amountIntendedNgn != null ? (
+                    <div className="investor-ticket-meta">
+                      <Text type="secondary">Amount intended: {ngn(t.amountIntendedNgn)}</Text>
+                    </div>
+                  ) : null}
                   {t.message ? (
                     <Text type="secondary" className="investor-ticket-msg">
                       {t.message}
@@ -377,6 +460,8 @@ function InvestorProjects() {
           </Space>
         )}
       </Card>
+
+      </Spin>
 
       <Card
         className="investor-support-card investor-support-card--peach investor-projects-support"
@@ -414,7 +499,12 @@ function InvestorProjects() {
           >
             Cancel
           </Button>,
-          <Button key="ok" type="primary" onClick={submitInvestmentTicket}>
+          <Button
+            key="ok"
+            type="primary"
+            loading={contactSubmitting}
+            onClick={submitInvestmentTicket}
+          >
             Create investment ticket
           </Button>,
         ]}
@@ -440,10 +530,16 @@ function InvestorProjects() {
             >
               <InputNumber
                 min={1}
-                disabled
+                max={
+                  selectedOpenProject?.remainingNgn
+                    ? Number(selectedOpenProject.remainingNgn)
+                    : undefined
+                }
                 style={{ width: "100%" }}
                 placeholder="e.g. 5000000"
                 controls={false}
+                formatter={(v) => (v != null ? `${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",") : "")}
+                parser={(v) => v.replace(/,/g, "")}
               />
             </Form.Item>
 
@@ -477,6 +573,74 @@ function InvestorProjects() {
             <TextArea rows={4} placeholder="Any context, questions, or constraints? (optional)" />
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        title={projectDetail?.name || "Project detail"}
+        open={detailModalOpen}
+        onCancel={() => {
+          setDetailModalOpen(false);
+          setProjectDetail(null);
+        }}
+        footer={[
+          <Button key="close" onClick={() => setDetailModalOpen(false)}>
+            Close
+          </Button>,
+          projectDetail?.remainingNgn > 0 ? (
+            <Button
+              key="invest"
+              type="primary"
+              onClick={() => {
+                setDetailModalOpen(false);
+                openInvestModal(projectDetail);
+              }}
+            >
+              Contact Wyre to invest
+            </Button>
+          ) : null,
+        ]}
+        width={640}
+        destroyOnClose
+      >
+        <Spin spinning={detailLoading}>
+          {projectDetail ? (
+            <>
+              <Descriptions size="small" column={2} bordered style={{ marginBottom: 16 }}>
+                <Descriptions.Item label="Location">
+                  {[projectDetail.branchLabel, projectDetail.locationLabel, projectDetail.city]
+                    .filter(Boolean)
+                    .join(" · ") || "—"}
+                </Descriptions.Item>
+                <Descriptions.Item label="System size">
+                  {projectDetail.systemKwp} kWp
+                </Descriptions.Item>
+                <Descriptions.Item label="Investor target">
+                  {ngn(projectDetail.investorTargetNgn)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Remaining">
+                  {ngn(projectDetail.remainingNgn)}
+                </Descriptions.Item>
+              </Descriptions>
+              {projectDetail.breakdownItems?.length ? (
+                <>
+                  <Title level={5} style={{ marginTop: 0 }}>
+                    Cost breakdown
+                  </Title>
+                  <Table
+                    size="small"
+                    pagination={false}
+                    columns={breakdownColumns}
+                    dataSource={projectDetail.breakdownItems}
+                  />
+                </>
+              ) : (
+                <Text type="secondary">No cost breakdown published for this project.</Text>
+              )}
+            </>
+          ) : (
+            !detailLoading && <Text type="secondary">No detail available.</Text>
+          )}
+        </Spin>
       </Modal>
     </div>
   );

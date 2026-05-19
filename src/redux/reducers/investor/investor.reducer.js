@@ -1,9 +1,22 @@
 import investorTypes from "./investor.type";
-import {
-  MOCK_INVESTOR_ACCOUNT_KYC,
-  MOCK_INVESTOR_PAYMENTS,
-  MOCK_INVESTOR_PROJECTS,
-} from "./investor.initialData";
+import { MOCK_INVESTOR_ACCOUNT_KYC } from "./investor.initialData";
+
+const EMPTY_PROJECTS_BUNDLE = {
+  summary: {},
+  projects: [],
+  openProjects: [],
+  investmentTickets: [],
+};
+
+const EMPTY_PAYMENTS_BUNDLE = {
+  kpis: {},
+  schedule: [],
+  payoutHistory: [],
+  receivableHealth: {},
+  ledger: [],
+  ledgerMeta: null,
+  ledgerPeriodYear: null,
+};
 
 const initialState = {
   portfolioOverview: {
@@ -23,9 +36,11 @@ const initialState = {
     activity: [],
   },
   projectsLoading: false,
-  projects: MOCK_INVESTOR_PROJECTS,
+  projects: EMPTY_PROJECTS_BUNDLE,
+  projectsError: null,
   paymentsLoading: false,
-  payments: MOCK_INVESTOR_PAYMENTS,
+  payments: EMPTY_PAYMENTS_BUNDLE,
+  paymentsPartialErrors: null,
   accountKycLoading: false,
   accountKyc: MOCK_INVESTOR_ACCOUNT_KYC,
 };
@@ -61,13 +76,30 @@ const investorReducer = (state = initialState, action) => {
         },
       };
     case investorTypes.INVESTOR_PROJECTS_LOADING:
-      return { ...state, projectsLoading: action.payload };
+      return {
+        ...state,
+        projectsLoading: action.payload,
+        ...(action.payload ? { projectsError: null } : {}),
+      };
     case investorTypes.INVESTOR_PROJECTS_SUCCESS:
-      return { ...state, projects: action.payload };
+      return {
+        ...state,
+        projects: action.payload,
+        projectsError: null,
+        projectsPartialErrors: action.payload?.partialErrors ?? null,
+      };
     case investorTypes.INVESTOR_PAYMENTS_LOADING:
-      return { ...state, paymentsLoading: action.payload };
+      return {
+        ...state,
+        paymentsLoading: action.payload,
+        ...(action.payload ? { paymentsPartialErrors: null } : {}),
+      };
     case investorTypes.INVESTOR_PAYMENTS_SUCCESS:
-      return { ...state, payments: action.payload };
+      return {
+        ...state,
+        payments: action.payload,
+        paymentsPartialErrors: action.payload?.partialErrors ?? null,
+      };
     case investorTypes.INVESTOR_ACCOUNT_KYC_LOADING:
       return { ...state, accountKycLoading: action.payload };
     case investorTypes.INVESTOR_ACCOUNT_KYC_SUCCESS:

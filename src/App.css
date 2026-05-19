@@ -39,6 +39,7 @@ body {
 }
 
 #root {
+  width: 100%;
   height: 100%;
   overflow: hidden;
 }
@@ -101,12 +102,31 @@ body {
   background-color: #5C12A7;
 }
 
-/* Investor: let content grow past the viewport so the window (.App) can scroll on desktop */
+/* Investor: full-width shell — purple edge-to-edge, content panel beside sidebar */
+.App:has(.investor-layout) {
+  background-color: #5c12a7;
+  align-items: stretch;
+}
+
+.App:has(.investor-layout) > * {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 100vh;
+}
+
 .SidemenuAndPagecontent.investor-layout {
-  flex: 0 1 auto;
+  display: flex;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: 100%;
   min-height: 100vh;
   align-self: stretch;
-  width: 100%;
+  box-sizing: border-box;
+}
+
+.investor-layout .ant-layout-sider {
+  margin-left: 0 !important;
+  flex-shrink: 0;
 }
 
 /* Investor sidebar: menu + bottom profile (avatar, name, role) */
@@ -267,7 +287,12 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 
 /* Investor: desktop — let the window / .App handle vertical scroll (don’t trap wheel events) */
 .PageContent.investor-shell {
-  min-height: auto;
+  flex: 1 1 0%;
+  min-width: 0;
+  width: auto;
+  margin: 16px 16px 16px 0;
+  border-radius: 28px;
+  min-height: calc(100vh - 32px);
   overflow-x: hidden;
   overflow-y: visible;
 }
@@ -4205,6 +4230,25 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   border: 1px solid rgba(250, 140, 22, 0.22);
 }
 
+.investor-payments-spin {
+  width: 100%;
+}
+
+.investor-payments-spin > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.investor-payments-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
 .investor-payments-note {
   display: block;
   font-size: 13px;
@@ -4234,6 +4278,17 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.investor-health-disclaimer {
+  display: block;
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.investor-metric-card--alert .investor-metric-value {
+  color: #cf1322;
 }
 
 .investor-pay-pos {

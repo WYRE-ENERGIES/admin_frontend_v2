@@ -241,15 +241,13 @@ function InvestorSideMenu({ collapsed, setCollapsed, logUserOut, basePath = "" }
 
   return (
     <Sider
+      className="investor-app-sider"
       style={{
         height: "100vh",
         position: "sticky",
-        right: 0,
-        left: 0,
         top: 0,
         bottom: 0,
         color: "white",
-        marginLeft: 15,
       }}
       collapsible
       collapsed={collapsed}

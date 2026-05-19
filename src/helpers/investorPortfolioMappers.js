@@ -3,13 +3,26 @@
  * Backend field names may vary — extend these helpers when the contract is finalized.
  */
 
+/** Peel investor API envelopes: { status, data }, { authenticatedData }, nested data. */
+export function unwrapInvestorEnvelope(payload) {
+  if (payload == null) return null;
+  if (payload.authenticatedData != null) return unwrapInvestorEnvelope(payload.authenticatedData);
+  if (payload.status === false) return null;
+  if (payload.data != null && typeof payload.data === "object") {
+    return unwrapInvestorEnvelope(payload.data);
+  }
+  return payload;
+}
+
 export function unwrapListOrObject(payload) {
   if (payload == null) return null;
-  if (Array.isArray(payload)) return payload;
-  if (Array.isArray(payload.results)) return payload.results;
-  if (payload.data != null) return unwrapListOrObject(payload.data);
-  if (payload.authenticatedData != null) return unwrapListOrObject(payload.authenticatedData);
-  return payload;
+  const unwrapped = unwrapInvestorEnvelope(payload);
+  const root = unwrapped ?? payload;
+  if (Array.isArray(root)) return root;
+  if (Array.isArray(root.results)) return root.results;
+  if (root.data != null) return unwrapListOrObject(root);
+  if (root.authenticatedData != null) return unwrapListOrObject(root.authenticatedData);
+  return root;
 }
 
 export function firstNumber(obj, keys) {
