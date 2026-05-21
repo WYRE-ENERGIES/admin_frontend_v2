@@ -93,7 +93,7 @@ export function mapOpenProjectsList(raw) {
       branchLabel: item.branch_label,
       projectType: item.project_type,
       isAvailable: Boolean(item.is_available),
-      footerLeft: "View cost breakdown in project detail",
+      footerLeft: "Open project detail for cost breakdown",
     };
   });
 }

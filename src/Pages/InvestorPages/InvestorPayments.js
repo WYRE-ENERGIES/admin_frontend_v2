@@ -114,7 +114,7 @@ function InvestorPayments() {
           showIcon
           closable
           message="Some payment data could not be loaded"
-          description={`Missing: ${paymentsPartialErrors.join(", ")}. Showing available sections.`}
+          description="Showing the sections that are available. Refresh the page or try again later."
         />
       ) : null}
 

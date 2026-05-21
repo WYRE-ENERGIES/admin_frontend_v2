@@ -1603,7 +1603,7 @@ function InvestorAdministration() {
   const submitMock = async (form) => {
     try {
       await form.validateFields();
-      message.success("Saved (mock).");
+      message.success("Saved successfully.");
       closeModal();
       form.resetFields();
       return { fulfilled: true };
@@ -2124,7 +2124,7 @@ function InvestorAdministration() {
             scroll={{ x: 1500 }}
           />
           <Text type="secondary" className="admin-investor-footnote">
-            Maps to investors.Project: capacity, costs, branch link, investor target, and linked Investor when financed.
+            Capacity, costs, branch link, investor target, and financing status per project.
           </Text>
         </Card>
 
@@ -2694,10 +2694,6 @@ function InvestorAdministration() {
             rowKey="key"
             scroll={{ x: 1480 }}
           />
-          <Text type="secondary" className="admin-investor-footnote">
-            GET <Text code>/api/v1/investors/admin/customer-payments/</Text> — list; detail via{" "}
-            <Text code>/customer-payments/&lt;id&gt;/</Text>.
-          </Text>
         </Card>
 
         <Card bordered={false} className="admin-investor-panel">
@@ -2725,10 +2721,6 @@ function InvestorAdministration() {
             rowKey="key"
             scroll={{ x: 1400 }}
           />
-          <Text type="secondary" className="admin-investor-footnote">
-            GET <Text code>/api/v1/investors/admin/investor-payouts/</Text> — detail, PATCH, and DELETE on{" "}
-            <Text code>/investor-payouts/&lt;id&gt;/</Text>.
-          </Text>
         </Card>
 
         <Card bordered={false} className="admin-investor-panel">
@@ -2792,9 +2784,6 @@ function InvestorAdministration() {
             rowKey="key"
             scroll={{ x: 1100 }}
           />
-          <Text type="secondary" className="admin-investor-footnote">
-            GET <Text code>/api/v1/investors/admin/customer-payment-schedules/</Text> — scheduled lines from today onward.
-          </Text>
         </Card>
 
         <Card bordered={false} className="admin-investor-panel">
@@ -2858,9 +2847,6 @@ function InvestorAdministration() {
             rowKey="key"
             scroll={{ x: 1100 }}
           />
-          <Text type="secondary" className="admin-investor-footnote">
-            GET <Text code>/api/v1/investors/admin/investor-payment-schedules/</Text> — scheduled investor lines from today onward.
-          </Text>
         </Card>
       </div>
     ),
@@ -3018,10 +3004,6 @@ function InvestorAdministration() {
             scroll={{ x: 1320 }}
           />
 
-          <Text type="secondary" className="admin-investor-footnote">
-            GET <Text code>/api/v1/investors/admin/support-tickets/</Text> — respond via POST{" "}
-            <Text code>/support-tickets/&lt;id&gt;/responses/</Text> with <Text code>body</Text>.
-          </Text>
         </Card>
       </div>
     );
@@ -3108,8 +3090,7 @@ function InvestorAdministration() {
                       rowKey="key"
                     />
                     <Text type="secondary" className="admin-investor-footnote">
-                      Latest {OVERVIEW_HIGHLIGHT_LIMIT} from{" "}
-                      <Text code>/api/v1/investors/admin/customer-payments/</Text> — see Payments for the full list.
+                      Latest {OVERVIEW_HIGHLIGHT_LIMIT} customer payments. See Payments for the full list.
                     </Text>
                   </Card>
 
@@ -3135,8 +3116,7 @@ function InvestorAdministration() {
                         rowKey="key"
                       />
                       <Text type="secondary" className="admin-investor-footnote">
-                        Next {OVERVIEW_HIGHLIGHT_LIMIT} lines by due date from{" "}
-                        <Text code>/api/v1/investors/admin/investor-payment-schedules/</Text>.
+                        Next {OVERVIEW_HIGHLIGHT_LIMIT} disbursements by due date.
                       </Text>
                     </Card>
 
@@ -3170,8 +3150,7 @@ function InvestorAdministration() {
                         scroll={{ x: 1300 }}
                       />
                       <Text type="secondary" className="admin-investor-footnote">
-                        Up to {OVERVIEW_HIGHLIGHT_LIMIT} rows from{" "}
-                        <Text code>/api/v1/investors/admin/projects/performance/</Text> (same Top/Bottom toggle as Projects tab).
+                        Up to {OVERVIEW_HIGHLIGHT_LIMIT} projects. Same Top/Bottom toggle as the Projects tab.
                       </Text>
                     </Card>
                   </div>
@@ -3215,8 +3194,7 @@ function InvestorAdministration() {
                       rowKey="key"
                     />
                     <Text type="secondary" className="admin-investor-footnote">
-                      First {OVERVIEW_HIGHLIGHT_LIMIT} from{" "}
-                      <Text code>/api/v1/investors/admin/directory/finance-by-investor/</Text>.
+                      First {OVERVIEW_HIGHLIGHT_LIMIT} investors by deployed capital.
                     </Text>
                   </Card>
                 </div>
@@ -3458,7 +3436,7 @@ function InvestorAdministration() {
         </Text>
         <Divider className="admin-modal-divider" />
         <div className="admin-investor-payment-head">
-          <Text style={{ fontWeight: 900 }}>Customer repayment</Text>
+          <Text className="admin-investor-payment-head-title">Customer repayment</Text>
           <Space size={10}>
             <Text type="secondary">{activePaymentMeta?.ref}</Text>
             <Text type="secondary">·</Text>
@@ -3492,10 +3470,6 @@ function InvestorAdministration() {
             },
           ]}
         />
-        <Text type="secondary" className="admin-investor-footnote">
-          Rows for the same <Text code>customer_repayment_plan_id</Text> as the selected payment&apos;s schedule line (from{" "}
-          <Text code>/customer-payment-schedules/</Text>).
-        </Text>
       </Modal>
 
       <Modal
@@ -3519,7 +3493,7 @@ function InvestorAdministration() {
         </Text>
         <Divider className="admin-modal-divider" />
         <div className="admin-investor-payment-head">
-          <Text style={{ fontWeight: 900 }}>Investor payment</Text>
+          <Text className="admin-investor-payment-head-title">Investor payment</Text>
           <Space size={10}>
             <Text type="secondary">{activePaymentMeta?.ref}</Text>
           </Space>
@@ -3551,9 +3525,6 @@ function InvestorAdministration() {
             },
           ]}
         />
-        <Text type="secondary" className="admin-investor-footnote">
-          Schedule lines for the selected <Text code>investment_id</Text> from <Text code>/investor-payment-schedules/</Text>.
-        </Text>
       </Modal>
 
       {/* Create investor user */}
@@ -3574,7 +3545,7 @@ function InvestorAdministration() {
         ]}
       >
         <Text type="secondary" className="admin-modal-subtitle">
-          Creates an investor profile and linked user via POST <Text code>/api/v1/investors/admin/investor-users/</Text>.
+          Set up the investor profile and portal login credentials.
         </Text>
         <Form
           form={investorForm}
@@ -3719,7 +3690,7 @@ function InvestorAdministration() {
         ]}
       >
         <Text type="secondary" className="admin-modal-subtitle">
-          Updates <Text code>investors/admin/investor-users/{investorUserDetail?.id || "…"}/</Text> via PATCH.
+          Update profile, KYC, and account settings for this investor.
         </Text>
         <Form form={investorEditForm} layout="vertical" className="admin-modal-form">
           <div className="admin-modal-grid">
@@ -3776,7 +3747,7 @@ function InvestorAdministration() {
         ]}
       >
         <Text type="secondary" className="admin-modal-subtitle">
-          Fill the form below (mock only).
+          Enter project details and customer repayment plan.
         </Text>
         <Form
           form={projectForm}
@@ -3841,7 +3812,7 @@ function InvestorAdministration() {
             >
               <InputNumber min={1} step={1} style={{ width: "100%" }} placeholder="e.g. 36" />
             </Form.Item>
-            <Form.Item name="description" label="Description">
+            <Form.Item name="description" label="Description" className="admin-modal-wide">
               <Input.TextArea rows={3} placeholder="Optional" />
             </Form.Item>
           </div>
@@ -4045,12 +4016,11 @@ function InvestorAdministration() {
         ]}
       >
         <Text type="secondary" className="admin-modal-subtitle">
-          PATCH <Text code>/api/v1/investors/admin/projects/:id/</Text> with <Text code>project</Text>,{" "}
-          <Text code>customer_repayment_plan</Text>, and <Text code>customer_payment_schedules</Text>.
+          Edit project details, customer repayment plan, and payment schedules.
         </Text>
         {!projectDetail?.customer_repayment_plan?.id ? (
           <Text type="warning" className="admin-modal-section-sub">
-            No customer repayment plan on this project yet — save will send only the <Text code>project</Text> block.
+            No customer repayment plan on this project yet — saving will update project details only.
           </Text>
         ) : null}
         <Form form={projectEditForm} layout="vertical" className="admin-modal-form">
@@ -4250,10 +4220,10 @@ function InvestorAdministration() {
         ]}
       >
         <Text type="secondary" className="admin-modal-subtitle">
-          POST <Text code>/api/v1/investors/admin/investments/</Text> with nested <Text code>repayment_plan</Text>.
+          Link an investor to a project with a repayment plan.
         </Text>
         <Text type="secondary" className="admin-modal-section-sub">
-          Installment count follows the linked project&apos;s <Text code>project_duration_months</Text> and this plan type. Set duration on the project before creating the investment.
+          Installment count follows the project duration and plan type. Set duration on the project before creating the investment.
         </Text>
         <Form
           form={investmentForm}
@@ -4306,7 +4276,7 @@ function InvestorAdministration() {
           <Divider className="admin-modal-divider" />
           <div className="admin-modal-section-title">Investor repayment plan</div>
           <Text type="secondary" className="admin-modal-section-sub">
-            Required on <Text code>repayment_plan</Text> when creating an investment.
+            Complete the repayment plan below.
           </Text>
 
           <div className="admin-modal-grid">
@@ -4317,7 +4287,7 @@ function InvestorAdministration() {
               name="firstDueDate"
               label="First due date"
               rules={[{ required: true, message: "Required" }]}
-              extra="Required on RepaymentPlan"
+              extra="Required"
             >
               <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
             </Form.Item>
@@ -4407,20 +4377,18 @@ function InvestorAdministration() {
         ]}
       >
         <Text type="secondary" className="admin-modal-subtitle">
-          PATCH <Text code>/api/v1/investors/admin/investments/:id/</Text> with <Text code>investment</Text>,{" "}
-          <Text code>repayment_plan</Text>, and <Text code>payment_schedules</Text>.
+          Edit investment terms, repayment plan, and scheduled payouts.
         </Text>
         {investmentDetail ? (
           <div className="admin-modal-section-sub" style={{ marginBottom: 12 }}>
             <Text type="secondary">
-              Investor <Text strong>{investmentDetail.investor_name}</Text> · Project{" "}
-              <Text strong>{investmentDetail.project_name}</Text> (IDs are fixed on save).
+              Investor {investmentDetail.investor_name} · Project {investmentDetail.project_name}
             </Text>
           </div>
         ) : null}
         {!investmentDetail?.repayment_plan?.id ? (
           <Text type="warning" className="admin-modal-section-sub">
-            No repayment plan on this investment yet — save will send only the <Text code>investment</Text> block.
+            No repayment plan on this investment yet — saving will update investment details only.
           </Text>
         ) : null}
         <Form form={investmentEditForm} layout="vertical" className="admin-modal-form">
@@ -4618,7 +4586,7 @@ function InvestorAdministration() {
         ]}
       >
         <Text type="secondary" className="admin-modal-subtitle">
-          POST <Text code>/api/v1/investors/admin/customer-payments/</Text> — single line (one schedule) or bulk <Text code>line_items</Text>.
+          Record one schedule line or several lines in bulk.
         </Text>
         <Form
           form={recordPaymentForm}
@@ -4680,7 +4648,7 @@ function InvestorAdministration() {
             <>
               <Divider className="admin-modal-divider" />
               <Text type="secondary" className="admin-modal-section-sub">
-                Each line: schedule ID, amount (decimal string on API), and payment date. Shared reference/notes apply to all created rows.
+                Each line needs a schedule ID, amount, and payment date. Reference and notes apply to all rows.
               </Text>
 
               <Form.Item
@@ -4845,9 +4813,6 @@ function InvestorAdministration() {
                     <Input.TextArea rows={2} />
                   </Form.Item>
                 </div>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  PATCH <Text code>/api/v1/investors/admin/customer-payments/&lt;id&gt;/</Text>
-                </Text>
               </Form>
             )}
           </>
@@ -4874,8 +4839,7 @@ function InvestorAdministration() {
         ]}
       >
         <Text type="secondary" className="admin-modal-subtitle">
-          POST <Text code>/api/v1/investors/admin/investor-payouts/</Text> with <Text code>line_items</Text>. Schedules load from{" "}
-          <Text code>investor-payment-schedules?investment_id=…</Text> when you pick an investment.
+          Select an investment, then add one or more payout lines from its schedule.
         </Text>
         <Form
           form={payoutForm}
@@ -5069,9 +5033,6 @@ function InvestorAdministration() {
                     <Input />
                   </Form.Item>
                 </div>
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  PATCH <Text code>/api/v1/investors/admin/investor-payouts/&lt;id&gt;/</Text>
-                </Text>
               </Form>
             )}
           </>

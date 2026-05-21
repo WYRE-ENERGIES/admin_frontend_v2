@@ -102,31 +102,41 @@ body {
   background-color: #5C12A7;
 }
 
-/* Investor: full-width shell — purple edge-to-edge, content panel beside sidebar */
-.App:has(.investor-layout) {
+/* Investor app — full viewport purple (matches clientadmin.wyreng.com shell) */
+body.wyre-investor-app {
+  margin: 0;
+  padding: 0;
   background-color: #5c12a7;
-  align-items: stretch;
 }
 
-.App:has(.investor-layout) > * {
+body.wyre-investor-app .App {
   width: 100%;
-  flex: 1 1 auto;
+  min-height: 100vh;
+  background-color: #5c12a7;
+}
+
+body.wyre-investor-app .wyre-app-layout {
+  width: 100%;
   min-height: 100vh;
 }
 
+/* Investor shell — match client admin (purple row + inset rounded PageContent) */
 .SidemenuAndPagecontent.investor-layout {
   display: flex;
-  flex: 1 1 auto;
+  flex: 1;
   width: 100%;
-  max-width: 100%;
+  min-width: 0;
   min-height: 100vh;
-  align-self: stretch;
-  box-sizing: border-box;
+  align-items: flex-start;
+  background-color: #5c12a7;
 }
 
-.investor-layout .ant-layout-sider {
-  margin-left: 0 !important;
-  flex-shrink: 0;
+.investor-layout .investor-app-sider.ant-layout-sider {
+  margin-left: 15px !important;
+  flex: 0 0 auto;
+  height: 100vh !important;
+  position: sticky !important;
+  top: 0;
 }
 
 /* Investor sidebar: menu + bottom profile (avatar, name, role) */
@@ -285,16 +295,24 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   overflow-x: hidden;
 }
 
-/* Investor: desktop — let the window / .App handle vertical scroll (don’t trap wheel events) */
+/* Investor: same inset panel as client admin; scroll on .App not inside panel */
 .PageContent.investor-shell {
+  margin: 35px 25px 35px 18px;
+  background-color: #f2f2f8;
+  border-radius: 40px;
   flex: 1 1 0%;
   min-width: 0;
-  width: auto;
-  margin: 16px 16px 16px 0;
-  border-radius: 28px;
-  min-height: calc(100vh - 32px);
+  width: 100%;
+  min-height: calc(100vh - 70px);
   overflow-x: hidden;
   overflow-y: visible;
+  box-sizing: border-box;
+}
+
+.investor-shell .investor-route-outlet {
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 /* .admin-energy-top {
@@ -2697,6 +2715,16 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Tables/empty states: text only, no illustration */
+.investor-shell .ant-empty-image,
+.investor-shell .ant-empty-footer {
+  display: none;
+}
+
+.investor-shell .ant-empty-description {
+  margin-top: 0;
+}
+
 .investor-shell .ant-typography,
 .investor-shell .ant-card,
 .investor-shell .ant-btn,
@@ -2722,7 +2750,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   margin: 0 !important;
   font-family: "Montserrat", sans-serif !important;
   font-size: 26px !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   line-height: 1.25 !important;
   letter-spacing: -0.02em;
   color: #141414 !important;
@@ -2861,7 +2889,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   margin-top: 10px;
   font-family: "Montserrat", sans-serif;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.02em;
   color: #141414;
@@ -2918,11 +2946,11 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 }
 
 .investor-card-heading--caps {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.45);
+  color: rgba(0, 0, 0, 0.55);
 }
 
 .investor-card-heading--financed {
@@ -3068,11 +3096,24 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-weight: 500;
 }
 
-/* SUPERADMIN: Investors Mgt (mock admin module) */
+/* SUPERADMIN: Investors management */
 .admin-investor-page {
   padding: 18px;
   min-width: 0;
   max-width: 100%;
+}
+
+.admin-investor-page .ant-empty-image,
+.admin-investor-page .ant-empty-footer {
+  display: none;
+}
+
+.admin-investor-page .ant-empty-description {
+  margin-top: 0;
+}
+
+.admin-investor-page .ant-upload-drag-icon {
+  display: none;
 }
 
 /* Tabs + cards: break min-width:auto chain so tables scroll inside the white panel */
@@ -3102,7 +3143,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .admin-investor-title {
   font-family: "Montserrat", sans-serif !important;
-  font-weight: 800 !important;
+  font-weight: 600 !important;
   margin: 0 !important;
 }
 
@@ -3151,8 +3192,8 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 .admin-investor-metric-label {
   font-family: "Montserrat", sans-serif;
   font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: rgba(0, 0, 0, 0.55);
 }
@@ -3161,7 +3202,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   margin-top: 8px;
   font-family: "Montserrat", sans-serif;
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: -0.02em;
   color: #141414;
   line-height: 1.15;
@@ -3235,7 +3276,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .admin-investor-panel-head--plain {
   font-family: "Montserrat", sans-serif;
-  font-weight: 800;
+  font-weight: 600;
   font-size: 14px;
   margin-bottom: 10px;
 }
@@ -3256,7 +3297,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 .admin-investor-pill {
   border-radius: 999px;
   font-family: "Montserrat", sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 11px;
 }
 
@@ -3291,7 +3332,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .admin-investor-score-main {
   font-family: "Montserrat", sans-serif;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .admin-investor-score-sub {
@@ -3313,13 +3354,13 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .admin-investor-ticket-investor-name {
   font-family: "Montserrat", sans-serif;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .admin-investor-ticket-investor-ref {
   font-family: "Montserrat", sans-serif;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 500;
   color: rgba(0, 0, 0, 0.45);
 }
 
@@ -3342,21 +3383,21 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 .admin-investor-ticket-email-label {
   font-family: "Montserrat", sans-serif;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 0.04em;
   color: rgba(0, 0, 0, 0.55);
 }
 
 .admin-investor-ticket-email {
   font-family: "Montserrat", sans-serif;
-  font-weight: 800;
+  font-weight: 600;
   color: #2f54eb;
 }
 
 .admin-investor-ticket-section-label {
   font-family: "Montserrat", sans-serif;
   font-size: 11px;
-  font-weight: 900;
+  font-weight: 600;
   letter-spacing: 0.04em;
   color: rgba(0, 0, 0, 0.55);
   display: block;
@@ -3388,6 +3429,13 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   margin-bottom: 10px;
 }
 
+.admin-investor-payment-head-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #141414;
+}
+
 .admin-investor-modal .ant-modal-content {
   border-radius: 16px;
 }
@@ -3398,7 +3446,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .admin-investor-modal .ant-modal-title {
   font-family: "Montserrat", sans-serif;
-  font-weight: 900;
+  font-weight: 600;
 }
 
 .admin-modal-subtitle {
@@ -3416,12 +3464,59 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .admin-modal-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px 14px;
+  align-items: start;
 }
 
 .admin-modal-wide {
   grid-column: 1 / -1;
+}
+
+/* Admin modal grids: equal columns, aligned controls (Input / InputNumber / DatePicker / Select) */
+.admin-investor-modal .admin-modal-grid > .ant-form-item {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-form-item-control-input,
+.admin-investor-modal .admin-modal-grid .ant-form-item-control-input-content {
+  min-width: 0;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-input,
+.admin-investor-modal .admin-modal-grid .ant-input-number,
+.admin-investor-modal .admin-modal-grid .ant-picker,
+.admin-investor-modal .admin-modal-grid .ant-select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-input-number {
+  display: block;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-input-number-input-wrap {
+  padding: 0;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-input-number-input,
+.admin-investor-modal .admin-modal-grid .ant-input,
+.admin-investor-modal .admin-modal-grid .ant-picker {
+  height: 40px;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-picker .ant-picker-input > input {
+  height: 38px;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-select-single .ant-select-selector {
+  height: 40px !important;
+  align-items: center;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-form-item-label > label {
+  font-weight: 500;
 }
 
 .admin-modal-divider {
@@ -3430,7 +3525,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .admin-modal-section-title {
   font-family: "Montserrat", sans-serif;
-  font-weight: 900;
+  font-weight: 600;
   font-size: 13px;
   margin-bottom: 4px;
 }
@@ -3678,7 +3773,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-support-title {
   font-family: "Montserrat", sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
   line-height: 1.35;
   color: #141414;
@@ -3918,7 +4013,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-section-title {
   font-family: "Montserrat", sans-serif !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
   font-size: 16px !important;
 }
 
@@ -3943,7 +4038,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-project-tile-name {
   font-family: "Montserrat", sans-serif;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
   color: #141414;
 }
@@ -3983,7 +4078,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 .investor-mini-value {
   font-family: "Montserrat", sans-serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   color: #141414;
 }
 
@@ -4012,8 +4107,40 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: #5c12a7;
 }
 
+.investor-projects-spin {
+  width: 100%;
+}
+
+.investor-projects-spin > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.investor-projects-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+.investor-projects-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.investor-projects-page .investor-tickets-card,
+.investor-projects-page .investor-projects-support {
+  width: 100%;
+  margin-top: 0;
+}
+
 .investor-projects-support {
-  margin-top: 8px;
+  margin-top: 0;
 }
 
 .investor-projects-instruction {
@@ -4066,7 +4193,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 .investor-open-metric-label {
   font-family: "Montserrat", sans-serif;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: rgba(0, 0, 0, 0.5);
@@ -4075,7 +4202,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 .investor-open-metric-value {
   font-family: "Montserrat", sans-serif;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   color: #141414;
 }
 
@@ -4113,9 +4240,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 }
 
 .investor-tickets-card {
-  margin-top: 20px;
+  margin-top: 0;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  width: 100%;
 }
 
 .investor-tickets-card .ant-card-body {
@@ -4133,7 +4261,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-tickets-title {
   font-family: "Montserrat", sans-serif !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .investor-tickets-tag {
@@ -4160,7 +4288,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-ticket-title {
   font-family: "Montserrat", sans-serif;
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .investor-ticket-pill {
@@ -4189,13 +4317,51 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-modal-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 12px 14px;
   margin-bottom: 6px;
+  align-items: start;
 }
 
 .investor-modal-item {
   margin-bottom: 0 !important;
+  min-width: 0;
+}
+
+.investor-modal-grid .ant-form-item-control-input,
+.investor-modal-grid .ant-form-item-control-input-content {
+  min-width: 0;
+}
+
+.investor-modal-grid .ant-input,
+.investor-modal-grid .ant-input-number,
+.investor-modal-grid .ant-picker,
+.investor-modal-grid .ant-select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.investor-modal-grid .ant-input-number {
+  display: block;
+}
+
+.investor-modal-grid .ant-input-number-input-wrap {
+  padding: 0;
+}
+
+.investor-modal-grid .ant-input-number-input,
+.investor-modal-grid .ant-input,
+.investor-modal-grid .ant-picker {
+  height: 40px;
+}
+
+.investor-modal-grid .ant-select-single .ant-select-selector {
+  height: 40px !important;
+  align-items: center;
+}
+
+.investor-modal-grid .ant-form-item-label > label {
+  font-weight: 500;
 }
 
 .investor-modal-remaining-pill {
@@ -4382,8 +4548,31 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.investor-upload-mock.ant-upload-disabled {
-  opacity: 0.85;
+.investor-upload-heading {
+  margin: 0 0 6px !important;
+  font-weight: 600 !important;
+}
+
+.investor-upload-hint {
+  display: block;
+  font-size: 13px;
+}
+
+.investor-decl-row {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.investor-decl-label {
+  display: inline-block;
+  min-width: 120px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.investor-shell .ant-upload-drag-icon {
+  display: none;
 }
 
 @media (max-width: 1200px) {

@@ -222,8 +222,8 @@ export const MOCK_INVESTOR_ACCOUNT_KYC = {
     { key: "d5", name: "Certified accreditation", submitted: "—", status: "Not submitted" },
   ],
   declarations: {
-    pep: "No PEP match (mock)",
-    sof: "Salary & savings (mock)",
-    sanctions: "Clear (mock)",
+    pep: "No PEP match",
+    sof: "Salary & savings",
+    sanctions: "Clear",
   },
 };

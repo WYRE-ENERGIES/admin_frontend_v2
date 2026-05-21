@@ -5,7 +5,7 @@ import SideMenu from './components/sideBar/SideMenu';
 import Login from './Pages/AuthPages/Login';
 import authHelper from './helpers/authHelper';
 import { theme } from 'antd';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AuthRoute from './components/routes/AuthRoute';
 import BulkSideMenu from './components/sideBar/BulkSideMenu';
 import BulkmonitoringPageView from './components/pageContent/PageViews/BulkmonitoringPageView';
@@ -39,9 +39,21 @@ function AppContent() {
     return String(maybeRole || "").toLowerCase() === "investor";
   })();
 
+  const showInvestorShell = isInvestorPreview || Boolean(decodedUser && isInvestor);
+
+  useEffect(() => {
+    if (showInvestorShell) {
+      document.body.classList.add("wyre-investor-app");
+    } else {
+      document.body.classList.remove("wyre-investor-app");
+    }
+    return () => document.body.classList.remove("wyre-investor-app");
+  }, [showInvestorShell]);
+
   if (isInvestorPreview) {
     return (
-      <div className="SidemenuAndPagecontent investor-layout">
+      <div className="wyre-app-layout">
+        <div className="SidemenuAndPagecontent investor-layout">
         <InvestorSideMenu
           trigger={null}
           collapsible
@@ -51,12 +63,14 @@ function AppContent() {
           basePath={investorPreviewBasePath}
         />
         <InvestorPageView basePath={investorPreviewBasePath} />
+        </div>
       </div>
     );
   }
 
   return decodedUser && isInvestor ? (
-    <div className="SidemenuAndPagecontent investor-layout">
+    <div className="wyre-app-layout">
+      <div className="SidemenuAndPagecontent investor-layout">
       <InvestorSideMenu
         trigger={null}
         collapsible
@@ -65,6 +79,7 @@ function AppContent() {
         onBreakpoint={onBreakpoint}
       />
       <InvestorPageView />
+      </div>
     </div>
   ) : decodedUser && decodedUser.client_type === "STANDARD" ? (
     <div>

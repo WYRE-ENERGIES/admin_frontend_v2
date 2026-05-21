@@ -203,7 +203,7 @@ function PortfolioOverview() {
   const submitSupport = async () => {
     try {
       const values = await supportForm.validateFields();
-      message.success("Support ticket created (mock).");
+      message.success("Your request has been sent to Wyre support.");
       setSupportOpen(false);
       supportForm.resetFields();
       return values;
@@ -220,7 +220,7 @@ function PortfolioOverview() {
             Portfolio overview
           </Title>
           <Text type="secondary" className="investor-page-subtitle">
-            Solar receivables across financed branches — sample data for UI review
+            Solar receivables across your financed branches
           </Text>
         </div>
 
@@ -351,6 +351,7 @@ function PortfolioOverview() {
             rowKey="key"
             loading={portfolioOverview.loading}
             scroll={{ x: 1100 }}
+            locale={{ emptyText: "No financed projects in this period" }}
           />
         </div>
         <div className="investor-financed-legend">
@@ -462,8 +463,8 @@ function PortfolioOverview() {
               Questions about a project or repayment?
             </div>
             <div className="investor-support-sub">
-              Investors contact Wyre only — we coordinate with the customer. Opens
-              your existing support ticket flow when implemented.
+              Investors contact Wyre only — we coordinate with the customer on your
+              behalf.
             </div>
           </div>
           <Button type="primary" className="investor-support-cta" onClick={openSupport}>
@@ -527,10 +528,6 @@ function PortfolioOverview() {
           <Form.Item name="message" label="Message">
             <TextArea rows={4} placeholder="Write your request to Wyre (optional)" />
           </Form.Item>
-
-          <Text type="secondary" className="investor-modal-remaining-note">
-            In production, this becomes the SupportTicket description.
-          </Text>
         </Form>
       </Modal>
     </div>

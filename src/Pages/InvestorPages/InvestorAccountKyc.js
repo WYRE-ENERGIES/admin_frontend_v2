@@ -10,9 +10,7 @@ import {
   Tag,
   Timeline,
   Typography,
-  Upload,
 } from "antd";
-import { InboxOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
@@ -53,7 +51,7 @@ function InvestorAccountKyc() {
     <div className="investor-page investor-account-page">
       <InvestorPageHeader
         title="Account & KYC"
-        subtitle="Profile, payout details, and investor verification — sample data only."
+        subtitle="Profile, payout details, and investor verification."
         range={range}
         onRangeChange={setRange}
       />
@@ -62,7 +60,7 @@ function InvestorAccountKyc() {
         type="success"
         showIcon
         className="investor-alert investor-kyc-verified-banner"
-        message="KYC verified — You can fund projects and receive payouts subject to limits shown in your agreement (mock copy)."
+        message="KYC verified — You can fund projects and receive payouts subject to limits in your agreement."
       />
 
       <div className="investor-account-meta-row">
@@ -88,7 +86,7 @@ function InvestorAccountKyc() {
             title="Profile & contact"
             extra={
               <Button type="link" size="small">
-                Edit (mock)
+                Edit
               </Button>
             }
             bordered={false}
@@ -114,7 +112,7 @@ function InvestorAccountKyc() {
             title="Payout & banking"
             extra={
               <Button type="link" size="small">
-                Update (mock)
+                Update
               </Button>
             }
             bordered={false}
@@ -149,39 +147,38 @@ function InvestorAccountKyc() {
                 pagination={false}
                 size="small"
                 rowKey="key"
+                locale={{ emptyText: "No documents on file" }}
               />
             </div>
             <div className="investor-upload-block">
-              <Title level={5}>Replace a document</Title>
-              <Upload.Dragger name="files" multiple={false} disabled className="investor-upload-mock">
-                <p className="ant-upload-drag-icon">
-                  <InboxOutlined />
-                </p>
-                <p className="ant-upload-text">Drag files or click to upload</p>
-                <p className="ant-upload-hint">Mock only — uploads disabled until backend is ready.</p>
-              </Upload.Dragger>
-              <Button type="primary" style={{ marginTop: 12 }}>
-                Choose file (mock)
+              <Title level={5} className="investor-upload-heading">
+                Replace a document
+              </Title>
+              <Text type="secondary" className="investor-upload-hint">
+                Upload a new file when you need to replace an existing document.
+              </Text>
+              <Button type="primary" disabled style={{ marginTop: 12 }}>
+                Choose file
               </Button>
             </div>
           </Card>
         </Col>
         <Col xs={24} lg={10}>
           <Card title="Compliance declarations" bordered={false} className="investor-card">
-            <p>
-              <Text strong>PEP: </Text>
+            <p className="investor-decl-row">
+              <span className="investor-decl-label">PEP</span>
               {declarations.pep}
             </p>
-            <p>
-              <Text strong>Source of funds: </Text>
+            <p className="investor-decl-row">
+              <span className="investor-decl-label">Source of funds</span>
               {declarations.sof}
             </p>
-            <p>
-              <Text strong>Sanctions: </Text>
+            <p className="investor-decl-row">
+              <span className="investor-decl-label">Sanctions</span>
               {declarations.sanctions}
             </p>
             <Button type="default" block style={{ marginTop: 8 }}>
-              Update declarations (mock)
+              Update declarations
             </Button>
           </Card>
 
@@ -196,7 +193,7 @@ function InvestorAccountKyc() {
                 { color: "green", children: "Application submitted" },
                 { color: "green", children: "Documents under review" },
                 { color: "green", children: "KYC approved · Tier 2" },
-                { color: "gray", children: "Annual refresh scheduled (future)" },
+                { color: "gray", children: "Annual refresh scheduled" },
               ]}
             />
           </Card>

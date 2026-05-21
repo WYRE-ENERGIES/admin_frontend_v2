@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   Alert,
   Button,
@@ -76,11 +77,17 @@ const REPAYMENT_OPTIONS = [
   { value: "no_preference", label: "No preference" },
   { value: "monthly", label: "Monthly" },
   { value: "quarterly", label: "Quarterly" },
-  { value: "bullet", label: "Bullet" },
+  { value: "Yearly", label: "Yearly" },
+  { value: "In full", label: "In full" },
 ];
 
 function InvestorProjects() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const supportPath = location.pathname.startsWith("/__investor_preview")
+    ? "/__investor_preview/support"
+    : "/support";
   const {
     projects: bundle,
     projectsLoading,
@@ -236,7 +243,7 @@ function InvestorProjects() {
           closable
           style={{ marginBottom: 16 }}
           message="Some project data could not be loaded"
-          description={`Missing: ${projectsPartialErrors.join(", ")}. Showing available sections.`}
+          description="Showing the sections that are available. Refresh the page or try again later."
         />
       ) : null}
 
@@ -247,14 +254,8 @@ function InvestorProjects() {
         onRangeChange={setRange}
       />
 
-      <Text type="secondary" className="investor-projects-instruction">
-        Browse financed sites below, or switch to{" "}
-        <Text strong>Open projects</Text> and click{" "}
-        <Text strong>Contact Wyre to invest</Text> to open a ticket with our
-        team.
-      </Text>
-
-      <Spin spinning={projectsLoading}>
+      <Spin spinning={projectsLoading} wrapperClassName="investor-projects-spin">
+        <div className="investor-projects-body">
       <div className="investor-metrics investor-metrics--four">
         {kpis.map((k) => (
           <Card
@@ -411,14 +412,12 @@ function InvestorProjects() {
         </div>
       )}
 
-      <Card className="investor-tickets-card" bordered={false}>
+          <div className="investor-projects-bottom">
+          <Card className="investor-tickets-card" bordered={false}>
         <div className="investor-tickets-head">
           <Title level={5} className="investor-tickets-title" style={{ margin: 0 }}>
             My investment tickets
           </Title>
-          <Tag className="investor-tickets-tag">
-            SupportTicket · tagged [INVESTMENT]
-          </Tag>
         </div>
         {tickets.length === 0 ? (
           <Text type="secondary" className="investor-tickets-empty">
@@ -430,8 +429,8 @@ function InvestorProjects() {
             {tickets.map((t) => (
               <div key={t.id} className="investor-ticket-row">
                 <div>
-                  <Text strong className="investor-ticket-title">
-                    {t.subject || `[INVESTMENT] ${t.projectName}`}
+                  <Text className="investor-ticket-title">
+                    {t.subject || t.projectName || "Investment request"}
                   </Text>
                   <div className="investor-ticket-meta">
                     <Text type="secondary">
@@ -461,12 +460,10 @@ function InvestorProjects() {
         )}
       </Card>
 
-      </Spin>
-
-      <Card
-        className="investor-support-card investor-support-card--peach investor-projects-support"
-        bordered={false}
-      >
+          <Card
+            className="investor-support-card investor-support-card--peach investor-projects-support"
+            bordered={false}
+          >
         <div className="investor-support-inner">
           <div>
             <div className="investor-support-title">
@@ -476,11 +473,18 @@ function InvestorProjects() {
               Use Support — investors do not contact end customers directly.
             </div>
           </div>
-          <Button type="primary" className="investor-support-cta">
+          <Button
+            type="primary"
+            className="investor-support-cta"
+            onClick={() => navigate(supportPath)}
+          >
             Contact Wyre support
           </Button>
         </div>
-      </Card>
+          </Card>
+          </div>
+        </div>
+      </Spin>
 
       <Modal
         title="Contact Wyre to invest"
@@ -511,12 +515,6 @@ function InvestorProjects() {
         destroyOnClose
         width={520}
       >
-        <Alert
-          type="info"
-          showIcon
-          style={{ marginBottom: 16 }}
-          message="Create an Investment support ticket for Wyre"
-        />
         <Form form={form} layout="vertical">
           <div className="investor-modal-grid">
             <Form.Item name="project" label="Project" className="investor-modal-item">
@@ -563,9 +561,6 @@ function InvestorProjects() {
                     )})`
                   : "—"}
               </div>
-              <Text type="secondary" className="investor-modal-remaining-note">
-                Availability rule: remaining &gt; 0.
-              </Text>
             </div>
           </div>
 

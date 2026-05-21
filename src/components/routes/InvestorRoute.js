@@ -16,7 +16,7 @@ function joinBase(basePath, path) {
 
 function InvestorRoute({ basePath = "" }) {
   return (
-    <div>
+    <div className="investor-route-outlet">
       <Routes>
         <Route path={joinBase(basePath, "/")} element={<PortfolioOverview />} />
         <Route
