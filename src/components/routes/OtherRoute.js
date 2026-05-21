@@ -13,6 +13,7 @@ import SolarOnboarding from "../../Pages/OverviewPages/SolarOnboarding";
 import SolarStationDetails from "../../Pages/OverviewPages/SolarStationDetails";
 import SolarManagement from "../../Pages/OverviewPages/SolarMgt";
 import InstallationsChecklist from "../../Pages/OverviewPages/InstallationsChecklist";
+import InvestorAdministration from "../../Pages/OverviewPages/InvestorAdministration";
 
 function OtherRoute() {
   return (
@@ -31,6 +32,7 @@ function OtherRoute() {
           <Route path="/solar-onboarding/stations/:branchId" element={<SolarStationDetails />} />
           <Route path="/solar-management" element={<SolarManagement />} />
           <Route path="/installations-checklist" element={<InstallationsChecklist />} />
+          <Route path="/investors-mgt" element={<InvestorAdministration />} />
           <Route path="/settings" element={<Settings />}></Route>
           <Route path="/historical-readings" element={<HistoricalReadings />}></Route>
           <Route path="/log-out" element={<LogOut />}></Route>
