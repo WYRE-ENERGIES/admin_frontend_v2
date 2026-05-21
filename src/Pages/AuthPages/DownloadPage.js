@@ -879,9 +879,16 @@ function DownloadPage(props) {
 
   // Filtered data based on search input
   const filteredBranchPostingData = useMemo(() => {
-    if (!branchPostingSearch) return branchPostingData;
+    // Exclude branches with null/undefined/sentinel (999) hours since last post
+    const withPost = branchPostingData.filter(
+      (item) =>
+        item?.hours_since_last_post !== null &&
+        item?.hours_since_last_post !== undefined &&
+        item?.hours_since_last_post !== 999
+    );
+    if (!branchPostingSearch) return withPost;
     const query = branchPostingSearch.toLowerCase();
-    return branchPostingData.filter((item) =>
+    return withPost.filter((item) =>
       (item.branch_name || "").toString().toLowerCase().includes(query)
     );
   }, [branchPostingData, branchPostingSearch]);
