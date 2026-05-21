@@ -1,5 +1,6 @@
 import {
   UserOutlined,
+  TeamOutlined,
   MenuOutlined,
   WarningOutlined,
   LoginOutlined,
@@ -16,6 +17,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { connect } from "react-redux";
 import { logUserOut } from "../../redux/actions/auth/auth.action";
 import EnvData from "../../config/EnvData";
+import authHelper from "../../helpers/authHelper";
 
 function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
     const [selectedLocation, setSelectedLocation] = useState('/');
@@ -24,6 +26,8 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
    const [clientLogo, setClientLogo] = useState(null);
     const [clientName, setClientName] = useState(null);
     const location = useLocation();    
+    const decoded = authHelper();
+    const isSuperAdmin = String(decoded?.role_text || "").toUpperCase() === "SUPERADMIN";
 
     useEffect(() => {
       const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -83,6 +87,15 @@ function OtherSideMenu({ collapsed, setCollapsed, logUserOut }) {
             key: "/system-constants",
             icon: <HolderOutlined style={{ scale: collapsed ? '1.1' : '1' }} />,
         },
+        ...(isSuperAdmin
+          ? [
+              {
+                label: "Investors Mgt",
+                key: "/investors-mgt",
+                icon: <TeamOutlined style={{ scale: collapsed ? "1.1" : "1" }} />,
+              },
+            ]
+          : []),
         {
             type: 'divider',
         },

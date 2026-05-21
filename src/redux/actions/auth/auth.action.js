@@ -31,6 +31,7 @@ export const loginAUser = (parameters) => async (dispatch) => {
   try {
     
     localStorage.removeItem('loggedWyreUserAdmin');
+    localStorage.removeItem('currentUser');
     return window.location.href = '/';
   } catch (error) {
     return { signedOut: false, error: error.message };

@@ -11,6 +11,15 @@ import overviewReducersBulkMonitoring from "./bulkMonitoring/overview/overview.r
 import systemConstantsReducer from "./systemConstants/system.constants.reducer";
 import solarReducer from "./solar/solar.reducer";
 import installChecklistReducer from "./installChecklist/installChecklist.reducer";
+import investorReducer from "./investor/investor.reducer";
+import adminInvestorUserReducer from "./adminInvestorUser/adminInvestorUser.reducer";
+import adminInvestorProjectReducer from "./adminInvestorProject/adminInvestorProject.reducer";
+import adminInvestorInvestmentReducer from "./adminInvestorInvestment/adminInvestorInvestment.reducer";
+import adminCustomerPaymentReducer from "./adminCustomerPayment/adminCustomerPayment.reducer";
+import adminInvestorPayoutReducer from "./adminInvestorPayout/adminInvestorPayout.reducer";
+import adminInvestorOverviewReducer from "./adminInvestorOverview/adminInvestorOverview.reducer";
+import adminInvestorDirectoryReducer from "./adminInvestorDirectory/adminInvestorDirectory.reducer";
+import adminInvestorSupportTicketReducer from "./adminInvestorSupportTicket/adminInvestorSupportTicket.reducer";
 
 const rootReducers = combineReducers({
     overviewPage: overviewReducers,
@@ -25,6 +34,15 @@ const rootReducers = combineReducers({
     systemConstants: systemConstantsReducer,
     solar: solarReducer,
     installChecklist: installChecklistReducer,
+    investorPage: investorReducer,
+    adminInvestorUsersPage: adminInvestorUserReducer,
+    adminInvestorProjectsPage: adminInvestorProjectReducer,
+    adminInvestorInvestmentsPage: adminInvestorInvestmentReducer,
+    adminCustomerPaymentsPage: adminCustomerPaymentReducer,
+    adminInvestorPayoutsPage: adminInvestorPayoutReducer,
+    adminInvestorOverviewPage: adminInvestorOverviewReducer,
+    adminInvestorDirectoryPage: adminInvestorDirectoryReducer,
+    adminInvestorSupportTicketsPage: adminInvestorSupportTicketReducer,
 });
 
 export default rootReducers
