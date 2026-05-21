@@ -1,0 +1,639 @@
+/* ==================================================
+   Download Page
+   Visual language mirrors SolarMgt: gradient KPI cards
+   + clean white section cards.
+   ================================================== */
+
+.dl-page {
+  padding: 24px 30px 32px;
+  font-family: 'Montserrat', sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dl-page-title {
+  margin: 0 0 8px 0 !important;
+  font-size: 26px !important;
+  font-weight: 700 !important;
+  color: #111827;
+  line-height: 1.2 !important;
+}
+
+/* ---------- KPI Cards (shared style for all cards on the page) ---------- */
+.dl-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.dl-kpi-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 1100px) {
+  .dl-kpi-grid,
+  .dl-kpi-grid--3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .dl-kpi-grid,
+  .dl-kpi-grid--3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dl-kpi-card {
+  position: relative;
+  border-radius: 12px;
+  padding: 18px 22px 20px;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+  min-height: 116px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Decorative bubbles are not used in the simple style. */
+.dl-kpi-decoration {
+  display: none;
+}
+
+.dl-kpi-icon-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dl-kpi-icon {
+  display: none;
+}
+
+.dl-kpi-label {
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+
+.dl-kpi-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.dl-kpi-value {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  color: #5C12A7;
+}
+
+.dl-kpi-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: #5C12A7;
+  opacity: 0.85;
+}
+
+.dl-kpi-sub {
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+/* ---------- Section Header ---------- */
+.dl-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dl-section-title {
+  margin: 12px 0;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #111827;
+}
+
+.dl-section-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* ---------- Toolbar (Search + filter chips) ---------- */
+.dl-toolbar {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  flex-wrap: wrap;
+}
+
+.dl-toolbar-search {
+  flex: 1;
+  max-width: 360px;
+  height: 36px;
+  border-radius: 8px;
+}
+
+.dl-toolbar-search.ant-input-affix-wrapper {
+  border-color: #e5e7eb;
+}
+
+.dl-filter-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dl-chip {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: #4b5563;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  font-weight: 500;
+}
+
+.dl-chip:hover {
+  border-color: #5C12A7;
+  color: #5C12A7;
+}
+
+.dl-chip.is-active {
+  background: rgba(92, 18, 167, 0.08);
+  border-color: #5C12A7;
+  color: #5C12A7;
+}
+
+/* ---------- Report Section ---------- */
+.dl-section-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dl-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.dl-meta-row .dl-meta-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.dl-legend-stale {
+  background: #ef4444;
+}
+
+.dl-legend-inactive {
+  background: #9ca3af;
+}
+
+/* ---------- Branch Row (accordion) ---------- */
+.dl-branch-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dl-branch-card {
+  border: 1px solid #f0f0f0;
+  border-radius: 10px;
+  background: #ffffff;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dl-branch-card:hover {
+  border-color: #e5e7eb;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.dl-branch-card.is-open {
+  border-color: #d8b4fe;
+}
+
+.dl-branch-head {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dl-branch-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(92, 18, 167, 0.08);
+  color: #5C12A7;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+.dl-branch-name {
+  font-weight: 600;
+  color: #111827;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.dl-branch-sub {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.dl-branch-sub-strong {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.dl-pill-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.dl-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(107, 114, 128, 0.1);
+  color: #374151;
+  white-space: nowrap;
+}
+
+.dl-pill--id {
+  background: rgba(92, 18, 167, 0.08);
+  color: #5C12A7;
+}
+
+.dl-pill--stale {
+  background: rgba(239, 68, 68, 0.12);
+  color: #b91c1c;
+}
+
+.dl-pill--inactive {
+  background: rgba(156, 163, 175, 0.18);
+  color: #4b5563;
+}
+
+.dl-pill--longest {
+  background: rgba(245, 158, 11, 0.14);
+  color: #b45309;
+}
+
+.dl-pill--ok {
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
+}
+
+/* ---------- Branch Body (expanded) ---------- */
+.dl-branch-body {
+  background: #fafafa;
+  border-top: 1px solid #f0f0f0;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dl-by-type {
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.dl-by-type-row {
+  margin-top: 4px;
+}
+
+.dl-by-type-row strong {
+  color: #111827;
+  font-weight: 600;
+  margin-right: 6px;
+}
+
+.dl-mini-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #ffffff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 12px;
+}
+
+.dl-mini-table th {
+  text-align: left;
+  background: #fafafa;
+  color: #6b7280;
+  font-weight: 600;
+  padding: 10px 12px;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+}
+
+.dl-mini-table td {
+  padding: 10px 12px;
+  border-top: 1px solid #f0f0f0;
+  color: #1f2937;
+}
+
+.dl-mini-table tr.is-stale td:first-child,
+.dl-mini-table tr.is-stale td {
+  color: #b91c1c;
+}
+
+.dl-mini-table tr.is-stale {
+  background: rgba(239, 68, 68, 0.04);
+}
+
+.dl-mini-table tr.is-inactive td {
+  color: #6b7280;
+}
+
+.dl-hours-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dl-hours-pill--ok {
+  background: rgba(34, 197, 94, 0.14);
+  color: #15803d;
+}
+
+.dl-hours-pill--stale {
+  background: rgba(239, 68, 68, 0.14);
+  color: #b91c1c;
+}
+
+.dl-hours-pill--never {
+  background: rgba(156, 163, 175, 0.2);
+  color: #4b5563;
+}
+
+.dl-empty {
+  padding: 32px 16px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 13px;
+}
+
+/* ---------- Pagination ---------- */
+.dl-pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 4px 2px;
+  flex-wrap: wrap;
+  border-top: 1px solid #f5f5f5;
+  margin-top: 6px;
+}
+
+.dl-pagination-info {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.dl-pagination-info b {
+  color: #111827;
+  font-weight: 600;
+}
+
+.dl-pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dl-page-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  padding: 0;
+}
+
+.dl-page-btn:hover:not(:disabled) {
+  border-color: #5C12A7;
+  color: #5C12A7;
+}
+
+.dl-page-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.dl-page-current {
+  font-size: 12px;
+  color: #4b5563;
+  padding: 0 10px;
+}
+
+.dl-page-current b {
+  color: #5C12A7;
+  font-weight: 700;
+}
+
+.dl-page-size {
+  width: 110px;
+}
+
+.dl-page-size .ant-select-selector {
+  height: 32px !important;
+  border-radius: 6px !important;
+  align-items: center;
+}
+
+/* ---------- Section spacing tweaks ---------- */
+.dl-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dl-section + .dl-section {
+  margin-top: 8px;
+}
+
+.dl-section--report {
+  margin-top: 8px;
+}
+
+/* ---------- Page container / global page-level styles ---------- */
+.dl-page-container {
+  padding: 24px;
+}
+
+.dl-page-title-centered {
+  text-align: center;
+  margin-bottom: 32px !important;
+}
+
+/* ---------- Reusable form/section card (replaces JS `cardStyle`) ---------- */
+.dl-form-card {
+  margin-bottom: 24px;
+  border-radius: 8px;
+}
+
+/* Inner table card sits inside the section, no need for outer spacing */
+.dl-table-card {
+  margin-bottom: 0;
+  border-radius: 8px;
+}
+
+/* ---------- Download submit button (replaces JS `buttonStyle`) ---------- */
+.dl-download-btn,
+.dl-download-btn.ant-btn {
+  background-color: #5c3592;
+  color: #ffffff;
+  height: 40px;
+  border-radius: 7px;
+  width: 100%;
+  font-weight: bold;
+  border: none;
+}
+
+.dl-download-btn:hover,
+.dl-download-btn.ant-btn:hover,
+.dl-download-btn:focus,
+.dl-download-btn.ant-btn:focus {
+  background-color: #5C12A7;
+  color: #ffffff;
+  opacity: 0.92;
+  border: none;
+}
+
+/* ---------- Branch selector (Select with custom height) ---------- */
+.dl-branch-select.ant-select .ant-select-selector {
+  height: 40px;
+  outline: none;
+}
+
+/* ---------- Date / time pickers occupy full row width ---------- */
+.dl-range-picker {
+  width: 100%;
+}
+
+/* ---------- Column filter dropdown (Ant Table column search) ---------- */
+.dl-col-filter {
+  padding: 8px;
+}
+
+.dl-col-filter-input {
+  margin-bottom: 8px;
+  display: block;
+}
+
+.dl-col-filter-btn,
+.dl-col-filter-btn.ant-btn {
+  width: 90px;
+}
+
+.dl-col-filter-icon {
+  color: inherit;
+}
+
+.dl-col-filter-icon.is-active {
+  color: #1677ff;
+}
+
+/* ---------- Misc small layout utilities used in the report section ---------- */
+.dl-meta-right {
+  margin-left: auto;
+}
+
+/* Color the search icon used in the toolbar prefix */
+.dl-toolbar-search .ant-input-prefix .anticon {
+  color: #9ca3af;
+}
+
+/* Branch toggle: caret points right when closed, rotates down via .is-open */
+.dl-branch-toggle .anticon {
+  transform: rotate(-90deg);
+  transition: transform 0.2s ease;
+}
+
+.dl-branch-card.is-open .dl-branch-toggle .anticon {
+  transform: rotate(0deg);
+}
+
+/* KPI grid spacing variant used when grid sits directly above a card */
+.dl-kpi-grid--spaced {
+  margin-bottom: 16px;
+}
+
+/* Inner search input above the in-section tables */
+.dl-inner-search {
+  margin-bottom: 16px;
+  max-width: 360px;
+}
+
+/* ---------- Modal content sections ---------- */
+.dl-modal-section {
+  margin-bottom: 24px;
+}
+
+.dl-modal-section-title.ant-typography {
+  margin-bottom: 12px !important;
+}

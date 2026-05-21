@@ -10,6 +10,7 @@ import branchReducers from "./branch/branch.reducer";
 import overviewReducersBulkMonitoring from "./bulkMonitoring/overview/overview.reducer";
 import systemConstantsReducer from "./systemConstants/system.constants.reducer";
 import solarReducer from "./solar/solar.reducer";
+import solarMgtReducer from "./solarMgt/solarMgt.reducer";
 import installChecklistReducer from "./installChecklist/installChecklist.reducer";
 import investorReducer from "./investor/investor.reducer";
 import adminInvestorUserReducer from "./adminInvestorUser/adminInvestorUser.reducer";
@@ -33,6 +34,7 @@ const rootReducers = combineReducers({
     branchPage: branchReducers,
     systemConstants: systemConstantsReducer,
     solar: solarReducer,
+    solarMgt: solarMgtReducer,
     installChecklist: installChecklistReducer,
     investorPage: investorReducer,
     adminInvestorUsersPage: adminInvestorUserReducer,
