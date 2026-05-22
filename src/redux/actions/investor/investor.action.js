@@ -19,7 +19,7 @@ import {
   mapPortfolioGenerationCard,
   mapPrimaryInvestedCard,
   mapRecentPaymentActivity,
-  mapRepaymentScoreCard,
+  aggregatePortfolioScoreKpi,
   mapRepaymentTotalsCard,
 } from "../../../helpers/investorPortfolioMappers";
 import {
@@ -86,17 +86,19 @@ export const fetchInvestorPortfolioOverview =
       return { fulfilled: false, message: msg };
     }
 
+    const financedProjects = mapFinancedProjectsTable(raw.financedProjects);
+
     const payload = {
       partialErrors: errors.length ? errors : null,
       alert: mapNotificationsToAlert(raw.notifications),
       kpis: {
         primaryInvested: mapPrimaryInvestedCard(raw.totalInvested, raw.repaymentTotals),
-        repaymentScore: mapRepaymentScoreCard(raw.repaymentTotals),
-        portfolioGeneration: mapPortfolioGenerationCard(raw.portfolioGeneration),
+        portfolioScore: aggregatePortfolioScoreKpi(financedProjects),
+        portfolioGeneration: mapPortfolioGenerationCard(raw.portfolioGeneration, financedProjects),
         repaymentTotals: mapRepaymentTotalsCard(raw.repaymentTotals),
         co2: mapCo2Card(raw.co2),
       },
-      financedProjects: mapFinancedProjectsTable(raw.financedProjects),
+      financedProjects,
       chartData: mapPerformanceSnapshotChart(raw.performanceSnapshot),
       activity: mapRecentPaymentActivity(raw.recentPaymentActivity),
     };
