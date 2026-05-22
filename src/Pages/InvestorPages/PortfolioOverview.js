@@ -30,10 +30,13 @@ import {
 } from "recharts";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import { Link, useLocation } from "react-router-dom";
 import { fetchInvestorPortfolioOverview } from "../../redux/actions/investor/investor.action";
 import { formatCompactNgn } from "../../helpers/investorPortfolioMappers";
 
 dayjs.extend(relativeTime);
+
+const PORTFOLIO_ACTIVITY_PREVIEW_LIMIT = 5;
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -65,6 +68,7 @@ function HealthCell({ dot, label, posted }) {
 
 function PortfolioOverview() {
   const dispatch = useDispatch();
+  const location = useLocation();
   const portfolioOverview = useSelector((s) => s.investorPage.portfolioOverview);
 
   const [range, setRange] = useState([
@@ -99,6 +103,16 @@ function PortfolioOverview() {
   const activity = portfolioOverview.activity || [];
   const chartData = portfolioOverview.chartData || [];
   const kpis = portfolioOverview.kpis || {};
+
+  const paymentsPagePath = location.pathname.startsWith("/__investor_preview")
+    ? "/__investor_preview/payments"
+    : "/payments";
+
+  const activityPreview = useMemo(
+    () => activity.slice(0, PORTFOLIO_ACTIVITY_PREVIEW_LIMIT),
+    [activity]
+  );
+  const hasMoreActivity = activity.length > PORTFOLIO_ACTIVITY_PREVIEW_LIMIT;
 
   const columns = useMemo(
     () => [
@@ -299,9 +313,11 @@ function PortfolioOverview() {
           </Card>
 
           <Card bordered={false} className="investor-metric-card">
-            <div className="investor-metric-label">Repayment score</div>
-            <div className="investor-metric-value">{kpis.repaymentScore?.display ?? "—"}</div>
-            <div className="investor-metric-sub">{kpis.repaymentScore?.sub}</div>
+            <div className="investor-metric-label">Portfolio score</div>
+            <div className="investor-metric-value">
+              {kpis.portfolioScore?.display ?? "—"}
+            </div>
+            <div className="investor-metric-sub">{kpis.portfolioScore?.sub}</div>
           </Card>
 
           <Card bordered={false} className="investor-metric-card">
@@ -309,10 +325,11 @@ function PortfolioOverview() {
             <div className="investor-metric-value">
               {kpis.portfolioGeneration?.value ?? "—"}
             </div>
-            <div className="investor-metric-sub">
-              {kpis.portfolioGeneration?.nairaSub ||
-                kpis.portfolioGeneration?.sub}
-            </div>
+            {(kpis.portfolioGeneration?.nairaSub ?? kpis.portfolioGeneration?.sub) ? (
+              <div className="investor-metric-sub">
+                {kpis.portfolioGeneration?.nairaSub ?? kpis.portfolioGeneration?.sub}
+              </div>
+            ) : null}
           </Card>
 
           <Card bordered={false} className="investor-metric-card">
@@ -425,34 +442,41 @@ function PortfolioOverview() {
               Recent payment activity
             </span>
           }
-          className="investor-card"
+          className="investor-card investor-card--activity"
           bordered={false}
         >
-          <Space direction="vertical" size={10} style={{ width: "100%" }}>
-            {activity.length ? (
-              activity.map((a) => (
-                <div key={a.key} className="investor-activity-row">
-                  <div className="investor-activity-left">
-                    <div className="investor-activity-date">{a.date}</div>
-                    <div className="investor-activity-label">{a.label}</div>
+          {activity.length ? (
+            <>
+              <div className="investor-activity-panel">
+                {activityPreview.map((a) => (
+                  <div key={a.key} className="investor-activity-row">
+                    <div className="investor-activity-left">
+                      <div className="investor-activity-date">{a.date}</div>
+                      <div className="investor-activity-label">{a.label}</div>
+                    </div>
+                    <div
+                      className={`investor-activity-amount ${
+                        a.isBad ? "is-bad" : "is-good"
+                      }`}
+                    >
+                      {a.amount}
+                    </div>
                   </div>
-                  <div
-                    className={`investor-activity-amount ${
-                      a.isBad ? "is-bad" : "is-good"
-                    }`}
-                  >
-                    {a.amount}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <Text type="secondary">
-                {portfolioOverview.loading
-                  ? "Loading activity…"
-                  : "No recent payment activity."}
-              </Text>
-            )}
-          </Space>
+                ))}
+              </div>
+              {hasMoreActivity ? (
+                <Link to={paymentsPagePath} className="investor-activity-view-all">
+                  View all {activity.length} payments →
+                </Link>
+              ) : null}
+            </>
+          ) : (
+            <Text type="secondary">
+              {portfolioOverview.loading
+                ? "Loading activity…"
+                : "No recent payment activity."}
+            </Text>
+          )}
         </Card>
       </div>
 

@@ -212,9 +212,9 @@ function MetricCard({ icon, label, value, sub, variant = "default" }) {
         <div className="admin-investor-metric-meta">
           <div className="admin-investor-metric-label">{label}</div>
           <div className="admin-investor-metric-value">{value}</div>
-          {sub ? <div className="admin-investor-metric-sub">{sub}</div> : null}
         </div>
       </div>
+      {sub ? <div className="admin-investor-metric-sub">{sub}</div> : null}
     </Card>
   );
 }

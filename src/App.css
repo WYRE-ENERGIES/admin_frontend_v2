@@ -2838,15 +2838,29 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
+  align-items: stretch;
 }
 
 .investor-metric-card {
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.investor-metric-card.ant-card {
+  display: flex;
+  flex-direction: column;
 }
 
 .investor-metric-card .ant-card-body {
   padding: 16px 16px 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.investor-metric-card .investor-metric-sub {
+  margin-top: auto;
 }
 
 .investor-metric-card--primary {
@@ -3087,6 +3101,36 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 .investor-grid--bottom {
   margin-top: 16px;
   grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  align-items: stretch;
+}
+
+.investor-grid--bottom .investor-card {
+  height: 100%;
+}
+
+.investor-card--activity .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.investor-activity-panel {
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.investor-activity-view-all {
+  display: inline-block;
+  margin-top: 12px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5c3592;
+}
+
+.investor-activity-view-all:hover {
+  color: #7b4bb8;
 }
 
 .investor-support-modal-subtitle {
@@ -3158,16 +3202,27 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
+  align-items: stretch;
 }
 
 .admin-investor-metric {
   border-radius: 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   overflow: hidden;
+  height: 100%;
+}
+
+.admin-investor-metric.ant-card {
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-investor-metric .ant-card-body {
   padding: 14px 14px 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .admin-investor-metric-top {
@@ -3209,7 +3264,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 }
 
 .admin-investor-metric-sub {
-  margin-top: 8px;
+  margin-top: auto;
   font-family: "Montserrat", sans-serif;
   font-size: 12px;
   font-weight: 600;
@@ -3249,7 +3304,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 14px;
-  align-items: start;
+  align-items: stretch;
 }
 
 .admin-investor-wide {
@@ -3259,6 +3314,18 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 .admin-investor-panel {
   border-radius: 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.admin-investor-panel.ant-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-investor-panel .ant-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-investor-panel .ant-card-head-title,
@@ -3289,7 +3356,8 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .admin-investor-footnote {
   display: block;
-  margin-top: 10px;
+  margin-top: auto;
+  padding-top: 10px;
   font-size: 12px;
   font-weight: 500;
 }
@@ -4023,10 +4091,24 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   gap: 16px;
   width: 100%;
   min-width: 0;
+  align-items: stretch;
+}
+
+.investor-project-tile {
+  height: 100%;
+}
+
+.investor-project-tile.ant-card {
+  display: flex;
+  flex-direction: column;
 }
 
 .investor-project-tile .ant-card-body {
   padding: 16px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
 }
 
 .investor-project-tile-head {
@@ -4088,7 +4170,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 14px;
+  margin-top: auto;
   padding-top: 12px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
@@ -4163,8 +4245,21 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
+.investor-open-project-tile .investor-project-tile-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .investor-open-project-tile .investor-project-tile-meta {
   margin-top: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .investor-open-pill {
@@ -4206,14 +4301,26 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: #141414;
 }
 
+.investor-open-project-actions {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .investor-open-cta {
   display: flex;
-  justify-content: center;
-  margin-top: 14px;
+  width: 100%;
+  margin-top: 0;
 }
 
 .investor-open-project-progress {
   margin-top: 14px;
+  min-height: 22px;
+  flex-shrink: 0;
 }
 
 .investor-open-project-progress .ant-progress-bg {
@@ -4222,13 +4329,11 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-open-project-foot {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
 }
 
 .investor-open-contact-btn {
@@ -4237,6 +4342,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   border-radius: 10px;
   height: 38px;
   padding: 0 18px;
+  width: 100%;
 }
 
 .investor-tickets-card {

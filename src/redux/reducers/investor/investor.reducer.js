@@ -26,7 +26,7 @@ const initialState = {
     alert: null,
     kpis: {
       primaryInvested: null,
-      repaymentScore: null,
+      portfolioScore: null,
       portfolioGeneration: null,
       repaymentTotals: null,
       co2: null,

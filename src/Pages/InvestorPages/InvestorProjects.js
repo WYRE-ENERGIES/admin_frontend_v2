@@ -380,32 +380,32 @@ function InvestorProjects() {
                 </div>
               </div>
 
-              {p.raisedPct != null ? (
-                <div className="investor-open-project-progress">
-                  <Progress
-                    percent={p.raisedPct}
-                    showInfo
-                    strokeColor="#5BB56F"
-                    format={(pct) => `${pct}% raised`}
-                  />
-                </div>
-              ) : null}
-
-              <div className="investor-open-project-foot">
-                <Button type="link" size="small" onClick={() => openProjectDetail(p)}>
-                  View cost breakdown
-                </Button>
+              <div className="investor-open-project-progress">
+                <Progress
+                  percent={p.raisedPct ?? 0}
+                  showInfo
+                  strokeColor="#5BB56F"
+                  format={(pct) => `${pct}% raised`}
+                />
               </div>
 
-              <div className="investor-open-cta">
-                <Button
-                  type="primary"
-                  className="investor-open-contact-btn"
-                  disabled={!(Number(p.remainingNgn) > 0) || p.isAvailable === false}
-                  onClick={() => openInvestModal(p)}
-                >
-                  Contact Wyre to invest
-                </Button>
+              <div className="investor-open-project-actions">
+                <div className="investor-open-project-foot">
+                  <Button type="link" size="small" onClick={() => openProjectDetail(p)}>
+                    View cost breakdown
+                  </Button>
+                </div>
+
+                <div className="investor-open-cta">
+                  <Button
+                    type="primary"
+                    className="investor-open-contact-btn"
+                    disabled={!(Number(p.remainingNgn) > 0) || p.isAvailable === false}
+                    onClick={() => openInvestModal(p)}
+                  >
+                    Contact Wyre to invest
+                  </Button>
+                </div>
               </div>
             </Card>
           ))}

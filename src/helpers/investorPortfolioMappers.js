@@ -3,6 +3,8 @@
  * Backend field names may vary — extend these helpers when the contract is finalized.
  */
 
+import dayjs from "dayjs";
+
 /** Peel investor API envelopes: { status, data }, { authenticatedData }, nested data. */
 export function unwrapInvestorEnvelope(payload) {
   if (payload == null) return null;
@@ -76,8 +78,8 @@ export function mapTotalInvestedCard(raw) {
   return { amount, sub };
 }
 
-/** investors/portfolio-generation */
-export function mapPortfolioGenerationCard(raw) {
+/** investors/portfolio-generation — kWh headline + (₦…) naira equivalent subline */
+export function mapPortfolioGenerationCard(raw, mappedFinancedProjects = null) {
   const o = unwrapListOrObject(raw) || raw;
   const kwh =
     firstNumber(o, [
@@ -89,35 +91,120 @@ export function mapPortfolioGenerationCard(raw) {
     ]) ?? firstNumber(o?.data, ["portfolio_generation_kwh", "kwh", "total_kwh"]);
   let value = "—";
   if (kwh != null) {
-    if (kwh >= 1e6) value = `${(kwh / 1e6).toFixed(2)}M kWh`;
+    if (kwh >= 1e6) value = `${(kwh / 1e6).toFixed(1)}M kWh`;
     else if (kwh >= 1e3) value = `${(kwh / 1e3).toFixed(1)}k kWh`;
     else value = `${kwh.toLocaleString("en-NG")} kWh`;
   } else {
     const preset = firstString(o, ["display", "label", "summary"], "");
     if (preset && preset !== "—") value = preset;
   }
-  const ngnVal =
+
+  let ngnVal =
     firstNumber(o, [
+      "portfolio_generation_naira_equivalent",
+      "portfolio_generation_value_ngn",
+      "portfolio_generation_value_naira",
+      "generation_value_ngn",
+      "generation_value_naira",
+      "energy_value_ngn",
+      "energy_yield_value_ngn",
+      "energy_yield_value_naira",
+      "yield_value_ngn",
+      "total_value_ngn",
+      "value_ngn",
+    ]) ??
+    firstNumber(o?.data, [
+      "portfolio_generation_naira_equivalent",
       "portfolio_generation_value_ngn",
       "generation_value_ngn",
-      "energy_value_ngn",
-      "yield_value_ngn",
       "value_ngn",
-    ]) ?? firstNumber(o?.data, ["generation_value_ngn", "value_ngn"]);
+    ]);
+
+  if (ngnVal == null && mappedFinancedProjects?.length) {
+    let sum = 0;
+    let any = false;
+    mappedFinancedProjects.forEach((row) => {
+      if (row.energyValueNgn != null) {
+        sum += row.energyValueNgn;
+        any = true;
+      }
+    });
+    if (any) ngnVal = sum;
+  }
+
   const nairaSub = ngnVal != null ? `(${formatCompactNgn(ngnVal)})` : null;
-  const sub = firstString(o, ["period_label", "subtitle", "description"], "Cumulative (period)");
-  return { value, sub, nairaSub };
+  const periodSub = firstString(
+    o,
+    ["period_label", "subtitle", "description"],
+    "Cumulative (period)"
+  );
+
+  return {
+    value,
+    sub: nairaSub ?? periodSub,
+    nairaSub,
+    periodSub: nairaSub ? null : periodSub,
+  };
+}
+
+/** Sum upcoming_payments when API returns a list of schedule lines. */
+function sumUpcomingPaymentsList(list) {
+  if (!Array.isArray(list) || !list.length) return null;
+  let total = 0;
+  let any = false;
+  for (const row of list) {
+    const n = firstNumber(row, [
+      "amount",
+      "your_credit",
+      "your_allocation",
+      "total_due",
+      "amount_due",
+      "amount_remaining",
+      "value",
+    ]);
+    if (n != null) {
+      total += n;
+      any = true;
+    }
+  }
+  return any ? total : null;
+}
+
+/** Outstanding on portfolio KPI — prefer upcoming_payments from repayment-totals. */
+export function parseOutstandingAmount(o) {
+  if (!o || typeof o !== "object") return null;
+
+  const scalar = firstNumber(o, [
+    "upcoming_payments",
+    "upcoming_payments_total",
+    "upcomingPayments",
+    "upcoming_payments_ngn",
+  ]);
+  if (scalar != null) return scalar;
+
+  const nested = o.upcoming_payments;
+  if (typeof nested === "number" || (typeof nested === "string" && nested !== "")) {
+    const n = Number(nested);
+    if (!Number.isNaN(n)) return n;
+  }
+  if (Array.isArray(nested)) {
+    const summed = sumUpcomingPaymentsList(nested);
+    if (summed != null) return summed;
+  }
+
+  return (
+    firstNumber(o, ["outstanding", "outstanding_amount", "outstanding_total"]) ??
+    firstNumber(o?.data, ["upcoming_payments", "outstanding"])
+  );
 }
 
 /** investors/me/repayment-totals */
 export function mapRepaymentTotalsCard(raw) {
-  const o = unwrapListOrObject(raw) || raw;
+  const o = unwrapInvestorEnvelope(raw) ?? unwrapListOrObject(raw) ?? raw;
   const received =
     firstNumber(o, ["repayments_received", "total_repayments", "lifetime_total", "amount", "value"]) ??
     firstNumber(o?.data, ["repayments_received", "total", "amount"]);
-  const outstanding =
-    firstNumber(o, ["outstanding", "outstanding_amount", "outstanding_total"]) ??
-    firstNumber(o?.data, ["outstanding"]);
+  const outstanding = parseOutstandingAmount(o);
   const sub = firstString(o, ["subtitle", "description", "period", "detail"], "Lifetime to date");
   return { received, outstanding, sub };
 }
@@ -128,44 +215,126 @@ export function mapRepaymentTotalsCard(raw) {
 export function mapPrimaryInvestedCard(totalRaw, repaymentTotalsRaw) {
   const total = mapTotalInvestedCard(totalRaw);
   const repay = mapRepaymentTotalsCard(repaymentTotalsRaw);
+  const totalO = unwrapInvestorEnvelope(totalRaw) ?? unwrapListOrObject(totalRaw) ?? totalRaw;
+  const paymentsFromTotal = firstNumber(totalO, [
+    "repayments_received",
+    "payments_received",
+    "total_repaid_to_investors",
+    "total_repaid",
+    "total_credited",
+  ]);
   return {
     amount: total.amount,
-    paymentsReceived: repay.received,
+    paymentsReceived: repay.received ?? paymentsFromTotal,
     outstanding: repay.outstanding,
   };
 }
 
-/** Repayment score KPI: "26/72" + "26 months remitted · 72 remaining" */
-export function mapRepaymentScoreCard(raw) {
-  const o = unwrapListOrObject(raw) || raw;
-  const scoreStr = firstString(o, ["repayment_score", "repayment_score_display", "score"], "");
-  const remitted = firstNumber(o, [
-    "months_remitted",
-    "repayment_months_remitted",
-    "installments_paid",
-    "paid_installments",
-  ]);
-  const remaining = firstNumber(o, [
-    "months_remaining",
-    "repayment_months_remaining",
-    "remaining_installments",
-  ]);
-  const totalMonths = firstNumber(o, ["schedule_months_total", "total_schedule_months", "tenor_months"]);
-
-  let display = "—";
-  if (scoreStr && /\d/.test(scoreStr)) display = scoreStr.replace(/\s/g, "");
-  else if (remitted != null && totalMonths != null) display = `${remitted}/${totalMonths}`;
-  else if (remitted != null && remaining != null) display = `${remitted}/${remitted + remaining}`;
-
-  let sub = "—";
-  if (remitted != null && remaining != null) {
-    sub = `${remitted} months remitted · ${remaining} remaining`;
-  } else {
-    sub = firstString(o, ["repayment_score_subtitle", "score_subtitle", "subtitle"], "—");
+/** Portfolio score KPI: sum paid/total installments across financed projects (e.g. 6+7 / 24+12 → 36%). */
+export function aggregatePortfolioScoreKpi(mappedFinancedProjects) {
+  const rows = mappedFinancedProjects ?? [];
+  if (!rows.length) {
+    return { display: "—", sub: "—", percent: null };
   }
 
-  return { display, sub };
+  let paidSum = 0;
+  let totalSum = 0;
+  let hasInstallmentData = false;
+
+  rows.forEach((row) => {
+    const paid = row.paidInstallments;
+    const total = row.totalInstallments;
+    if (paid != null && total != null && total > 0) {
+      hasInstallmentData = true;
+      paidSum += paid;
+      totalSum += total;
+    }
+  });
+
+  if (!hasInstallmentData || totalSum <= 0) {
+    return { display: "—", sub: "—", percent: null };
+  }
+
+  const percent = Math.round((paidSum / totalSum) * 100);
+  const overdueCount = rows.filter((p) => p.repaymentOverdue).length;
+
+  let sub = `${paidSum}/${totalSum} installments completed`;
+  if (overdueCount > 0) {
+    sub += ` · ${overdueCount} project${overdueCount === 1 ? "" : "s"} overdue`;
+  }
+
+  return {
+    display: `${percent}%`,
+    sub,
+    percent,
+  };
 }
+
+/** Portfolio score KPI: "67%" + "2/3 projects up to date - 1 overdue" */
+export function mapPortfolioScoreCard(raw) {
+  const o = unwrapListOrObject(raw) || raw;
+
+  const percent = firstNumber(o, [
+    "portfolio_score_percent",
+    "portfolio_score",
+    "repayment_score_percent",
+    "score_percent",
+  ]);
+
+  const upToDate = firstNumber(o, [
+    "projects_up_to_date",
+    "projects_on_track",
+    "on_track_count",
+    "up_to_date_count",
+  ]);
+  const total = firstNumber(o, [
+    "projects_total",
+    "total_projects",
+    "financed_projects_count",
+    "project_count",
+  ]);
+  const overdue = firstNumber(o, [
+    "projects_overdue",
+    "overdue_count",
+    "overdue_projects",
+    "attention_count",
+  ]);
+
+  let resolvedPercent = percent;
+  if (resolvedPercent == null && upToDate != null && total != null && total > 0) {
+    resolvedPercent = Math.round((upToDate / total) * 100);
+  }
+
+  let display = "—";
+  if (resolvedPercent != null && !Number.isNaN(resolvedPercent)) {
+    display = `${Math.round(resolvedPercent)}%`;
+  }
+
+  let sub = "—";
+  if (upToDate != null && total != null && total > 0) {
+    const overdueCount =
+      overdue != null ? overdue : Math.max(0, total - upToDate);
+    sub =
+      overdueCount > 0
+        ? `${upToDate}/${total} projects up to date - ${overdueCount} overdue`
+        : `${upToDate}/${total} projects up to date`;
+  } else {
+    sub = firstString(
+      o,
+      ["portfolio_score_subtitle", "repayment_score_subtitle", "subtitle"],
+      "—"
+    );
+  }
+
+  return {
+    display,
+    sub,
+    percent: resolvedPercent != null && !Number.isNaN(resolvedPercent) ? Math.round(resolvedPercent) : null,
+  };
+}
+
+/** @deprecated Use mapPortfolioScoreCard */
+export const mapRepaymentScoreCard = mapPortfolioScoreCard;
 
 /** investors/me/co2-offset */
 export function mapCo2Card(raw) {
@@ -364,9 +533,12 @@ export function mapFinancedProjectsTable(rows) {
       kpiRemarkSub,
       energyKwhDisplay,
       energyValueDisplay,
+      energyValueNgn: energyValueN,
       carbonDisplay,
       repaymentMain,
       repaymentSub,
+      paidInstallments: paid,
+      totalInstallments: totalInst,
       repaymentOverdue,
       needsAttention,
       isOnTrack,
@@ -393,36 +565,73 @@ export function mapPerformanceSnapshotChart(raw) {
   });
 }
 
-/** investors/me/recent-payment-activity/ */
-export function mapRecentPaymentActivity(raw) {
-  const list = unwrapListOrObject(raw);
-  const arr = Array.isArray(list) ? list : [];
-  return arr.map((row, idx) => {
-    const key = String(row.id ?? idx);
-    const date = firstString(row, ["date", "posted_at", "created_at", "day"], "—");
-    const label = firstString(row, ["description", "label", "type", "memo"], "—");
-    const amountRaw = row.amount ?? row.credit ?? row.value;
-    let amount = "—";
-    let isBad = false;
-    if (amountRaw === null || amountRaw === undefined || amountRaw === "") {
-      amount = firstString(row, ["amount_display", "display"], "—");
-    } else if (typeof amountRaw === "string") {
-      amount = amountRaw;
-      if (/^no$/i.test(amountRaw.trim())) isBad = true;
-    } else {
-      const n = Number(amountRaw);
-      if (!Number.isNaN(n)) {
-        if (n <= 0) {
-          amount = n === 0 ? "NO" : `₦${n.toLocaleString("en-NG")}`;
-          isBad = n < 0;
-        } else {
-          amount = `+ ₦${n.toLocaleString("en-NG")}`;
-        }
+function formatActivityAmount(amountRaw, row) {
+  let amount = "—";
+  let isBad = false;
+  if (amountRaw === null || amountRaw === undefined || amountRaw === "") {
+    amount = firstString(row, ["amount_display", "display"], "—");
+  } else if (typeof amountRaw === "string" && /^no$/i.test(amountRaw.trim())) {
+    amount = amountRaw;
+    isBad = true;
+  } else {
+    const n = Number(amountRaw);
+    if (!Number.isNaN(n)) {
+      if (n <= 0) {
+        amount = n === 0 ? "NO" : `₦${n.toLocaleString("en-NG")}`;
+        isBad = n < 0;
+      } else {
+        amount = `+ ₦${n.toLocaleString("en-NG")}`;
       }
+    } else {
+      amount = String(amountRaw);
     }
-    if (/^no$/i.test(String(amount).trim())) isBad = true;
-    return { key, date, label, amount, isBad };
-  });
+  }
+  if (/^no$/i.test(String(amount).trim())) isBad = true;
+  return { amount, isBad };
+}
+
+function mapActivityRow(row, idx) {
+  const key = String(
+    row.id ?? row.disbursement_id ?? row.payout_id ?? row.payment_id ?? `${row.paid_date}-${idx}`
+  );
+  const dateRaw = row.date ?? row.paid_date ?? row.posted_at ?? row.created_at ?? row.day;
+  const date =
+    dateRaw && dayjs(dateRaw).isValid()
+      ? dayjs(dateRaw).format("DD MMM")
+      : firstString(row, ["date_display", "date", "day"], "—");
+
+  const eventType = row.event_type ?? row.type ?? row.memo;
+  const project = row.project_name ?? row.branch_label ?? row.branch_ref;
+  let label = firstString(row, ["description", "label", "memo"], "");
+  if (!label || label === "—") {
+    const parts = [eventType || "Payout", project].filter(Boolean);
+    label = parts.length ? parts.join(" · ") : "—";
+  }
+
+  const amountRaw =
+    row.amount_paid ??
+    row.your_allocation ??
+    row.your_credit ??
+    row.amount ??
+    row.credit ??
+    row.value;
+  const { amount, isBad } = formatActivityAmount(amountRaw, row);
+  return { key, date, label, amount, isBad };
+}
+
+function activityRowsFromPayload(raw) {
+  const envelope = unwrapInvestorEnvelope(raw);
+  if (Array.isArray(envelope)) return envelope;
+  if (Array.isArray(envelope?.payments)) return envelope.payments;
+  if (Array.isArray(envelope?.activities)) return envelope.activities;
+  if (Array.isArray(envelope?.results)) return envelope.results;
+  if (Array.isArray(envelope?.items)) return envelope.items;
+  const list = unwrapListOrObject(raw);
+  return Array.isArray(list) ? list : [];
+}
+
+export function mapRecentPaymentActivity(raw) {
+  return activityRowsFromPayload(raw).map(mapActivityRow);
 }
 
 export function mapNotificationsToAlert(notificationsRaw) {
