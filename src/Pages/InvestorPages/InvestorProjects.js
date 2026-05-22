@@ -61,15 +61,20 @@ const statusPillColor = (status) => {
 };
 
 function displayStatus(status) {
-  const s = String(status || "").toLowerCase().replace(/_/g, " ");
+  const s = String(status || "").toLowerCase().replace(/_/g, " ").trim();
+  if (!s) return "—";
   if (s === "on track") return "On track";
-  return status || "—";
+  if (s === "active") return "Active";
+  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 function statusTag(status) {
   const s = String(status || "").toLowerCase().replace(/_/g, " ");
-  if (s === "on track") return <Tag color="green">On track</Tag>;
+  if (s === "on track" || s === "active") {
+    return <Tag color="green">{displayStatus(status)}</Tag>;
+  }
   if (s === "overdue") return <Tag color="red">Overdue</Tag>;
+  if (s.includes("review")) return <Tag color="gold">{displayStatus(status)}</Tag>;
   return <Tag color="gold">{displayStatus(status)}</Tag>;
 }
 
@@ -313,22 +318,20 @@ function InvestorProjects() {
                   <span className="investor-mini-value">{p.systemKwp}</span>
                 </div>
                 <div>
-                  <span className="investor-mini-label">Invested (₦)</span>
-                  <span className="investor-mini-value">{ngn(p.investedNgn)}</span>
+                  <span className="investor-mini-label">Project cost (₦)</span>
+                  <span className="investor-mini-value">{ngnCompact(p.projectCostNgn)}</span>
                 </div>
                 <div>
-                  <span className="investor-mini-label">Outstanding (₦)</span>
-                  <span className="investor-mini-value">
-                    {ngn(p.outstandingNgn)}
-                  </span>
+                  <span className="investor-mini-label">Invested (₦)</span>
+                  <span className="investor-mini-value">{ngnCompact(p.investedNgn)}</span>
                 </div>
                 <div>
                   <span className="investor-mini-label">MTD generation (MWh)</span>
                   <span className="investor-mini-value">{p.mtdMwh}</span>
                 </div>
                 <div>
-                  <span className="investor-mini-label">{p.row3Left}</span>
-                  <span className="investor-mini-value">{p.row3Right}</span>
+                  <span className="investor-mini-label">Repayment</span>
+                  <span className="investor-mini-value">{p.repaymentDisplay}</span>
                 </div>
               </div>
               <div className="investor-project-tile-foot">

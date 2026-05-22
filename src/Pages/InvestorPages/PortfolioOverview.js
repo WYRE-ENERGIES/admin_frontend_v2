@@ -152,7 +152,7 @@ function PortfolioOverview() {
         width: 120,
       },
       {
-        title: "KPI (remark)",
+        title: "ROI",
         key: "kpiRemark",
         width: 140,
         render: (_, row) => (
@@ -239,7 +239,7 @@ function PortfolioOverview() {
         </div>
 
         <div className="investor-header-actions">
-          <RangePicker
+          {/* <RangePicker
             value={range}
             onChange={(next) => {
               if (!next) return;
@@ -247,7 +247,7 @@ function PortfolioOverview() {
             }}
             allowClear={false}
             className="investor-range"
-          />
+          /> */}
           <Button icon={<FileTextOutlined />} className="investor-btn-light investor-header-btn">
             Export statement
           </Button>

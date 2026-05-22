@@ -159,20 +159,25 @@ export function mapFinancedProjectsTiles(raw) {
     const branchLabel = [branch, city].filter(Boolean).join(" · ") || "—";
 
     const paymentHealth = String(item.payment_health || item.repayment_status || "").toLowerCase();
-    let status = "On track";
+    let status = firstString(item, ["investment_status", "status"], "active").replace(/_/g, " ");
     if (paymentHealth.includes("overdue") || item.repayment_overdue) status = "Overdue";
     else if (paymentHealth.includes("review")) status = "Review";
-    else if (item.status) status = String(item.status).replace(/_/g, " ");
 
     const sharePct =
-      firstNumber(item, ["share_percent", "share_pct", "your_share_percent", "investor_share_pct"]) ??
+      firstNumber(item, ["your_share_percent", "share_percent", "share_pct", "investor_share_pct"]) ??
       null;
 
     const systemKwp =
-      firstNumber(item, ["system_capacity_kwp", "capacity_kwp", "system_kwp", "kwp"]) ?? "—";
+      firstNumber(item, ["capacity_kwp", "system_capacity_kwp", "system_kwp", "kwp"]) ?? "—";
+
+    const projectCostNgn =
+      firstNumber(item, ["project_cost", "project_cost_ngn", "total_project_cost"]) ??
+      firstNumber(item?.cost_recovery, ["project_cost_naira"]) ??
+      0;
 
     const investedNgn =
       firstNumber(item, [
+        "invested_amount",
         "amount_invested",
         "invested_ngn",
         "investor_amount",
@@ -180,30 +185,22 @@ export function mapFinancedProjectsTiles(raw) {
         "total_invested",
       ]) ?? 0;
 
-    const outstandingNgn =
-      firstNumber(item, [
-        "outstanding_ngn",
-        "outstanding_balance",
-        "remaining_principal",
-        "balance_outstanding",
-      ]) ?? 0;
-
+    const energyKwh = firstNumber(item, [
+      "energy_yield_kwh",
+      "mtd_generation_kwh",
+      "generation_mtd_kwh",
+    ]);
     const mtdMwh =
-      firstNumber(item, ["mtd_generation_mwh", "mtd_mwh", "generation_mtd_mwh"]) ??
-      (() => {
-        const kwh = firstNumber(item, ["mtd_generation_kwh", "generation_mtd_kwh"]);
-        return kwh != null ? kwh / 1000 : null;
-      })();
+      energyKwh != null ? Number((energyKwh / 1000).toFixed(1)) : null;
 
-    const nextDue = firstString(item, ["next_payment_due", "next_payment_due_display"], "");
-    const nextLine = firstString(item, ["next_payment_line"], "");
-    const row3Left = nextLine ? "Next payment" : nextDue ? "Next payment due" : "Repayment";
-    const row3Right =
-      nextLine ||
-      nextDue ||
-      firstString(item, ["repayment_score_display", "repayment_sub"], "—");
+    const paidInstallments = firstNumber(item?.repayment_score, ["paid_installments"]);
+    const totalInstallments = firstNumber(item?.repayment_score, ["total_installments"]);
+    const repaymentDisplay =
+      paidInstallments != null && totalInstallments != null
+        ? `${paidInstallments}/${totalInstallments}`
+        : "—";
 
-    const overdue = status === "Overdue" || paymentHealth.includes("overdue");
+    const overdue = status.toLowerCase() === "overdue" || paymentHealth.includes("overdue");
 
     return {
       id: String(id),
@@ -217,15 +214,14 @@ export function mapFinancedProjectsTiles(raw) {
           : firstString(item, ["financed_since", "investment_date"], "—")),
       sharePct: sharePct ?? "—",
       systemKwp,
+      projectCostNgn,
       investedNgn,
-      outstandingNgn,
-      mtdMwh: mtdMwh != null ? Number(mtdMwh).toFixed(1) : "—",
-      row3Left,
-      row3Right: overdue && !nextDue ? "Flagged" : row3Right,
+      mtdMwh: mtdMwh != null ? String(mtdMwh) : "—",
+      repaymentDisplay,
       footerLeft:
         firstString(item, ["savings_mtd_label", "est_savings_mtd"], "") ||
-        (item.energy_yield_value_ngn
-          ? `Est. savings (MTD) ${formatCompactNgn(item.energy_yield_value_ngn)}`
+        (item.energy_yield_value_naira
+          ? `Est. savings (MTD) ${formatCompactNgn(item.energy_yield_value_naira)}`
           : "—"),
       footerLink: overdue ? "View receivables →" : "Payment schedule →",
       repaymentOverdue: overdue,
