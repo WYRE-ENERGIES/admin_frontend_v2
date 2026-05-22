@@ -78,7 +78,17 @@ export function mapTotalInvestedCard(raw) {
   return { amount, sub };
 }
 
-/** investors/portfolio-generation — kWh headline + (₦…) naira equivalent subline */
+/** Convert API kWh to MWh headline (portfolio_generation_kwh → display). */
+export function formatPortfolioGenerationMwh(kwh) {
+  if (kwh == null || Number.isNaN(Number(kwh))) return "—";
+  const mwh = Number(kwh) / 1000;
+  if (mwh >= 1e3) return `${(mwh / 1e3).toFixed(1)}k MWh`;
+  if (mwh >= 10) return `${mwh.toFixed(1)} MWh`;
+  if (mwh >= 1) return `${mwh.toFixed(1)} MWh`;
+  return `${mwh.toFixed(2)} MWh`;
+}
+
+/** investors/portfolio-generation — MWh headline + (₦…) naira equivalent subline */
 export function mapPortfolioGenerationCard(raw, mappedFinancedProjects = null) {
   const o = unwrapListOrObject(raw) || raw;
   const kwh =
@@ -91,9 +101,7 @@ export function mapPortfolioGenerationCard(raw, mappedFinancedProjects = null) {
     ]) ?? firstNumber(o?.data, ["portfolio_generation_kwh", "kwh", "total_kwh"]);
   let value = "—";
   if (kwh != null) {
-    if (kwh >= 1e6) value = `${(kwh / 1e6).toFixed(1)}M kWh`;
-    else if (kwh >= 1e3) value = `${(kwh / 1e3).toFixed(1)}k kWh`;
-    else value = `${kwh.toLocaleString("en-NG")} kWh`;
+    value = formatPortfolioGenerationMwh(kwh);
   } else {
     const preset = firstString(o, ["display", "label", "summary"], "");
     if (preset && preset !== "—") value = preset;
@@ -352,31 +360,30 @@ export function mapCo2Card(raw) {
   return { value, sub };
 }
 
+function formatProductionStatusLabel(rawStatus) {
+  const s = String(rawStatus || "").trim();
+  if (!s) return "—";
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+}
+
 function mapProductionHealth(item) {
-  // Backend shape (current): daytime_performance.ratio where < 0.7 => underperforming.
-  // If last_posted_at is null and no daytime generation/load, treat as inactive/no data.
-  const ratioRaw = item?.daytime_performance?.ratio;
-  const ratio = ratioRaw == null ? null : Number(ratioRaw);
-  if (ratio != null && !Number.isNaN(ratio)) {
-    if (ratio < 0.7) return { dot: "yellow", label: "Underperforming" };
-    return { dot: "green", label: "Active" };
+  const rawStatus = firstString(
+    item,
+    ["status", "production_health", "telemetry_health", "energy_status", "site_health", "yield_health"],
+    ""
+  );
+  if (!rawStatus) {
+    return { dot: "green", label: "—" };
   }
 
-  const gen = Number(item?.daytime_performance?.daytime_generation_kwh ?? NaN);
-  const load = Number(item?.daytime_performance?.daytime_load_kwh ?? NaN);
-  const noEnergy = (!Number.isNaN(gen) && gen === 0) && (!Number.isNaN(load) && load === 0);
-  const lastPostedAt = item?.last_posted_at ?? item?.last_postedAt ?? null;
-  if (!lastPostedAt && noEnergy) return { dot: "red", label: "Inactive" };
+  const normalized = rawStatus.toLowerCase();
+  let dot = "green";
+  if (normalized.includes("under")) dot = "yellow";
+  else if (normalized.includes("inactive") || normalized.includes("zero") || normalized === "red") {
+    dot = "red";
+  }
 
-  // Fallback to any textual status field.
-  const raw = firstString(
-    item,
-    ["production_health", "telemetry_health", "energy_status", "site_health", "yield_health"],
-    ""
-  ).toLowerCase();
-  if (raw.includes("under")) return { dot: "yellow", label: "Underperforming" };
-  if (raw.includes("inactive") || raw.includes("zero") || raw === "red") return { dot: "red", label: "Inactive" };
-  return { dot: "green", label: "Active" };
+  return { dot, label: formatProductionStatusLabel(rawStatus) };
 }
 
 /** investors/me/financed-projects/ — portfolio table (installation, status, capacity, cost, yield, CO₂, repayment). */

@@ -56,9 +56,11 @@ export const fetchInvestorPortfolioOverview =
     const requests = [
       ["notifications", "/api/v1/investors/notifications/"],
       ["totalInvested", "/api/v1/investors/total-invested/"],
-      ["portfolioGeneration", `/api/v1/investors/portfolio-generation/?${genQs}`],
+      // ["portfolioGeneration", `/api/v1/investors/portfolio-generation/?${genQs}`],
+      ["portfolioGeneration", `/api/v1/investors/portfolio-generation/`],
       ["repaymentTotals", "/api/v1/investors/repayment-totals/"],
-      ["co2", `/api/v1/investors/co2-offset/?${genQs}`],
+      // ["co2", `/api/v1/investors/co2-offset/?${genQs}`],
+      ["co2", `/api/v1/investors/co2-offset/`],
       ["financedProjects", "/api/v1/investors/financed-projects/"],
       ["performanceSnapshot", `/api/v1/investors/performance-snapshot/?${perfQs}`],
       ["recentPaymentActivity", "/api/v1/investors/recent-payment-activity/"],
