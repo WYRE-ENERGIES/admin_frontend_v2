@@ -256,6 +256,21 @@ export const acknowledgeAlarm = (alarmId, note = '') => async (dispatch) => {
   }
 };
 
+export const forceLoginSolarBranch = (branchId) => async () => {
+  if (!branchId) {
+    throw new Error('Branch id is required.');
+  }
+  const response = await APIService.post(
+    `/api/v1/admin/solar-branch/${branchId}/force-login/`,
+    {}
+  );
+  const data = response?.data?.data;
+  if (!data?.token?.access || !data?.token?.refresh) {
+    throw new Error('Invalid force login response.');
+  }
+  return data;
+};
+
 export const fetchSolarClients = () => async (dispatch) => {
   dispatch(fetchSolarClientsLoading(true));
   try {
