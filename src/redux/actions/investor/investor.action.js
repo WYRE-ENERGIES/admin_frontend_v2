@@ -19,7 +19,7 @@ import {
   mapPortfolioGenerationCard,
   mapPrimaryInvestedCard,
   mapRecentPaymentActivity,
-  aggregatePortfolioScoreKpi,
+  mapPortfolioScoreCard,
   mapRepaymentTotalsCard,
 } from "../../../helpers/investorPortfolioMappers";
 import {
@@ -56,12 +56,11 @@ export const fetchInvestorPortfolioOverview =
     const requests = [
       ["notifications", "/api/v1/investors/notifications/"],
       ["totalInvested", "/api/v1/investors/total-invested/"],
-      // ["portfolioGeneration", `/api/v1/investors/portfolio-generation/?${genQs}`],
-      ["portfolioGeneration", `/api/v1/investors/portfolio-generation/`],
+      ["portfolioScore", INVESTOR_API.portfolioScore],
+      ["portfolioGeneration", INVESTOR_API.portfolioGeneration(startMonth, endMonth)],
       ["repaymentTotals", "/api/v1/investors/repayment-totals/"],
-      // ["co2", `/api/v1/investors/co2-offset/?${genQs}`],
-      ["co2", `/api/v1/investors/co2-offset/`],
-      ["financedProjects", "/api/v1/investors/financed-projects/"],
+      ["co2", `/api/v1/investors/co2-offset/?${genQs}`],
+      ["financedProjects", INVESTOR_API.financedProjects],
       ["performanceSnapshot", `/api/v1/investors/performance-snapshot/?${perfQs}`],
       ["recentPaymentActivity", "/api/v1/investors/recent-payment-activity/"],
     ];
@@ -95,8 +94,8 @@ export const fetchInvestorPortfolioOverview =
       alert: mapNotificationsToAlert(raw.notifications),
       kpis: {
         primaryInvested: mapPrimaryInvestedCard(raw.totalInvested, raw.repaymentTotals),
-        portfolioScore: aggregatePortfolioScoreKpi(financedProjects),
-        portfolioGeneration: mapPortfolioGenerationCard(raw.portfolioGeneration, financedProjects),
+        portfolioScore: mapPortfolioScoreCard(raw.portfolioScore),
+        portfolioGeneration: mapPortfolioGenerationCard(raw.portfolioGeneration),
         repaymentTotals: mapRepaymentTotalsCard(raw.repaymentTotals),
         co2: mapCo2Card(raw.co2),
       },
@@ -120,6 +119,7 @@ export const fetchInvestorProjects = () => async (dispatch) => {
     ["activeProjects", INVESTOR_API.kpiActiveProjects],
     ["portfolioCapacity", INVESTOR_API.kpiPortfolioCapacity],
     ["portfolioGenerationYtd", INVESTOR_API.kpiPortfolioGenerationYtd],
+    ["attention", INVESTOR_API.kpiAttention],
     ["financedProjects", INVESTOR_API.financedProjects],
   ];
 
@@ -148,7 +148,7 @@ export const fetchInvestorProjects = () => async (dispatch) => {
       activeProjectsRaw: raw.activeProjects,
       portfolioCapacityRaw: raw.portfolioCapacity,
       portfolioGenerationYtdRaw: raw.portfolioGenerationYtd,
-      financedRows: financedTiles,
+      attentionRaw: raw.attention,
     }),
     projects: financedTiles,
     openProjects: mapOpenProjectsList(raw.openProjects),

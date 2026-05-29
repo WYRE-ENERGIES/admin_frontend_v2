@@ -7,6 +7,8 @@ import { fetchInvestorPayments } from "../../redux/actions/investor/investor.act
 
 const { Text, Title } = Typography;
 
+const LEDGER_PAGE_SIZE = 10;
+
 function scheduleStatusTag(statusKey, label) {
   const t = String(statusKey || label || "").toLowerCase();
   if (t.includes("scheduled")) return <Tag color="green">{label}</Tag>;
@@ -163,24 +165,30 @@ function InvestorPayments() {
           </Card>
 
           <div className="investor-payments-stack">
-            <Card title="Payout history" bordered={false} className="investor-card">
+            <Card
+              title="Payout history"
+              bordered={false}
+              className="investor-card investor-card--payout-history"
+            >
               {(bundle?.payoutHistory || []).length === 0 ? (
                 <Text type="secondary">No payouts recorded yet.</Text>
               ) : (
-                (bundle?.payoutHistory || []).map((row) => (
-                  <div key={row.key} className="investor-activity-row investor-payments-ph-row">
-                    <div className="investor-activity-left">
-                      <div className="investor-activity-label">{row.line}</div>
+                <div className="investor-payments-payout-list">
+                  {(bundle?.payoutHistory || []).map((row) => (
+                    <div key={row.key} className="investor-activity-row investor-payments-ph-row">
+                      <div className="investor-activity-left">
+                        <div className="investor-activity-label">{row.line}</div>
+                      </div>
+                      <div
+                        className={`investor-activity-amount ${
+                          row.isBad ? "is-bad" : "is-good"
+                        }`}
+                      >
+                        {row.amount}
+                      </div>
                     </div>
-                    <div
-                      className={`investor-activity-amount ${
-                        row.isBad ? "is-bad" : "is-good"
-                      }`}
-                    >
-                      {row.amount}
-                    </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
             </Card>
 
@@ -230,15 +238,12 @@ function InvestorPayments() {
               className="investor-table"
               columns={ledgerCols}
               dataSource={bundle?.ledger || []}
-              pagination={
-                ledgerMeta && ledgerMeta.pages > 1
-                  ? {
-                      pageSize: ledgerMeta.pageSize,
-                      total: ledgerMeta.total,
-                      showSizeChanger: false,
-                    }
-                  : false
-              }
+              pagination={{
+                pageSize: LEDGER_PAGE_SIZE,
+                showSizeChanger: false,
+                hideOnSinglePage: true,
+                ...(ledgerMeta?.total != null ? { total: ledgerMeta.total } : {}),
+              }}
               size="small"
               rowKey="key"
               locale={{ emptyText: `No ledger entries for ${ledgerYear}` }}

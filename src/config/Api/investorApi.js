@@ -10,6 +10,12 @@ export const INVESTOR_API = {
   kpiActiveProjects: "/api/v1/investors/projects/kpi/active-projects/",
   kpiPortfolioCapacity: "/api/v1/investors/projects/kpi/portfolio-capacity/",
   kpiPortfolioGenerationYtd: "/api/v1/investors/projects/kpi/portfolio-generation-ytd/",
+  kpiAttention: "/api/v1/investors/projects/kpi/attention/",
+  portfolioScore: "/api/v1/investors/portfolio-score/",
+  portfolioGeneration: (startMonth, endMonth) => {
+    const qs = `startdate=${encodeURIComponent(startMonth)}&enddate=${encodeURIComponent(endMonth)}`;
+    return `/api/v1/investors/portfolio-generation/?${qs}`;
+  },
   financedProjects: "/api/v1/investors/financed-projects/",
   paymentsTotalCredited: "/api/v1/investors/payments/kpi/total-credited/",
   paymentsDueNext30: "/api/v1/investors/payments/kpi/due-next-30-days/",

@@ -18,40 +18,61 @@ function listFromPaged(data) {
   return unwrapListOrObject(inner) || [];
 }
 
-/** KPI cards + attention count derived from financed rows. */
+function formatGenerationYtdDisplay(genData) {
+  const mwhVal = firstNumber(genData, ["value"]);
+  const unit = firstString(genData, ["unit"], "MWh");
+  if (mwhVal == null) {
+    const kwh = firstNumber(genData, [
+      "portfolio_generation_ytd_kwh",
+      "generation_kwh",
+      "kwh",
+    ]);
+    if (kwh == null) return null;
+    const mwh = kwh / 1000;
+    if (mwh >= 1000) return `${(mwh / 1000).toFixed(1)}k MWh`;
+    if (mwh >= 10) return `${mwh.toFixed(1)} MWh`;
+    return `${mwh.toFixed(2)} MWh`;
+  }
+  const u = unit.toLowerCase();
+  if (u === "mwh") {
+    if (mwhVal >= 1000) return `${(mwhVal / 1000).toFixed(1)}k MWh`;
+    if (mwhVal >= 10) return `${mwhVal.toFixed(1)} MWh`;
+    if (mwhVal >= 1) return `${mwhVal.toFixed(1)} MWh`;
+    return `${mwhVal.toFixed(2)} MWh`;
+  }
+  return `${mwhVal.toLocaleString("en-NG", { maximumFractionDigits: 1 })} ${unit}`;
+}
+
+/** KPI cards on Projects page (dedicated kpi/* endpoints). */
 export function mapProjectsPageSummary({
   activeProjectsRaw,
   portfolioCapacityRaw,
   portfolioGenerationYtdRaw,
-  financedRows = [],
+  attentionRaw,
 }) {
   const activeData = unwrapApiData(activeProjectsRaw) ?? activeProjectsRaw;
   const capData = unwrapApiData(portfolioCapacityRaw) ?? portfolioCapacityRaw;
   const genData = unwrapApiData(portfolioGenerationYtdRaw) ?? portfolioGenerationYtdRaw;
+  const attentionData = unwrapApiData(attentionRaw) ?? attentionRaw;
 
   const activeProjects =
-    firstNumber(activeData, ["active_projects", "activeProjects", "count"]) ?? null;
+    firstNumber(activeData, ["value", "active_projects", "activeProjects", "count"]) ??
+    null;
 
   const portfolioAcKwp =
     firstNumber(capData, [
+      "value_kwp",
       "portfolio_ac_capacity_kwp",
       "portfolioAcCapacityKwp",
       "capacity_kwp",
       "kwp",
+      "value",
     ]) ?? null;
 
-  const portfolioGenerationYtdKwh =
-    firstNumber(genData, [
-      "portfolio_generation_ytd_kwh",
-      "portfolioGenerationYtdKwh",
-      "generation_kwh",
-      "kwh",
-    ]) ?? null;
+  const portfolioGenerationYtdDisplay = formatGenerationYtdDisplay(genData);
 
-  const attentionCount = financedRows.filter((p) => {
-    const s = String(p.status || "").toLowerCase();
-    return s.includes("overdue") || s.includes("review") || p.repaymentOverdue;
-  }).length;
+  const attentionCount =
+    firstNumber(attentionData, ["value", "count", "attention_count"]) ?? null;
 
   return {
     activeProjects,
@@ -59,7 +80,7 @@ export function mapProjectsPageSummary({
       portfolioAcKwp != null
         ? Number(portfolioAcKwp).toLocaleString("en-NG", { maximumFractionDigits: 1 })
         : null,
-    portfolioGenerationYtdKwh,
+    portfolioGenerationYtdDisplay,
     attentionCount,
   };
 }
@@ -153,15 +174,16 @@ export function mapFinancedProjectsTiles(raw) {
       item.pk ??
       idx;
 
-    const name = firstString(item, ["project_name", "name", "installation_name"], "—");
+    const name = firstString(item, ["name", "project_name", "installation_name"], "—");
     const branch = firstString(item, ["branch_label", "branchLabel"], "");
-    const city = firstString(item, ["city", "location_label", "location"], "");
-    const branchLabel = [branch, city].filter(Boolean).join(" · ") || "—";
+    const city = firstString(item, ["location", "city", "location_label"], "");
+    const branchLabel = [branch, city].filter(Boolean).join(" · ") || city || "—";
 
     const paymentHealth = String(item.payment_health || item.repayment_status || "").toLowerCase();
-    let status = firstString(item, ["investment_status", "status"], "active").replace(/_/g, " ");
-    if (paymentHealth.includes("overdue") || item.repayment_overdue) status = "Overdue";
-    else if (paymentHealth.includes("review")) status = "Review";
+    let status = firstString(item, ["status", "investment_status"], "active").replace(/_/g, " ");
+    if (paymentHealth.includes("overdue") || item.repayment_overdue || item.overdue_installment_due) {
+      status = "Overdue";
+    } else if (paymentHealth.includes("review")) status = "Review";
 
     const sharePct =
       firstNumber(item, ["your_share_percent", "share_percent", "share_pct", "investor_share_pct"]) ??
@@ -193,14 +215,21 @@ export function mapFinancedProjectsTiles(raw) {
     const mtdMwh =
       energyKwh != null ? Number((energyKwh / 1000).toFixed(1)) : null;
 
-    const paidInstallments = firstNumber(item?.repayment_score, ["paid_installments"]);
-    const totalInstallments = firstNumber(item?.repayment_score, ["total_installments"]);
+    const paidInstallments =
+      firstNumber(item, ["repayment_paid"]) ??
+      firstNumber(item?.repayment_score, ["paid_installments"]);
+    const totalInstallments =
+      firstNumber(item, ["repayment_total"]) ??
+      firstNumber(item?.repayment_score, ["total_installments"]);
     const repaymentDisplay =
       paidInstallments != null && totalInstallments != null
         ? `${paidInstallments}/${totalInstallments}`
         : "—";
 
-    const overdue = status.toLowerCase() === "overdue" || paymentHealth.includes("overdue");
+    const overdue =
+      status.toLowerCase() === "overdue" ||
+      paymentHealth.includes("overdue") ||
+      (item.overdue_installment_due != null && item.overdue_installment_due !== "");
 
     return {
       id: String(id),
