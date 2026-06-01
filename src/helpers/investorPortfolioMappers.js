@@ -89,69 +89,52 @@ export function formatPortfolioGenerationMwh(kwh) {
 }
 
 /** investors/portfolio-generation — MWh headline + (₦…) naira equivalent subline */
-export function mapPortfolioGenerationCard(raw, mappedFinancedProjects = null) {
-  const o = unwrapListOrObject(raw) || raw;
-  const kwh =
-    firstNumber(o, [
-      "portfolio_generation_kwh",
-      "kwh",
-      "total_kwh",
-      "generation_kwh",
-      "value",
-    ]) ?? firstNumber(o?.data, ["portfolio_generation_kwh", "kwh", "total_kwh"]);
+export function mapPortfolioGenerationCard(raw) {
+  const o = unwrapInvestorEnvelope(raw) ?? unwrapListOrObject(raw) ?? raw;
+
+  const genBlock = o?.portfolio_generation;
+  const mwhVal = firstNumber(genBlock, ["value"]);
+  const genUnit = firstString(genBlock, ["unit"], "MWh");
+
   let value = "—";
-  if (kwh != null) {
-    value = formatPortfolioGenerationMwh(kwh);
+  if (mwhVal != null) {
+    const unit = genUnit.toLowerCase();
+    if (unit === "mwh") {
+      if (mwhVal >= 1000) value = `${(mwhVal / 1000).toFixed(1)}k MWh`;
+      else if (mwhVal >= 10) value = `${mwhVal.toFixed(1)} MWh`;
+      else if (mwhVal >= 1) value = `${mwhVal.toFixed(1)} MWh`;
+      else value = `${mwhVal.toFixed(2)} MWh`;
+    } else {
+      value = `${mwhVal.toLocaleString("en-NG", { maximumFractionDigits: 1 })} ${genUnit}`;
+    }
   } else {
-    const preset = firstString(o, ["display", "label", "summary"], "");
-    if (preset && preset !== "—") value = preset;
+    const kwh =
+      firstNumber(o, [
+        "portfolio_generation_kwh",
+        "kwh",
+        "total_kwh",
+        "generation_kwh",
+      ]) ?? firstNumber(o?.data, ["portfolio_generation_kwh", "kwh"]);
+    if (kwh != null) value = formatPortfolioGenerationMwh(kwh);
+    else {
+      const preset = firstString(o, ["display", "label", "summary"], "");
+      if (preset && preset !== "—") value = preset;
+    }
   }
 
-  let ngnVal =
-    firstNumber(o, [
-      "portfolio_generation_naira_equivalent",
-      "portfolio_generation_value_ngn",
-      "portfolio_generation_value_naira",
-      "generation_value_ngn",
-      "generation_value_naira",
-      "energy_value_ngn",
-      "energy_yield_value_ngn",
-      "energy_yield_value_naira",
-      "yield_value_ngn",
-      "total_value_ngn",
-      "value_ngn",
-    ]) ??
-    firstNumber(o?.data, [
-      "portfolio_generation_naira_equivalent",
-      "portfolio_generation_value_ngn",
-      "generation_value_ngn",
-      "value_ngn",
-    ]);
-
-  if (ngnVal == null && mappedFinancedProjects?.length) {
-    let sum = 0;
-    let any = false;
-    mappedFinancedProjects.forEach((row) => {
-      if (row.energyValueNgn != null) {
-        sum += row.energyValueNgn;
-        any = true;
-      }
-    });
-    if (any) ngnVal = sum;
-  }
+  const ngnVal = firstNumber(o, [
+    "portfolio_generation_naira_equivalent",
+    "portfolio_generation_value_ngn",
+    "generation_value_ngn",
+    "value_ngn",
+  ]);
 
   const nairaSub = ngnVal != null ? `(${formatCompactNgn(ngnVal)})` : null;
-  const periodSub = firstString(
-    o,
-    ["period_label", "subtitle", "description"],
-    "Cumulative (period)"
-  );
 
   return {
     value,
-    sub: nairaSub ?? periodSub,
+    sub: nairaSub ?? "—",
     nairaSub,
-    periodSub: nairaSub ? null : periodSub,
   };
 }
 
@@ -278,66 +261,40 @@ export function aggregatePortfolioScoreKpi(mappedFinancedProjects) {
   };
 }
 
-/** Portfolio score KPI: "67%" + "2/3 projects up to date - 1 overdue" */
+/** investors/portfolio-score/ — percentage, score (e.g. "2/2"), overdue */
 export function mapPortfolioScoreCard(raw) {
-  const o = unwrapListOrObject(raw) || raw;
+  const o = unwrapInvestorEnvelope(raw) ?? unwrapListOrObject(raw) ?? raw;
 
   const percent = firstNumber(o, [
+    "percentage",
     "portfolio_score_percent",
-    "portfolio_score",
-    "repayment_score_percent",
     "score_percent",
   ]);
-
-  const upToDate = firstNumber(o, [
-    "projects_up_to_date",
-    "projects_on_track",
-    "on_track_count",
-    "up_to_date_count",
-  ]);
-  const total = firstNumber(o, [
-    "projects_total",
-    "total_projects",
-    "financed_projects_count",
-    "project_count",
-  ]);
-  const overdue = firstNumber(o, [
-    "projects_overdue",
-    "overdue_count",
-    "overdue_projects",
-    "attention_count",
-  ]);
-
-  let resolvedPercent = percent;
-  if (resolvedPercent == null && upToDate != null && total != null && total > 0) {
-    resolvedPercent = Math.round((upToDate / total) * 100);
-  }
+  const score = firstString(o, ["score"], "");
+  const overdue = firstNumber(o, ["overdue", "overdue_count"], null);
 
   let display = "—";
-  if (resolvedPercent != null && !Number.isNaN(resolvedPercent)) {
-    display = `${Math.round(resolvedPercent)}%`;
+  if (percent != null && !Number.isNaN(percent)) {
+    display = `${Math.round(percent)}%`;
   }
 
   let sub = "—";
-  if (upToDate != null && total != null && total > 0) {
-    const overdueCount =
-      overdue != null ? overdue : Math.max(0, total - upToDate);
+  if (score && score.includes("/")) {
+    const overdueCount = overdue != null ? overdue : 0;
     sub =
       overdueCount > 0
-        ? `${upToDate}/${total} projects up to date - ${overdueCount} overdue`
-        : `${upToDate}/${total} projects up to date`;
+        ? `${score} projects up to date - ${overdueCount} overdue`
+        : `${score} projects up to date`;
+  } else if (score) {
+    sub = score;
   } else {
-    sub = firstString(
-      o,
-      ["portfolio_score_subtitle", "repayment_score_subtitle", "subtitle"],
-      "—"
-    );
+    sub = firstString(o, ["subtitle", "portfolio_score_subtitle"], "—");
   }
 
   return {
     display,
     sub,
-    percent: resolvedPercent != null && !Number.isNaN(resolvedPercent) ? Math.round(resolvedPercent) : null,
+    percent: percent != null && !Number.isNaN(percent) ? Math.round(percent) : null,
   };
 }
 
@@ -386,13 +343,21 @@ function mapProductionHealth(item) {
   return { dot, label: formatProductionStatusLabel(rawStatus) };
 }
 
-/** investors/me/financed-projects/ — portfolio table (installation, status, capacity, cost, yield, CO₂, repayment). */
+function formatNextPaymentDue(raw) {
+  if (!raw) return "";
+  const d = dayjs(raw);
+  if (d.isValid()) return d.format("D MMM");
+  return String(raw);
+}
+
+/** investors/financed-projects/ — portfolio Financed table */
 export function mapFinancedProjectsTable(rows) {
   const list = unwrapListOrObject(rows);
   const arr = Array.isArray(list) ? list : list ? [list] : [];
   return arr.map((item, idx) => {
     const id =
       item.investment_id ??
+      item.project_id ??
       item.id ??
       item.pk ??
       item.branch_id ??
@@ -400,12 +365,12 @@ export function mapFinancedProjectsTable(rows) {
       idx;
     const installationTitle = firstString(
       item,
-      ["project_name", "name", "title", "project", "installation_name"],
+      ["name", "project_name", "title", "project", "installation_name"],
       "—"
     );
     const location = firstString(
       item,
-      ["installation_location", "location", "city", "state", "site_location"],
+      ["location", "installation_location", "city", "state", "site_location"],
       ""
     );
     const branchLabel = firstString(item, ["branch_label", "branchLabel"], "");
@@ -416,7 +381,7 @@ export function mapFinancedProjectsTable(rows) {
 
     const health = mapProductionHealth(item);
     const statusPosted =
-      firstString(item, ["last_posted_human", "last_posted_relative"], "") ||
+      firstString(item, ["last_posted", "last_posted_human", "last_posted_relative"], "") ||
       firstString(item, ["status_last_posted", "telemetry_last_posted"], "—");
     const lastPostedIso = firstString(item, ["last_posted_at", "updated_at", "modified_at"], "");
 
@@ -436,10 +401,12 @@ export function mapFinancedProjectsTable(rows) {
       projectCostN != null ? formatCompactNgn(projectCostN) : "—";
 
     const kpiRecoveryPct =
+      firstNumber(item, ["recovery_percent"]) ??
       firstNumber(item?.kpi, ["recovery_percent"]) ??
       firstNumber(item?.cost_recovery, ["recovery_percent"]) ??
       null;
     const kpiPaybackHuman =
+      firstString(item, ["payback_label"], "") ||
       firstString(item?.kpi?.payback_approx, ["human"], "") ||
       firstString(item?.payback_estimate, ["human"], "");
     const kpiRemarkMain =
@@ -477,46 +444,40 @@ export function mapFinancedProjectsTable(rows) {
         : "—";
 
     const paid =
+      firstNumber(item, ["repayment_paid"]) ??
       firstNumber(item?.repayment_score, ["paid_installments"]) ??
-      firstNumber(item, ["repayment_installments_paid", "installments_paid", "repayments_paid_count"]);
+      firstNumber(item, ["repayment_installments_paid", "installments_paid"]);
     const totalInst =
+      firstNumber(item, ["repayment_total"]) ??
       firstNumber(item?.repayment_score, ["total_installments"]) ??
-      firstNumber(item, ["repayment_installments_total", "installments_total", "schedule_installments"]);
-    const remainingInst =
-      firstNumber(item?.repayment_score, ["remaining_installments"]) ??
-      firstNumber(item, ["remaining_installments", "repayment_months_remaining"]);
-    const pct = firstNumber(item, ["repayment_percent_completed", "repayment_pct", "percent_completed"]);
+      firstNumber(item, ["repayment_installments_total", "installments_total"]);
+    const pct = firstNumber(item, ["repayment_percent_completed", "repayment_pct"]);
     let repaymentMain = "—";
-    if (paid != null && totalInst != null) {
+    if (paid != null && totalInst != null && totalInst > 0) {
       const p = pct != null ? pct : Math.round((paid / totalInst) * 100);
-      repaymentMain = `${paid}/${totalInst} (${p}% completed)`;
+      repaymentMain = `${String(paid).padStart(2, "0")}/${totalInst} (${p}% completed)`;
     } else {
-      const preset = firstString(item, ["repayment_score_display", "repayment_score"], "");
+      const preset = firstString(item, ["repayment_score_display"], "");
       if (preset) repaymentMain = preset;
     }
 
-    const nextPaymentLine = firstString(item, ["next_payment_line", "next_payment_label", "next_payment_due_display"], "");
-    const overdue =
-      Boolean(item.repayment_overdue) ||
-      String(item.payment_health || "").toLowerCase() === "overdue" ||
-      String(item.payment_health || "").toLowerCase() === "past_due";
-    const nextDueRaw = firstString(item, ["next_payment_due", "next_due_date"], "");
-    const paybackHuman =
-      firstString(item?.payback_estimate, ["human"], "") ||
-      firstString(item?.kpi?.payback_approx, ["human"], "");
-    const recoveryPct =
-      firstNumber(item?.cost_recovery, ["recovery_percent"]) ??
-      firstNumber(item?.kpi, ["recovery_percent"]);
-    let repaymentSub = "—";
-    if (overdue && nextDueRaw) repaymentSub = `Overdue: ${nextDueRaw}`;
-    else if (overdue) repaymentSub = "Overdue";
-    else if (nextPaymentLine) repaymentSub = nextPaymentLine;
-    else if (nextDueRaw) repaymentSub = `Next payment: ${nextDueRaw}`;
-    else if (paybackHuman) repaymentSub = `Payback: ${paybackHuman}`;
-    else if (recoveryPct != null) repaymentSub = `Recovery: ${recoveryPct}%`;
-    else if (remainingInst != null && remainingInst !== 0) repaymentSub = `${remainingInst} remaining`;
-
+    const overdueInstallmentDue = item.overdue_installment_due;
     const paymentHealth = String(item.payment_health || "").toLowerCase();
+    const overdue =
+      (overdueInstallmentDue != null && overdueInstallmentDue !== "") ||
+      Boolean(item.repayment_overdue) ||
+      paymentHealth === "overdue" ||
+      paymentHealth === "past_due";
+    const nextDueRaw = firstString(item, ["next_payment_due", "next_due_date"], "");
+    const nextDueLabel = formatNextPaymentDue(nextDueRaw);
+    const overdueLabel = formatNextPaymentDue(overdueInstallmentDue);
+
+    let repaymentSub = "—";
+    if (overdue && overdueLabel) repaymentSub = `Overdue: ${overdueLabel}`;
+    else if (overdue) repaymentSub = "Overdue";
+    else if (nextDueLabel) repaymentSub = `Next payment: ${nextDueLabel}`;
+    else if (kpiPaybackHuman) repaymentSub = `Payback: ${kpiPaybackHuman}`;
+
     const repaymentOverdue = overdue || paymentHealth === "overdue";
 
     const needsAttention =
