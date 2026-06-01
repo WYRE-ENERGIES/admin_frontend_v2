@@ -438,8 +438,15 @@
 }
 
 /* ---------- Table ---------- */
+.solar-table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .solar-table {
   width: 100%;
+  min-width: 1076px;
 }
 
 .solar-table-head,
@@ -533,6 +540,28 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+.solar-plant-name-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+}
+
+.solar-plant-name-link:hover:not(:disabled) .solar-plant-name-text {
+  color: #5C12A7;
+  text-decoration: underline;
+}
+
+.solar-plant-name-link:disabled {
+  cursor: wait;
 }
 
 .solar-plant-name-text {
@@ -723,6 +752,10 @@
 }
 
 @media (max-width: 1100px) {
+  .solar-table {
+    min-width: 916px;
+  }
+
   .solar-table-head,
   .solar-tr {
     grid-template-columns: 36px minmax(180px, 1.4fr) 100px 60px 90px 90px 110px 110px 80px 60px;
@@ -734,15 +767,6 @@
 @media (max-width: 960px) {
   .solar-mgt-page {
     padding: 18px 16px 24px;
-  }
-
-  .solar-table {
-    overflow-x: auto;
-  }
-
-  .solar-table-head,
-  .solar-tr {
-    min-width: 1100px;
   }
 
   .solar-watchlist-bar {
