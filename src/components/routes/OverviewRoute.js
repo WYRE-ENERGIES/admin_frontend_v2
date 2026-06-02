@@ -8,6 +8,7 @@ import Support from "../../Pages/OverviewPages/support/Support";
 import ForceLoginAdminHandler from "../../Pages/AuthPages/ForceLoginAdminHandler";
 import BranchDetails from "../../Pages/OverviewPages/BranchDetails";
 import Settings from "../../Pages/OverviewPages/Settings";
+import SolarOverview from "../../Pages/OverviewPages/SolarOverview";
 
 function OverviewRoute() {
   return (
@@ -19,6 +20,7 @@ function OverviewRoute() {
           <Route path='/force-login-admin' element={<ForceLoginAdminHandler />} />
         <Route path="/set-target" element={<SetTarget />}></Route>
         <Route path="/diesel" element={<DieselOverview />}></Route>
+        <Route path="/solar-overview" element={<SolarOverview />}></Route>
         <Route path="/locations" element={<ViewLocations />}></Route>
         <Route path="/locations/branch" element={<BranchDetails />}></Route>
         <Route path="/settings" element={<Settings />}></Route>
