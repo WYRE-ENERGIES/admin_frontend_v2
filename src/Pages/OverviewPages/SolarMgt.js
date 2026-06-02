@@ -29,7 +29,9 @@ import {
   fetchSolarPlants,
   toggleFavourite as toggleFavouriteAction,
   fetchSolarClients,
+  forceLoginSolarBranch,
 } from '../../redux/actions/solarMgt/solarMgt.action';
+import EnvData from '../../config/EnvData';
 import './SolarMgt.css';
 
 const { Title, Text } = Typography;
@@ -92,6 +94,11 @@ const normalizeTrend = (trend) => {
   return trend.map((y, i) => ({ x: i, y: Number(y) || 0 }));
 };
 
+const SOLAR_DASHBOARD_REDIRECT = '/solar-overview';
+
+const getPlantBranchId = (plant) =>
+  plant?.branch_id ?? plant?.branch ?? plant?.id ?? null;
+
 const SolarMgt = ({
   solarMgt,
   fetchRealtimePower: fetchRealtimePowerAction,
@@ -102,6 +109,7 @@ const SolarMgt = ({
   fetchSolarPlants: fetchSolarPlantsAction,
   toggleFavourite: toggleFavouriteThunk,
   fetchSolarClients: fetchSolarClientsAction,
+  forceLoginSolarBranch: forceLoginSolarBranchThunk,
 }) => {
   const {
     realtimePower,
@@ -139,6 +147,7 @@ const SolarMgt = ({
   const [sortAsc, setSortAsc] = useState(true);
   const [pageSize, setPageSize] = useState(50);
   const [currentPage, setCurrentPage] = useState(1);
+  const [dashboardLoginBranchId, setDashboardLoginBranchId] = useState(null);
 
   // Initial KPI / status counts / clients fetch
   useEffect(() => {
@@ -246,6 +255,73 @@ const SolarMgt = ({
     {
       // Refresh status counts so the watchlist badge stays in sync
       fetchStatusCountsAction();
+    }
+  };
+
+  const handleOpenSolarDashboard = async (plant) => {
+    const branchId = getPlantBranchId(plant);
+    if (!branchId)
+    {
+      notification.warning({
+        message: 'Cannot open dashboard',
+        description: 'This plant is not linked to a branch.',
+      });
+      return;
+    }
+
+    setDashboardLoginBranchId(branchId);
+    try
+    {
+      const data = await forceLoginSolarBranchThunk(branchId);
+      const dashboardBase = (data.redirect_url || EnvData.REACT_APP_DASHBOARD_URL).replace(/\/$/, '');
+      const params = new URLSearchParams({
+        access: data.token.access,
+        refresh: data.token.refresh,
+        username: data.username ?? '',
+        email: data.email ?? '',
+        first_name: data.first_name ?? '',
+        last_name: data.last_name ?? '',
+        redirect: SOLAR_DASHBOARD_REDIRECT,
+      });
+      window.open(
+        `${dashboardBase}/force-login?${params.toString()}`,
+        '_blank'
+      );
+    } catch (err)
+    {
+      const errData = err?.response?.data;
+      if (errData?.detail === 'You do not have permission for this branch')
+      {
+        notification.error({
+          message: 'Access Denied',
+          description: 'You do not have permission to access this branch solar dashboard. Please contact your administrator for access rights.',
+          duration: 5,
+        });
+      } else if (errData?.detail)
+      {
+        notification.error({
+          message: 'Solar Dashboard Access Failed',
+          description: errData.detail,
+          duration: 5,
+        });
+      } else if (errData?.message)
+      {
+        notification.error({
+          message: 'Solar Dashboard Login Failed',
+          description: errData.message,
+          duration: 5,
+        });
+      } else
+      {
+        notification.error({
+          message: 'Solar Dashboard Login Failed',
+          description: err?.message || 'Unable to open the solar dashboard. Please try again later.',
+          duration: 5,
+        });
+      }
+    } finally
+    {
+      setDashboardLoginBranchId(null);
     }
   };
 
@@ -686,7 +762,8 @@ const SolarMgt = ({
           </div>
         )}
 
-        <div className="solar-table">
+        <div className="solar-table-scroll">
+          <div className="solar-table">
           <div className="solar-table-head">
             <div className="solar-th solar-th-checkbox">
               <Checkbox
@@ -737,6 +814,9 @@ const SolarMgt = ({
                 const tagsArr = Array.isArray(plant?.tags) ? plant.tags : [];
                 const isSelected = !!selectedRows[plant.id];
                 const isFavLoading = String(toggleFavouriteLoadingId) === String(plant.id);
+                const branchId = getPlantBranchId(plant);
+                const isDashboardLoginLoading =
+                  branchId != null && String(dashboardLoginBranchId) === String(branchId);
                 const isNever = !lastPostedAt && (lastPostedLabel === 'Never' || lastPostedLabel === '—');
                 const statusKey = isNever ? 'never' : statusCom;
                 const dotColor = getStatusDotColor(statusKey);
@@ -758,8 +838,22 @@ const SolarMgt = ({
                     </div>
                     <div className="solar-td solar-td-name">
                       <div className="solar-plant-name">
-                        <span className="solar-plant-name-text">{plant.name || '—'}</span>
-                        <ArrowUpOutlined className="solar-plant-arrow" />
+                        <button
+                          type="button"
+                          className="solar-plant-name-link"
+                          onClick={() => handleOpenSolarDashboard(plant)}
+                          disabled={isDashboardLoginLoading}
+                          title={`Open ${plant.name || 'plant'} solar dashboard`}
+                        >
+                          {isDashboardLoginLoading ? (
+                            <Spin size="small" />
+                          ) : (
+                            <>
+                              <span className="solar-plant-name-text">{plant.name || '—'}</span>
+                              <ArrowUpOutlined className="solar-plant-arrow" />
+                            </>
+                          )}
+                        </button>
                       </div>
                       {plant.address && (
                         <div className="solar-plant-address">
@@ -842,6 +936,7 @@ const SolarMgt = ({
                 );
               })
             )}
+          </div>
           </div>
         </div>
 
@@ -942,6 +1037,7 @@ const mapDispatchToProps = {
   fetchSolarPlants,
   toggleFavourite: toggleFavouriteAction,
   fetchSolarClients,
+  forceLoginSolarBranch,
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(SolarMgt);

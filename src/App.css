@@ -4535,6 +4535,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   align-items: start;
 }
 
+.investor-payments-split > .investor-card:first-child {
+  min-height: 0;
+}
+
 .investor-payments-stack {
   display: flex;
   flex-direction: column;
@@ -4542,8 +4546,22 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   min-width: 0;
 }
 
+.investor-card--payout-history .ant-card-body {
+  padding-bottom: 12px;
+}
+
+.investor-payments-payout-list {
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
 .investor-payments-ph-row {
   padding: 8px 0;
+}
+
+.investor-payments-ph-row:last-child {
+  padding-bottom: 0;
 }
 
 .investor-health-lines {

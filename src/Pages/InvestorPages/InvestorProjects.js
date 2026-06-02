@@ -145,10 +145,7 @@ function InvestorProjects() {
       {
         key: "c",
         label: "Portfolio generation · YTD",
-        value:
-          summary?.portfolioGenerationYtdKwh != null
-            ? `${Math.round(summary.portfolioGenerationYtdKwh / 1000)}k kWh`
-            : "—",
+        value: summary?.portfolioGenerationYtdDisplay ?? "—",
         sub: "Year to date",
       },
       {

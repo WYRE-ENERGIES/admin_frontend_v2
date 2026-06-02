@@ -186,7 +186,7 @@ function PortfolioOverview() {
         width: 110,
       },
       {
-        title: "Portfolio score",
+        title: "Repayment score",
         key: "repayment",
         width: 200,
         render: (_, row) => (
