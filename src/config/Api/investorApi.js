@@ -4,6 +4,8 @@
  */
 export const INVESTOR_API = {
   projectsOpen: "/api/v1/investors/projects/open/",
+  /** Projects page — Financed tab cards (not portfolio financed-projects table). */
+  projectsFinanced: "/api/v1/investors/projects/financed/",
   projectDetail: (id) => `/api/v1/investors/projects/${id}/`,
   projectContactWyre: (id) => `/api/v1/investors/projects/${id}/contact-wyre/`,
   investmentTickets: "/api/v1/investors/investment-tickets/",

@@ -3504,8 +3504,18 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: #141414;
 }
 
+/* Date pickers above modals / investor shell (installation, due dates, header range) */
+.investor-admin-picker-dropdown,
+.investor-shell-picker-dropdown {
+  z-index: 1400 !important;
+}
+
 .admin-investor-modal .ant-modal-content {
   border-radius: 16px;
+}
+
+.admin-investor-modal .ant-modal-body {
+  overflow: visible;
 }
 
 .admin-investor-modal .ant-modal-header {

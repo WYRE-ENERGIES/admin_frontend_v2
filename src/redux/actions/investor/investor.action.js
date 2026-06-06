@@ -120,7 +120,7 @@ export const fetchInvestorProjects = () => async (dispatch) => {
     ["portfolioCapacity", INVESTOR_API.kpiPortfolioCapacity],
     ["portfolioGenerationYtd", INVESTOR_API.kpiPortfolioGenerationYtd],
     ["attention", INVESTOR_API.kpiAttention],
-    ["financedProjects", INVESTOR_API.financedProjects],
+    ["projectsFinanced", INVESTOR_API.projectsFinanced],
   ];
 
   const results = await Promise.allSettled(
@@ -141,7 +141,7 @@ export const fetchInvestorProjects = () => async (dispatch) => {
     return { fulfilled: false, message: msg };
   }
 
-  const financedTiles = mapFinancedProjectsTiles(raw.financedProjects);
+  const financedTiles = mapFinancedProjectsTiles(raw.projectsFinanced);
   const payload = {
     partialErrors: errors.length ? errors : null,
     summary: mapProjectsPageSummary({

@@ -65,6 +65,7 @@ function displayStatus(status) {
   if (!s) return "—";
   if (s === "on track") return "On track";
   if (s === "active") return "Active";
+  if (s === "underperforming") return "Underperforming";
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
@@ -74,6 +75,9 @@ function statusTag(status) {
     return <Tag color="green">{displayStatus(status)}</Tag>;
   }
   if (s === "overdue") return <Tag color="red">Overdue</Tag>;
+  if (s === "underperforming") {
+    return <Tag color="gold">{displayStatus(status)}</Tag>;
+  }
   if (s.includes("review")) return <Tag color="gold">{displayStatus(status)}</Tag>;
   return <Tag color="gold">{displayStatus(status)}</Tag>;
 }
@@ -300,8 +304,12 @@ function InvestorProjects() {
               </div>
               <Text type="secondary" className="investor-project-tile-meta">
                 {p.branchLabel}
-                <br />
-                {p.contractStart}
+                {p.contractStart ? (
+                  <>
+                    <br />
+                    {p.contractStart}
+                  </>
+                ) : null}
               </Text>
               <div className="investor-project-tile-grid">
                 <div>

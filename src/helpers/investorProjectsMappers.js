@@ -85,35 +85,82 @@ export function mapProjectsPageSummary({
   };
 }
 
+function formatOpenProjectStatus(item) {
+  const statusRaw = firstString(item, ["status"], "");
+  if (statusRaw) {
+    return statusRaw
+      .replace(/_/g, " ")
+      .split(/\s+/)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
+      .join(" ");
+  }
+  if (item.is_available != null) {
+    return item.is_available ? "Available" : "—";
+  }
+  return "—";
+}
+
 /** investors/projects/open/ */
 export function mapOpenProjectsList(raw) {
   return listFromPaged(raw).map((item) => {
     const id = item.project_id ?? item.id;
-    const target = Number(item.investor_funding_target);
-    const raised = Number(item.investor_funding_raised);
-    const remaining = Number(item.investor_funding_remaining);
-    const raisedPct =
-      target > 0 && !Number.isNaN(raised) ? Math.round((raised / target) * 100) : null;
 
-    const loc = [item.branch_label, item.location_label, item.city].filter(Boolean).join(" · ");
+    const target =
+      firstNumber(item, ["investor_target", "investor_funding_target", "investorTarget"]) ?? 0;
+    const remaining =
+      firstNumber(item, ["remaining", "investor_funding_remaining", "remaining_ngn"]) ?? 0;
+
+    let raised =
+      firstNumber(item, ["raised", "investor_funding_raised", "amount_raised"]) ?? null;
+    if (raised == null && target > 0 && remaining >= 0) {
+      raised = target - remaining;
+    }
+    if (raised == null || Number.isNaN(raised)) raised = 0;
+
+    const raisedPctFromApi = firstNumber(item, ["raised_percent", "raised_pct", "raisedPercent"]);
+    const raisedPct =
+      raisedPctFromApi != null
+        ? Math.round(raisedPctFromApi)
+        : target > 0
+          ? Math.round((raised / target) * 100)
+          : null;
+
+    const systemKwp =
+      firstNumber(item, ["capacity_kwp", "system_capacity_kwp", "system_kwp", "kwp"]) ?? "—";
+
+    const totalCostNgn =
+      firstNumber(item, ["total_cost", "total_project_cost", "project_cost"]) ?? 0;
+
+    const clientContributionNgn =
+      firstNumber(item, ["client_contribution", "client_contribution_ngn"]) ?? 0;
+
+    const loc = [item.branch_label, item.location_label, item.location, item.city]
+      .filter(Boolean)
+      .join(" · ");
+
+    const statusRaw = firstString(item, ["status"], "").toLowerCase();
+    const isAvailable =
+      item.is_available != null
+        ? Boolean(item.is_available)
+        : statusRaw === "available" || statusRaw === "";
 
     return {
       id: String(id),
       projectId: id,
-      name: item.project_name || item.name || "—",
-      status: item.is_available ? "Available" : firstString(item, ["status"], "—"),
+      name: firstString(item, ["name", "project_name"], "—"),
+      status: formatOpenProjectStatus(item),
       summaryLine: loc ? `Remaining: ${formatCompactNgn(remaining)} · ${loc}` : undefined,
-      remainingNgn: Number.isNaN(remaining) ? 0 : remaining,
-      investorTargetNgn: Number.isNaN(target) ? 0 : target,
-      raisedNgn: Number.isNaN(raised) ? 0 : raised,
-      systemKwp: Number(item.system_capacity_kwp) || item.system_capacity_kwp || "—",
-      totalCostNgn: Number(item.total_project_cost) || 0,
-      clientContributionNgn: Number(item.client_contribution) || 0,
+      remainingNgn: remaining,
+      investorTargetNgn: target,
+      raisedNgn: raised,
+      systemKwp,
+      totalCostNgn,
+      clientContributionNgn,
       raisedPct,
-      locationLabel: item.location_label,
+      locationLabel: item.location_label || item.location,
       branchLabel: item.branch_label,
       projectType: item.project_type,
-      isAvailable: Boolean(item.is_available),
+      isAvailable,
       footerLeft: "Open project detail for cost breakdown",
     };
   });
@@ -149,7 +196,7 @@ export function mapProjectDetail(raw) {
 
   return {
     projectId: item.project_id ?? item.id,
-    name: item.project_name,
+    name: firstString(item, ["name", "project_name"], "—"),
     breakdownItems: items.map((row) => ({
       key: `${row.category}-${row.label}`,
       category: row.category,
@@ -163,7 +210,19 @@ export function mapProjectDetail(raw) {
   };
 }
 
-/** Financed project cards on Projects tab (from financed-projects/). */
+function formatProjectsFinancedStatus(raw) {
+  const s = String(raw || "")
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .trim();
+  if (!s) return "Active";
+  return s
+    .split(/\s+/)
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+/** Financed project cards on Projects tab (GET investors/projects/financed/). */
 export function mapFinancedProjectsTiles(raw) {
   const list = listFromPaged(raw);
   return list.map((item, idx) => {
@@ -175,55 +234,63 @@ export function mapFinancedProjectsTiles(raw) {
       idx;
 
     const name = firstString(item, ["name", "project_name", "installation_name"], "—");
-    const branch = firstString(item, ["branch_label", "branchLabel"], "");
-    const city = firstString(item, ["location", "city", "location_label"], "");
-    const branchLabel = [branch, city].filter(Boolean).join(" · ") || city || "—";
+    const branchLabel = firstString(item, ["location", "branch_label", "branchLabel"], "—");
 
     const paymentHealth = String(item.payment_health || item.repayment_status || "").toLowerCase();
-    let status = firstString(item, ["status", "investment_status"], "active").replace(/_/g, " ");
+    let status = formatProjectsFinancedStatus(
+      firstString(item, ["status", "investment_status"], "active")
+    );
     if (paymentHealth.includes("overdue") || item.repayment_overdue || item.overdue_installment_due) {
       status = "Overdue";
-    } else if (paymentHealth.includes("review")) status = "Review";
+    } else if (paymentHealth.includes("review")) {
+      status = "Review";
+    }
 
     const sharePct =
-      firstNumber(item, ["your_share_percent", "share_percent", "share_pct", "investor_share_pct"]) ??
+      firstNumber(item, ["share_percent", "your_share_percent", "share_pct", "investor_share_pct"]) ??
       null;
 
     const systemKwp =
       firstNumber(item, ["capacity_kwp", "system_capacity_kwp", "system_kwp", "kwp"]) ?? "—";
 
     const projectCostNgn =
-      firstNumber(item, ["project_cost", "project_cost_ngn", "total_project_cost"]) ??
-      firstNumber(item?.cost_recovery, ["project_cost_naira"]) ??
-      0;
+      firstNumber(item, ["project_cost", "project_cost_ngn", "total_project_cost"]) ?? 0;
 
     const investedNgn =
       firstNumber(item, [
+        "invested",
         "invested_amount",
         "amount_invested",
         "invested_ngn",
         "investor_amount",
-        "your_investment_ngn",
-        "total_invested",
       ]) ?? 0;
 
-    const energyKwh = firstNumber(item, [
-      "energy_yield_kwh",
-      "mtd_generation_kwh",
-      "generation_mtd_kwh",
+    const mtdMwhVal = firstNumber(item, [
+      "mtd_generation_mwh",
+      "mtd_generation_mwh_ytd",
     ]);
-    const mtdMwh =
-      energyKwh != null ? Number((energyKwh / 1000).toFixed(1)) : null;
+    let mtdMwh = "—";
+    if (mtdMwhVal != null) {
+      mtdMwh =
+        mtdMwhVal >= 10
+          ? mtdMwhVal.toFixed(1)
+          : mtdMwhVal.toFixed(2);
+    } else {
+      const energyKwh = firstNumber(item, ["energy_yield_kwh", "mtd_generation_kwh"]);
+      if (energyKwh != null) mtdMwh = (energyKwh / 1000).toFixed(1);
+    }
 
-    const paidInstallments =
-      firstNumber(item, ["repayment_paid"]) ??
-      firstNumber(item?.repayment_score, ["paid_installments"]);
-    const totalInstallments =
-      firstNumber(item, ["repayment_total"]) ??
-      firstNumber(item?.repayment_score, ["total_installments"]);
+    const paidInstallments = firstNumber(item, ["repayment_paid"]);
+    const totalInstallments = firstNumber(item, ["repayment_total"]);
     const repaymentDisplay =
       paidInstallments != null && totalInstallments != null
         ? `${paidInstallments}/${totalInstallments}`
+        : "—";
+
+    const estSavingsMtd = firstNumber(item, ["est_savings_mtd", "est_savings_mtd_ngn"]);
+    const footerLeft =
+      estSavingsMtd != null
+        ? `Est. savings (MTD) ${formatCompactNgn(estSavingsMtd)}`
         : "—";
 
     const overdue =
@@ -231,27 +298,25 @@ export function mapFinancedProjectsTiles(raw) {
       paymentHealth.includes("overdue") ||
       (item.overdue_installment_due != null && item.overdue_installment_due !== "");
 
+    const contractStart =
+      firstString(item, ["contract_start_label", "contract_start_display"], "") ||
+      (item.contract_start
+        ? `Contract start · ${firstString(item, ["contract_start"], "")}`
+        : "");
+
     return {
       id: String(id),
       name,
       status,
       branchLabel,
-      contractStart:
-        firstString(item, ["contract_start_label", "contract_start_display"], "") ||
-        (item.contract_start
-          ? `Contract start · ${firstString(item, ["contract_start"], "")}`
-          : firstString(item, ["financed_since", "investment_date"], "—")),
+      contractStart,
       sharePct: sharePct ?? "—",
       systemKwp,
       projectCostNgn,
       investedNgn,
-      mtdMwh: mtdMwh != null ? String(mtdMwh) : "—",
+      mtdMwh,
       repaymentDisplay,
-      footerLeft:
-        firstString(item, ["savings_mtd_label", "est_savings_mtd"], "") ||
-        (item.energy_yield_value_naira
-          ? `Est. savings (MTD) ${formatCompactNgn(item.energy_yield_value_naira)}`
-          : "—"),
+      footerLeft,
       footerLink: overdue ? "View receivables →" : "Payment schedule →",
       repaymentOverdue: overdue,
     };
