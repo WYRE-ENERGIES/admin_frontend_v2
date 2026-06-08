@@ -4574,6 +4574,33 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   padding-bottom: 0;
 }
 
+.investor-payments-schedule-card .ant-card-head {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.investor-payments-schedule-meta {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.investor-payments-schedule-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 32px;
+  margin-bottom: 16px;
+}
+
+.investor-payments-schedule-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.investor-pay-neg {
+  color: #cf1322;
+}
+
 .investor-health-lines {
   display: flex;
   flex-direction: column;

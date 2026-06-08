@@ -30,4 +30,7 @@ export const INVESTOR_API = {
     const base = "/api/v1/investors/payments/ledger/";
     return year != null ? `${base}?year=${encodeURIComponent(year)}` : base;
   },
+  /** Full installment schedule for one investment. */
+  paymentsProjectPayoutSchedule: (investmentId) =>
+    `/api/v1/investors/payments/project-payout-schedule/?investment_id=${encodeURIComponent(String(investmentId))}`,
 };

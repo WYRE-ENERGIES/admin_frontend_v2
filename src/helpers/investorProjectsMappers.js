@@ -306,6 +306,7 @@ export function mapFinancedProjectsTiles(raw) {
 
     return {
       id: String(id),
+      investmentId: item.investment_id ?? item.id ?? id,
       name,
       status,
       branchLabel,

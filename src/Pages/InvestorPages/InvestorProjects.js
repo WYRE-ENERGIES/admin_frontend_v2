@@ -97,6 +97,9 @@ function InvestorProjects() {
   const supportPath = location.pathname.startsWith("/__investor_preview")
     ? "/__investor_preview/support"
     : "/support";
+  const paymentsPath = location.pathname.startsWith("/__investor_preview")
+    ? "/__investor_preview/payments"
+    : "/payments";
   const {
     projects: bundle,
     projectsLoading,
@@ -341,9 +344,18 @@ function InvestorProjects() {
               </div>
               <div className="investor-project-tile-foot">
                 <span className="investor-project-tile-savings">{p.footerLeft}</span>
-                <a className="investor-project-tile-link" href="#schedule">
+                <Button
+                  type="link"
+                  size="small"
+                  className="investor-project-tile-link"
+                  onClick={() =>
+                    navigate(
+                      `${paymentsPath}?investment_id=${encodeURIComponent(String(p.investmentId ?? p.id))}`
+                    )
+                  }
+                >
                   {p.footerLink} <ArrowRightOutlined />
-                </a>
+                </Button>
               </div>
             </Card>
           ))}
