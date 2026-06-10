@@ -361,16 +361,17 @@ const SolarOverview = ({
     try
     {
       const data = await solarForceLoginAction(branch.id);
+      const dashboardBase = (data?.redirect_url || EnvData.REACT_APP_DASHBOARD_URL).replace(/\/$/, '');
       const params = new URLSearchParams({
         access: data?.token?.access || '',
         refresh: data?.token?.refresh || '',
-        username: data?.username || '',
-        email: data?.email || '',
-        first_name: data?.first_name || '',
-        last_name: data?.last_name || '',
+        username: data?.username ?? '',
+        email: data?.email ?? '',
+        first_name: data?.first_name ?? '',
+        last_name: data?.last_name ?? '',
+        redirect: '/solar-overview',
       });
-      const base = data?.redirect_url || EnvData.REACT_APP_DASHBOARD_URL;
-      window.open(`${base}/force-login?${params.toString()}`, '_blank');
+      window.open(`${dashboardBase}/force-login?${params.toString()}`, '_blank');
     } catch (err)
     {
       const detail = err?.response?.data?.detail;
