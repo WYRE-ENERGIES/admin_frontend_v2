@@ -4,6 +4,8 @@
  */
 export const INVESTOR_API = {
   projectsOpen: "/api/v1/investors/projects/open/",
+  /** Projects page — Financed tab cards (not portfolio financed-projects table). */
+  projectsFinanced: "/api/v1/investors/projects/financed/",
   projectDetail: (id) => `/api/v1/investors/projects/${id}/`,
   projectContactWyre: (id) => `/api/v1/investors/projects/${id}/contact-wyre/`,
   investmentTickets: "/api/v1/investors/investment-tickets/",
@@ -28,4 +30,7 @@ export const INVESTOR_API = {
     const base = "/api/v1/investors/payments/ledger/";
     return year != null ? `${base}?year=${encodeURIComponent(year)}` : base;
   },
+  /** Full installment schedule for one investment. */
+  paymentsProjectPayoutSchedule: (investmentId) =>
+    `/api/v1/investors/payments/project-payout-schedule/?investment_id=${encodeURIComponent(String(investmentId))}`,
 };

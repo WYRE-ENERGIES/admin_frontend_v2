@@ -28,7 +28,7 @@ import {
   mapOpenProjectsList,
   mapProjectsPageSummary,
 } from "../../../helpers/investorProjectsMappers";
-import { buildPaymentsPagePayload } from "../../../helpers/investorPaymentsMappers";
+import { buildPaymentsPagePayload, mapProjectPayoutSchedule } from "../../../helpers/investorPaymentsMappers";
 import { MOCK_INVESTOR_ACCOUNT_KYC } from "../../reducers/investor/investor.initialData";
 
 const readErrorMessage = (error) => {
@@ -120,7 +120,7 @@ export const fetchInvestorProjects = () => async (dispatch) => {
     ["portfolioCapacity", INVESTOR_API.kpiPortfolioCapacity],
     ["portfolioGenerationYtd", INVESTOR_API.kpiPortfolioGenerationYtd],
     ["attention", INVESTOR_API.kpiAttention],
-    ["financedProjects", INVESTOR_API.financedProjects],
+    ["projectsFinanced", INVESTOR_API.projectsFinanced],
   ];
 
   const results = await Promise.allSettled(
@@ -141,7 +141,7 @@ export const fetchInvestorProjects = () => async (dispatch) => {
     return { fulfilled: false, message: msg };
   }
 
-  const financedTiles = mapFinancedProjectsTiles(raw.financedProjects);
+  const financedTiles = mapFinancedProjectsTiles(raw.projectsFinanced);
   const payload = {
     partialErrors: errors.length ? errors : null,
     summary: mapProjectsPageSummary({
@@ -270,6 +270,38 @@ export const fetchInvestorPayments =
     dispatch(investorPaymentsLoading(false));
     return { fulfilled: true, partial: partialErrors.length > 0 };
   };
+
+/** Financed investments for payment-schedule project picker. */
+export const fetchInvestorFinancedInvestments = () => async () => {
+  try {
+    const response = await APIService.get(INVESTOR_API.projectsFinanced);
+    const body = response.data;
+    if (body?.status === false) {
+      return { fulfilled: false, message: body.message || "Failed to load investments" };
+    }
+    const list = mapFinancedProjectsTiles(body.data ?? body);
+    return { fulfilled: true, data: list };
+  } catch (error) {
+    return { fulfilled: false, message: readErrorMessage(error) };
+  }
+};
+
+/** Full payout schedule for one investment. */
+export const fetchInvestorProjectPayoutSchedule = (investmentId) => async () => {
+  if (investmentId == null || investmentId === "") {
+    return { fulfilled: false, message: "Investment is required" };
+  }
+  try {
+    const response = await APIService.get(INVESTOR_API.paymentsProjectPayoutSchedule(investmentId));
+    const body = response.data;
+    if (body?.status === false) {
+      return { fulfilled: false, message: body.message || "Failed to load payment schedule" };
+    }
+    return { fulfilled: true, data: mapProjectPayoutSchedule(body) };
+  } catch (error) {
+    return { fulfilled: false, message: readErrorMessage(error) };
+  }
+};
 
 export const fetchInvestorAccountKyc = () => async (dispatch) => {
   dispatch(investorAccountKycLoading(true));

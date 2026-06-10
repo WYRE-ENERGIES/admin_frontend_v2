@@ -34,6 +34,8 @@ function InvestorPageHeader({
             }}
             allowClear={false}
             className="investor-range"
+            getPopupContainer={() => document.body}
+            popupClassName="investor-shell-picker-dropdown"
           />
           <Button
             icon={<FileTextOutlined />}

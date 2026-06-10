@@ -257,6 +257,63 @@ export function mapPaymentsLedger(raw) {
   };
 }
 
+/** investors/payments/project-payout-schedule/?investment_id= */
+export function mapProjectPayoutSchedule(raw) {
+  const data = unwrapInvestorEnvelope(raw);
+  if (!data || typeof data !== "object") return null;
+
+  const summary = data.summary || {};
+  const rows = Array.isArray(data.results) ? data.results : [];
+
+  const mapRow = (row) => {
+    const due =
+      row.due_date && dayjs(row.due_date).isValid()
+        ? dayjs(row.due_date).format("DD MMM YYYY")
+        : "—";
+    const paidDate =
+      row.paid_date && dayjs(row.paid_date).isValid()
+        ? dayjs(row.paid_date).format("DD MMM YYYY")
+        : "—";
+    const posted =
+      row.last_posted_at && dayjs(row.last_posted_at).isValid()
+        ? dayjs(row.last_posted_at).format("DD MMM YYYY")
+        : null;
+    const statusLabel = formatScheduleStatus(row.status_display || row.status);
+    const statusCell = posted && statusLabel !== "—" ? `${statusLabel} · ${posted}` : statusLabel;
+
+    return {
+      key: String(row.schedule_id ?? `${row.installment_number}-${row.due_date}`),
+      installmentNumber: row.installment_number ?? "—",
+      due,
+      dueIso: row.due_date,
+      amountDue: formatNgnAmount(row.amount_due),
+      amountPaid: formatNgnAmount(row.amount_paid),
+      amountRemaining: formatNgnAmount(row.amount_remaining),
+      paidDate,
+      status: statusCell,
+      statusKey: String(row.status_display || row.status || "").toLowerCase(),
+      projectName: row.project_name,
+    };
+  };
+
+  return {
+    currency: data.currency || "NGN",
+    investmentId: data.investment_id,
+    projectId: data.project_id,
+    projectName: data.project_name || "—",
+    count: data.count ?? rows.length,
+    summary: {
+      totalInstallments: firstNumber(summary, ["total_installments"]) ?? rows.length,
+      paidCount: firstNumber(summary, ["paid_count"]) ?? 0,
+      openCount: firstNumber(summary, ["open_count"]) ?? 0,
+      totalDue: formatNgnAmount(summary.total_due),
+      totalPaid: formatNgnAmount(summary.total_paid),
+      totalRemaining: formatNgnAmount(summary.total_remaining),
+    },
+    installments: rows.map(mapRow),
+  };
+}
+
 export function buildPaymentsPagePayload(apiResponses, options = {}) {
   const { partialErrors = [] } = options;
 

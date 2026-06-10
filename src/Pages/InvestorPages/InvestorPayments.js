@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Button, Card, Spin, Table, Tabs, Tag, Typography } from "antd";
+import { Alert, Button, Card, Select, Spin, Table, Tabs, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
-import { fetchInvestorPayments } from "../../redux/actions/investor/investor.action";
+import {
+  fetchInvestorFinancedInvestments,
+  fetchInvestorPayments,
+  fetchInvestorProjectPayoutSchedule,
+} from "../../redux/actions/investor/investor.action";
 
 const { Text, Title } = Typography;
 
@@ -11,6 +16,7 @@ const LEDGER_PAGE_SIZE = 10;
 
 function scheduleStatusTag(statusKey, label) {
   const t = String(statusKey || label || "").toLowerCase();
+  if (t.includes("paid")) return <Tag color="blue">{label}</Tag>;
   if (t.includes("scheduled")) return <Tag color="green">{label}</Tag>;
   if (t.includes("overdue")) return <Tag color="red">{label}</Tag>;
   if (t.includes("pending")) return <Tag color="gold">{label}</Tag>;
@@ -19,6 +25,7 @@ function scheduleStatusTag(statusKey, label) {
 
 function InvestorPayments() {
   const dispatch = useDispatch();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     payments: bundle,
     paymentsLoading,
@@ -31,6 +38,13 @@ function InvestorPayments() {
     dayjs().month(3).endOf("month"),
   ]);
   const [ledgerYear, setLedgerYear] = useState(String(dayjs().year()));
+
+  const [investmentOptions, setInvestmentOptions] = useState([]);
+  const [investmentsLoading, setInvestmentsLoading] = useState(false);
+  const [selectedInvestmentId, setSelectedInvestmentId] = useState(null);
+  const [payoutSchedule, setPayoutSchedule] = useState(null);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [scheduleError, setScheduleError] = useState(null);
 
   const rangeKey = `${range[0]?.format("YYYY-MM-DD")}_${range[1]?.format("YYYY-MM-DD")}`;
 
@@ -49,6 +63,74 @@ function InvestorPayments() {
   useEffect(() => {
     loadPayments();
   }, [loadPayments, rangeKey, ledgerYear]);
+
+  const loadInvestments = useCallback(async () => {
+    setInvestmentsLoading(true);
+    const res = await dispatch(fetchInvestorFinancedInvestments());
+    setInvestmentsLoading(false);
+    if (!res.fulfilled) return;
+    const list = res.data || [];
+    setInvestmentOptions(list);
+    const fromQuery = searchParams.get("investment_id");
+    const queryId = fromQuery != null && fromQuery !== "" ? Number(fromQuery) : null;
+    const matchFromQuery =
+      queryId != null && list.some((p) => Number(p.investmentId) === queryId);
+    if (matchFromQuery) {
+      setSelectedInvestmentId(queryId);
+    } else if (list.length) {
+      setSelectedInvestmentId((prev) =>
+        prev != null && list.some((p) => Number(p.investmentId) === prev)
+          ? prev
+          : Number(list[0].investmentId)
+      );
+    }
+  }, [dispatch, searchParams]);
+
+  useEffect(() => {
+    loadInvestments();
+  }, [loadInvestments]);
+
+  const loadPayoutSchedule = useCallback(async (investmentId) => {
+    if (investmentId == null) {
+      setPayoutSchedule(null);
+      return;
+    }
+    setScheduleLoading(true);
+    setScheduleError(null);
+    const res = await dispatch(fetchInvestorProjectPayoutSchedule(investmentId));
+    setScheduleLoading(false);
+    if (!res.fulfilled) {
+      setScheduleError(res.message || "Could not load payment schedule");
+      setPayoutSchedule(null);
+      return;
+    }
+    setPayoutSchedule(res.data);
+  }, [dispatch]);
+
+  useEffect(() => {
+    if (selectedInvestmentId != null) {
+      loadPayoutSchedule(selectedInvestmentId);
+    }
+  }, [selectedInvestmentId, loadPayoutSchedule]);
+
+  const handleInvestmentChange = (value) => {
+    const id = value != null ? Number(value) : null;
+    setSelectedInvestmentId(id);
+    if (id != null) {
+      setSearchParams({ investment_id: String(id) }, { replace: true });
+    } else {
+      setSearchParams({}, { replace: true });
+    }
+  };
+
+  const investmentSelectOptions = useMemo(
+    () =>
+      investmentOptions.map((p) => ({
+        value: Number(p.investmentId),
+        label: p.name,
+      })),
+    [investmentOptions]
+  );
 
   const kpis = useMemo(() => {
     const k = bundle?.kpis;
@@ -79,6 +161,31 @@ function InvestorPayments() {
     },
   ];
 
+  const payoutScheduleCols = [
+    { title: "#", dataIndex: "installmentNumber", key: "installmentNumber", width: 48 },
+    { title: "Due date", dataIndex: "due", key: "due", width: 120 },
+    { title: "Amount due", dataIndex: "amountDue", key: "amountDue", width: 120 },
+    { title: "Amount paid", dataIndex: "amountPaid", key: "amountPaid", width: 120 },
+    {
+      title: "Remaining",
+      dataIndex: "amountRemaining",
+      key: "amountRemaining",
+      width: 120,
+      render: (v, row) => {
+        const raw = String(row.statusKey || "");
+        const isOver = raw.includes("overdue") || (v && v.startsWith("-"));
+        return <span className={isOver ? "investor-pay-neg" : undefined}>{v}</span>;
+      },
+    },
+    { title: "Paid date", dataIndex: "paidDate", key: "paidDate", width: 120 },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+      render: (v, row) => scheduleStatusTag(row.statusKey, v),
+    },
+  ];
+
   const ledgerCols = [
     { title: "Date", dataIndex: "date", key: "date", width: 120 },
     { title: "Type", dataIndex: "type", key: "type", width: 120 },
@@ -95,6 +202,7 @@ function InvestorPayments() {
 
   const health = bundle?.receivableHealth;
   const ledgerMeta = bundle?.ledgerMeta;
+  const scheduleSummary = payoutSchedule?.summary;
 
   const ledgerTabYears = useMemo(() => {
     const current = dayjs().year();
@@ -144,6 +252,77 @@ function InvestorPayments() {
             </Card>
           ))}
         </div>
+
+        <Card
+          title="Payment schedule"
+          bordered={false}
+          className="investor-card investor-payments-schedule-card"
+          extra={
+            <Select
+              showSearch
+              allowClear
+              placeholder="Select investment"
+              optionFilterProp="label"
+              loading={investmentsLoading}
+              style={{ minWidth: 280 }}
+              value={selectedInvestmentId ?? undefined}
+              options={investmentSelectOptions}
+              onChange={handleInvestmentChange}
+              notFoundContent={investmentsLoading ? "Loading…" : "No financed investments"}
+            />
+          }
+        >
+          {scheduleError ? (
+            <Alert type="error" showIcon message={scheduleError} style={{ marginBottom: 12 }} />
+          ) : null}
+
+          {payoutSchedule ? (
+            <>
+              <Text type="secondary" className="investor-payments-schedule-meta">
+                {payoutSchedule.projectName}
+                {scheduleSummary
+                  ? ` · ${scheduleSummary.totalInstallments} installments · ${scheduleSummary.paidCount} paid · ${scheduleSummary.openCount} open`
+                  : ""}
+              </Text>
+              {scheduleSummary ? (
+                <div className="investor-payments-schedule-summary">
+                  <div>
+                    <span className="investor-mini-label">Total due</span>
+                    <span className="investor-mini-value">{scheduleSummary.totalDue}</span>
+                  </div>
+                  <div>
+                    <span className="investor-mini-label">Total paid</span>
+                    <span className="investor-mini-value investor-pay-pos">{scheduleSummary.totalPaid}</span>
+                  </div>
+                  <div>
+                    <span className="investor-mini-label">Remaining</span>
+                    <span className="investor-mini-value">{scheduleSummary.totalRemaining}</span>
+                  </div>
+                </div>
+              ) : null}
+            </>
+          ) : !scheduleLoading && !investmentsLoading ? (
+            <Text type="secondary">Select a financed investment to view its payout schedule.</Text>
+          ) : null}
+
+          <Spin spinning={scheduleLoading}>
+            <div className="table-responsive-wrapper investor-table-wrap">
+              <Table
+                className="investor-table"
+                columns={payoutScheduleCols}
+                dataSource={payoutSchedule?.installments || []}
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: false,
+                  hideOnSinglePage: true,
+                }}
+                size="small"
+                rowKey="key"
+                locale={{ emptyText: "No installments for this investment" }}
+              />
+            </div>
+          </Spin>
+        </Card>
 
         <div className="investor-payments-split">
           <Card
