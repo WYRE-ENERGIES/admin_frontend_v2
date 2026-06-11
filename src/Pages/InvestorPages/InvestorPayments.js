@@ -144,19 +144,22 @@ function InvestorPayments() {
   }, [bundle?.kpis]);
 
   const scheduleCols = [
-    { title: "Due", dataIndex: "due", key: "due", width: 100 },
-    { title: "Branch", dataIndex: "branch", key: "branch", width: 120 },
-    { title: "Total due", dataIndex: "totalDue", key: "totalDue" },
+    { title: "Due", dataIndex: "due", key: "due", width: 96 },
+    { title: "Branch", dataIndex: "branch", key: "branch", ellipsis: true },
+    { title: "Total due", dataIndex: "totalDue", key: "totalDue", width: 104, align: "right" },
     {
       title: "Your credit",
       dataIndex: "yourCredit",
       key: "yourCredit",
-      render: (v) => <span className="investor-pay-pos">{v}</span>,
+      width: 104,
+      align: "right",
+      render: (v) => <span className="investor-pay-pos investor-table-nowrap">{v}</span>,
     },
     {
-      title: "Status (last posted)",
+      title: "Status",
       dataIndex: "status",
       key: "status",
+      width: 108,
       render: (v, row) => scheduleStatusTag(row.statusKey, v),
     },
   ];
@@ -187,17 +190,19 @@ function InvestorPayments() {
   ];
 
   const ledgerCols = [
-    { title: "Date", dataIndex: "date", key: "date", width: 120 },
-    { title: "Type", dataIndex: "type", key: "type", width: 120 },
-    { title: "Branch / ref", dataIndex: "ref", key: "ref" },
-    { title: "Amount (customer)", dataIndex: "customer", key: "customer" },
+    { title: "Date", dataIndex: "date", key: "date", width: 104 },
+    { title: "Type", dataIndex: "type", key: "type", width: 96 },
+    { title: "Ref", dataIndex: "ref", key: "ref", ellipsis: true },
+    { title: "Customer", dataIndex: "customer", key: "customer", width: 104, align: "right" },
     {
-      title: "Your allocation",
+      title: "Allocation",
       dataIndex: "allocation",
       key: "allocation",
-      render: (v) => <span className="investor-pay-pos">{v}</span>,
+      width: 104,
+      align: "right",
+      render: (v) => <span className="investor-pay-pos investor-table-nowrap">{v}</span>,
     },
-    { title: "Balance effect", dataIndex: "effect", key: "effect" },
+    { title: "Effect", dataIndex: "effect", key: "effect", width: 96, align: "right" },
   ];
 
   const health = bundle?.receivableHealth;
@@ -318,6 +323,7 @@ function InvestorPayments() {
                 }}
                 size="small"
                 rowKey="key"
+                tableLayout="fixed"
                 locale={{ emptyText: "No installments for this investment" }}
               />
             </div>
@@ -338,6 +344,7 @@ function InvestorPayments() {
                 pagination={false}
                 size="small"
                 rowKey="key"
+                tableLayout="fixed"
                 locale={{ emptyText: "No upcoming installments" }}
               />
             </div>
@@ -425,6 +432,7 @@ function InvestorPayments() {
               }}
               size="small"
               rowKey="key"
+              tableLayout="fixed"
               locale={{ emptyText: `No ledger entries for ${ledgerYear}` }}
             />
           </div>

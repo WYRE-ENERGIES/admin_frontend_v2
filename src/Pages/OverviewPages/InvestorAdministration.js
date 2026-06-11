@@ -210,7 +210,6 @@ const CUSTOMER_PAYMENT_METHOD_OPTIONS = [
 
 const ngn = (n) => `₦${Number(n).toLocaleString("en-NG")}`;
 /** Overview tab: show this many rows per highlight table (full lists live on Payments / Projects / Investors). */
-const OVERVIEW_HIGHLIGHT_LIMIT = 5;
 const ngnCompact = (n) => {
   const num = Number(n);
   if (Number.isNaN(num)) return "—";
@@ -218,6 +217,67 @@ const ngnCompact = (n) => {
   if (num >= 1e6) return `₦${(num / 1e6).toFixed(1)}M`;
   if (num >= 1e3) return `₦${(num / 1e3).toFixed(0)}k`;
   return ngn(num);
+};
+
+/** API returns kWh; display as MWh in project performance tables. */
+const formatMwhFromKwh = (kwh) => {
+  const n = Number(kwh);
+  if (!Number.isFinite(n)) return "—";
+  const mwh = n / 1000;
+  if (mwh === 0) return "0";
+  if (mwh >= 100) return mwh.toLocaleString("en-NG", { maximumFractionDigits: 1 });
+  if (mwh >= 10) return mwh.toFixed(1);
+  if (mwh >= 1) return mwh.toFixed(2);
+  return mwh.toFixed(3);
+};
+
+const formatKwpDisplay = (kwp) => {
+  const n = Number(kwp);
+  if (!Number.isFinite(n)) return "—";
+  return n.toLocaleString("en-NG", { maximumFractionDigits: 2 });
+};
+
+/** Investment reference for payment tables — always prefixed with #. */
+const formatInvestmentRef = (value) => {
+  if (value == null || value === "" || value === "—") return "—";
+  const bare = String(value).replace(/^#/, "").trim();
+  if (!bare) return "—";
+  return `#${bare}`;
+};
+
+const renderInvestmentRefCell = (value) => (
+  <span className="admin-table-nowrap">{formatInvestmentRef(value)}</span>
+);
+
+/** Default list pagination for investor admin tables. */
+const ADMIN_TABLE_PAGINATION = {
+  pageSize: 10,
+  showSizeChanger: false,
+};
+
+/** Shared Ant Design table props: full-width layout, no horizontal scrollbar. */
+const ADMIN_DATA_TABLE_PROPS = {
+  className: "admin-investor-data-table",
+  tableLayout: "fixed",
+  size: "small",
+  pagination: ADMIN_TABLE_PAGINATION,
+};
+
+/** Percentage width column — keeps table-layout:fixed columns summing to 100%. */
+const adminColPct = (pct, col) => ({ ...col, width: `${pct}%` });
+
+/** Action column: enough room for buttons; cells must not clip overflow. */
+const adminActionCol = (pct, col) => ({
+  ...col,
+  width: `${pct}%`,
+  onHeaderCell: () => ({ className: "admin-table-col-action" }),
+  onCell: () => ({ className: "admin-table-col-action" }),
+});
+
+/** Text column that grows within a capped share (use on at most one column per table). */
+const adminTableFlexCol = {
+  onHeaderCell: () => ({ className: "admin-table-col-flex" }),
+  onCell: () => ({ className: "admin-table-col-flex" }),
 };
 
 /** UI state label aligned with investor-admin project mock (Open / Financed / …). */
@@ -238,22 +298,50 @@ const projectProgrammeStateTagColor = (label) => {
   return "default";
 };
 
-function MetricCard({ icon, label, value, sub, variant = "default" }) {
+function MetricCard({ icon, label, value, sub, subLines, variant = "default" }) {
   return (
     <Card
       bordered={false}
       className={`admin-investor-metric admin-investor-metric--${variant}`}
     >
-      <div className="admin-investor-metric-top">
+      <div className="admin-investor-metric-value">{value}</div>
+      <div className="admin-investor-metric-mid">
         <div className="admin-investor-metric-icon">{icon}</div>
-        <div className="admin-investor-metric-meta">
-          <div className="admin-investor-metric-label">{label}</div>
-          <div className="admin-investor-metric-value">{value}</div>
-        </div>
+        <div className="admin-investor-metric-label">{label}</div>
       </div>
-      {sub ? <div className="admin-investor-metric-sub">{sub}</div> : null}
+      {subLines?.length ? (
+        <div className="admin-investor-metric-sub admin-investor-metric-sub--stacked">
+          {subLines.map((line, idx) => (
+            <div key={idx} className="admin-investor-metric-sub-line">
+              {line}
+            </div>
+          ))}
+        </div>
+      ) : sub ? (
+        <div className="admin-investor-metric-sub">{sub}</div>
+      ) : null}
     </Card>
   );
+}
+
+function nearestPaymentsCardLabel(np) {
+  const candidates = [
+    np?.to_investor?.due_date,
+    np?.from_customer?.due_date,
+    np?.headline_relative_label,
+  ].filter(Boolean);
+
+  let due = null;
+  for (const raw of candidates) {
+    const parsed = dayjs(raw, ["YYYY-MM-DD", "DD MMM YYYY"], true);
+    if (parsed.isValid()) {
+      due = parsed.startOf("day");
+      break;
+    }
+  }
+
+  if (!due) return "Nearest";
+  return due.isBefore(dayjs().startOf("day")) ? "Overdue" : "Nearest";
 }
 
 function InvestorAdministration() {
@@ -1691,14 +1779,21 @@ function InvestorAdministration() {
       np?.headline_relative_label || np?.to_investor?.relative_label || dash();
     const toInv = np?.to_investor;
     const fromCust = np?.from_customer;
-    const nearestSub =
-      toInv?.amount != null && fromCust?.amount != null
-        ? `To investor: ${ngnCompact(Number(toInv.amount))}${
-            toInv.relative_label ? ` (${toInv.relative_label})` : ""
-          } · From customer: ${ngnCompact(Number(fromCust.amount))}${
-            fromCust.relative_label ? ` (${fromCust.relative_label})` : ""
-          }`
-        : undefined;
+    const nearestSubLines = [];
+    if (toInv?.amount != null && toInv.amount !== "") {
+      nearestSubLines.push(
+        `To investor: ${ngnCompact(Number(toInv.amount))}${
+          toInv.relative_label ? ` (${toInv.relative_label})` : ""
+        }`
+      );
+    }
+    if (fromCust?.amount != null && fromCust.amount !== "") {
+      nearestSubLines.push(
+        `From customer: ${ngnCompact(Number(fromCust.amount))}${
+          fromCust.relative_label ? ` (${fromCust.relative_label})` : ""
+        }`
+      );
+    }
 
     return [
       {
@@ -1736,9 +1831,9 @@ function InvestorAdministration() {
       {
         key: "e",
         icon: <ThunderboltOutlined />,
-        label: "Nearest payments",
+        label: nearestPaymentsCardLabel(np),
         value: nearestHeadline,
-        sub: nearestSub,
+        subLines: nearestSubLines.length ? nearestSubLines : undefined,
         variant: "amber",
       },
     ];
@@ -1753,37 +1848,41 @@ function InvestorAdministration() {
 
   const customerRepaymentColumns = useMemo(
     () => [
-      { title: "Branch", dataIndex: "branch", key: "branch", width: 90 },
       {
-        title: "Event",
-        key: "event",
+        title: "Project",
+        dataIndex: "project",
+        key: "project",
+        ellipsis: true,
+        ...adminTableFlexCol,
+      },
+      {
+        title: "status",
+        key: "status",
+        width: 88,
         render: (_, row) => (
-          <div className="admin-investor-event">
-            <Tag
-              color={
-                row.status === "Paid"
-                  ? "green"
-                  : row.status === "Missed"
-                    ? "red"
-                    : row.status === "Pending"
-                      ? "gold"
-                      : "default"
-              }
-              className="admin-investor-pill"
-            >
-              {row.status}
-            </Tag>
-            <span className="admin-investor-event-text">{row.event}</span>
-          </div>
+          <Tag
+            color={
+              row.status === "Paid"
+                ? "green"
+                : row.status === "Missed"
+                  ? "red"
+                  : row.status === "Pending"
+                    ? "gold"
+                    : "default"
+            }
+            className="admin-investor-pill"
+          >
+            {row.status}
+          </Tag>
         ),
       },
-      { title: "Amount", dataIndex: "amount", key: "amount", width: 140 },
-      { title: "When", dataIndex: "when", key: "when", width: 120 },
+      { title: "Amount", dataIndex: "amount", key: "amount", width: 96, align: "right" },
+      { title: "date", dataIndex: "when", key: "date", width: 96 },
       {
-        title: "Next payment date",
+        title: "Payment scores",
         key: "next",
         dataIndex: "next",
-        width: 140,
+        width: 108,
         render: (v) =>
           v === "Past due" ? (
             <Tag color="red" className="admin-investor-pill">
@@ -1799,15 +1898,14 @@ function InvestorAdministration() {
 
   const overviewCustomerRepaymentRows = useMemo(() => {
     const results = adminCustomerPaymentsList?.results || [];
-    return results.slice(0, OVERVIEW_HIGHLIGHT_LIMIT).map((r) => {
+    return results.map((r) => {
       const st = String(r.line_status || "").toLowerCase();
       const status =
         st === "paid" ? "Paid" : st.includes("partial") ? "Partial" : st.includes("miss") ? "Missed" : "Pending";
       return {
         key: String(r.id),
-        branch: r.branch_id != null && r.branch_id !== "" ? String(r.branch_id) : "—",
+        project: r.project_name || "—",
         status,
-        event: r.project_name || "Customer payment",
         amount: ngnCompact(Number(r.amount_received)),
         when: r.payment_date ? dayjs(r.payment_date).format("DD MMM YYYY") : "—",
         next: r.payment_score?.label ?? "—",
@@ -1817,15 +1915,14 @@ function InvestorAdministration() {
 
   const disbursementColumns = useMemo(
     () => [
-      { title: "Due", dataIndex: "due", key: "due", width: 110 },
-      { title: "Investor", dataIndex: "investor", key: "investor" },
-      { title: "Investment", dataIndex: "investment", key: "investment", width: 110 },
-      { title: "Due amount", dataIndex: "amount", key: "amount", width: 120 },
+      { title: "Due", dataIndex: "due", key: "due", width: 96 },
+      { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true, ...adminTableFlexCol },
+      { title: "Due amount", dataIndex: "amount", key: "amount", width: 96, align: "right" },
       {
         title: "Status",
         dataIndex: "status",
         key: "status",
-        width: 120,
+        width: 96,
         render: (v) => {
           const s = String(v || "").toLowerCase();
           const color = s.includes("miss") ? "red" : s.includes("pending") ? "gold" : s.includes("sched") ? "green" : "default";
@@ -1843,11 +1940,11 @@ function InvestorAdministration() {
   const overviewDisbursementRows = useMemo(() => {
     const results = investorSchedulesList?.results || [];
     const sorted = [...results].sort((a, b) => dayjs(a.due_date).valueOf() - dayjs(b.due_date).valueOf());
-    return sorted.slice(0, OVERVIEW_HIGHLIGHT_LIMIT).map((r) => ({
+    return sorted.map((r) => ({
       key: String(r.id),
       due: r.due_date ? dayjs(r.due_date).format("DD MMM YYYY") : "—",
       investor: r.investor_name || "—",
-      investment: `#${r.investment_id}`,
+      investment: formatInvestmentRef(r.investment_id),
       amount: ngnCompact(Number(r.amount_due_investor_share ?? r.amount_due_total)),
       status: r.status ? String(r.status).replace(/^\w/, (c) => c.toUpperCase()) : "—",
     }));
@@ -1855,16 +1952,42 @@ function InvestorAdministration() {
 
   const perfColumns = useMemo(
     () => [
-      { title: "Project", dataIndex: "project", key: "project" },
-      { title: "Capacity (kWp)", dataIndex: "capacityKwp", key: "capacityKwp", width: 120 },
-      { title: "Total generation (kWh)", dataIndex: "totalGenKwh", key: "totalGenKwh", width: 160 },
-      { title: "Avg daily generation (kWh)", dataIndex: "avgDailyKwh", key: "avgDailyKwh", width: 180 },
-      { title: "Solar % of branch energy", dataIndex: "solarPct", key: "solarPct", width: 170 },
+      {
+        title: "Project",
+        dataIndex: "project",
+        key: "project",
+        ellipsis: true,
+        onHeaderCell: () => ({ className: "admin-perf-col-project" }),
+        onCell: () => ({ className: "admin-perf-col-project" }),
+      },
+      {
+        title: "kWp",
+        dataIndex: "capacityKwp",
+        key: "capacityKwp",
+        width: 88,
+        align: "right",
+        render: (v) => <span className="admin-table-nowrap">{formatKwpDisplay(v)}</span>,
+      },
+      {
+        title: "Total gen (MWh)",
+        dataIndex: "totalGenMwh",
+        key: "totalGenMwh",
+        width: 116,
+        align: "right",
+      },
+      {
+        title: "Avg daily (MWh)",
+        dataIndex: "avgDailyMwh",
+        key: "avgDailyMwh",
+        width: 120,
+        align: "right",
+      },
+      { title: "Solar %", dataIndex: "solarPct", key: "solarPct", width: 80, align: "right" },
       {
         title: "Status",
         dataIndex: "status",
         key: "status",
-        width: 100,
+        width: 96,
         render: (v) => (
           <Tag
             color={String(v).toLowerCase() === "active" ? "green" : String(v).toLowerCase().includes("watch") ? "gold" : "default"}
@@ -1884,19 +2007,19 @@ function InvestorAdministration() {
         key: String(r.project_id),
         project: r.project_name,
         capacityKwp: r.system_capacity_kwp,
-        totalGenKwh: Number(r.total_generation_kwh ?? 0).toLocaleString("en-NG"),
-        avgDailyKwh: Number(r.average_daily_generation_kwh ?? 0).toLocaleString("en-NG"),
+        totalGenMwh: formatMwhFromKwh(r.total_generation_kwh),
+        avgDailyMwh: formatMwhFromKwh(r.average_daily_generation_kwh),
         solarPct: r.solar_percent_of_branch_energy != null ? `${Number(r.solar_percent_of_branch_energy).toFixed(2)}%` : "—",
         status: r.status,
       })),
     [projectsPerformance]
   );
 
-  const overviewPerfRows = useMemo(() => perfRows.slice(0, OVERVIEW_HIGHLIGHT_LIMIT), [perfRows]);
+  const overviewPerfRows = useMemo(() => perfRows, [perfRows]);
 
   const overviewFinanceByInvestorRows = useMemo(
     () =>
-      (financeByInvestorList?.results || []).slice(0, OVERVIEW_HIGHLIGHT_LIMIT).map((r) => ({
+      (financeByInvestorList?.results || []).map((r) => ({
         key: String(r.id),
         investor: r.legal_name,
         ref: r.investor_ref,
@@ -1927,9 +2050,7 @@ function InvestorAdministration() {
         key: String(r.id),
         id: r.id,
         name: r.legal_name,
-        user: r.user_email || r.user_username || "—",
         ref: r.investor_ref,
-        kyc: r.kyc_status,
         kycTier: r.kyc_tier,
         count: r.investments_count ?? "—",
         status: r.account_active ? "Active" : "Inactive",
@@ -1941,29 +2062,24 @@ function InvestorAdministration() {
 
   const investorsColumns = useMemo(
     () => [
-      { title: "Legal name", dataIndex: "name", key: "name" },
-      { title: "User", dataIndex: "user", key: "user", width: 220 },
-      { title: "Ref", dataIndex: "ref", key: "ref", width: 120 },
+      { title: "Legal name", dataIndex: "name", key: "name", ellipsis: true, ...adminTableFlexCol },
+      { title: "Ref", dataIndex: "ref", key: "ref", width: 88 },
       {
         title: "KYC",
         key: "kyc",
-        width: 140,
-        render: (_, row) => (
-          <Space size={4} wrap>
-            <Tag color={kycStatusTagColor(row.kyc)} className="admin-investor-pill">
-              {row.kyc || "—"}
-            </Tag>
-            {row.kycTier ? (
-              <Tag className="admin-investor-pill">{row.kycTier}</Tag>
-            ) : null}
-          </Space>
-        ),
+        width: 80,
+        render: (_, row) =>
+          row.kycTier ? (
+            <Tag className="admin-investor-pill">{row.kycTier}</Tag>
+          ) : (
+            "—"
+          ),
       },
-      { title: "# Investments", dataIndex: "count", key: "count", width: 120 },
+      { title: "No. invest.", dataIndex: "count", key: "count", width: 72 },
       {
         title: "Status",
         key: "status",
-        width: 120,
+        width: 88,
         render: (_, row) => {
           const active = row.status === "Active" && row.userActive;
           return (
@@ -1973,11 +2089,11 @@ function InvestorAdministration() {
           );
         },
       },
-      { title: "Last activity", dataIndex: "last", key: "last", width: 140 },
+      { title: "Last activity", dataIndex: "last", key: "last", width: 104 },
       {
         title: "Actions",
         key: "actions",
-        width: 120,
+        width: 88,
         render: (_, record) => (
           <Dropdown
             menu={{
@@ -2034,12 +2150,10 @@ function InvestorAdministration() {
           key: String(r.id),
           id: r.id,
           project: r.name,
-          branch: r.branch_id != null ? String(r.branch_id) : "—",
           typeLabel,
           capacityKwp: r.system_capacity_kwp,
           totalCost: r.total_project_cost,
           clientContr: r.client_contribution,
-          investorTarget: r.investor_funding_target,
           stateUi,
           investorName: r.investor_summary || r.primary_investor || (Array.isArray(r.investors) ? r.investors.join(", ") : "—") || "—",
         };
@@ -2049,54 +2163,69 @@ function InvestorAdministration() {
 
   const projectsProgrammeColumns = useMemo(
     () => [
-      { title: "Project", dataIndex: "project", key: "project", ellipsis: true },
-      { title: "Branch", dataIndex: "branch", key: "branch", width: 90 },
+      {
+        title: "Project",
+        dataIndex: "project",
+        key: "project",
+        ellipsis: true,
+        onHeaderCell: () => ({ className: "admin-projects-col-project" }),
+        onCell: () => ({ className: "admin-projects-col-project" }),
+      },
       {
         title: "Type",
         dataIndex: "typeLabel",
         key: "typeLabel",
-        width: 100,
+        width: 72,
         render: (v) => <Tag className="admin-investor-pill">{v}</Tag>,
+        onHeaderCell: () => ({ className: "admin-projects-col-type" }),
+        onCell: () => ({ className: "admin-projects-col-type" }),
       },
-      { title: "Capacity (kWp)", dataIndex: "capacityKwp", key: "capacityKwp", width: 120 },
+      {
+        title: "kWp",
+        dataIndex: "capacityKwp",
+        key: "capacityKwp",
+        width: 88,
+        align: "right",
+        render: (v) => <span className="admin-table-nowrap">{formatKwpDisplay(v)}</span>,
+      },
       {
         title: "Total cost",
         dataIndex: "totalCost",
         key: "totalCost",
-        width: 120,
-        render: (v) => ngnCompact(Number(v)),
+        width: 96,
+        align: "right",
+        render: (v) => <span className="admin-table-nowrap">{ngnCompact(Number(v))}</span>,
       },
       {
         title: "Client contr.",
         dataIndex: "clientContr",
         key: "clientContr",
-        width: 120,
-        render: (v) => ngnCompact(Number(v)),
-      },
-      {
-        title: "Investor target",
-        dataIndex: "investorTarget",
-        key: "investorTarget",
-        width: 130,
-        render: (v) => ngnCompact(Number(v)),
+        width: 104,
+        align: "right",
+        render: (v) => <span className="admin-table-nowrap">{ngnCompact(Number(v))}</span>,
       },
       {
         title: "State",
         dataIndex: "stateUi",
         key: "stateUi",
-        width: 110,
+        width: 92,
         render: (v) => (
           <Tag color={projectProgrammeStateTagColor(v)} className="admin-investor-pill">
             {v}
           </Tag>
         ),
       },
-      { title: "Investor", dataIndex: "investorName", key: "investorName", width: 160, ellipsis: true },
+      {
+        title: "Investor",
+        dataIndex: "investorName",
+        key: "investorName",
+        ellipsis: true,
+        ...adminTableFlexCol,
+      },
       {
         title: "Actions",
         key: "actions",
-        width: 120,
-        fixed: "right",
+        width: 88,
         render: (_, record) => (
           <Dropdown
             menu={{
@@ -2154,16 +2283,14 @@ function InvestorAdministration() {
             </Space>
           </div>
           <Table
+            {...ADMIN_DATA_TABLE_PROPS}
             columns={projectsProgrammeColumns}
             dataSource={projectsTableRows}
             loading={projectsListLoading}
-            pagination={false}
-            size="small"
             rowKey="key"
-            scroll={{ x: 1500 }}
           />
           <Text type="secondary" className="admin-investor-footnote">
-            Capacity, costs, branch link, investor target, and financing status per project.
+            Capacity, costs, programme state, and investor assignment per project.
           </Text>
         </Card>
 
@@ -2173,18 +2300,16 @@ function InvestorAdministration() {
             <Space size={8}>
               <Segmented size="small" options={["Top", "Bottom"]} value={perfMode} onChange={setPerfMode} />
               <Button size="small" className="admin-investor-filter-btn">
-                Total generation (kWh) ▾
+                Total generation (MWh) ▾
               </Button>
             </Space>
           </div>
           <Table
+            {...ADMIN_DATA_TABLE_PROPS}
             columns={perfColumns}
             dataSource={perfRows}
             loading={projectsPerformanceLoading}
-            pagination={false}
-            size="small"
             rowKey="key"
-            scroll={{ x: 1300 }}
           />
           <Text type="secondary" className="admin-investor-footnote">
             Branch telemetry blend: total / average daily generation, solar share of branch load, and operational status.
@@ -2317,20 +2442,27 @@ function InvestorAdministration() {
 
   const investmentsListColumns = useMemo(
     () => [
-      { title: "ID", dataIndex: "id", key: "id", width: 90 },
-      { title: "Investor", dataIndex: "investorName", key: "investorName", ellipsis: true },
-      { title: "Project", dataIndex: "projectName", key: "projectName", ellipsis: true },
+      // (ID column removed as instructed)
+      {
+        title: "Investor",
+        dataIndex: "investorName",
+        key: "investorName",
+        ellipsis: true,
+        ...adminTableFlexCol,
+      },
+      { title: "Project", dataIndex: "projectName", key: "projectName", ellipsis: true, ...adminTableFlexCol },
       {
         title: "Capital",
         dataIndex: "capital",
         key: "capital",
-        width: 140,
-        render: (v) => ngnCompact(Number(v)),
+        width: 96,
+        align: "right",
+        render: (v) => <span className="admin-table-nowrap">{ngnCompact(Number(v))}</span>,
       },
       {
         title: "Score",
         key: "score",
-        width: 200,
+        width: 96,
         render: (_, row) => (
           <div className="admin-investor-score-cell">
             <div className="admin-investor-score-main">{row.scoreMain}</div>
@@ -2342,13 +2474,13 @@ function InvestorAdministration() {
         title: "Plan",
         dataIndex: "planLabel",
         key: "planLabel",
-        width: 110,
+        width: 80,
         render: (v) => <Tag className="admin-investor-pill">{v}</Tag>,
       },
       {
         title: "Actions",
         key: "actions",
-        width: 110,
+        width: 88,
         render: (_, record) => (
           <Dropdown
             menu={{
@@ -2403,7 +2535,7 @@ function InvestorAdministration() {
         branchId: r.branch_id,
         scheduleId: r.customer_schedule_id,
         amount: r.amount_received,
-        paymentDate: r.payment_date,
+        paymentDate: r.payment_date ? dayjs(r.payment_date).format("DD MMM YYYY") : "—",
         method: r.payment_method,
         reference: r.reference,
         notes: r.notes,
@@ -2417,43 +2549,32 @@ function InvestorAdministration() {
 
   const customerPaymentsListColumns = useMemo(
     () => [
-      { title: "ID", dataIndex: "id", width: 72 },
-      { title: "Project", dataIndex: "projectName", ellipsis: true, width: 220 },
-      {
-        title: "Branch",
-        dataIndex: "branchId",
-        width: 88,
-        render: (v) => (v != null && v !== "" ? String(v) : "—"),
-      },
-      { title: "Schedule", dataIndex: "scheduleId", width: 90 },
-      {
+      adminColPct(17, { title: "Project", dataIndex: "projectName", key: "projectName", ellipsis: true }),
+      adminColPct(10, {
         title: "Amount",
         dataIndex: "amount",
-        width: 120,
-        render: (v) => ngnCompact(Number(v)),
-      },
-      { title: "Date", dataIndex: "paymentDate", width: 110 },
-      { title: "Method", dataIndex: "method", width: 100 },
-      { title: "Reference", dataIndex: "reference", ellipsis: true, width: 130 },
-      {
+        key: "amount",
+        align: "right",
+        render: (v) => <span className="admin-table-nowrap">{ngnCompact(Number(v))}</span>,
+      }),
+      adminColPct(10, { title: "date", dataIndex: "paymentDate", key: "paymentDate" }),
+      adminColPct(10, { title: "Method", dataIndex: "method", key: "method", ellipsis: true }),
+      adminColPct(13, { title: "Reference", dataIndex: "reference", key: "reference", ellipsis: true }),
+      adminColPct(10, {
         title: "Progress",
         key: "progress",
-        width: 100,
+        ellipsis: true,
         render: (_, row) => (
-          <span>
+          <span className="admin-table-nowrap">
             {row.paymentScoreLabel}
-            {row.paymentScorePercent != null ? (
-              <Text type="secondary" style={{ fontSize: 11, marginLeft: 4 }}>
-                ({row.paymentScorePercent}%)
-              </Text>
-            ) : null}
+            {row.paymentScorePercent != null ? ` (${row.paymentScorePercent}%)` : ""}
           </span>
         ),
-      },
-      {
+      }),
+      adminColPct(8, {
         title: "Line",
         dataIndex: "lineStatus",
-        width: 100,
+        key: "lineStatus",
         render: (v) => (
           <Tag
             color={
@@ -2468,22 +2589,21 @@ function InvestorAdministration() {
             {v}
           </Tag>
         ),
-      },
-      {
-        title: "",
+      }),
+      adminColPct(10, {
+        title: "Schedule",
         key: "schedule",
-        width: 130,
+        onHeaderCell: () => ({ className: "admin-table-col-action" }),
+        onCell: () => ({ className: "admin-table-col-action" }),
         render: (_, record) => (
           <Button size="small" className="admin-investor-action-btn" onClick={() => openCustomerRepayment(record)}>
-            View schedule
+            View
           </Button>
         ),
-      },
-      {
+      }),
+      adminActionCol(12, {
         title: "Actions",
         key: "actions",
-        width: 120,
-        fixed: "right",
         render: (_, record) => (
           <Dropdown
             menu={{
@@ -2504,7 +2624,7 @@ function InvestorAdministration() {
             </Button>
           </Dropdown>
         ),
-      },
+      }),
     ],
     [handleDeactivateCustomerPayment, handleViewCustomerPayment, openCustomerRepayment]
   );
@@ -2529,7 +2649,7 @@ function InvestorAdministration() {
       id: r.id,
       when: r.paid_date ? dayjs(r.paid_date).format("DD MMM YYYY") : "—",
       investor: r.investor_name || "—",
-      investment: `#${r.investment_id}`,
+      investment: formatInvestmentRef(r.investment_id),
       amount: ngnCompact(Number(r.amount_paid)),
       status: "Paid",
       investmentId: r.investment_id,
@@ -2542,44 +2662,47 @@ function InvestorAdministration() {
 
   const investorRepaymentsReceivedColumns = useMemo(
     () => [
-      { title: "When", dataIndex: "when", key: "when", width: 120 },
-      { title: "Investor", dataIndex: "investor", key: "investor", width: 160, ellipsis: true },
-      { title: "Investment", dataIndex: "investment", key: "investment", width: 100 },
-      { title: "Amount", dataIndex: "amount", key: "amount", width: 120 },
-      {
+      adminColPct(10, { title: "date", dataIndex: "when", key: "date" }),
+      adminColPct(19, { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true }),
+      adminColPct(9, {
+        title: "Investment no.",
+        dataIndex: "investment",
+        key: "investment",
+        align: "center",
+        render: renderInvestmentRefCell,
+      }),
+      adminColPct(11, { title: "Amount", dataIndex: "amount", key: "amount", align: "right" }),
+      adminColPct(11, {
         title: "Progress",
         dataIndex: "repaymentScoreLabel",
         key: "repaymentScoreLabel",
-        width: 200,
         ellipsis: true,
         render: (v) => v || "—",
-      },
-      {
+      }),
+      adminColPct(9, {
         title: "Status",
         dataIndex: "status",
         key: "status",
-        width: 100,
         render: (v) => (
           <Tag color="green" className="admin-investor-pill">
             {v}
           </Tag>
         ),
-      },
-      {
-        title: "",
+      }),
+      adminColPct(10, {
+        title: "Schedule",
         key: "view",
-        width: 170,
+        onHeaderCell: () => ({ className: "admin-table-col-action" }),
+        onCell: () => ({ className: "admin-table-col-action" }),
         render: (_, record) => (
           <Button size="small" className="admin-investor-action-btn" onClick={() => openInvestorPayment(record)}>
-            View schedule
+            View
           </Button>
         ),
-      },
-      {
+      }),
+      adminActionCol(21, {
         title: "Actions",
         key: "actions",
-        width: 120,
-        fixed: "right",
         render: (_, record) => (
           <Dropdown
             menu={{
@@ -2600,9 +2723,113 @@ function InvestorAdministration() {
             </Button>
           </Dropdown>
         ),
-      },
+      }),
     ],
     [handleDeactivatePayout, handleViewPayout, openInvestorPayment]
+  );
+
+  const upcomingCustomerPaymentColumns = useMemo(
+    () => [
+      adminColPct(12, { title: "date", dataIndex: "when", key: "date" }),
+      adminColPct(22, { title: "Project", dataIndex: "branch", key: "branch", ellipsis: true }),
+      adminColPct(16, { title: "Line", dataIndex: "lineLabel", key: "lineLabel", ellipsis: true }),
+      adminColPct(12, { title: "Amount", dataIndex: "amount", key: "amount", align: "right" }),
+      adminColPct(11, {
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
+        render: (v) => (
+          <Tag
+            color={
+              String(v).toLowerCase().includes("overdue")
+                ? "red"
+                : String(v).toLowerCase() === "scheduled"
+                  ? "blue"
+                  : "green"
+            }
+            className="admin-investor-pill"
+          >
+            {v}
+          </Tag>
+        ),
+      }),
+      adminColPct(11, {
+        title: "Schedule",
+        key: "sched",
+        onHeaderCell: () => ({ className: "admin-table-col-action" }),
+        onCell: () => ({ className: "admin-table-col-action" }),
+        render: (_, record) => (
+          <Button size="small" className="admin-investor-action-btn" onClick={() => openCustomerRepayment(record)}>
+            View
+          </Button>
+        ),
+      }),
+      adminActionCol(16, {
+        title: "Action",
+        key: "action",
+        render: () => (
+          <Button size="small" type="primary" className="admin-investor-action-btn" onClick={() => setActiveModal(MODAL.RECORD_PAYMENT)}>
+            Record
+          </Button>
+        ),
+      }),
+    ],
+    [openCustomerRepayment]
+  );
+
+  const upcomingInvestorRepaymentColumns = useMemo(
+    () => [
+      adminColPct(12, { title: "date", dataIndex: "due", key: "due" }),
+      adminColPct(21, { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true }),
+      adminColPct(9, {
+        title: "Investment no.",
+        dataIndex: "investment",
+        key: "investment",
+        align: "center",
+        render: renderInvestmentRefCell,
+      }),
+      adminColPct(13, { title: "Due amount", dataIndex: "dueAmount", key: "dueAmount", align: "right" }),
+      adminColPct(11, {
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
+        render: (v) => (
+          <Tag
+            color={
+              String(v).toLowerCase().includes("missed")
+                ? "red"
+                : String(v).toLowerCase() === "scheduled"
+                  ? "blue"
+                  : "green"
+            }
+            className="admin-investor-pill"
+          >
+            {v}
+          </Tag>
+        ),
+      }),
+      adminColPct(11, {
+        title: "Schedule",
+        key: "viewsched",
+        onHeaderCell: () => ({ className: "admin-table-col-action" }),
+        onCell: () => ({ className: "admin-table-col-action" }),
+        render: (_, record) => (
+          <Button size="small" className="admin-investor-action-btn" onClick={() => openInvestorPayment(record)}>
+            View
+          </Button>
+        ),
+      }),
+      adminActionCol(23, {
+        title: "Action",
+        key: "action",
+        render: () => (
+          <Button size="small" type="primary" className="admin-investor-action-btn" onClick={() => setActiveModal(MODAL.POST_PAYOUT)}>
+            Post payout
+          </Button>
+        ),
+      }),
+    ],
+    [openInvestorPayment]
   );
 
   const upcomingCustomerPaymentRows = useMemo(() => {
@@ -2619,7 +2846,7 @@ function InvestorAdministration() {
         key: String(r.id),
         when: dayjs(r.due_date).format("DD MMM YYYY"),
         branch: r.project_name || "—",
-        event: r.label || `Installment ${r.installment_number}`,
+        lineLabel: r.label || `Installment ${r.installment_number}`,
         amount: ngnCompact(Number(r.amount_remaining ?? r.amount_due)),
         status: r.status,
         scheduleId: r.id,
@@ -2645,7 +2872,7 @@ function InvestorAdministration() {
         key: String(r.id),
         due: dayjs(r.due_date).format("DD MMM YYYY"),
         investor: r.investor_name || "—",
-        investment: `#${r.investment_id}`,
+        investment: formatInvestmentRef(r.investment_id),
         dueAmount: ngnCompact(Number(r.amount_due_investor_share ?? r.amount_due_total)),
         status: r.status,
         investmentId: r.investment_id,
@@ -2725,13 +2952,11 @@ function InvestorAdministration() {
             </Space>
           </div>
           <Table
+            {...ADMIN_DATA_TABLE_PROPS}
             columns={customerPaymentsListColumns}
             dataSource={customerPaymentsListRows}
             loading={customerPaymentsListLoading}
-            pagination={false}
-            size="small"
             rowKey="key"
-            scroll={{ x: 1480 }}
           />
         </Card>
 
@@ -2752,13 +2977,11 @@ function InvestorAdministration() {
             </Space>
           </div>
           <Table
+            {...ADMIN_DATA_TABLE_PROPS}
             columns={investorRepaymentsReceivedColumns}
             dataSource={investorRepaymentsReceivedRows}
             loading={payoutsListLoading}
-            pagination={false}
-            size="small"
             rowKey="key"
-            scroll={{ x: 1400 }}
           />
         </Card>
 
@@ -2770,58 +2993,11 @@ function InvestorAdministration() {
             </Button>
           </div>
           <Table
-            columns={[
-              { title: "When", dataIndex: "when", key: "when", width: 120 },
-              { title: "Project", dataIndex: "branch", key: "branch", width: 220, ellipsis: true },
-              { title: "Line", dataIndex: "event", key: "event", ellipsis: true },
-              { title: "Amount", dataIndex: "amount", key: "amount", width: 120 },
-              {
-                title: "Status",
-                dataIndex: "status",
-                key: "status",
-                width: 130,
-                render: (v) => (
-                  <Tag
-                    color={
-                      String(v).toLowerCase().includes("overdue")
-                        ? "red"
-                        : String(v).toLowerCase() === "scheduled"
-                          ? "blue"
-                          : "green"
-                    }
-                    className="admin-investor-pill"
-                  >
-                    {v}
-                  </Tag>
-                ),
-              },
-              {
-                title: "",
-                key: "sched",
-                width: 130,
-                render: (_, record) => (
-                  <Button size="small" className="admin-investor-action-btn" onClick={() => openCustomerRepayment(record)}>
-                    View schedule
-                  </Button>
-                ),
-              },
-              {
-                title: "Action",
-                key: "action",
-                width: 150,
-                render: () => (
-                  <Button size="small" type="primary" className="admin-investor-action-btn" onClick={() => setActiveModal(MODAL.RECORD_PAYMENT)}>
-                    Record payment
-                  </Button>
-                ),
-              },
-            ]}
+            {...ADMIN_DATA_TABLE_PROPS}
+            columns={upcomingCustomerPaymentColumns}
             dataSource={upcomingCustomerPaymentRows}
             loading={customerSchedulesLoading}
-            pagination={false}
-            size="small"
             rowKey="key"
-            scroll={{ x: 1100 }}
           />
         </Card>
 
@@ -2833,58 +3009,11 @@ function InvestorAdministration() {
             </Button>
           </div>
           <Table
-            columns={[
-              { title: "Due", dataIndex: "due", key: "due", width: 120 },
-              { title: "Investor", dataIndex: "investor", key: "investor", width: 160, ellipsis: true },
-              { title: "Investment", dataIndex: "investment", key: "investment", width: 100 },
-              { title: "Due amount", dataIndex: "dueAmount", key: "dueAmount", width: 120 },
-              {
-                title: "Status",
-                dataIndex: "status",
-                key: "status",
-                width: 130,
-                render: (v) => (
-                  <Tag
-                    color={
-                      String(v).toLowerCase().includes("missed")
-                        ? "red"
-                        : String(v).toLowerCase() === "scheduled"
-                          ? "blue"
-                          : "green"
-                    }
-                    className="admin-investor-pill"
-                  >
-                    {v}
-                  </Tag>
-                ),
-              },
-              {
-                title: "",
-                key: "viewsched",
-                width: 130,
-                render: (_, record) => (
-                  <Button size="small" className="admin-investor-action-btn" onClick={() => openInvestorPayment(record)}>
-                    View schedule
-                  </Button>
-                ),
-              },
-              {
-                title: "Action",
-                key: "action",
-                width: 140,
-                render: () => (
-                  <Button size="small" type="primary" className="admin-investor-action-btn" onClick={() => setActiveModal(MODAL.POST_PAYOUT)}>
-                    Post payout
-                  </Button>
-                ),
-              },
-            ]}
+            {...ADMIN_DATA_TABLE_PROPS}
+            columns={upcomingInvestorRepaymentColumns}
             dataSource={upcomingInvestorRepaymentRows}
             loading={investorSchedulesLoading}
-            pagination={false}
-            size="small"
             rowKey="key"
-            scroll={{ x: 1100 }}
           />
         </Card>
       </div>
@@ -2897,6 +3026,8 @@ function InvestorAdministration() {
       customerPaymentsListLoading,
       openCustomerRepayment,
       openInvestorPayment,
+      upcomingCustomerPaymentColumns,
+      upcomingInvestorRepaymentColumns,
       investorRepaymentsReceivedColumns,
       investorRepaymentsReceivedRows,
       payoutsListLoading,
@@ -2960,15 +3091,13 @@ function InvestorAdministration() {
           </div>
 
           <Table
+            {...ADMIN_DATA_TABLE_PROPS}
             columns={[
-              { title: "ID", dataIndex: "id", key: "id", width: 72 },
-              { title: "Tag", dataIndex: "subjectTagDisplay", key: "subjectTagDisplay", width: 120 },
-              { title: "Subject", dataIndex: "subject", key: "subject", ellipsis: true },
-              {
+              adminColPct(28, { title: "Subject", dataIndex: "subject", key: "subject", ellipsis: true }),
+              adminColPct(22, {
                 title: "Investor",
                 dataIndex: "investor",
                 key: "investor",
-                width: 180,
                 ellipsis: true,
                 render: (_, r) => (
                   <div className="admin-investor-ticket-investor">
@@ -2976,12 +3105,11 @@ function InvestorAdministration() {
                     <div className="admin-investor-ticket-investor-ref">{r.ref}</div>
                   </div>
                 ),
-              },
-              {
+              }),
+              adminColPct(10, {
                 title: "Status",
                 dataIndex: "status",
                 key: "status",
-                width: 110,
                 render: (v) => {
                   const s = String(v || "").toLowerCase();
                   const color = s === "resolved" ? "green" : s === "closed" ? "default" : s === "pending" ? "gold" : "blue";
@@ -2991,25 +3119,24 @@ function InvestorAdministration() {
                     </Tag>
                   );
                 },
-              },
-              { title: "Priority", dataIndex: "priority", key: "priority", width: 100 },
-              { title: "Created", dataIndex: "created", key: "created", width: 150 },
-              { title: "Updated", dataIndex: "updated", key: "updated", width: 150 },
-              {
+              }),
+              adminColPct(8, { title: "Priority", dataIndex: "priority", key: "priority" }),
+              adminColPct(12, { title: "Created", dataIndex: "created", key: "created" }),
+              adminColPct(12, { title: "Updated", dataIndex: "updated", key: "updated" }),
+              adminActionCol(18, {
                 title: "Respond",
                 key: "respond",
-                width: 190,
                 render: (_, r) => {
                   const localNotes = ticketPostResponses[r.idStr]?.length ?? 0;
                   const has = r.responded || r.staffNoteCount > 0 || localNotes > 0;
                   return (
-                    <Space size={8}>
+                    <div className="admin-investor-ticket-respond-cell">
                       {has ? (
                         <Tag color="green" className="admin-investor-pill">
                           Responded
                         </Tag>
                       ) : (
-                        <Text type="secondary" style={{ fontSize: 12 }}>
+                        <Text type="secondary" className="admin-investor-ticket-respond-hint">
                           Not yet
                         </Text>
                       )}
@@ -3030,17 +3157,14 @@ function InvestorAdministration() {
                       >
                         {has ? "Add response" : "Respond"}
                       </Button>
-                    </Space>
+                    </div>
                   );
                 },
-              },
+              }),
             ]}
             dataSource={rows}
             loading={supportTicketsListLoading}
-            pagination={false}
-            size="small"
             rowKey="key"
-            scroll={{ x: 1320 }}
           />
 
         </Card>
@@ -3121,95 +3245,90 @@ function InvestorAdministration() {
                     }
                   >
                     <Table
+                      {...ADMIN_DATA_TABLE_PROPS}
                       columns={customerRepaymentColumns}
                       dataSource={overviewCustomerRepaymentRows}
                       loading={customerPaymentsListLoading}
-                      pagination={false}
-                      size="small"
                       rowKey="key"
                     />
                     <Text type="secondary" className="admin-investor-footnote">
-                      Latest {OVERVIEW_HIGHLIGHT_LIMIT} customer payments. See Payments for the full list.
+                      Recent customer payments. See Payments for search and recording.
                     </Text>
                   </Card>
 
-                  <div className="admin-investor-overview-row-split">
-                    <Card
-                      bordered={false}
-                      className="admin-investor-panel"
-                      title={
-                        <div className="admin-investor-panel-head">
-                          <span>Investors disbursement</span>
-                          <Button size="small" className="admin-investor-filter-btn">
-                            Upcoming ▾
-                          </Button>
-                        </div>
-                      }
-                    >
-                      <Table
-                        columns={disbursementColumns}
-                        dataSource={overviewDisbursementRows}
-                        loading={investorSchedulesLoading}
-                        pagination={false}
-                        size="small"
-                        rowKey="key"
-                      />
-                      <Text type="secondary" className="admin-investor-footnote">
-                        Next {OVERVIEW_HIGHLIGHT_LIMIT} disbursements by due date.
-                      </Text>
-                    </Card>
+                  <Card
+                    bordered={false}
+                    className="admin-investor-panel"
+                    title={
+                      <div className="admin-investor-panel-head">
+                        <span>Investors disbursement</span>
+                        <Button size="small" className="admin-investor-filter-btn">
+                          Upcoming ▾
+                        </Button>
+                      </div>
+                    }
+                  >
+                    <Table
+                      {...ADMIN_DATA_TABLE_PROPS}
+                      columns={disbursementColumns}
+                      dataSource={overviewDisbursementRows}
+                      loading={investorSchedulesLoading}
+                      rowKey="key"
+                    />
+                    <Text type="secondary" className="admin-investor-footnote">
+                      Upcoming disbursements by due date.
+                    </Text>
+                  </Card>
 
-                    <Card
-                      bordered={false}
-                      className="admin-investor-panel"
-                      title={
-                        <div className="admin-investor-panel-head">
-                          <span>Project performance</span>
-                          <Space size={8}>
-                            <Segmented
-                              size="small"
-                              options={["Top", "Bottom"]}
-                              value={perfMode}
-                              onChange={setPerfMode}
-                            />
-                            <Button size="small" className="admin-investor-filter-btn">
-                              Total generation (kWh) ▾
-                            </Button>
-                          </Space>
-                        </div>
-                      }
-                    >
-                      <Table
-                        columns={perfColumns}
-                        dataSource={overviewPerfRows}
-                        loading={projectsPerformanceLoading}
-                        pagination={false}
-                        size="small"
-                        rowKey="key"
-                        scroll={{ x: 1300 }}
-                      />
-                      <Text type="secondary" className="admin-investor-footnote">
-                        Up to {OVERVIEW_HIGHLIGHT_LIMIT} projects. Same Top/Bottom toggle as the Projects tab.
-                      </Text>
-                    </Card>
-                  </div>
+                  <Card
+                    bordered={false}
+                    className="admin-investor-panel"
+                    title={
+                      <div className="admin-investor-panel-head">
+                        <span>Project performance</span>
+                        <Space size={8}>
+                          <Segmented
+                            size="small"
+                            options={["Top", "Bottom"]}
+                            value={perfMode}
+                            onChange={setPerfMode}
+                          />
+                          <Button size="small" className="admin-investor-filter-btn">
+                            Total generation (MWh) ▾
+                          </Button>
+                        </Space>
+                      </div>
+                    }
+                  >
+                    <Table
+                      {...ADMIN_DATA_TABLE_PROPS}
+                      columns={perfColumns}
+                      dataSource={overviewPerfRows}
+                      loading={projectsPerformanceLoading}
+                      rowKey="key"
+                    />
+                    <Text type="secondary" className="admin-investor-footnote">
+                      Same Top/Bottom toggle as the Projects tab.
+                    </Text>
+                  </Card>
 
                   <Card bordered={false} className="admin-investor-panel admin-investor-wide">
                     <div className="admin-investor-panel-head admin-investor-panel-head--plain">
                       <span>Finance overview — by investor</span>
                     </div>
                     <Table
+                      {...ADMIN_DATA_TABLE_PROPS}
                       columns={[
-                        { title: "Investor", dataIndex: "investor", key: "investor" },
-                        { title: "Ref", dataIndex: "ref", key: "ref", width: 120 },
-                        { title: "Capital deployed", dataIndex: "capital", key: "capital", width: 140 },
-                        { title: "Interest (flat %)", dataIndex: "interest", key: "interest", width: 130 },
-                        { title: "Paid to investor YTD", dataIndex: "paid", key: "paid", width: 160 },
+                        { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true, ...adminTableFlexCol },
+                        { title: "Ref", dataIndex: "ref", key: "ref", width: 88 },
+                        { title: "Capital", dataIndex: "capital", key: "capital", width: 96, align: "right" },
+                        { title: "Interest %", dataIndex: "interest", key: "interest", width: 88, align: "right" },
+                        { title: "Paid YTD", dataIndex: "paid", key: "paid", width: 96, align: "right" },
                         {
                           title: "Health",
                           dataIndex: "health",
                           key: "health",
-                          width: 140,
+                          width: 96,
                           render: (v) => (
                             <Tag
                               color={
@@ -3228,12 +3347,10 @@ function InvestorAdministration() {
                       ]}
                       dataSource={overviewFinanceByInvestorRows}
                       loading={financeByInvestorLoading}
-                      pagination={false}
-                      size="small"
                       rowKey="key"
                     />
                     <Text type="secondary" className="admin-investor-footnote">
-                      First {OVERVIEW_HIGHLIGHT_LIMIT} investors by deployed capital.
+                      Investors ranked by deployed capital.
                     </Text>
                   </Card>
                 </div>
@@ -3261,11 +3378,10 @@ function InvestorAdministration() {
                       </Space>
                     </div>
                     <Table
+                      {...ADMIN_DATA_TABLE_PROPS}
                       columns={investorsColumns}
                       dataSource={investorsTableRows}
                       loading={listLoading}
-                      pagination={false}
-                      size="small"
                       rowKey="key"
                     />
                   </Card>
@@ -3278,17 +3394,18 @@ function InvestorAdministration() {
                       </Button>
                     </div>
                     <Table
+                      {...ADMIN_DATA_TABLE_PROPS}
                       columns={[
-                        { title: "Investor", dataIndex: "investor", key: "investor" },
-                        { title: "Ref", dataIndex: "ref", key: "ref", width: 140 },
-                        { title: "Capital deployed", dataIndex: "capital", key: "capital", width: 160 },
-                        { title: "Interest (flat)", dataIndex: "interest", key: "interest", width: 140 },
-                        { title: "Paid to investor YTD", dataIndex: "paid", key: "paid", width: 170 },
+                        { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true, ...adminTableFlexCol },
+                        { title: "Ref", dataIndex: "ref", key: "ref", width: 88 },
+                        { title: "Capital", dataIndex: "capital", key: "capital", width: 96, align: "right" },
+                        { title: "Interest %", dataIndex: "interest", key: "interest", width: 88, align: "right" },
+                        { title: "Paid YTD", dataIndex: "paid", key: "paid", width: 96, align: "right" },
                         {
                           title: "Health",
                           dataIndex: "health",
                           key: "health",
-                          width: 140,
+                          width: 96,
                           render: (v) => (
                             <Tag
                               color={
@@ -3315,8 +3432,6 @@ function InvestorAdministration() {
                         paid: ngnCompact(Number(r.paid_to_investor_ytd)),
                         health: r.health,
                       }))}
-                      pagination={false}
-                      size="small"
                       rowKey="key"
                     />
                     <Text type="secondary" className="admin-investor-footnote">
@@ -3341,13 +3456,11 @@ function InvestorAdministration() {
                       </Space>
                     </div>
                     <Table
+                      {...ADMIN_DATA_TABLE_PROPS}
                       columns={investmentsListColumns}
                       dataSource={investmentsListRows}
                       loading={investmentsListLoading}
-                      pagination={false}
-                      size="small"
                       rowKey="key"
-                      scroll={{ x: 1100 }}
                     />
                   </Card>
                 </div>
@@ -3483,7 +3596,7 @@ function InvestorAdministration() {
           </Space>
         </div>
         <Table
-          size="small"
+          {...ADMIN_DATA_TABLE_PROPS}
           rowKey="key"
           loading={customerSchedulesLoading && activePaymentMeta?.type === "customer"}
           pagination={{ pageSize: 10, showSizeChanger: false }}
@@ -3538,7 +3651,7 @@ function InvestorAdministration() {
           </Space>
         </div>
         <Table
-          size="small"
+          {...ADMIN_DATA_TABLE_PROPS}
           rowKey="key"
           loading={investorSchedulesLoading && activePaymentMeta?.type === "investor"}
           pagination={{ pageSize: 10, showSizeChanger: false }}
@@ -4013,15 +4126,14 @@ function InvestorAdministration() {
             <Divider className="admin-modal-divider" />
             <div className="admin-modal-section-title">Investments</div>
             <Table
-              size="small"
+              {...ADMIN_DATA_TABLE_PROPS}
               rowKey="id"
               pagination={false}
               dataSource={Array.isArray(projectDetail.investments) ? projectDetail.investments : []}
               columns={[
-                { title: "ID", dataIndex: "id", width: 70 },
-                { title: "Investor", dataIndex: "investor_name", ellipsis: true },
-                { title: "Capital", dataIndex: "capital_amount", render: (v) => ngnCompact(Number(v)) },
-                { title: "Share %", dataIndex: "share_percent", width: 90 },
+                { title: "Investor", dataIndex: "investor_name", ellipsis: true, ...adminTableFlexCol },
+                { title: "Capital", dataIndex: "capital_amount", width: 96, align: "right", render: (v) => ngnCompact(Number(v)) },
+                { title: "Share %", dataIndex: "share_percent", width: 80 },
                 { title: "Start", dataIndex: "contract_start_date", width: 110 },
                 { title: "End", dataIndex: "contract_end_date", width: 110, render: (v) => v || "—" },
                 {
@@ -4131,6 +4243,8 @@ function InvestorAdministration() {
               <Divider className="admin-modal-divider" />
               <div className="admin-modal-section-title">Customer payment schedules</div>
               <Table
+                className="admin-investor-data-table admin-investor-modal-schedule-table"
+                tableLayout="fixed"
                 size="small"
                 pagination={false}
                 scroll={{ x: 900 }}
@@ -4479,6 +4593,8 @@ function InvestorAdministration() {
               <Divider className="admin-modal-divider" />
               <div className="admin-modal-section-title">Investor payment schedules</div>
               <Table
+                className="admin-investor-data-table admin-investor-modal-schedule-table"
+                tableLayout="fixed"
                 size="small"
                 pagination={false}
                 scroll={{ x: 1020 }}

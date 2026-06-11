@@ -128,9 +128,9 @@ function PortfolioOverview() {
         ),
       },
       {
-        title: "Status (last posted)",
+        title: "Status",
         key: "status",
-        width: 170,
+        width: 148,
         render: (_, row) => (
           <HealthCell
             dot={row.healthDot}
@@ -140,10 +140,11 @@ function PortfolioOverview() {
         ),
       },
       {
-        title: "Capacity (kWp)",
+        title: "kWp",
         dataIndex: "capacityKwp",
         key: "capacityKwp",
-        width: 120,
+        width: 88,
+        render: (v) => <span className="investor-table-nowrap">{v}</span>,
       },
       {
         title: "Project cost",
@@ -167,9 +168,9 @@ function PortfolioOverview() {
         ),
       },
       {
-        title: "Energy yield (kWh)",
+        title: "Yield (kWh)",
         key: "energy",
-        width: 140,
+        width: 120,
         render: (_, row) => (
           <div className="investor-financed-energy-cell">
             <div className="investor-financed-energy-kwh">{row.energyKwhDisplay}</div>
@@ -186,9 +187,9 @@ function PortfolioOverview() {
         width: 110,
       },
       {
-        title: "Repayment score",
+        title: "Repayment",
         key: "repayment",
-        width: 200,
+        ellipsis: true,
         render: (_, row) => (
           <div className="investor-financed-repay-cell">
             <div className="investor-financed-repay-main">{row.repaymentMain}</div>
@@ -367,7 +368,7 @@ function PortfolioOverview() {
             size="middle"
             rowKey="key"
             loading={portfolioOverview.loading}
-            scroll={{ x: 1100 }}
+            tableLayout="fixed"
             locale={{ emptyText: "No financed projects in this period" }}
           />
         </div>

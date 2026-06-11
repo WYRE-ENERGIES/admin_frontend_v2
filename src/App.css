@@ -3225,10 +3225,20 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   gap: 8px;
 }
 
-.admin-investor-metric-top {
+.admin-investor-metric-value {
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #141414;
+  line-height: 1.15;
+}
+
+.admin-investor-metric-mid {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
 }
 
 .admin-investor-metric-icon {
@@ -3251,25 +3261,27 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: rgba(0, 0, 0, 0.55);
-}
-
-.admin-investor-metric-value {
-  margin-top: 8px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: #141414;
-  line-height: 1.15;
+  line-height: 1.3;
 }
 
 .admin-investor-metric-sub {
   margin-top: auto;
+  padding-top: 10px;
   font-family: "Montserrat", sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.52);
   line-height: 1.35;
+}
+
+.admin-investor-metric-sub--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-investor-metric-sub-line {
+  display: block;
 }
 
 .admin-investor-metric--purple {
@@ -3298,13 +3310,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: flex;
   flex-direction: column;
   gap: 14px;
-}
-
-.admin-investor-overview-row-split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px;
-  align-items: stretch;
 }
 
 .admin-investor-wide {
@@ -3339,6 +3344,68 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* Investor admin tables: full width, no horizontal scrollbar, compact headers */
+.admin-investor-data-table .ant-table-content,
+.admin-investor-data-table .ant-table-body {
+  overflow-x: hidden !important;
+}
+
+.admin-investor-data-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.admin-investor-data-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+  font-size: 11px;
+  padding: 8px 6px !important;
+}
+
+.admin-investor-data-table .ant-table-tbody > tr > td {
+  padding: 8px 6px !important;
+}
+
+.admin-table-nowrap {
+  white-space: nowrap;
+}
+
+.admin-investor-data-table .admin-table-col-flex {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 28%;
+}
+
+.admin-investor-data-table .admin-table-col-action {
+  overflow: visible !important;
+  white-space: nowrap;
+}
+
+.admin-investor-data-table .admin-table-col-action .admin-investor-action-btn {
+  white-space: nowrap;
+  max-width: none;
+}
+
+.admin-investor-data-table .admin-projects-col-project {
+  padding-right: 6px !important;
+  width: 22%;
+  max-width: 0;
+}
+
+.admin-investor-data-table .admin-projects-col-type {
+  padding-left: 6px !important;
+}
+
+.admin-investor-data-table .admin-perf-col-project {
+  max-width: 0;
+  width: 20%;
+}
+
+/* Edit modals: schedule grids may scroll horizontally inside the modal */
+.admin-investor-modal-schedule-table .ant-table-content,
+.admin-investor-modal-schedule-table .ant-table-body {
+  overflow-x: auto !important;
 }
 
 .admin-investor-panel-head--plain {
@@ -3430,6 +3497,18 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 12px;
   font-weight: 500;
   color: rgba(0, 0, 0, 0.45);
+}
+
+.admin-investor-ticket-respond-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.admin-investor-ticket-respond-hint {
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 .admin-investor-ticket-email-box {
@@ -3628,12 +3707,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   }
 }
 
-@media (max-width: 900px) {
-  .admin-investor-overview-row-split {
-    grid-template-columns: 1fr;
-  }
-}
-
 @media (max-width: 768px) {
   .admin-investor-page {
     padding: 14px 12px 18px;
@@ -3689,16 +3762,50 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-table-wrap {
   margin-bottom: 0;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
   max-width: 100%;
-  touch-action: pan-x pan-y;
 }
 
 .investor-table-wrap .ant-table,
 .investor-table-wrap .ant-table-container {
-  min-width: 640px;
+  min-width: 0;
+}
+
+.investor-financed-table .ant-table-content,
+.investor-financed-table .ant-table-body {
+  overflow-x: hidden !important;
+}
+
+.investor-financed-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.investor-financed-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+}
+
+.investor-table-nowrap {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .investor-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+
+  .investor-table-wrap .ant-table,
+  .investor-table-wrap .ant-table-container {
+    min-width: 640px;
+  }
+
+  .investor-financed-table .ant-table-content,
+  .investor-financed-table .ant-table-body {
+    overflow-x: auto !important;
+  }
 }
 
 .investor-table .ant-table {
@@ -3715,6 +3822,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: rgba(0, 0, 0, 0.45) !important;
   background: rgba(0, 0, 0, 0.02) !important;
   padding: 12px 16px !important;
+  white-space: nowrap;
 }
 
 .investor-table .ant-table-tbody > tr > td {
