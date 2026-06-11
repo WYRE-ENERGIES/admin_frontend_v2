@@ -142,8 +142,45 @@ const projectStatusTagColor = (status) => {
 const REPAYMENT_PLAN_TYPE_OPTIONS = [
   { value: "monthly", label: "Monthly" },
   { value: "quarterly", label: "Quarterly" },
-  { value: "bullet", label: "Bullet" },
+  { value: "yearly", label: "Yearly" },
+  { value: "in_full", label: "In full" },
 ];
+
+function isBeforeToday(current) {
+  return current && current < dayjs().startOf("day");
+}
+
+/** Picker panel mounts on body so it is not clipped behind modal masks. */
+function AdminDatePicker(props) {
+  const {
+    format = "DD/MM/YYYY",
+    placeholder = "dd/mm/yyyy",
+    popupClassName,
+    disablePast,
+    disabledDate: disabledDateProp,
+    defaultPickerValue,
+    ...rest
+  } = props;
+
+  const disabledDate = disablePast
+    ? (current) => {
+      if (disabledDateProp?.(current)) return true;
+      return isBeforeToday(current);
+    }
+    : disabledDateProp;
+
+  return (
+    <DatePicker
+      format={format}
+      placeholder={placeholder}
+      getPopupContainer={() => document.body}
+      popupClassName={["investor-admin-picker-dropdown", popupClassName].filter(Boolean).join(" ")}
+      disabledDate={disabledDate}
+      defaultPickerValue={defaultPickerValue ?? (disablePast ? dayjs() : undefined)}
+      {...rest}
+    />
+  );
+}
 
 const REPAYMENT_INTEREST_BASIS_OPTIONS = [
   { value: "total", label: "Total" },
@@ -1541,7 +1578,8 @@ function InvestorAdministration() {
   const submitCreateProject = async () => {
     try
     {
-      const values = await projectForm.validateFields([
+      // Validate required fields only; partial validateFields() omits other form values.
+      await projectForm.validateFields([
         "projectName",
         "totalProjectCost",
         "installationDate",
@@ -1550,6 +1588,7 @@ function InvestorAdministration() {
         "crFirstDueDate",
         "crInterestRatePa",
       ]);
+      const values = projectForm.getFieldsValue(true);
       const branchRaw =
         values.branchId != null && values.branchId !== "" ? String(values.branchId).trim() : "";
       let branch_id = null;
@@ -3922,7 +3961,7 @@ function InvestorAdministration() {
               label="Installation date"
               rules={[{ required: true, message: "Required" }]}
             >
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+              <AdminDatePicker disablePast style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
             </Form.Item>
             <Form.Item
               name="crProjectDurationMonths"
@@ -4021,7 +4060,7 @@ function InvestorAdministration() {
               <Select options={REPAYMENT_PLAN_TYPE_OPTIONS} />
             </Form.Item>
             <Form.Item name="crFirstDueDate" label="First due date" rules={[{ required: true, message: "Required" }]}>
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+              <AdminDatePicker disablePast style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
             </Form.Item>
 
             <Form.Item label="Principal amount (₦)">
@@ -4170,7 +4209,7 @@ function InvestorAdministration() {
               <InputNumber min={0} style={{ width: "100%" }} />
             </Form.Item>
             <Form.Item name="installationDate" label="Installation date" rules={[{ required: true, message: "Required" }]}>
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+              <AdminDatePicker disablePast style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
             </Form.Item>
             <Form.Item name="projectDurationMonths" label="Project duration (months)" rules={[{ required: true, message: "Required" }]}>
               <InputNumber min={1} step={1} style={{ width: "100%" }} />
@@ -4192,7 +4231,7 @@ function InvestorAdministration() {
                   <Select options={REPAYMENT_PLAN_TYPE_OPTIONS} />
                 </Form.Item>
                 <Form.Item name="crFirstDueDate" label="First due date" rules={[{ required: true, message: "Required" }]}>
-                  <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+                  <AdminDatePicker disablePast style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
                 </Form.Item>
                 <Form.Item name="crPrincipalAmount" label="Principal amount (₦)" rules={[{ required: true, message: "Required" }]}>
                   <InputNumber min={0} style={{ width: "100%" }} />
@@ -4223,7 +4262,8 @@ function InvestorAdministration() {
                     dataIndex: "due_date",
                     width: 150,
                     render: (v, row, index) => (
-                      <DatePicker
+                      <AdminDatePicker
+                        disablePast
                         style={{ width: "100%" }}
                         format="DD/MM/YYYY"
                         value={v ? dayjs(v) : null}
@@ -4280,7 +4320,7 @@ function InvestorAdministration() {
                     dataIndex: "paid_date",
                     width: 150,
                     render: (v, row, index) => (
-                      <DatePicker
+                      <AdminDatePicker
                         style={{ width: "100%" }}
                         format="DD/MM/YYYY"
                         allowClear
@@ -4384,7 +4424,7 @@ function InvestorAdministration() {
             </Form.Item>
 
             <Form.Item name="contractStart" label="Contract start date" rules={[{ required: true, message: "Required" }]}>
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+              <AdminDatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
             </Form.Item>
 
             <Form.Item name="notes" label="Notes" className="admin-modal-wide">
@@ -4408,7 +4448,7 @@ function InvestorAdministration() {
               rules={[{ required: true, message: "Required" }]}
               extra="Required"
             >
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+              <AdminDatePicker disablePast style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
             </Form.Item>
 
             <Form.Item
@@ -4520,10 +4560,10 @@ function InvestorAdministration() {
               <InputNumber min={0} max={100} step={0.0001} style={{ width: "100%" }} />
             </Form.Item>
             <Form.Item name="contractStart" label="Contract start" rules={[{ required: true, message: "Required" }]}>
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+              <AdminDatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
             </Form.Item>
             <Form.Item name="contractEnd" label="Contract end (optional)">
-              <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" allowClear />
+              <AdminDatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" allowClear />
             </Form.Item>
             <Form.Item name="invStatus" label="Status" rules={[{ required: true, message: "Required" }]}>
               <Select options={INVESTMENT_STATUS_OPTIONS} />
@@ -4542,7 +4582,7 @@ function InvestorAdministration() {
                   <Select options={REPAYMENT_PLAN_TYPE_OPTIONS} />
                 </Form.Item>
                 <Form.Item name="firstDueDate" label="First due date" rules={[{ required: true, message: "Required" }]}>
-                  <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+                  <AdminDatePicker disablePast style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
                 </Form.Item>
                 <Form.Item name="interestPercent" label="Interest percent" rules={[{ required: true, message: "Required" }]}>
                   <InputNumber min={0} max={100} step={0.0001} style={{ width: "100%" }} />
@@ -4570,7 +4610,8 @@ function InvestorAdministration() {
                     dataIndex: "due_date",
                     width: 150,
                     render: (v, row, index) => (
-                      <DatePicker
+                      <AdminDatePicker
+                        disablePast
                         style={{ width: "100%" }}
                         format="DD/MM/YYYY"
                         value={v ? dayjs(v) : null}
@@ -4646,7 +4687,7 @@ function InvestorAdministration() {
                     dataIndex: "paid_date",
                     width: 150,
                     render: (v, row, index) => (
-                      <DatePicker
+                      <AdminDatePicker
                         style={{ width: "100%" }}
                         format="DD/MM/YYYY"
                         allowClear
@@ -4760,7 +4801,7 @@ function InvestorAdministration() {
                 <InputNumber min={0} style={{ width: "100%" }} placeholder="e.g. 30000000" />
               </Form.Item>
               <Form.Item name="paymentDate" label="Payment date" rules={[{ required: true, message: "Required" }]}>
-                <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+                <AdminDatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
               </Form.Item>
             </div>
           ) : (
@@ -4817,7 +4858,7 @@ function InvestorAdministration() {
                           <InputNumber min={0} style={{ width: 160 }} placeholder="Amount ₦" />
                         </Form.Item>
                         <Form.Item {...restField} name={[name, "payment_date"]}>
-                          <DatePicker format="DD/MM/YYYY" style={{ width: 160 }} placeholder="Date" />
+                          <AdminDatePicker format="DD/MM/YYYY" style={{ width: 160 }} placeholder="Date" />
                         </Form.Item>
                         {fields.length > 1 ? (
                           <MinusCircleOutlined onClick={() => remove(name)} style={{ color: "#ff4d4f", cursor: "pointer" }} />
@@ -4920,7 +4961,7 @@ function InvestorAdministration() {
                     <InputNumber min={0} style={{ width: "100%" }} />
                   </Form.Item>
                   <Form.Item name="payment_date" label="Payment date" rules={[{ required: true, message: "Required" }]}>
-                    <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
+                    <AdminDatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
                   </Form.Item>
                   <Form.Item name="payment_method" label="Payment method" rules={[{ required: true, message: "Required" }]}>
                     <Select options={CUSTOMER_PAYMENT_METHOD_OPTIONS} />
@@ -5053,7 +5094,7 @@ function InvestorAdministration() {
                       <InputNumber min={0} style={{ width: 140 }} placeholder="Amount" />
                     </Form.Item>
                     <Form.Item {...restField} name={[name, "paid_date"]} label={fields.length > 1 ? "Paid date" : undefined}>
-                      <DatePicker format="DD/MM/YYYY" style={{ width: 160 }} placeholder="Date" />
+                      <AdminDatePicker format="DD/MM/YYYY" style={{ width: 160 }} placeholder="Date" />
                     </Form.Item>
                     {fields.length > 1 ? (
                       <MinusCircleOutlined onClick={() => remove(name)} style={{ color: "#ff4d4f", cursor: "pointer" }} />
@@ -5143,7 +5184,7 @@ function InvestorAdministration() {
                     <InputNumber min={0} style={{ width: "100%" }} />
                   </Form.Item>
                   <Form.Item name="paid_date" label="Paid date" rules={[{ required: true, message: "Required" }]}>
-                    <DatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
+                    <AdminDatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
                   </Form.Item>
                   <Form.Item name="payment_method" label="Payment method" rules={[{ required: true, message: "Required" }]}>
                     <Input placeholder="e.g. bank_transfer" />

@@ -11,6 +11,7 @@ import overviewReducersBulkMonitoring from "./bulkMonitoring/overview/overview.r
 import systemConstantsReducer from "./systemConstants/system.constants.reducer";
 import solarReducer from "./solar/solar.reducer";
 import solarMgtReducer from "./solarMgt/solarMgt.reducer";
+import clientSolarReducer from "./clientSolar/clientSolar.reducer";
 import installChecklistReducer from "./installChecklist/installChecklist.reducer";
 import investorReducer from "./investor/investor.reducer";
 import adminInvestorUserReducer from "./adminInvestorUser/adminInvestorUser.reducer";
@@ -35,6 +36,7 @@ const rootReducers = combineReducers({
     systemConstants: systemConstantsReducer,
     solar: solarReducer,
     solarMgt: solarMgtReducer,
+    clientSolar: clientSolarReducer,
     installChecklist: installChecklistReducer,
     investorPage: investorReducer,
     adminInvestorUsersPage: adminInvestorUserReducer,

@@ -3525,8 +3525,18 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: #141414;
 }
 
+/* Date pickers above modals / investor shell (installation, due dates, header range) */
+.investor-admin-picker-dropdown,
+.investor-shell-picker-dropdown {
+  z-index: 1400 !important;
+}
+
 .admin-investor-modal .ant-modal-content {
   border-radius: 16px;
+}
+
+.admin-investor-modal .ant-modal-body {
+  overflow: visible;
 }
 
 .admin-investor-modal .ant-modal-header {
@@ -4583,6 +4593,33 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-payments-ph-row:last-child {
   padding-bottom: 0;
+}
+
+.investor-payments-schedule-card .ant-card-head {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.investor-payments-schedule-meta {
+  display: block;
+  margin-bottom: 12px;
+}
+
+.investor-payments-schedule-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 32px;
+  margin-bottom: 16px;
+}
+
+.investor-payments-schedule-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.investor-pay-neg {
+  color: #cf1322;
 }
 
 .investor-health-lines {
