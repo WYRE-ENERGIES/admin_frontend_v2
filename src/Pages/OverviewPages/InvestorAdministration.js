@@ -451,7 +451,6 @@ function InvestorAdministration() {
   const [payoutEditForm] = Form.useForm();
   const [customerPaymentEditing, setCustomerPaymentEditing] = useState(false);
   const [payoutEditing, setPayoutEditing] = useState(false);
-  const recordPaymentEntryMode = Form.useWatch("entryMode", recordPaymentForm) ?? "single";
   const recordPaymentProjectId = Form.useWatch("project_id", recordPaymentForm);
   const payoutInvestmentId = Form.useWatch("investment_id", payoutForm);
   const createInvestmentProjectId = Form.useWatch("project_id", investmentForm);
@@ -1296,21 +1295,12 @@ function InvestorAdministration() {
 
     try {
       await recordPaymentForm.validateFields([
-        "entryMode",
         "project_id",
         "branch_id",
         "payment_method",
         "reference",
         "notes",
       ]);
-      const entryMode = recordPaymentForm.getFieldValue("entryMode") ?? "single";
-      if (entryMode === "single") {
-        await recordPaymentForm.validateFields([
-          "customer_schedule_id",
-          "amountReceived",
-          "paymentDate",
-        ]);
-      }
 
       const values = recordPaymentForm.getFieldsValue(true);
       const selectedScheduleIds = Array.isArray(values.customer_schedule_ids) ? values.customer_schedule_ids : [];
@@ -1320,60 +1310,36 @@ function InvestorAdministration() {
         return;
       }
 
-      let payload;
-      if (entryMode === "single") {
-        const amt = Number(values.amountReceived);
-        if (!Number.isFinite(amt) || amt < 0) {
-          message.error("Enter a valid amount received");
-          return;
-        }
-        const sid = Number(values.customer_schedule_id);
-        if (!Number.isFinite(sid)) {
-          message.error("Customer schedule ID is required");
-          return;
-        }
-        payload = {
-          project_id: values.project_id,
-          branch_id,
-          customer_schedule_id: sid,
-          amount_received: amt.toFixed(2),
-          payment_date: dayjs(values.paymentDate).format("YYYY-MM-DD"),
-          payment_method: values.payment_method,
-          reference: values.reference?.trim() || "",
-          notes: values.notes?.trim() || "",
-        };
-      } else {
-        const rawLines = values.line_items || [];
-        const line_items = rawLines
-          .map((li) => {
-            if (li?.customer_schedule_id == null || li.customer_schedule_id === "") return null;
-            const a = Number(li.amount_received);
-            if (!Number.isFinite(a) || a < 0) return null;
-            if (!li?.payment_date) return null;
-            return {
-              customer_schedule_id: Number(li.customer_schedule_id),
-              amount_received: a.toFixed(2),
-              payment_date: dayjs(li.payment_date).format("YYYY-MM-DD"),
-            };
-          })
-          .filter(Boolean);
-        if (!line_items.length) {
-          message.error(
-            selectedScheduleIds.length
-              ? "Fill amount and payment date for the selected schedule lines"
-              : "Add at least one line with schedule ID, amount, and payment date"
-          );
-          return;
-        }
-        payload = {
-          project_id: values.project_id,
-          branch_id,
-          payment_method: values.payment_method,
-          reference: values.reference?.trim() || "",
-          notes: values.notes?.trim() || "",
-          line_items,
-        };
+      const rawLines = values.line_items || [];
+      const line_items = rawLines
+        .map((li) => {
+          if (li?.customer_schedule_id == null || li.customer_schedule_id === "") return null;
+          const a = Number(li.amount_received);
+          if (!Number.isFinite(a) || a < 0) return null;
+          if (!li?.payment_date) return null;
+          return {
+            customer_schedule_id: Number(li.customer_schedule_id),
+            amount_received: a.toFixed(2),
+            payment_date: dayjs(li.payment_date).format("YYYY-MM-DD"),
+          };
+        })
+        .filter(Boolean);
+      if (!line_items.length) {
+        message.error(
+          selectedScheduleIds.length
+            ? "Fill amount and payment date for the selected schedule lines"
+            : "Add at least one line with schedule ID, amount, and payment date"
+        );
+        return;
       }
+      const payload = {
+        project_id: values.project_id,
+        branch_id,
+        payment_method: values.payment_method,
+        reference: values.reference?.trim() || "",
+        notes: values.notes?.trim() || "",
+        line_items,
+      };
 
       const res = await dispatch(createAdminCustomerPayment(payload));
       if (res.fulfilled) {
@@ -4743,28 +4709,18 @@ function InvestorAdministration() {
         ]}
       >
         <Text type="secondary" className="admin-modal-subtitle">
-          Record one schedule line or several lines in bulk.
+          Add one or more schedule lines with amount and payment date.
         </Text>
         <Form
           form={recordPaymentForm}
           layout="vertical"
           className="admin-modal-form"
           initialValues={{
-            entryMode: "single",
             payment_method: "Transfer",
             customer_schedule_ids: [],
             line_items: [{ customer_schedule_id: undefined, amount_received: undefined, payment_date: undefined }],
           }}
         >
-          <Form.Item name="entryMode" label="Entry mode">
-            <Segmented
-              options={[
-                { label: "Single schedule line", value: "single" },
-                { label: "Bulk (line items)", value: "bulk" },
-              ]}
-            />
-          </Form.Item>
-
           <div className="admin-modal-grid">
             <Form.Item name="project_id" label="Project" rules={[{ required: true, message: "Required" }]}>
               <Select showSearch optionFilterProp="label" placeholder="Select project" options={projectIdSelectOptions} />
@@ -4785,91 +4741,75 @@ function InvestorAdministration() {
             </Form.Item>
           </div>
 
-          {recordPaymentEntryMode === "single" ? (
-            <div className="admin-modal-grid">
-              <Form.Item
-                name="customer_schedule_id"
-                label="Customer schedule ID"
-                rules={[{ required: true, message: "Required" }]}
-              >
-                <InputNumber min={1} step={1} style={{ width: "100%" }} placeholder="e.g. 1" />
-              </Form.Item>
-              <Form.Item name="amountReceived" label="Amount received (₦)" rules={[{ required: true, message: "Required" }]}>
-                <InputNumber min={0} style={{ width: "100%" }} placeholder="e.g. 30000000" />
-              </Form.Item>
-              <Form.Item name="paymentDate" label="Payment date" rules={[{ required: true, message: "Required" }]}>
-                <AdminDatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
-              </Form.Item>
-            </div>
-          ) : (
-            <>
-              <Divider className="admin-modal-divider" />
-              <Text type="secondary" className="admin-modal-section-sub">
-                Each line needs a schedule ID, amount, and payment date. Reference and notes apply to all rows.
-              </Text>
+          <Divider className="admin-modal-divider" />
+          <Text type="secondary" className="admin-modal-section-sub">
+            Each line needs a schedule ID, amount, and payment date. Reference and notes apply to all rows.
+          </Text>
 
-              <Form.Item
-                name="customer_schedule_ids"
-                label="Payment schedules (select one or more)"
-                extra="Optional: select schedules to auto-create line items below. Filtered by the selected project."
-              >
-                <Select
-                  mode="multiple"
-                  allowClear
-                  showSearch
-                  optionFilterProp="label"
-                  placeholder={customerScheduleSelectOptions.length ? "Select schedules" : "No schedules loaded yet"}
-                  options={customerScheduleSelectOptions}
-                  onChange={(ids) => {
-                    const uniq = Array.from(new Set((ids || []).map((v) => Number(v)).filter((n) => Number.isFinite(n))));
-                    recordPaymentForm.setFieldsValue({
-                      line_items: uniq.length
-                        ? uniq.map((id) => ({ customer_schedule_id: id, amount_received: undefined, payment_date: undefined }))
-                        : [{ customer_schedule_id: undefined, amount_received: undefined, payment_date: undefined }],
-                    });
-                  }}
-                />
-              </Form.Item>
+          <Form.Item
+            name="customer_schedule_ids"
+            label="Payment schedules (select one or more)"
+            extra="Optional: select schedules to auto-create line items below. Filtered by the selected project."
+          >
+            <Select
+              mode="multiple"
+              allowClear
+              showSearch
+              optionFilterProp="label"
+              placeholder={customerScheduleSelectOptions.length ? "Select schedules" : "No schedules loaded yet"}
+              options={customerScheduleSelectOptions}
+              onChange={(ids) => {
+                const uniq = Array.from(new Set((ids || []).map((v) => Number(v)).filter((n) => Number.isFinite(n))));
+                recordPaymentForm.setFieldsValue({
+                  line_items: uniq.length
+                    ? uniq.map((id) => ({ customer_schedule_id: id, amount_received: undefined, payment_date: undefined }))
+                    : [{ customer_schedule_id: undefined, amount_received: undefined, payment_date: undefined }],
+                });
+              }}
+            />
+          </Form.Item>
 
-              <Form.List name="line_items">
-                {(fields, { add, remove }) => (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {fields.map(({ key, name, ...restField }) => (
-                      <Space key={key} align="baseline" wrap style={{ marginBottom: 8 }}>
-                        <Form.Item {...restField} name={[name, "customer_schedule_id"]}>
-                          {customerScheduleSelectOptions.length ? (
-                            <Select
-                              disabled={Boolean((recordPaymentForm.getFieldValue("customer_schedule_ids") || []).length)}
-                              allowClear
-                              showSearch
-                              optionFilterProp="label"
-                              placeholder="Schedule"
-                              style={{ width: 280 }}
-                              options={customerScheduleSelectOptions}
-                            />
-                          ) : (
-                            <InputNumber min={1} step={1} placeholder="Schedule ID" style={{ width: 140 }} />
-                          )}
-                        </Form.Item>
-                        <Form.Item {...restField} name={[name, "amount_received"]}>
-                          <InputNumber min={0} style={{ width: 160 }} placeholder="Amount ₦" />
-                        </Form.Item>
-                        <Form.Item {...restField} name={[name, "payment_date"]}>
-                          <AdminDatePicker format="DD/MM/YYYY" style={{ width: 160 }} placeholder="Date" />
-                        </Form.Item>
-                        {fields.length > 1 ? (
-                          <MinusCircleOutlined onClick={() => remove(name)} style={{ color: "#ff4d4f", cursor: "pointer" }} />
-                        ) : null}
-                      </Space>
-                    ))}
-                    <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                      Add line item
-                    </Button>
+          <Form.List name="line_items">
+            {(fields, { add, remove }) => (
+              <div className="admin-payment-line-items">
+                {fields.map(({ key, name, ...restField }) => (
+                  <div key={key} className="admin-payment-line-item-row">
+                    <Form.Item {...restField} name={[name, "customer_schedule_id"]}>
+                      {customerScheduleSelectOptions.length ? (
+                        <Select
+                          disabled={Boolean((recordPaymentForm.getFieldValue("customer_schedule_ids") || []).length)}
+                          allowClear
+                          showSearch
+                          optionFilterProp="label"
+                          placeholder="Schedule"
+                          options={customerScheduleSelectOptions}
+                        />
+                      ) : (
+                        <InputNumber min={1} step={1} placeholder="Schedule ID" />
+                      )}
+                    </Form.Item>
+                    <Form.Item {...restField} name={[name, "amount_received"]}>
+                      <InputNumber min={0} placeholder="Amount ₦" />
+                    </Form.Item>
+                    <Form.Item {...restField} name={[name, "payment_date"]}>
+                      <AdminDatePicker format="DD/MM/YYYY" placeholder="Date" />
+                    </Form.Item>
+                    {fields.length > 1 ? (
+                      <MinusCircleOutlined
+                        className="admin-payment-line-item-remove"
+                        onClick={() => remove(name)}
+                      />
+                    ) : (
+                      <span className="admin-payment-line-item-remove-spacer" aria-hidden />
+                    )}
                   </div>
-                )}
-              </Form.List>
-            </>
-          )}
+                ))}
+                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                  Add line item
+                </Button>
+              </div>
+            )}
+          </Form.List>
         </Form>
       </Modal>
 
