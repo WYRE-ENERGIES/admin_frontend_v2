@@ -235,7 +235,7 @@ function PortfolioOverview() {
             Portfolio overview
           </Title>
           <Text type="secondary" className="investor-page-subtitle">
-            Solar receivables across your financed branches
+            Solar receivables across your financed projects
           </Text>
         </div>
 
@@ -433,7 +433,7 @@ function PortfolioOverview() {
             )}
           </div>
           <Text type="secondary" className="investor-chart-footnote">
-            Aggregated for branches you finance (telemetry may vary by site).
+            Aggregated for projects you finance (telemetry may vary by site).
           </Text>
         </Card>
 

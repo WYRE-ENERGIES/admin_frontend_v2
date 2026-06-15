@@ -3790,6 +3790,78 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   white-space: nowrap;
 }
 
+.investor-ledger-table .ant-table-content,
+.investor-ledger-table .ant-table-body {
+  overflow-x: hidden !important;
+}
+
+.investor-ledger-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.investor-ledger-table .ant-table-thead > tr > th,
+.investor-ledger-table .ant-table-tbody > tr > td {
+  white-space: nowrap;
+}
+
+.investor-ledger-table .ant-table-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.investor-schedule-table .ant-table-content,
+.investor-schedule-table .ant-table-body {
+  overflow-x: hidden !important;
+}
+
+.investor-schedule-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.investor-schedule-table .ant-table-thead > tr > th,
+.investor-schedule-table .ant-table-tbody > tr > td {
+  white-space: nowrap;
+}
+
+.investor-schedule-table .ant-table-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.investor-schedule-status-cell {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.investor-schedule-status-tag {
+  white-space: nowrap !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+
+.investor-payout-history-table .ant-table-thead {
+  display: none;
+}
+
+.investor-payout-history-table .ant-table-tbody > tr > td {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  vertical-align: middle;
+}
+
+.investor-payout-history-line {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+}
+
 @media (max-width: 768px) {
   .investor-table-wrap {
     overflow-x: auto;
@@ -4419,6 +4491,150 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: #141414;
 }
 
+.investor-open-metric--highlight {
+  background: rgba(91, 181, 111, 0.1);
+  border-color: rgba(91, 181, 111, 0.22);
+}
+
+.investor-open-metric--highlight .investor-open-metric-value {
+  color: #237804;
+}
+
+.investor-project-detail-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.investor-project-detail-modal .ant-modal-body {
+  padding: 20px 24px 8px;
+}
+
+.investor-project-detail-modal .ant-modal-footer {
+  padding: 12px 24px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.investor-project-detail-title {
+  margin: 0 0 4px !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700 !important;
+}
+
+.investor-project-detail-location {
+  display: block;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.investor-project-detail-progress {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-detail-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.investor-project-detail-metrics {
+  margin-top: 0;
+}
+
+.investor-project-detail-breakdown {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-detail-breakdown-title {
+  margin: 0 0 12px !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 600 !important;
+}
+
+.investor-project-detail-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.investor-project-detail-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.investor-project-detail-breakdown-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.investor-project-detail-breakdown-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #141414;
+}
+
+.investor-project-detail-breakdown-tag {
+  margin: 0;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.investor-project-detail-breakdown-amount {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #141414;
+}
+
+.investor-project-detail-breakdown-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(92, 18, 167, 0.06);
+  border: 1px solid rgba(92, 18, 167, 0.12);
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.investor-project-detail-breakdown-empty {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .investor-open-project-actions {
   margin-top: auto;
   padding-top: 12px;
@@ -4653,8 +4869,8 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   align-items: start;
 }
 
-.investor-payments-split > .investor-card:first-child {
-  min-height: 0;
+.investor-payments-split-left {
+  min-width: 0;
 }
 
 .investor-payments-stack {
@@ -4662,24 +4878,60 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.investor-card--payout-history {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .investor-card--payout-history .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding-bottom: 12px;
 }
 
-.investor-payments-payout-list {
-  max-height: 220px;
-  overflow-y: auto;
-  padding-right: 2px;
+.investor-payout-history-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.investor-payments-ph-row {
-  padding: 8px 0;
+.investor-payout-history-table {
+  flex: 1;
+  min-height: 0;
 }
 
-.investor-payments-ph-row:last-child {
-  padding-bottom: 0;
+.investor-payout-history-table .ant-pagination {
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0;
+}
+
+.investor-payments-stack > .investor-card:last-child {
+  flex-shrink: 0;
+}
+
+.investor-health-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.investor-health-lines > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .investor-payments-schedule-card .ant-card-head {
@@ -4707,12 +4959,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-pay-neg {
   color: #cf1322;
-}
-
-.investor-health-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 .investor-health-disclaimer {

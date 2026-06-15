@@ -59,6 +59,17 @@ export function formatCompactNgn(n) {
   return `₦${num.toLocaleString("en-NG")}`;
 }
 
+/** Join location labels for display; drops numeric-only branch IDs. */
+export function humanLocationLabel(...parts) {
+  const cleaned = parts
+    .flat()
+    .filter((p) => p != null && String(p).trim() !== "" && String(p).trim() !== "—")
+    .map((p) => String(p).trim())
+    .filter((p) => !/^\d+$/.test(p));
+  const unique = [...new Set(cleaned)];
+  return unique.length ? unique.join(" · ") : null;
+}
+
 /** investors/total-invested */
 export function mapTotalInvestedCard(raw) {
   const o = unwrapListOrObject(raw) || raw;
@@ -373,11 +384,13 @@ export function mapFinancedProjectsTable(rows) {
       ["location", "installation_location", "city", "state", "site_location"],
       ""
     );
-    const branchLabel = firstString(item, ["branch_label", "branchLabel"], "");
     const installationSub =
-      location ||
-      branchLabel ||
-      firstString(item, ["branch_city_line", "location_line"], "—");
+      humanLocationLabel(
+        location,
+        item.location_label,
+        item.branch_label,
+        firstString(item, ["branch_city_line", "location_line"], "")
+      ) || "—";
 
     const health = mapProductionHealth(item);
     const statusPosted =
@@ -569,7 +582,7 @@ function mapActivityRow(row, idx) {
       : firstString(row, ["date_display", "date", "day"], "—");
 
   const eventType = row.event_type ?? row.type ?? row.memo;
-  const project = row.project_name ?? row.branch_label ?? row.branch_ref;
+  const project = row.project_name;
   let label = firstString(row, ["description", "label", "memo"], "");
   if (!label || label === "—") {
     const parts = [eventType || "Payout", project].filter(Boolean);

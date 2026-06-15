@@ -30,7 +30,7 @@ export const MOCK_INVESTOR_PROJECTS = {
       id: "p2",
       name: "Access Idasho Ibeju",
       status: "Overdue",
-      branchLabel: "Branch 2841 · Lagos",
+      branchLabel: "Lagos",
       contractStart: "Contract start · Jan 2024",
       sharePct: 25,
       systemKwp: 60,

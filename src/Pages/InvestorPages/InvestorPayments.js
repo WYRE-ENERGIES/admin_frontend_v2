@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Alert, Button, Card, Select, Spin, Table, Tabs, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,14 +13,36 @@ import {
 const { Text, Title } = Typography;
 
 const LEDGER_PAGE_SIZE = 10;
+const PAYOUT_HISTORY_PAGE_SIZE = 10;
 
-function scheduleStatusTag(statusKey, label) {
+/** Percentage width for investor payment tables (sums to 100% per table). */
+const investorColPct = (pct, col) => ({ ...col, width: `${pct}%` });
+
+function scheduleStatusTag(statusKey, label, title) {
   const t = String(statusKey || label || "").toLowerCase();
-  if (t.includes("paid")) return <Tag color="blue">{label}</Tag>;
-  if (t.includes("scheduled")) return <Tag color="green">{label}</Tag>;
-  if (t.includes("overdue")) return <Tag color="red">{label}</Tag>;
-  if (t.includes("pending")) return <Tag color="gold">{label}</Tag>;
-  return <Tag color="default">{label}</Tag>;
+  const tag =
+    t.includes("paid") ? (
+      <Tag color="blue" className="investor-schedule-status-tag">
+        {label}
+      </Tag>
+    ) : t.includes("scheduled") ? (
+      <Tag color="green" className="investor-schedule-status-tag">
+        {label}
+      </Tag>
+    ) : t.includes("overdue") ? (
+      <Tag color="red" className="investor-schedule-status-tag">
+        {label}
+      </Tag>
+    ) : t.includes("pending") ? (
+      <Tag color="gold" className="investor-schedule-status-tag">
+        {label}
+      </Tag>
+    ) : (
+      <Tag color="default" className="investor-schedule-status-tag">
+        {label}
+      </Tag>
+    );
+  return title ? <span title={title}>{tag}</span> : tag;
 }
 
 function InvestorPayments() {
@@ -45,6 +67,11 @@ function InvestorPayments() {
   const [payoutSchedule, setPayoutSchedule] = useState(null);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleError, setScheduleError] = useState(null);
+
+  const upcomingScheduleRef = useRef(null);
+  const payoutHistoryBodyRef = useRef(null);
+  const [paymentsStackHeight, setPaymentsStackHeight] = useState(null);
+  const [payoutTableScrollY, setPayoutTableScrollY] = useState(220);
 
   const rangeKey = `${range[0]?.format("YYYY-MM-DD")}_${range[1]?.format("YYYY-MM-DD")}`;
 
@@ -132,6 +159,69 @@ function InvestorPayments() {
     [investmentOptions]
   );
 
+  const syncPaymentsSplitLayout = useCallback(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 992) {
+      setPaymentsStackHeight(null);
+      setPayoutTableScrollY(220);
+      return;
+    }
+
+    const leftEl = upcomingScheduleRef.current;
+    if (!leftEl) return;
+
+    const leftHeight = leftEl.offsetHeight;
+    setPaymentsStackHeight(leftHeight > 0 ? leftHeight : null);
+  }, []);
+
+  const syncPayoutTableScroll = useCallback(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 992) {
+      setPayoutTableScrollY(220);
+      return;
+    }
+
+    const bodyEl = payoutHistoryBodyRef.current;
+    const leftEl = upcomingScheduleRef.current;
+    if (!bodyEl || !leftEl || leftEl.offsetHeight <= 0) return;
+
+    const pagination = bodyEl.querySelector(".ant-pagination");
+    const paginationHeight = pagination?.offsetHeight ?? 32;
+    const scrollY = bodyEl.clientHeight - paginationHeight - 8;
+    setPayoutTableScrollY(Math.max(120, scrollY));
+  }, []);
+
+  useLayoutEffect(() => {
+    syncPaymentsSplitLayout();
+
+    const leftEl = upcomingScheduleRef.current;
+    const observer = new ResizeObserver(() => syncPaymentsSplitLayout());
+    if (leftEl) observer.observe(leftEl);
+
+    window.addEventListener("resize", syncPaymentsSplitLayout);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", syncPaymentsSplitLayout);
+    };
+  }, [syncPaymentsSplitLayout, paymentsLoading, bundle?.schedule?.length]);
+
+  useLayoutEffect(() => {
+    syncPayoutTableScroll();
+
+    const bodyEl = payoutHistoryBodyRef.current;
+    const observer = new ResizeObserver(() => syncPayoutTableScroll());
+    if (bodyEl) observer.observe(bodyEl);
+
+    window.addEventListener("resize", syncPayoutTableScroll);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", syncPayoutTableScroll);
+    };
+  }, [
+    syncPayoutTableScroll,
+    paymentsStackHeight,
+    paymentsLoading,
+    bundle?.payoutHistory?.length,
+  ]);
+
   const kpis = useMemo(() => {
     const k = bundle?.kpis;
     if (!k) return [];
@@ -144,65 +234,132 @@ function InvestorPayments() {
   }, [bundle?.kpis]);
 
   const scheduleCols = [
-    { title: "Due", dataIndex: "due", key: "due", width: 96 },
-    { title: "Branch", dataIndex: "branch", key: "branch", ellipsis: true },
-    { title: "Total due", dataIndex: "totalDue", key: "totalDue", width: 104, align: "right" },
-    {
+    investorColPct(12, { title: "Due", dataIndex: "due", key: "due" }),
+    investorColPct(26, { title: "Project", dataIndex: "project", key: "project", ellipsis: true }),
+    investorColPct(14, {
+      title: "Total due",
+      dataIndex: "totalDue",
+      key: "totalDue",
+      align: "right",
+      render: (v) => <span className="investor-table-nowrap">{v}</span>,
+    }),
+    investorColPct(14, {
       title: "Your credit",
       dataIndex: "yourCredit",
       key: "yourCredit",
-      width: 104,
       align: "right",
       render: (v) => <span className="investor-pay-pos investor-table-nowrap">{v}</span>,
-    },
-    {
+    }),
+    investorColPct(34, {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      width: 108,
-      render: (v, row) => scheduleStatusTag(row.statusKey, v),
-    },
+      render: (v, row) => (
+        <div className="investor-schedule-status-cell">
+          {scheduleStatusTag(row.statusKey, v, row.statusDetail)}
+        </div>
+      ),
+    }),
   ];
 
+  const payoutHistoryCols = useMemo(
+    () => [
+      investorColPct(68, {
+        title: "Payout",
+        dataIndex: "line",
+        key: "line",
+        ellipsis: true,
+        render: (v) => <span className="investor-payout-history-line">{v}</span>,
+      }),
+      investorColPct(32, {
+        title: "Amount",
+        dataIndex: "amount",
+        key: "amount",
+        align: "right",
+        render: (v, row) => (
+          <span
+            className={`investor-table-nowrap investor-activity-amount ${
+              row.isBad ? "is-bad" : "is-good"
+            }`}
+          >
+            {v}
+          </span>
+        ),
+      }),
+    ],
+    []
+  );
+
   const payoutScheduleCols = [
-    { title: "#", dataIndex: "installmentNumber", key: "installmentNumber", width: 48 },
-    { title: "Due date", dataIndex: "due", key: "due", width: 120 },
-    { title: "Amount due", dataIndex: "amountDue", key: "amountDue", width: 120 },
-    { title: "Amount paid", dataIndex: "amountPaid", key: "amountPaid", width: 120 },
-    {
+    investorColPct(14, { title: "Due date", dataIndex: "due", key: "due" }),
+    investorColPct(14, {
+      title: "Amount due",
+      dataIndex: "amountDue",
+      key: "amountDue",
+      align: "right",
+      render: (v) => <span className="investor-table-nowrap">{v}</span>,
+    }),
+    investorColPct(14, {
+      title: "Amount paid",
+      dataIndex: "amountPaid",
+      key: "amountPaid",
+      align: "right",
+      render: (v) => <span className="investor-table-nowrap">{v}</span>,
+    }),
+    investorColPct(14, {
       title: "Remaining",
       dataIndex: "amountRemaining",
       key: "amountRemaining",
-      width: 120,
+      align: "right",
       render: (v, row) => {
         const raw = String(row.statusKey || "");
         const isOver = raw.includes("overdue") || (v && v.startsWith("-"));
-        return <span className={isOver ? "investor-pay-neg" : undefined}>{v}</span>;
+        return <span className={`investor-table-nowrap${isOver ? " investor-pay-neg" : ""}`}>{v}</span>;
       },
-    },
-    { title: "Paid date", dataIndex: "paidDate", key: "paidDate", width: 120 },
-    {
+    }),
+    investorColPct(14, { title: "Paid date", dataIndex: "paidDate", key: "paidDate" }),
+    investorColPct(30, {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (v, row) => scheduleStatusTag(row.statusKey, v),
-    },
+      render: (v, row) => (
+        <div className="investor-schedule-status-cell">
+          {scheduleStatusTag(row.statusKey, v, row.statusDetail)}
+        </div>
+      ),
+    }),
   ];
 
   const ledgerCols = [
-    { title: "Date", dataIndex: "date", key: "date", width: 104 },
-    { title: "Type", dataIndex: "type", key: "type", width: 96 },
-    { title: "Ref", dataIndex: "ref", key: "ref", ellipsis: true },
-    { title: "Customer", dataIndex: "customer", key: "customer", width: 104, align: "right" },
-    {
+    investorColPct(14, { title: "Date", dataIndex: "date", key: "date" }),
+    investorColPct(17, {
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+      render: (v) => <span className="investor-table-nowrap">{v}</span>,
+    }),
+    investorColPct(24, { title: "Project", dataIndex: "ref", key: "ref", ellipsis: true }),
+    investorColPct(14, {
+      title: "Customer",
+      dataIndex: "customer",
+      key: "customer",
+      align: "right",
+      render: (v) => <span className="investor-table-nowrap">{v}</span>,
+    }),
+    investorColPct(14, {
       title: "Allocation",
       dataIndex: "allocation",
       key: "allocation",
-      width: 104,
       align: "right",
       render: (v) => <span className="investor-pay-pos investor-table-nowrap">{v}</span>,
-    },
-    { title: "Effect", dataIndex: "effect", key: "effect", width: 96, align: "right" },
+    }),
+    investorColPct(17, {
+      title: "Effect",
+      dataIndex: "effect",
+      key: "effect",
+      align: "right",
+      render: (v) => <span className="investor-table-nowrap">{v}</span>,
+    }),
   ];
 
   const health = bundle?.receivableHealth;
@@ -313,7 +470,7 @@ function InvestorPayments() {
           <Spin spinning={scheduleLoading}>
             <div className="table-responsive-wrapper investor-table-wrap">
               <Table
-                className="investor-table"
+                className="investor-table investor-schedule-table"
                 columns={payoutScheduleCols}
                 dataSource={payoutSchedule?.installments || []}
                 pagination={{
@@ -331,51 +488,59 @@ function InvestorPayments() {
         </Card>
 
         <div className="investor-payments-split">
-          <Card
-            title="Upcoming schedule"
-            bordered={false}
-            className="investor-card"
-          >
-            <div className="table-responsive-wrapper investor-table-wrap">
-              <Table
-                className="investor-table"
-                columns={scheduleCols}
-                dataSource={bundle?.schedule || []}
-                pagination={false}
-                size="small"
-                rowKey="key"
-                tableLayout="fixed"
-                locale={{ emptyText: "No upcoming installments" }}
-              />
-            </div>
-          </Card>
+          <div ref={upcomingScheduleRef} className="investor-payments-split-left">
+            <Card
+              title="Upcoming schedule"
+              bordered={false}
+              className="investor-card investor-card--upcoming-schedule"
+            >
+              <div className="table-responsive-wrapper investor-table-wrap">
+                <Table
+                  className="investor-table investor-schedule-table"
+                  columns={scheduleCols}
+                  dataSource={bundle?.schedule || []}
+                  pagination={{
+                    pageSize: 10,
+                    showSizeChanger: false,
+                    hideOnSinglePage: true,
+                  }}
+                  size="small"
+                  rowKey="key"
+                  tableLayout="fixed"
+                  locale={{ emptyText: "No upcoming installments" }}
+                />
+              </div>
+            </Card>
+          </div>
 
-          <div className="investor-payments-stack">
+          <div
+            className="investor-payments-stack"
+            style={paymentsStackHeight != null ? { height: paymentsStackHeight } : undefined}
+          >
             <Card
               title="Payout history"
               bordered={false}
               className="investor-card investor-card--payout-history"
             >
-              {(bundle?.payoutHistory || []).length === 0 ? (
-                <Text type="secondary">No payouts recorded yet.</Text>
-              ) : (
-                <div className="investor-payments-payout-list">
-                  {(bundle?.payoutHistory || []).map((row) => (
-                    <div key={row.key} className="investor-activity-row investor-payments-ph-row">
-                      <div className="investor-activity-left">
-                        <div className="investor-activity-label">{row.line}</div>
-                      </div>
-                      <div
-                        className={`investor-activity-amount ${
-                          row.isBad ? "is-bad" : "is-good"
-                        }`}
-                      >
-                        {row.amount}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+              <div ref={payoutHistoryBodyRef} className="investor-payout-history-body">
+                <Table
+                  className="investor-table investor-payout-history-table"
+                  showHeader={false}
+                  columns={payoutHistoryCols}
+                  dataSource={bundle?.payoutHistory || []}
+                  scroll={{ y: payoutTableScrollY }}
+                  pagination={{
+                    pageSize: PAYOUT_HISTORY_PAGE_SIZE,
+                    showSizeChanger: false,
+                    hideOnSinglePage: true,
+                    size: "small",
+                  }}
+                  size="small"
+                  rowKey="key"
+                  tableLayout="fixed"
+                  locale={{ emptyText: "No payouts recorded yet." }}
+                />
+              </div>
             </Card>
 
             <Card title="Receivable health" bordered={false} className="investor-card">
@@ -421,7 +586,7 @@ function InvestorPayments() {
         >
           <div className="table-responsive-wrapper investor-table-wrap">
             <Table
-              className="investor-table"
+              className="investor-table investor-ledger-table"
               columns={ledgerCols}
               dataSource={bundle?.ledger || []}
               pagination={{
