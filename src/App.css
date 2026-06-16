@@ -3225,10 +3225,20 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   gap: 8px;
 }
 
-.admin-investor-metric-top {
+.admin-investor-metric-value {
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #141414;
+  line-height: 1.15;
+}
+
+.admin-investor-metric-mid {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
 }
 
 .admin-investor-metric-icon {
@@ -3251,25 +3261,27 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: rgba(0, 0, 0, 0.55);
-}
-
-.admin-investor-metric-value {
-  margin-top: 8px;
-  font-family: "Montserrat", sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-  color: #141414;
-  line-height: 1.15;
+  line-height: 1.3;
 }
 
 .admin-investor-metric-sub {
   margin-top: auto;
+  padding-top: 10px;
   font-family: "Montserrat", sans-serif;
   font-size: 12px;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.52);
   line-height: 1.35;
+}
+
+.admin-investor-metric-sub--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-investor-metric-sub-line {
+  display: block;
 }
 
 .admin-investor-metric--purple {
@@ -3298,13 +3310,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: flex;
   flex-direction: column;
   gap: 14px;
-}
-
-.admin-investor-overview-row-split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 14px;
-  align-items: stretch;
 }
 
 .admin-investor-wide {
@@ -3339,6 +3344,68 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+/* Investor admin tables: full width, no horizontal scrollbar, compact headers */
+.admin-investor-data-table .ant-table-content,
+.admin-investor-data-table .ant-table-body {
+  overflow-x: hidden !important;
+}
+
+.admin-investor-data-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.admin-investor-data-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+  font-size: 11px;
+  padding: 8px 6px !important;
+}
+
+.admin-investor-data-table .ant-table-tbody > tr > td {
+  padding: 8px 6px !important;
+}
+
+.admin-table-nowrap {
+  white-space: nowrap;
+}
+
+.admin-investor-data-table .admin-table-col-flex {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 28%;
+}
+
+.admin-investor-data-table .admin-table-col-action {
+  overflow: visible !important;
+  white-space: nowrap;
+}
+
+.admin-investor-data-table .admin-table-col-action .admin-investor-action-btn {
+  white-space: nowrap;
+  max-width: none;
+}
+
+.admin-investor-data-table .admin-projects-col-project {
+  padding-right: 6px !important;
+  width: 22%;
+  max-width: 0;
+}
+
+.admin-investor-data-table .admin-projects-col-type {
+  padding-left: 6px !important;
+}
+
+.admin-investor-data-table .admin-perf-col-project {
+  max-width: 0;
+  width: 20%;
+}
+
+/* Edit modals: schedule grids may scroll horizontally inside the modal */
+.admin-investor-modal-schedule-table .ant-table-content,
+.admin-investor-modal-schedule-table .ant-table-body {
+  overflow-x: auto !important;
 }
 
 .admin-investor-panel-head--plain {
@@ -3430,6 +3497,18 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 12px;
   font-weight: 500;
   color: rgba(0, 0, 0, 0.45);
+}
+
+.admin-investor-ticket-respond-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.admin-investor-ticket-respond-hint {
+  font-size: 12px;
+  line-height: 1.2;
 }
 
 .admin-investor-ticket-email-box {
@@ -3616,21 +3695,88 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: rgba(0, 0, 0, 0.5);
 }
 
+.admin-payment-line-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-payment-line-item-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr) minmax(0, 0.85fr) 24px;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.admin-investor-modal .admin-payment-line-item-row > .ant-form-item {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-form-item-control-input,
+.admin-investor-modal .admin-payment-line-item-row .ant-form-item-control-input-content {
+  min-width: 0;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-input-number,
+.admin-investor-modal .admin-payment-line-item-row .ant-picker,
+.admin-investor-modal .admin-payment-line-item-row .ant-select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-input-number {
+  display: block;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-input-number-input-wrap {
+  padding: 0;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-input-number-input,
+.admin-investor-modal .admin-payment-line-item-row .ant-picker {
+  height: 40px;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-picker .ant-picker-input > input {
+  height: 38px;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-select-single .ant-select-selector {
+  height: 40px !important;
+  align-items: center;
+}
+
+.admin-payment-line-item-remove {
+  color: #ff4d4f;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.admin-payment-line-item-remove-spacer {
+  display: block;
+  width: 24px;
+}
+
 @media (max-width: 820px) {
   .admin-modal-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-payment-line-item-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-payment-line-item-remove,
+  .admin-payment-line-item-remove-spacer {
+    justify-self: end;
   }
 }
 
 @media (max-width: 1400px) {
   .admin-investor-metrics {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 900px) {
-  .admin-investor-overview-row-split {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -3689,16 +3835,122 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-table-wrap {
   margin-bottom: 0;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: visible;
-  -webkit-overflow-scrolling: touch;
   max-width: 100%;
-  touch-action: pan-x pan-y;
 }
 
 .investor-table-wrap .ant-table,
 .investor-table-wrap .ant-table-container {
-  min-width: 640px;
+  min-width: 0;
+}
+
+.investor-financed-table .ant-table-content,
+.investor-financed-table .ant-table-body {
+  overflow-x: hidden !important;
+}
+
+.investor-financed-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.investor-financed-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+}
+
+.investor-table-nowrap {
+  white-space: nowrap;
+}
+
+.investor-ledger-table .ant-table-content,
+.investor-ledger-table .ant-table-body {
+  overflow-x: hidden !important;
+}
+
+.investor-ledger-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.investor-ledger-table .ant-table-thead > tr > th,
+.investor-ledger-table .ant-table-tbody > tr > td {
+  white-space: nowrap;
+}
+
+.investor-ledger-table .ant-table-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.investor-schedule-table .ant-table-content,
+.investor-schedule-table .ant-table-body {
+  overflow-x: hidden !important;
+}
+
+.investor-schedule-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.investor-schedule-table .ant-table-thead > tr > th,
+.investor-schedule-table .ant-table-tbody > tr > td {
+  white-space: nowrap;
+}
+
+.investor-schedule-table .ant-table-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.investor-schedule-status-cell {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.investor-schedule-status-tag {
+  white-space: nowrap !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+
+.investor-payout-history-table .ant-table-thead {
+  display: none;
+}
+
+.investor-payout-history-table .ant-table-tbody > tr > td {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  vertical-align: middle;
+}
+
+.investor-payout-history-line {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .investor-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+
+  .investor-table-wrap .ant-table,
+  .investor-table-wrap .ant-table-container {
+    min-width: 640px;
+  }
+
+  .investor-financed-table .ant-table-content,
+  .investor-financed-table .ant-table-body {
+    overflow-x: auto !important;
+  }
 }
 
 .investor-table .ant-table {
@@ -3715,6 +3967,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: rgba(0, 0, 0, 0.45) !important;
   background: rgba(0, 0, 0, 0.02) !important;
   padding: 12px 16px !important;
+  white-space: nowrap;
 }
 
 .investor-table .ant-table-tbody > tr > td {
@@ -4311,6 +4564,150 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: #141414;
 }
 
+.investor-open-metric--highlight {
+  background: rgba(91, 181, 111, 0.1);
+  border-color: rgba(91, 181, 111, 0.22);
+}
+
+.investor-open-metric--highlight .investor-open-metric-value {
+  color: #237804;
+}
+
+.investor-project-detail-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.investor-project-detail-modal .ant-modal-body {
+  padding: 20px 24px 8px;
+}
+
+.investor-project-detail-modal .ant-modal-footer {
+  padding: 12px 24px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.investor-project-detail-title {
+  margin: 0 0 4px !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700 !important;
+}
+
+.investor-project-detail-location {
+  display: block;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.investor-project-detail-progress {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-detail-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.investor-project-detail-metrics {
+  margin-top: 0;
+}
+
+.investor-project-detail-breakdown {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-detail-breakdown-title {
+  margin: 0 0 12px !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 600 !important;
+}
+
+.investor-project-detail-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.investor-project-detail-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.investor-project-detail-breakdown-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.investor-project-detail-breakdown-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #141414;
+}
+
+.investor-project-detail-breakdown-tag {
+  margin: 0;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.investor-project-detail-breakdown-amount {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #141414;
+}
+
+.investor-project-detail-breakdown-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(92, 18, 167, 0.06);
+  border: 1px solid rgba(92, 18, 167, 0.12);
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.investor-project-detail-breakdown-empty {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .investor-open-project-actions {
   margin-top: auto;
   padding-top: 12px;
@@ -4545,8 +4942,8 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   align-items: start;
 }
 
-.investor-payments-split > .investor-card:first-child {
-  min-height: 0;
+.investor-payments-split-left {
+  min-width: 0;
 }
 
 .investor-payments-stack {
@@ -4554,24 +4951,60 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   flex-direction: column;
   gap: 16px;
   min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.investor-card--payout-history {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .investor-card--payout-history .ant-card-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding-bottom: 12px;
 }
 
-.investor-payments-payout-list {
-  max-height: 220px;
-  overflow-y: auto;
-  padding-right: 2px;
+.investor-payout-history-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.investor-payments-ph-row {
-  padding: 8px 0;
+.investor-payout-history-table {
+  flex: 1;
+  min-height: 0;
 }
 
-.investor-payments-ph-row:last-child {
-  padding-bottom: 0;
+.investor-payout-history-table .ant-pagination {
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+  flex-shrink: 0;
+}
+
+.investor-payments-stack > .investor-card:last-child {
+  flex-shrink: 0;
+}
+
+.investor-health-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.investor-health-lines > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .investor-payments-schedule-card .ant-card-head {
@@ -4599,12 +5032,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-pay-neg {
   color: #cf1322;
-}
-
-.investor-health-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
 .investor-health-disclaimer {

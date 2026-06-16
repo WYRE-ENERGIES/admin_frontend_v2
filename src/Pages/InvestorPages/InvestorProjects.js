@@ -4,7 +4,6 @@ import {
   Alert,
   Button,
   Card,
-  Descriptions,
   Form,
   Input,
   InputNumber,
@@ -14,7 +13,6 @@ import {
   Select,
   Space,
   Spin,
-  Table,
   Tag,
   Typography,
   message,
@@ -228,21 +226,6 @@ function InvestorProjects() {
       ? "Financed projects"
       : "Open projects (available to invest)";
 
-  const breakdownColumns = useMemo(
-    () => [
-      { title: "Category", dataIndex: "category", key: "category", width: 120 },
-      { title: "Item", dataIndex: "label", key: "label" },
-      {
-        title: "Amount",
-        dataIndex: "amountDisplay",
-        key: "amount",
-        align: "right",
-        width: 120,
-      },
-    ],
-    []
-  );
-
   return (
     <div className="investor-page investor-projects-page">
       {projectsPartialErrors?.length ? (
@@ -454,9 +437,7 @@ function InvestorProjects() {
                   </Text>
                   <div className="investor-ticket-meta">
                     <Text type="secondary">
-                      Ticket {t.ticketId ?? t.id}
-                      {t.priority ? ` · ${t.priority}` : ""}
-                      {" · "}
+                      {t.priority ? `${t.priority} · ` : ""}
                       {formatTicketTime(t.createdAt)}
                     </Text>
                   </div>
@@ -591,7 +572,7 @@ function InvestorProjects() {
       </Modal>
 
       <Modal
-        title={projectDetail?.name || "Project detail"}
+        title={null}
         open={detailModalOpen}
         onCancel={() => {
           setDetailModalOpen(false);
@@ -615,43 +596,108 @@ function InvestorProjects() {
           ) : null,
         ]}
         width={640}
+        className="investor-modal investor-project-detail-modal"
         destroyOnClose
       >
         <Spin spinning={detailLoading}>
           {projectDetail ? (
-            <>
-              <Descriptions size="small" column={2} bordered style={{ marginBottom: 16 }}>
-                <Descriptions.Item label="Location">
-                  {[projectDetail.branchLabel, projectDetail.locationLabel, projectDetail.city]
-                    .filter(Boolean)
-                    .join(" · ") || "—"}
-                </Descriptions.Item>
-                <Descriptions.Item label="System size">
-                  {projectDetail.systemKwp} kWp
-                </Descriptions.Item>
-                <Descriptions.Item label="Investor target">
-                  {ngn(projectDetail.investorTargetNgn)}
-                </Descriptions.Item>
-                <Descriptions.Item label="Remaining">
-                  {ngn(projectDetail.remainingNgn)}
-                </Descriptions.Item>
-              </Descriptions>
-              {projectDetail.breakdownItems?.length ? (
-                <>
-                  <Title level={5} style={{ marginTop: 0 }}>
-                    Cost breakdown
+            <div className="investor-project-detail">
+              <div className="investor-project-detail-head">
+                <div>
+                  <Title level={4} className="investor-project-detail-title">
+                    {projectDetail.name}
                   </Title>
-                  <Table
-                    size="small"
-                    pagination={false}
-                    columns={breakdownColumns}
-                    dataSource={projectDetail.breakdownItems}
-                  />
-                </>
-              ) : (
-                <Text type="secondary">No cost breakdown published for this project.</Text>
-              )}
-            </>
+                  <Text type="secondary" className="investor-project-detail-location">
+                    {[projectDetail.locationLabel, projectDetail.city]
+                      .filter(Boolean)
+                      .join(" · ") || projectDetail.branchLabel || "Location not specified"}
+                  </Text>
+                </div>
+                <Tag color="green" className="investor-open-pill">
+                  {projectDetail.status || "Available"}
+                </Tag>
+              </div>
+
+              <div className="investor-project-detail-progress">
+                <div className="investor-project-detail-progress-meta">
+                  <Text type="secondary">
+                    {ngnCompact(projectDetail.raisedNgn ?? projectDetail.investorTargetNgn - (projectDetail.remainingNgn ?? 0))} raised
+                    {" · "}
+                    {ngnCompact(projectDetail.remainingNgn)} remaining
+                  </Text>
+                  <Text strong>{projectDetail.raisedPct ?? 0}% funded</Text>
+                </div>
+                <Progress
+                  percent={projectDetail.raisedPct ?? 0}
+                  showInfo={false}
+                  strokeColor="#5BB56F"
+                />
+              </div>
+
+              <div className="investor-open-metrics investor-project-detail-metrics">
+                <div className="investor-open-metric">
+                  <span className="investor-open-metric-label">System size</span>
+                  <span className="investor-open-metric-value">{projectDetail.systemKwp} kWp</span>
+                </div>
+                <div className="investor-open-metric">
+                  <span className="investor-open-metric-label">Total project cost</span>
+                  <span className="investor-open-metric-value">{ngnCompact(projectDetail.totalCostNgn)}</span>
+                </div>
+                <div className="investor-open-metric">
+                  <span className="investor-open-metric-label">Client contribution</span>
+                  <span className="investor-open-metric-value">{ngnCompact(projectDetail.clientContributionNgn)}</span>
+                </div>
+                <div className="investor-open-metric">
+                  <span className="investor-open-metric-label">Investor target</span>
+                  <span className="investor-open-metric-value">{ngn(projectDetail.investorTargetNgn)}</span>
+                </div>
+                <div className="investor-open-metric investor-open-metric--highlight">
+                  <span className="investor-open-metric-label">Remaining pool</span>
+                  <span className="investor-open-metric-value">{ngn(projectDetail.remainingNgn)}</span>
+                </div>
+                {projectDetail.projectType ? (
+                  <div className="investor-open-metric">
+                    <span className="investor-open-metric-label">Project type</span>
+                    <span className="investor-open-metric-value">
+                      {String(projectDetail.projectType).replace(/^\w/, (c) => c.toUpperCase())}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="investor-project-detail-breakdown">
+                <Title level={5} className="investor-project-detail-breakdown-title">
+                  Cost breakdown
+                </Title>
+                {projectDetail.breakdownItems?.length ? (
+                  <>
+                    <div className="investor-project-detail-breakdown-list">
+                      {projectDetail.breakdownItems.map((row) => (
+                        <div key={row.key} className="investor-project-detail-breakdown-row">
+                          <div className="investor-project-detail-breakdown-main">
+                            <span className="investor-project-detail-breakdown-label">{row.label}</span>
+                            {row.category ? (
+                              <Tag className="investor-project-detail-breakdown-tag">{row.category}</Tag>
+                            ) : null}
+                          </div>
+                          <span className="investor-project-detail-breakdown-amount">{row.amountDisplay}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {projectDetail.totalBreakdown != null ? (
+                      <div className="investor-project-detail-breakdown-total">
+                        <span>Total breakdown</span>
+                        <span>{ngn(projectDetail.totalBreakdown)}</span>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <Text type="secondary" className="investor-project-detail-breakdown-empty">
+                    No cost breakdown published for this project yet.
+                  </Text>
+                )}
+              </div>
+            </div>
           ) : (
             !detailLoading && <Text type="secondary">No detail available.</Text>
           )}
