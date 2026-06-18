@@ -26,6 +26,14 @@ function formatNgnAmount(value) {
   return `₦${n.toLocaleString("en-NG", { maximumFractionDigits: 0 })}`;
 }
 
+/** Table amounts: compact (₦6.0M) from ₦1,000 upward to avoid column wrap. */
+function formatTableNgnAmount(value) {
+  const n = parseAmount(value);
+  if (n == null) return "—";
+  if (Math.abs(n) >= 1000) return formatCompactNgn(n);
+  return formatNgnAmount(value);
+}
+
 function formatScheduleStatus(statusDisplay) {
   const raw = String(statusDisplay || "")
     .replace(/_/g, " ")
@@ -91,22 +99,18 @@ export function mapPaymentsKpis({
     "overdue_amount",
     "amount",
   ]);
-  const branchIds = Array.isArray(od?.branch_ids) ? od.branch_ids.filter((id) => id != null) : [];
-  let overdueSub = "No overdue installments (90d+)";
-  if (branchIds.length) {
-    overdueSub = `Branches ${branchIds.join(", ")}`;
-  } else if (overdueNgn != null && overdueNgn > 0) {
-    overdueSub = "See upcoming schedule for detail";
-  }
+  const overdueSub =
+    overdueNgn != null && overdueNgn > 0
+      ? "See upcoming schedule for detail"
+      : "No overdue installments (90d+)";
 
   const dueDate = next?.due_date ?? next?.dueDate;
   const nextDueDateDisplay =
     dueDate && dayjs(dueDate).isValid() ? dayjs(dueDate).format("DD MMM") : "—";
   const nextAmount = firstNumber(next, ["amount", "your_credit", "total_due"]);
   const nextSubParts = [];
-  if (nextAmount != null) nextSubParts.push(formatNgnAmount(nextAmount));
-  if (next?.branch_id != null) nextSubParts.push(`Branch ${next.branch_id}`);
-  else if (next?.project_id != null) nextSubParts.push(`Project #${next.project_id}`);
+  if (nextAmount != null) nextSubParts.push(formatTableNgnAmount(nextAmount));
+  if (next?.project_name) nextSubParts.push(String(next.project_name));
   let nextSub = nextSubParts.length ? nextSubParts.join(" · ") : "—";
   if (next?.is_past_due) {
     nextSub = nextSub === "—" ? "Past due" : `${nextSub} · Past due`;
@@ -144,26 +148,21 @@ export function mapUpcomingSchedule(raw) {
     const due = row.due_date && dayjs(row.due_date).isValid()
       ? dayjs(row.due_date).format("DD MMM")
       : "—";
-    const branch =
-      row.branch_id != null
-        ? String(row.branch_id)
-        : row.project_name
-          ? String(row.project_name).slice(0, 28)
-          : "—";
+    const project = row.project_name ? String(row.project_name) : "—";
     const statusLabel = formatScheduleStatus(row.status_display || row.status);
     const posted =
       row.last_posted_at && dayjs(row.last_posted_at).isValid()
         ? dayjs(row.last_posted_at).format("DD MMM · HH:mm")
         : null;
-    const statusCell = posted ? `${statusLabel} · ${posted}` : statusLabel;
 
     return {
       key: String(row.schedule_id ?? `${row.due_date}-${row.project_id}`),
       due,
-      branch,
-      totalDue: formatNgnAmount(row.total_due),
-      yourCredit: formatNgnAmount(row.your_credit),
-      status: statusCell,
+      project,
+      totalDue: formatTableNgnAmount(row.total_due),
+      yourCredit: formatTableNgnAmount(row.your_credit),
+      status: statusLabel,
+      statusDetail: posted ? `${statusLabel} · ${posted}` : statusLabel,
       statusKey: String(row.status_display || row.status || "").toLowerCase(),
       projectName: row.project_name,
     };
@@ -236,10 +235,14 @@ export function mapPaymentsLedger(raw) {
       date,
       dateIso: row.date,
       type: formatLedgerType(row.type),
-      ref: row.branch_ref != null ? String(row.branch_ref) : "—",
+      ref: row.project_name
+        ? String(row.project_name)
+        : row.reference
+          ? String(row.reference)
+          : "—",
       customer:
-        row.customer_amount != null ? formatNgnAmount(row.customer_amount) : "—",
-      allocation: formatNgnAmount(row.your_allocation),
+        row.customer_amount != null ? formatTableNgnAmount(row.customer_amount) : "—",
+      allocation: formatTableNgnAmount(row.your_allocation),
       effect: formatBalanceEffect(row.balance_effect),
       projectName: row.project_name,
     };
@@ -279,18 +282,17 @@ export function mapProjectPayoutSchedule(raw) {
         ? dayjs(row.last_posted_at).format("DD MMM YYYY")
         : null;
     const statusLabel = formatScheduleStatus(row.status_display || row.status);
-    const statusCell = posted && statusLabel !== "—" ? `${statusLabel} · ${posted}` : statusLabel;
 
     return {
-      key: String(row.schedule_id ?? `${row.installment_number}-${row.due_date}`),
-      installmentNumber: row.installment_number ?? "—",
+      key: String(row.schedule_id ?? `${row.due_date}-${row.installment_number}`),
       due,
       dueIso: row.due_date,
-      amountDue: formatNgnAmount(row.amount_due),
-      amountPaid: formatNgnAmount(row.amount_paid),
-      amountRemaining: formatNgnAmount(row.amount_remaining),
+      amountDue: formatTableNgnAmount(row.amount_due),
+      amountPaid: formatTableNgnAmount(row.amount_paid),
+      amountRemaining: formatTableNgnAmount(row.amount_remaining),
       paidDate,
-      status: statusCell,
+      status: statusLabel,
+      statusDetail: posted && statusLabel !== "—" ? `${statusLabel} · ${posted}` : statusLabel,
       statusKey: String(row.status_display || row.status || "").toLowerCase(),
       projectName: row.project_name,
     };
@@ -306,9 +308,9 @@ export function mapProjectPayoutSchedule(raw) {
       totalInstallments: firstNumber(summary, ["total_installments"]) ?? rows.length,
       paidCount: firstNumber(summary, ["paid_count"]) ?? 0,
       openCount: firstNumber(summary, ["open_count"]) ?? 0,
-      totalDue: formatNgnAmount(summary.total_due),
-      totalPaid: formatNgnAmount(summary.total_paid),
-      totalRemaining: formatNgnAmount(summary.total_remaining),
+      totalDue: formatTableNgnAmount(summary.total_due),
+      totalPaid: formatTableNgnAmount(summary.total_paid),
+      totalRemaining: formatTableNgnAmount(summary.total_remaining),
     },
     installments: rows.map(mapRow),
   };

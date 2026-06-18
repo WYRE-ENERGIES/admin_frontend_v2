@@ -2,6 +2,7 @@ import {
   firstNumber,
   firstString,
   formatCompactNgn,
+  humanLocationLabel,
   unwrapListOrObject,
 } from "./investorPortfolioMappers";
 
@@ -134,9 +135,9 @@ export function mapOpenProjectsList(raw) {
     const clientContributionNgn =
       firstNumber(item, ["client_contribution", "client_contribution_ngn"]) ?? 0;
 
-    const loc = [item.branch_label, item.location_label, item.location, item.city]
-      .filter(Boolean)
-      .join(" · ");
+    const loc =
+      humanLocationLabel(item.location_label, item.location, item.city, item.branch_label) ||
+      undefined;
 
     const statusRaw = firstString(item, ["status"], "").toLowerCase();
     const isAvailable =
@@ -158,7 +159,7 @@ export function mapOpenProjectsList(raw) {
       clientContributionNgn,
       raisedPct,
       locationLabel: item.location_label || item.location,
-      branchLabel: item.branch_label,
+      branchLabel: humanLocationLabel(item.location_label, item.location, item.city, item.branch_label),
       projectType: item.project_type,
       isAvailable,
       footerLeft: "Open project detail for cost breakdown",
@@ -234,7 +235,13 @@ export function mapFinancedProjectsTiles(raw) {
       idx;
 
     const name = firstString(item, ["name", "project_name", "installation_name"], "—");
-    const branchLabel = firstString(item, ["location", "branch_label", "branchLabel"], "—");
+    const branchLabel =
+      humanLocationLabel(
+        firstString(item, ["location"], ""),
+        item.location_label,
+        item.city,
+        firstString(item, ["branch_label", "branchLabel"], "")
+      ) || "—";
 
     const paymentHealth = String(item.payment_health || item.repayment_status || "").toLowerCase();
     let status = formatProjectsFinancedStatus(
