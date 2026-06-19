@@ -25,7 +25,7 @@ const initialState = {
     partialErrors: null,
     alert: null,
     kpis: {
-      primaryInvested: null,
+      primaryReceivables: null,
       portfolioScore: null,
       portfolioGeneration: null,
       repaymentTotals: null,

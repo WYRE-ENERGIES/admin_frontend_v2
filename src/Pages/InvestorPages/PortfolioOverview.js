@@ -42,6 +42,9 @@ const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
+/** Percentage width for financed projects table (sums to 100%). */
+const financedColPct = (pct, col) => ({ ...col, width: `${pct}%` });
+
 function formatPosted(row) {
   if (row.statusPosted && row.statusPosted !== "—") return row.statusPosted;
   if (row.lastPostedIso) {
@@ -116,21 +119,24 @@ function PortfolioOverview() {
 
   const columns = useMemo(
     () => [
-      {
+      financedColPct(14, {
         title: "Installation",
         key: "installation",
-        width: 200,
+        ellipsis: true,
         render: (_, row) => (
           <div className="investor-project-cell">
-            <div className="investor-project-name">{row.installationTitle}</div>
-            <div className="investor-project-branch">{row.installationSub}</div>
+            <div className="investor-project-name" title={row.installationTitle}>
+              {row.installationTitle}
+            </div>
+            <div className="investor-project-branch" title={row.installationSub}>
+              {row.installationSub}
+            </div>
           </div>
         ),
-      },
-      {
+      }),
+      financedColPct(12, {
         title: "Status",
         key: "status",
-        width: 148,
         render: (_, row) => (
           <HealthCell
             dot={row.healthDot}
@@ -138,60 +144,69 @@ function PortfolioOverview() {
             posted={formatPosted(row)}
           />
         ),
-      },
-      {
+      }),
+      financedColPct(11, {
         title: "kWp",
         dataIndex: "capacityKwp",
         key: "capacityKwp",
-        width: 88,
+        align: "right",
+        className: "investor-financed-col-numeric",
         render: (v) => <span className="investor-table-nowrap">{v}</span>,
-      },
-      {
+      }),
+      financedColPct(12, {
         title: "Project cost",
-        dataIndex: "projectCostDisplay",
         key: "projectCostDisplay",
-        width: 120,
-      },
-      {
-        title: "ROI",
-        key: "kpiRemark",
-        width: 140,
+        align: "right",
+        className: "investor-financed-col-numeric",
         render: (_, row) => (
-          <div className="investor-financed-kpi-cell">
-            <div className="investor-financed-kpi-main">{row.kpiRemarkMain}</div>
-            {row.kpiRemarkSub ? (
-              <Text type="secondary" className="investor-financed-kpi-sub">
-                {row.kpiRemarkSub}
-              </Text>
-            ) : null}
+          <div
+            className="investor-financed-cost-cell"
+            title={`${row.projectCostDisplay} · Invested ${row.investedDisplay}`}
+          >
+            <div className="investor-financed-cost-main">{row.projectCostDisplay}</div>
+            <Text type="secondary" className="investor-financed-cost-invested">
+              Invested {row.investedDisplay}
+            </Text>
           </div>
         ),
-      },
-      {
+      }),
+      financedColPct(12, {
         title: "Yield (kWh)",
         key: "energy",
-        width: 120,
+        align: "right",
+        className: "investor-financed-col-numeric",
         render: (_, row) => (
-          <div className="investor-financed-energy-cell">
+          <div
+            className="investor-financed-energy-cell"
+            title={`${row.energyKwhDisplay} ${row.energyValueDisplay}`}
+          >
             <div className="investor-financed-energy-kwh">{row.energyKwhDisplay}</div>
             <Text type="secondary" className="investor-financed-energy-ngn">
               {row.energyValueDisplay}
             </Text>
           </div>
         ),
-      },
-      {
-        title: "Carbon offset",
-        dataIndex: "carbonDisplay",
-        key: "carbonDisplay",
-        width: 110,
-      },
-      {
+      }),
+      financedColPct(11, {
+        title: "ROI",
+        key: "kpiRemark",
+        align: "right",
+        className: "investor-financed-col-numeric",
+        render: (_, row) => (
+          <span
+            className="investor-financed-kpi-main investor-table-nowrap"
+            title={row.kpiRemarkSub || row.kpiRemarkMain}
+          >
+            {row.kpiRemarkMain}
+          </span>
+        ),
+      }),
+      financedColPct(14, {
         title: "Repayment",
         key: "repayment",
         ellipsis: true,
         render: (_, row) => (
-          <div className="investor-financed-repay-cell">
+          <div className="investor-financed-repay-cell" title={`${row.repaymentMain} · ${row.repaymentSub}`}>
             <div className="investor-financed-repay-main">{row.repaymentMain}</div>
             <div
               className={
@@ -204,7 +219,15 @@ function PortfolioOverview() {
             </div>
           </div>
         ),
-      },
+      }),
+      financedColPct(14, {
+        title: "Carbon offset",
+        dataIndex: "carbonDisplay",
+        key: "carbonDisplay",
+        align: "right",
+        className: "investor-financed-col-numeric",
+        render: (v) => <span className="investor-table-nowrap">{v}</span>,
+      }),
     ],
     []
   );
@@ -291,34 +314,41 @@ function PortfolioOverview() {
             bordered={false}
             className="investor-metric-card investor-metric-card--primary"
           >
-            <div className="investor-metric-label">Total invested</div>
+            <div className="investor-metric-label">Total receivables</div>
             <div className="investor-metric-value">
-              {kpis.primaryInvested?.amount != null
-                ? formatCompactNgn(kpis.primaryInvested.amount)
+              {kpis.primaryReceivables?.totalReceivable != null
+                ? formatCompactNgn(kpis.primaryReceivables.totalReceivable)
                 : "—"}
             </div>
+            {kpis.primaryReceivables?.compositionSub ? (
+              <div className="investor-metric-primary-composition">
+                {kpis.primaryReceivables.compositionSub}
+              </div>
+            ) : null}
             <div className="investor-metric-primary-stack">
               <div>
                 Payments received{" "}
-                {kpis.primaryInvested?.paymentsReceived != null
-                  ? formatCompactNgn(kpis.primaryInvested.paymentsReceived)
+                {kpis.primaryReceivables?.paymentsReceived != null
+                  ? formatCompactNgn(kpis.primaryReceivables.paymentsReceived)
                   : "—"}
               </div>
               <div>
                 Outstanding{" "}
-                {kpis.primaryInvested?.outstanding != null
-                  ? formatCompactNgn(kpis.primaryInvested.outstanding)
+                {kpis.primaryReceivables?.outstanding != null
+                  ? formatCompactNgn(kpis.primaryReceivables.outstanding)
                   : "—"}
               </div>
             </div>
           </Card>
 
-          <Card bordered={false} className="investor-metric-card">
+          <Card bordered={false} className="investor-metric-card investor-metric-card--portfolio-score">
             <div className="investor-metric-label">Portfolio score</div>
             <div className="investor-metric-value">
               {kpis.portfolioScore?.display ?? "—"}
             </div>
-            <div className="investor-metric-sub">{kpis.portfolioScore?.sub}</div>
+            {kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—" ? (
+              <div className="investor-metric-score-summary">{kpis.portfolioScore.summary}</div>
+            ) : null}
           </Card>
 
           <Card bordered={false} className="investor-metric-card">
@@ -359,7 +389,7 @@ function PortfolioOverview() {
         className="investor-card"
         bordered={false}
       >
-        <div className="table-responsive-wrapper investor-table-wrap">
+        <div className="table-responsive-wrapper investor-table-wrap investor-table-wrap--financed">
           <Table
             className="investor-table investor-financed-table"
             columns={columns}

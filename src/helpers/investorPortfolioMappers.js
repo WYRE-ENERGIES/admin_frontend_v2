@@ -70,23 +70,95 @@ export function humanLocationLabel(...parts) {
   return unique.length ? unique.join(" · ") : null;
 }
 
-/** investors/total-invested */
-export function mapTotalInvestedCard(raw) {
-  const o = unwrapListOrObject(raw) || raw;
-  const amount =
+/** investors/total-receivables */
+export function mapTotalReceivablesCard(raw) {
+  const o = unwrapInvestorEnvelope(raw) ?? unwrapListOrObject(raw) ?? raw;
+
+  const totalReceivable =
     firstNumber(o, [
-      "total_invested",
-      "total_invested_ngn",
-      "totalInvested",
-      "amount",
-      "value",
-    ]) ?? firstNumber(o?.data, ["total_invested", "amount"]);
-  const activeProjects = firstNumber(o, ["active_projects", "activeProjects", "project_count"]);
+      "total_receivable",
+      "total_receivables",
+      "totalReceivable",
+      "total_receivable_ngn",
+    ]) ?? firstNumber(o?.data, ["total_receivable", "amount"]);
+
+  const investedAmount =
+    firstNumber(o, ["total_invested", "total_invested_ngn", "totalInvested"]) ??
+    firstNumber(o?.data, ["total_invested"]);
+
+  const interestTotal =
+    firstNumber(o, ["interest_total", "interestTotal", "total_interest"]) ??
+    firstNumber(o?.data, ["interest_total"]);
+
+  const paymentsReceived =
+    firstNumber(o, ["payments_received", "paymentsReceived", "repayments_received"]) ??
+    firstNumber(o?.data, ["payments_received"]);
+
+  const outstanding = parseOutstandingAmount(o);
+
+  const activeProjectsCount =
+    firstNumber(o, ["active_projects_count", "active_projects", "activeProjects"]) ??
+    firstNumber(o?.data, ["active_projects_count"]);
+
+  const investedFmt = investedAmount != null ? formatCompactNgn(investedAmount) : null;
+  const interestFmt = interestTotal != null ? formatCompactNgn(interestTotal) : null;
+
+  let compositionSub = null;
+  if (investedFmt && interestFmt) {
+    compositionSub = `(${investedFmt} invested · ${interestFmt} interest)`;
+  } else if (investedFmt) {
+    compositionSub = `(${investedFmt} invested)`;
+  } else if (interestFmt) {
+    compositionSub = `(${interestFmt} interest)`;
+  }
+
+  return {
+    totalReceivable,
+    investedAmount,
+    interestTotal,
+    compositionSub,
+    paymentsReceived,
+    outstanding,
+    activeProjectsCount,
+  };
+}
+
+/**
+ * Primary purple card: total receivables + invested/interest breakdown + payments & outstanding.
+ * Falls back to repayment-totals when receivables fields are missing.
+ */
+export function mapPrimaryReceivablesCard(totalReceivablesRaw, repaymentTotalsRaw) {
+  const rec = mapTotalReceivablesCard(totalReceivablesRaw);
+  const repay = mapRepaymentTotalsCard(repaymentTotalsRaw);
+  return {
+    totalReceivable: rec.totalReceivable,
+    investedAmount: rec.investedAmount,
+    interestTotal: rec.interestTotal,
+    compositionSub: rec.compositionSub,
+    paymentsReceived: rec.paymentsReceived ?? repay.received,
+    outstanding: rec.outstanding ?? repay.outstanding,
+  };
+}
+
+/** @deprecated Use mapTotalReceivablesCard — kept for legacy callers. */
+export function mapTotalInvestedCard(raw) {
+  const rec = mapTotalReceivablesCard(raw);
+  const activeProjects = rec.activeProjectsCount;
   const sub =
     activeProjects != null
       ? `Across ${activeProjects} active project${activeProjects === 1 ? "" : "s"}`
-      : firstString(o, ["subtitle", "description", "detail"], "—");
-  return { amount, sub };
+      : "—";
+  return { amount: rec.investedAmount ?? rec.totalReceivable, sub };
+}
+
+/** @deprecated Use mapPrimaryReceivablesCard */
+export function mapPrimaryInvestedCard(totalRaw, repaymentTotalsRaw) {
+  const rec = mapPrimaryReceivablesCard(totalRaw, repaymentTotalsRaw);
+  return {
+    amount: rec.totalReceivable ?? rec.investedAmount,
+    paymentsReceived: rec.paymentsReceived,
+    outstanding: rec.outstanding,
+  };
 }
 
 /** Convert API kWh to MWh headline (portfolio_generation_kwh → display). */
@@ -210,28 +282,6 @@ export function mapRepaymentTotalsCard(raw) {
   const sub = firstString(o, ["subtitle", "description", "period", "detail"], "Lifetime to date");
   return { received, outstanding, sub };
 }
-
-/**
- * Primary purple card: total invested + lines for payments received & outstanding.
- */
-export function mapPrimaryInvestedCard(totalRaw, repaymentTotalsRaw) {
-  const total = mapTotalInvestedCard(totalRaw);
-  const repay = mapRepaymentTotalsCard(repaymentTotalsRaw);
-  const totalO = unwrapInvestorEnvelope(totalRaw) ?? unwrapListOrObject(totalRaw) ?? totalRaw;
-  const paymentsFromTotal = firstNumber(totalO, [
-    "repayments_received",
-    "payments_received",
-    "total_repaid_to_investors",
-    "total_repaid",
-    "total_credited",
-  ]);
-  return {
-    amount: total.amount,
-    paymentsReceived: repay.received ?? paymentsFromTotal,
-    outstanding: repay.outstanding,
-  };
-}
-
 /** Portfolio score KPI: sum paid/total installments across financed projects (e.g. 6+7 / 24+12 → 36%). */
 export function aggregatePortfolioScoreKpi(mappedFinancedProjects) {
   const rows = mappedFinancedProjects ?? [];
@@ -302,9 +352,15 @@ export function mapPortfolioScoreCard(raw) {
     sub = firstString(o, ["subtitle", "portfolio_score_subtitle"], "—");
   }
 
+  const apiSummary = firstString(o, ["summary", "portfolio_score_summary"], "");
+  const summary = apiSummary && apiSummary !== "—" ? apiSummary : sub;
+
   return {
     display,
     sub,
+    summary,
+    score: score || null,
+    overdue: overdue != null ? overdue : null,
     percent: percent != null && !Number.isNaN(percent) ? Math.round(percent) : null,
   };
 }
@@ -413,19 +469,44 @@ export function mapFinancedProjectsTable(rows) {
     const projectCostDisplay =
       projectCostN != null ? formatCompactNgn(projectCostN) : "—";
 
+    const investedN =
+      firstNumber(item, [
+        "invested",
+        "invested_amount",
+        "amount_invested",
+        "invested_ngn",
+        "investor_invested",
+        "your_investment",
+        "investment_amount",
+        "total_invested",
+      ]) ?? null;
+    const investedDisplay = investedN != null ? formatCompactNgn(investedN) : "—";
+
     const kpiRecoveryPct =
       firstNumber(item, ["recovery_percent"]) ??
       firstNumber(item?.kpi, ["recovery_percent"]) ??
       firstNumber(item?.cost_recovery, ["recovery_percent"]) ??
+      null;
+    const roiPct =
+      firstNumber(item, ["roi_percent", "roi", "expected_roi_percent"]) ??
+      firstNumber(item?.kpi, ["roi_percent"]) ??
       null;
     const kpiPaybackHuman =
       firstString(item, ["payback_label"], "") ||
       firstString(item?.kpi?.payback_approx, ["human"], "") ||
       firstString(item?.payback_estimate, ["human"], "");
     const kpiRemarkMain =
-      kpiRecoveryPct != null ? `${kpiRecoveryPct}%` : kpiPaybackHuman || "—";
+      roiPct != null
+        ? `${roiPct}%`
+        : kpiRecoveryPct != null
+          ? `${kpiRecoveryPct}%`
+          : kpiPaybackHuman || "—";
     const kpiRemarkSub =
-      kpiRecoveryPct != null && kpiPaybackHuman ? kpiPaybackHuman : null;
+      roiPct != null && kpiPaybackHuman
+        ? kpiPaybackHuman
+        : kpiRecoveryPct != null && kpiPaybackHuman
+          ? kpiPaybackHuman
+          : null;
 
     const energyKwh =
       firstNumber(item, [
@@ -510,6 +591,8 @@ export function mapFinancedProjectsTable(rows) {
       lastPostedIso,
       capacityKwp: capacityKwp != null ? String(capacityKwp) : "—",
       projectCostDisplay,
+      investedDisplay,
+      investedNgn: investedN,
       kpiRemarkMain,
       kpiRemarkSub,
       energyKwhDisplay,

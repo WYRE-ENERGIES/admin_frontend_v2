@@ -153,6 +153,8 @@ body.wyre-investor-app .wyre-app-layout {
   min-height: 0;
   display: flex;
   flex-direction: column;
+  padding-top: 35px;
+  box-sizing: border-box;
 }
 
 .investor-sider-menu.SideMenuVertical {
@@ -217,10 +219,57 @@ body.wyre-investor-app .wyre-app-layout {
   min-height: 100%;
 }
 
-.investor-sider-brand.wyre-logo {
+.investor-sider-brand {
+  display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
+  width: 100%;
+  padding: 0 8px;
+  margin-bottom: 20px;
+  box-sizing: border-box;
+}
+
+.investor-sider-brand-logo {
+  display: block;
+  flex-shrink: 0;
+}
+
+.investor-sider-brand-bar {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  max-width: 100%;
+}
+
+.investor-sider-brand--collapsed {
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.investor-sider-collapse-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.investor-sider-collapse-btn .anticon {
+  font-size: 16px;
+  color: #fff;
 }
 
 .investor-sider-role-pill {
@@ -230,6 +279,9 @@ body.wyre-investor-app .wyre-app-layout {
   letter-spacing: 0.14em;
   color: rgba(255, 255, 255, 0.78);
   text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 .SideMenu{
@@ -2877,6 +2929,15 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: #fff;
 }
 
+.investor-metric-primary-composition {
+  margin-top: 4px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .investor-metric-primary-stack {
   margin-top: 12px;
   display: flex;
@@ -2887,6 +2948,15 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-weight: 600;
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.92);
+}
+
+.investor-metric-card--portfolio-score .investor-metric-score-summary {
+  margin-top: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgba(0, 0, 0, 0.55);
 }
 
 .investor-metric-label {
@@ -3021,6 +3091,29 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.investor-financed-cost-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.investor-financed-cost-main {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+  white-space: nowrap;
+}
+
+.investor-financed-cost-invested {
+  font-size: 12px !important;
+  white-space: nowrap;
 }
 
 .investor-financed-energy-kwh {
@@ -3038,6 +3131,8 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  align-items: flex-end;
+  min-width: 0;
 }
 
 .investor-financed-kpi-main {
@@ -3065,6 +3160,9 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 13px;
   color: #141414;
   line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .investor-financed-repay-sub {
@@ -3072,6 +3170,9 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 12px;
   font-weight: 500;
   color: rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .investor-financed-repay-sub--overdue {
@@ -3823,6 +3924,9 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 14px;
   line-height: 1.35;
   color: #141414;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .investor-project-branch {
@@ -3831,6 +3935,9 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-weight: 500;
   line-height: 1.4;
   color: rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .investor-table-wrap {
@@ -3845,6 +3952,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   min-width: 0;
 }
 
+.investor-table-wrap--financed {
+  overflow-x: hidden;
+}
+
 .investor-financed-table .ant-table-content,
 .investor-financed-table .ant-table-body {
   overflow-x: hidden !important;
@@ -3852,11 +3963,27 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-financed-table table {
   width: 100% !important;
+  min-width: 0;
   table-layout: fixed;
 }
 
 .investor-financed-table .ant-table-thead > tr > th {
-  white-space: nowrap;
+  white-space: normal !important;
+  line-height: 1.3;
+  vertical-align: bottom;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.investor-financed-table .ant-table-thead > tr > th.investor-financed-col-numeric,
+.investor-financed-table .ant-table-tbody > tr > td.investor-financed-col-numeric {
+  text-align: right !important;
+}
+
+.investor-financed-table .ant-table-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .investor-table-nowrap {
@@ -3935,6 +4062,22 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-weight: 500;
 }
 
+@media (max-width: 900px) {
+  .investor-table-wrap--financed {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .investor-financed-table .ant-table-content,
+  .investor-financed-table .ant-table-body {
+    overflow-x: auto !important;
+  }
+
+  .investor-financed-table table {
+    min-width: 820px;
+  }
+}
+
 @media (max-width: 768px) {
   .investor-table-wrap {
     overflow-x: auto;
@@ -3944,12 +4087,22 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
   .investor-table-wrap .ant-table,
   .investor-table-wrap .ant-table-container {
-    min-width: 640px;
+    min-width: 0;
   }
 
-  .investor-financed-table .ant-table-content,
-  .investor-financed-table .ant-table-body {
-    overflow-x: auto !important;
+  .investor-financed-table table {
+    min-width: 760px;
+  }
+
+  .investor-financed-table .ant-table-thead > tr > th,
+  .investor-financed-table .ant-table-tbody > tr > td {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .investor-financed-legend {
+    flex-direction: column;
+    gap: 10px;
   }
 }
 
@@ -3974,6 +4127,24 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-weight: 500;
   padding: 14px 16px !important;
   vertical-align: top;
+}
+
+.investor-financed-table .ant-table-thead > tr > th {
+  padding: 10px 8px !important;
+  font-size: 11px !important;
+  white-space: normal !important;
+  line-height: 1.3;
+  vertical-align: bottom;
+}
+
+.investor-financed-table .ant-table-tbody > tr > td {
+  padding: 10px 8px !important;
+}
+
+.investor-financed-table .ant-table-thead > tr > th.investor-financed-col-numeric,
+.investor-financed-table .ant-table-tbody > tr > td.investor-financed-col-numeric {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 
 .investor-table .ant-table-tbody > tr > td:not(:first-child) {

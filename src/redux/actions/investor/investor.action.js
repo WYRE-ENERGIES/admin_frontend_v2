@@ -17,7 +17,7 @@ import {
   mapNotificationsToAlert,
   mapPerformanceSnapshotChart,
   mapPortfolioGenerationCard,
-  mapPrimaryInvestedCard,
+  mapPrimaryReceivablesCard,
   mapRecentPaymentActivity,
   mapPortfolioScoreCard,
   mapRepaymentTotalsCard,
@@ -55,7 +55,7 @@ export const fetchInvestorPortfolioOverview =
 
     const requests = [
       ["notifications", "/api/v1/investors/notifications/"],
-      ["totalInvested", "/api/v1/investors/total-invested/"],
+      ["totalReceivables", INVESTOR_API.totalReceivables],
       ["portfolioScore", INVESTOR_API.portfolioScore],
       ["portfolioGeneration", INVESTOR_API.portfolioGeneration(startMonth, endMonth)],
       ["repaymentTotals", "/api/v1/investors/repayment-totals/"],
@@ -93,7 +93,10 @@ export const fetchInvestorPortfolioOverview =
       partialErrors: errors.length ? errors : null,
       alert: mapNotificationsToAlert(raw.notifications),
       kpis: {
-        primaryInvested: mapPrimaryInvestedCard(raw.totalInvested, raw.repaymentTotals),
+        primaryReceivables: mapPrimaryReceivablesCard(
+          raw.totalReceivables,
+          raw.repaymentTotals
+        ),
         portfolioScore: mapPortfolioScoreCard(raw.portfolioScore),
         portfolioGeneration: mapPortfolioGenerationCard(raw.portfolioGeneration),
         repaymentTotals: mapRepaymentTotalsCard(raw.repaymentTotals),
