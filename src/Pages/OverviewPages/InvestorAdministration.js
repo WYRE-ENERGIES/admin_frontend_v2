@@ -164,9 +164,9 @@ function AdminDatePicker(props) {
 
   const disabledDate = disablePast
     ? (current) => {
-        if (disabledDateProp?.(current)) return true;
-        return isBeforeToday(current);
-      }
+      if (disabledDateProp?.(current)) return true;
+      return isBeforeToday(current);
+    }
     : disabledDateProp;
 
   return (
@@ -298,29 +298,32 @@ const projectProgrammeStateTagColor = (label) => {
   return "default";
 };
 
-function MetricCard({ icon, label, value, sub, subLines, variant = "default" }) {
+function MetricCard({ icon, label, value, sub, bg, decorationColor, subAsLines }) {
+  const parts = sub ? sub.split(" · ") : [];
   return (
-    <Card
-      bordered={false}
-      className={`admin-investor-metric admin-investor-metric--${variant}`}
-    >
-      <div className="admin-investor-metric-value">{value}</div>
-      <div className="admin-investor-metric-mid">
+    <div className="admin-investor-metric" style={{ background: bg }}>
+      <div className="admin-investor-metric-decoration admin-investor-metric-decoration--xl" style={{ background: decorationColor }} />
+      <div className="admin-investor-metric-top">
         <div className="admin-investor-metric-icon">{icon}</div>
-        <div className="admin-investor-metric-label">{label}</div>
+        <Text className="admin-investor-metric-label">{label}</Text>
       </div>
-      {subLines?.length ? (
-        <div className="admin-investor-metric-sub admin-investor-metric-sub--stacked">
-          {subLines.map((line, idx) => (
-            <div key={idx} className="admin-investor-metric-sub-line">
-              {line}
-            </div>
-          ))}
-        </div>
-      ) : sub ? (
-        <div className="admin-investor-metric-sub">{sub}</div>
-      ) : null}
-    </Card>
+      <div className="admin-investor-metric-value">{value}</div>
+      {parts.length > 0 && (
+        subAsLines ? (
+          <div className="admin-investor-metric-lines">
+            {parts.map((line, i) => (
+              <Text key={i} className="admin-investor-metric-line">{line}</Text>
+            ))}
+          </div>
+        ) : (
+          <div className="admin-investor-metric-badges">
+            {parts.map((b, i) => (
+              <span key={i} className="admin-investor-metric-badge">{b}</span>
+            ))}
+          </div>
+        )
+      )}
+    </div>
   );
 }
 
@@ -467,7 +470,8 @@ function InvestorAdministration() {
   const openProjectCostBreakdown = () => {
     setShowProjectCostBreakdown(true);
     const existing = projectForm.getFieldValue("cost_items");
-    if (!Array.isArray(existing) || existing.length === 0) {
+    if (!Array.isArray(existing) || existing.length === 0)
+    {
       projectForm.setFieldsValue({
         cost_items: [{ category: "materials", label: "", amount: undefined, notes: "" }],
       });
@@ -571,7 +575,8 @@ function InvestorAdministration() {
   }, [dispatch, isSuperAdmin]);
 
   useEffect(() => {
-    if (activeModal !== MODAL.POST_PAYOUT || payoutInvestmentId == null || payoutInvestmentId === "") {
+    if (activeModal !== MODAL.POST_PAYOUT || payoutInvestmentId == null || payoutInvestmentId === "")
+    {
       setPayoutSchedules([]);
       setPayoutSchedulesLoading(false);
       return undefined;
@@ -582,9 +587,11 @@ function InvestorAdministration() {
       const res = await dispatch(fetchInvestorPaymentSchedules(payoutInvestmentId));
       if (cancelled) return;
       setPayoutSchedulesLoading(false);
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         setPayoutSchedules(res.data?.results || []);
-      } else {
+      } else
+      {
         setPayoutSchedules([]);
         message.warning(res.message || "Could not load payment schedules");
       }
@@ -603,7 +610,8 @@ function InvestorAdministration() {
       dispatch(clearSupportTicketDetail());
       setTicketResponseOpen(true);
       const res = await dispatch(fetchAdminSupportTicketDetail(ticketId));
-      if (!res.fulfilled) {
+      if (!res.fulfilled)
+      {
         message.error(res.message || "Could not load ticket details");
       }
     },
@@ -623,10 +631,12 @@ function InvestorAdministration() {
     const trimmed = String(ticketResponseDraft || "").trim();
     if (!trimmed) return;
     const res = await dispatch(createAdminSupportTicketResponse(Number(activeTicketId), { body: trimmed }));
-    if (res.fulfilled) {
+    if (res.fulfilled)
+    {
       message.success(res.message || "Created");
       const result = res.data?.result;
-      if (result) {
+      if (result)
+      {
         setTicketPostResponses((prev) => {
           const key = String(activeTicketId);
           const existing = prev[key] || [];
@@ -647,7 +657,8 @@ function InvestorAdministration() {
       await dispatch(fetchAdminSupportTicketsList({ page: 1, page_size: 50 }));
       setTicketResponseOpen(false);
       setTicketResponseDraft("");
-    } else {
+    } else
+    {
       message.error(res.message || "Failed to post response");
     }
   }, [activeTicketId, dispatch, ticketResponseDraft]);
@@ -666,7 +677,8 @@ function InvestorAdministration() {
   }, [dispatch, isSuperAdmin]);
 
   const copyToClipboard = useCallback(async (value) => {
-    try {
+    try
+    {
       await navigator.clipboard.writeText(String(value || ""));
       message.success("Copied");
     } catch {
@@ -675,7 +687,8 @@ function InvestorAdministration() {
   }, []);
 
   const openCustomerRepayment = useCallback((row) => {
-    if (row && typeof row === "object" && row.projectName != null) {
+    if (row && typeof row === "object" && row.projectName != null)
+    {
       const branchPart = row.branchId != null && row.branchId !== "" ? `Branch ${row.branchId}` : null;
       const schedPart = row.scheduleId != null ? `Schedule line #${row.scheduleId}` : null;
       const progress =
@@ -691,7 +704,8 @@ function InvestorAdministration() {
         actionLabel: "Record customer payment",
         customerScheduleLineId: row.scheduleId ?? row.customerScheduleLineId,
       });
-    } else {
+    } else
+    {
       setActivePaymentMeta({
         type: "customer",
         title: "Customer repayment schedule",
@@ -706,7 +720,8 @@ function InvestorAdministration() {
   }, []);
 
   const openInvestorPayment = useCallback((row) => {
-    if (row && typeof row === "object" && row.investmentId != null) {
+    if (row && typeof row === "object" && row.investmentId != null)
+    {
       setActivePaymentMeta({
         type: "investor",
         title: `${row.projectName || "Project"} — investor repayment`,
@@ -716,7 +731,8 @@ function InvestorAdministration() {
         actionLabel: "Post investor payout",
         investmentId: row.investmentId,
       });
-    } else {
+    } else
+    {
       setActivePaymentMeta({
         type: "investor",
         title: "Investor repayment schedule",
@@ -772,10 +788,12 @@ function InvestorAdministration() {
         confirmLoading: deleteLoading,
         onOk: async () => {
           const res = await dispatch(deleteAdminInvestorUser(record.id));
-          if (res.fulfilled) {
+          if (res.fulfilled)
+          {
             message.success(res.message || "Deactivated");
             refreshInvestorUsers();
-          } else {
+          } else
+          {
             message.error(res.message || "Request failed");
             throw new Error(res.message);
           }
@@ -790,7 +808,8 @@ function InvestorAdministration() {
       setInvestorDetailOpen(true);
       dispatch(clearInvestorUserDetail());
       const res = await dispatch(fetchAdminInvestorUserDetail(id));
-      if (!res.fulfilled) {
+      if (!res.fulfilled)
+      {
         message.error(res.message || "Failed to load investor");
         setInvestorDetailOpen(false);
       }
@@ -826,7 +845,8 @@ function InvestorAdministration() {
 
   const submitInvestorEdit = useCallback(async () => {
     if (!investorUserDetail?.id) return;
-    try {
+    try
+    {
       const values = await investorEditForm.validateFields();
       const payload = {
         legal_name: values.legal_name?.trim() || "",
@@ -842,11 +862,13 @@ function InvestorAdministration() {
         },
       };
       const res = await dispatch(updateAdminInvestorUser(investorUserDetail.id, payload));
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         message.success(res.message || "Updated");
         closeInvestorEdit();
         refreshInvestorUsers();
-      } else {
+      } else
+      {
         message.error(res.message || "Update failed");
       }
     } catch {
@@ -864,10 +886,12 @@ function InvestorAdministration() {
         confirmLoading: projectDeleteLoading,
         onOk: async () => {
           const res = await dispatch(deleteAdminInvestorProject(record.id));
-          if (res.fulfilled) {
+          if (res.fulfilled)
+          {
             message.success(res.message || "Deactivated");
             refreshAdminProjects();
-          } else {
+          } else
+          {
             message.error(res.message || "Request failed");
             throw new Error(res.message);
           }
@@ -882,7 +906,8 @@ function InvestorAdministration() {
       setProjectDetailOpen(true);
       dispatch(clearInvestorProjectDetail());
       const res = await dispatch(fetchAdminInvestorProjectDetail(id));
-      if (!res.fulfilled) {
+      if (!res.fulfilled)
+      {
         message.error(res.message || "Failed to load project");
         setProjectDetailOpen(false);
       }
@@ -949,14 +974,17 @@ function InvestorAdministration() {
   const submitProjectEdit = useCallback(async () => {
     const d = projectDetail;
     if (!d?.id) return;
-    try {
+    try
+    {
       const values = await projectEditForm.validateFields();
       const branchRaw =
         values.branchId != null && values.branchId !== "" ? String(values.branchId).trim() : "";
       let branch_id = null;
-      if (branchRaw) {
+      if (branchRaw)
+      {
         const n = Number(branchRaw);
-        if (!Number.isFinite(n)) {
+        if (!Number.isFinite(n))
+        {
           message.error("Branch ID must be a number");
           return;
         }
@@ -965,25 +993,30 @@ function InvestorAdministration() {
       const total = Number(values.totalProjectCost);
       const client = Number(values.clientContribution ?? 0);
       const kwp = Number(values.systemCapacityKwp ?? 0);
-      if (!Number.isFinite(total) || total < 0) {
+      if (!Number.isFinite(total) || total < 0)
+      {
         message.error("Enter a valid total project cost");
         return;
       }
       const durationMonths = Math.floor(Number(values.projectDurationMonths));
-      if (!Number.isFinite(durationMonths) || durationMonths < 1) {
+      if (!Number.isFinite(durationMonths) || durationMonths < 1)
+      {
         message.error("Enter a valid project duration (months)");
         return;
       }
-      if (!values.installationDate) {
+      if (!values.installationDate)
+      {
         message.error("Installation date is required");
         return;
       }
-      if (!values.crFirstDueDate && d.customer_repayment_plan?.id) {
+      if (!values.crFirstDueDate && d.customer_repayment_plan?.id)
+      {
         message.error("First due date is required for the customer repayment plan");
         return;
       }
       const principal = Number(values.crPrincipalAmount);
-      if (d.customer_repayment_plan?.id && (!Number.isFinite(principal) || principal < 0)) {
+      if (d.customer_repayment_plan?.id && (!Number.isFinite(principal) || principal < 0))
+      {
         message.error("Enter a valid principal amount");
         return;
       }
@@ -1007,14 +1040,14 @@ function InvestorAdministration() {
       const planId = d.customer_repayment_plan?.id;
       const customer_repayment_plan = planId
         ? {
-            id: planId,
-            plan_type: values.crPlanType,
-            principal_amount: principal.toFixed(2),
-            first_due_date: dayjs(values.crFirstDueDate).format("YYYY-MM-DD"),
-            interest_rate_pa: Number(values.crInterestRatePa ?? 0).toFixed(4),
-            grace_period_days: Math.max(0, Math.floor(Number(values.crGracePeriodDays ?? 0))),
-            notes: values.crNotes?.trim() || "",
-          }
+          id: planId,
+          plan_type: values.crPlanType,
+          principal_amount: principal.toFixed(2),
+          first_due_date: dayjs(values.crFirstDueDate).format("YYYY-MM-DD"),
+          interest_rate_pa: Number(values.crInterestRatePa ?? 0).toFixed(4),
+          grace_period_days: Math.max(0, Math.floor(Number(values.crGracePeriodDays ?? 0))),
+          notes: values.crNotes?.trim() || "",
+        }
         : undefined;
 
       const customer_payment_schedules = projectCustomerSchedules
@@ -1034,18 +1067,21 @@ function InvestorAdministration() {
         });
 
       const payload = { project: projectPayload };
-      if (customer_repayment_plan) {
+      if (customer_repayment_plan)
+      {
         payload.customer_repayment_plan = customer_repayment_plan;
         payload.customer_payment_schedules = customer_payment_schedules;
       }
 
       const res = await dispatch(updateAdminInvestorProject(d.id, payload));
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         message.success(res.message || "Updated");
         closeProjectEdit();
         refreshAdminProjects();
         void refreshPaymentSchedules();
-      } else {
+      } else
+      {
         message.error(res.message || "Update failed");
       }
     } catch {
@@ -1071,10 +1107,12 @@ function InvestorAdministration() {
         confirmLoading: investmentDeleteLoading,
         onOk: async () => {
           const res = await dispatch(deleteAdminInvestorInvestment(record.id));
-          if (res.fulfilled) {
+          if (res.fulfilled)
+          {
             message.success(res.message || "Deactivated");
             refreshAdminInvestments();
-          } else {
+          } else
+          {
             message.error(res.message || "Request failed");
             throw new Error(res.message);
           }
@@ -1089,7 +1127,8 @@ function InvestorAdministration() {
       setInvestmentDetailOpen(true);
       dispatch(clearInvestorInvestmentDetail());
       const res = await dispatch(fetchAdminInvestorInvestmentDetail(id));
-      if (!res.fulfilled) {
+      if (!res.fulfilled)
+      {
         message.error(res.message || "Failed to load investment");
         setInvestmentDetailOpen(false);
       }
@@ -1142,28 +1181,34 @@ function InvestorAdministration() {
   const submitInvestmentEdit = useCallback(async () => {
     const d = investmentDetail;
     if (!d?.id) return;
-    try {
+    try
+    {
       const values = await investmentEditForm.validateFields();
       const cap = Number(values.capitalAmount);
       const share = Number(values.sharePercent);
-      if (!Number.isFinite(cap) || cap < 0) {
+      if (!Number.isFinite(cap) || cap < 0)
+      {
         message.error("Enter a valid capital amount");
         return;
       }
-      if (!Number.isFinite(share) || share < 0) {
+      if (!Number.isFinite(share) || share < 0)
+      {
         message.error("Enter a valid share percent");
         return;
       }
-      if (!values.contractStart) {
+      if (!values.contractStart)
+      {
         message.error("Contract start date is required");
         return;
       }
-      if (!values.firstDueDate && d.repayment_plan?.id) {
+      if (!values.firstDueDate && d.repayment_plan?.id)
+      {
         message.error("First due date is required for the repayment plan");
         return;
       }
       const totalRep = Number(values.totalRepayable);
-      if (d.repayment_plan?.id && (!Number.isFinite(totalRep) || totalRep < 0)) {
+      if (d.repayment_plan?.id && (!Number.isFinite(totalRep) || totalRep < 0))
+      {
         message.error("Enter a valid total repayable");
         return;
       }
@@ -1183,13 +1228,13 @@ function InvestorAdministration() {
       const planId = d.repayment_plan?.id;
       const repayment_plan = planId
         ? {
-            id: planId,
-            plan_type: values.planType,
-            first_due_date: dayjs(values.firstDueDate).format("YYYY-MM-DD"),
-            interest_percent: Number(values.interestPercent ?? 0).toFixed(4),
-            interest_basis: values.interestBasis || "annual",
-            total_repayable: totalRep.toFixed(2),
-          }
+          id: planId,
+          plan_type: values.planType,
+          first_due_date: dayjs(values.firstDueDate).format("YYYY-MM-DD"),
+          interest_percent: Number(values.interestPercent ?? 0).toFixed(4),
+          interest_basis: values.interestBasis || "annual",
+          total_repayable: totalRep.toFixed(2),
+        }
         : undefined;
 
       const payment_schedules = investmentPaymentSchedules
@@ -1211,18 +1256,21 @@ function InvestorAdministration() {
         });
 
       const payload = { investment: investmentPayload };
-      if (repayment_plan) {
+      if (repayment_plan)
+      {
         payload.repayment_plan = repayment_plan;
         payload.payment_schedules = payment_schedules;
       }
 
       const res = await dispatch(updateAdminInvestorInvestment(d.id, payload));
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         message.success(res.message || "Updated");
         closeInvestmentEdit();
         refreshAdminInvestments();
         void refreshPaymentSchedules();
-      } else {
+      } else
+      {
         message.error(res.message || "Update failed");
       }
     } catch {
@@ -1248,11 +1296,13 @@ function InvestorAdministration() {
         confirmLoading: customerPaymentDeleteLoading,
         onOk: async () => {
           const res = await dispatch(deleteAdminCustomerPayment(record.id));
-          if (res.fulfilled) {
+          if (res.fulfilled)
+          {
             message.success(res.message || "Deactivated");
             refreshCustomerPayments();
             void refreshPaymentSchedules();
-          } else {
+          } else
+          {
             message.error(res.message || "Request failed");
             throw new Error(res.message);
           }
@@ -1269,7 +1319,8 @@ function InvestorAdministration() {
       setCustomerPaymentDetailOpen(true);
       dispatch(clearCustomerPaymentDetail());
       const res = await dispatch(fetchAdminCustomerPaymentDetail(id));
-      if (!res.fulfilled) {
+      if (!res.fulfilled)
+      {
         message.error(res.message || "Failed to load payment");
         setCustomerPaymentDetailOpen(false);
       }
@@ -1293,7 +1344,8 @@ function InvestorAdministration() {
       return Number.isFinite(n) ? n : null;
     };
 
-    try {
+    try
+    {
       await recordPaymentForm.validateFields([
         "project_id",
         "branch_id",
@@ -1305,7 +1357,8 @@ function InvestorAdministration() {
       const values = recordPaymentForm.getFieldsValue(true);
       const selectedScheduleIds = Array.isArray(values.customer_schedule_ids) ? values.customer_schedule_ids : [];
       const branch_id = parseBranch(values.branch_id);
-      if (values.branch_id != null && String(values.branch_id).trim() !== "" && branch_id === null) {
+      if (values.branch_id != null && String(values.branch_id).trim() !== "" && branch_id === null)
+      {
         message.error("Branch ID must be numeric or empty");
         return;
       }
@@ -1342,13 +1395,15 @@ function InvestorAdministration() {
       };
 
       const res = await dispatch(createAdminCustomerPayment(payload));
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         message.success(res.message || "Created");
         closeModal();
         recordPaymentForm.resetFields();
         refreshCustomerPayments();
         void refreshPaymentSchedules();
-      } else {
+      } else
+      {
         message.error(res.message || "Create failed");
       }
     } catch {
@@ -1366,11 +1421,13 @@ function InvestorAdministration() {
         confirmLoading: payoutDeleteLoading,
         onOk: async () => {
           const res = await dispatch(deleteAdminInvestorPayout(record.id));
-          if (res.fulfilled) {
+          if (res.fulfilled)
+          {
             message.success(res.message || "Deactivated");
             refreshInvestorPayouts();
             void refreshPaymentSchedules();
-          } else {
+          } else
+          {
             message.error(res.message || "Request failed");
             throw new Error(res.message);
           }
@@ -1387,7 +1444,8 @@ function InvestorAdministration() {
       setPayoutDetailOpen(true);
       dispatch(clearInvestorPayoutDetail());
       const res = await dispatch(fetchAdminInvestorPayoutDetail(id));
-      if (!res.fulfilled) {
+      if (!res.fulfilled)
+      {
         message.error(res.message || "Failed to load payout");
         setPayoutDetailOpen(false);
       }
@@ -1404,7 +1462,8 @@ function InvestorAdministration() {
 
   const submitCustomerPaymentEdit = useCallback(async () => {
     if (!customerPaymentDetail?.id) return;
-    try {
+    try
+    {
       const values = await customerPaymentEditForm.validateFields();
       const payload = {
         amount_received: String(Number(values.amount_received)),
@@ -1414,12 +1473,14 @@ function InvestorAdministration() {
         notes: values.notes?.trim() || "",
       };
       const res = await dispatch(updateAdminCustomerPayment(customerPaymentDetail.id, payload));
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         message.success(res.message || "Updated");
         setCustomerPaymentEditing(false);
         refreshCustomerPayments();
         void refreshPaymentSchedules();
-      } else {
+      } else
+      {
         message.error(res.message || "Update failed");
       }
     } catch {
@@ -1429,7 +1490,8 @@ function InvestorAdministration() {
 
   const submitPayoutEdit = useCallback(async () => {
     if (!payoutDetail?.id) return;
-    try {
+    try
+    {
       const values = await payoutEditForm.validateFields();
       const payload = {
         amount_paid: String(Number(values.amount_paid)),
@@ -1438,12 +1500,14 @@ function InvestorAdministration() {
         reference: values.reference?.trim() || "",
       };
       const res = await dispatch(updateAdminInvestorPayout(payoutDetail.id, payload));
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         message.success(res.message || "Updated");
         setPayoutEditing(false);
         refreshInvestorPayouts();
         void refreshPaymentSchedules();
-      } else {
+      } else
+      {
         message.error(res.message || "Update failed");
       }
     } catch {
@@ -1452,7 +1516,8 @@ function InvestorAdministration() {
   }, [dispatch, payoutDetail, payoutEditForm, refreshInvestorPayouts, refreshPaymentSchedules]);
 
   const submitPostPayout = async () => {
-    try {
+    try
+    {
       await payoutForm.validateFields(["investment_id", "payment_method", "reference"]);
       const values = payoutForm.getFieldsValue(true);
       const selectedScheduleIds = Array.isArray(values.schedule_ids) ? values.schedule_ids : [];
@@ -1470,7 +1535,8 @@ function InvestorAdministration() {
           };
         })
         .filter(Boolean);
-      if (!line_items.length) {
+      if (!line_items.length)
+      {
         message.error(
           selectedScheduleIds.length
             ? "Fill amount and paid date for the selected schedule lines"
@@ -1485,14 +1551,16 @@ function InvestorAdministration() {
         line_items,
       };
       const res = await dispatch(createAdminInvestorPayout(payload));
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         message.success(res.message || "Created");
         closeModal();
         payoutForm.resetFields();
         setPayoutSchedules([]);
         refreshInvestorPayouts();
         void refreshPaymentSchedules();
-      } else {
+      } else
+      {
         message.error(res.message || "Create failed");
       }
     } catch {
@@ -1501,15 +1569,18 @@ function InvestorAdministration() {
   };
 
   const submitCreateInvestment = async () => {
-    try {
+    try
+    {
       const values = await investmentForm.validateFields();
       const cap = Number(createInvestmentCapitalAmount);
-      if (!Number.isFinite(cap) || cap <= 0) {
+      if (!Number.isFinite(cap) || cap <= 0)
+      {
         message.error("Select a project with a valid funding target / principal");
         return;
       }
       const totalRep = Number(createInvestmentTotalRepayable);
-      if (!Number.isFinite(totalRep) || totalRep <= 0) {
+      if (!Number.isFinite(totalRep) || totalRep <= 0)
+      {
         message.error("Enter a valid interest percent");
         return;
       }
@@ -1529,12 +1600,14 @@ function InvestorAdministration() {
       };
 
       const res = await dispatch(createAdminInvestorInvestment(payload));
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         message.success(res.message || "Created");
         closeModal();
         investmentForm.resetFields();
         refreshAdminInvestments();
-      } else {
+      } else
+      {
         message.error(res.message || "Create failed");
       }
     } catch {
@@ -1543,7 +1616,8 @@ function InvestorAdministration() {
   };
 
   const submitCreateProject = async () => {
-    try {
+    try
+    {
       // Validate required fields only; partial validateFields() omits other form values.
       await projectForm.validateFields([
         "projectName",
@@ -1558,9 +1632,11 @@ function InvestorAdministration() {
       const branchRaw =
         values.branchId != null && values.branchId !== "" ? String(values.branchId).trim() : "";
       let branch_id = null;
-      if (branchRaw) {
+      if (branchRaw)
+      {
         const n = Number(branchRaw);
-        if (!Number.isFinite(n)) {
+        if (!Number.isFinite(n))
+        {
           message.error("Branch ID must be a number");
           return;
         }
@@ -1569,33 +1645,39 @@ function InvestorAdministration() {
       const total = Number(values.totalProjectCost);
       const client = Number(values.clientContribution ?? 0);
       const kwp = Number(values.systemCapacityKwp ?? 0);
-      if (!Number.isFinite(total) || total < 0) {
+      if (!Number.isFinite(total) || total < 0)
+      {
         message.error("Enter a valid total project cost");
         return;
       }
-      if (!values.installationDate) {
+      if (!values.installationDate)
+      {
         message.error("Installation date is required");
         return;
       }
-      if (!values.crFirstDueDate) {
+      if (!values.crFirstDueDate)
+      {
         message.error("First due date is required for the customer repayment plan");
         return;
       }
 
       const durationMonths = Math.floor(Number(values.crProjectDurationMonths));
-      if (!Number.isFinite(durationMonths) || durationMonths < 1) {
+      if (!Number.isFinite(durationMonths) || durationMonths < 1)
+      {
         message.error("Enter a valid project duration (months)");
         return;
       }
 
       const principal = total - (Number.isFinite(client) ? client : 0);
-      if (!Number.isFinite(principal) || principal < 0) {
+      if (!Number.isFinite(principal) || principal < 0)
+      {
         message.error("Principal (total cost − client contribution) must be zero or positive");
         return;
       }
 
       const interestRatePa = Number(values.crInterestRatePa);
-      if (!Number.isFinite(interestRatePa) || interestRatePa < 0) {
+      if (!Number.isFinite(interestRatePa) || interestRatePa < 0)
+      {
         message.error("Enter a valid interest rate % p.a.");
         return;
       }
@@ -1605,13 +1687,15 @@ function InvestorAdministration() {
       const rawCostItems =
         showProjectCostBreakdown && Array.isArray(values.cost_items) ? values.cost_items : [];
       const cost_items = [];
-      for (const ci of rawCostItems) {
+      for (const ci of rawCostItems)
+      {
         const category = ci?.category ? String(ci.category).trim() : "";
         const label = ci?.label ? String(ci.label).trim() : "";
         const amount = Number(ci?.amount);
         const hasAny = category || label || Number.isFinite(amount);
         if (!hasAny) continue;
-        if (!category || !label || !Number.isFinite(amount) || amount < 0) {
+        if (!category || !label || !Number.isFinite(amount) || amount < 0)
+        {
           message.error("Each cost item needs category, label, and amount — or remove the row");
           return;
         }
@@ -1646,13 +1730,15 @@ function InvestorAdministration() {
         cost_items,
       };
       const res = await dispatch(createAdminInvestorProject(payload));
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         message.success(res.message || "Created");
         setShowProjectCostBreakdown(false);
         closeModal();
         projectForm.resetFields();
         refreshAdminProjects();
-      } else {
+      } else
+      {
         message.error(res.message || "Create failed");
       }
     } catch {
@@ -1661,7 +1747,8 @@ function InvestorAdministration() {
   };
 
   const submitCreateInvestor = async () => {
-    try {
+    try
+    {
       const values = await investorForm.validateFields();
       const active = values.active === "Yes";
       const countryTrim = values.country?.trim();
@@ -1680,12 +1767,14 @@ function InvestorAdministration() {
         is_active: active,
       };
       const res = await dispatch(createAdminInvestorUser(payload));
-      if (res.fulfilled) {
+      if (res.fulfilled)
+      {
         message.success(res.message || "Created");
         closeModal();
         investorForm.resetFields();
         refreshInvestorUsers();
-      } else {
+      } else
+      {
         message.error(res.message || "Create failed");
       }
     } catch {
@@ -1694,7 +1783,8 @@ function InvestorAdministration() {
   };
 
   const submitMock = async (form) => {
-    try {
+    try
+    {
       await form.validateFields();
       message.success("Saved successfully.");
       closeModal();
@@ -1745,21 +1835,17 @@ function InvestorAdministration() {
       np?.headline_relative_label || np?.to_investor?.relative_label || dash();
     const toInv = np?.to_investor;
     const fromCust = np?.from_customer;
-    const nearestSubLines = [];
-    if (toInv?.amount != null && toInv.amount !== "") {
-      nearestSubLines.push(
-        `To investor: ${ngnCompact(Number(toInv.amount))}${
-          toInv.relative_label ? ` (${toInv.relative_label})` : ""
-        }`
-      );
-    }
-    if (fromCust?.amount != null && fromCust.amount !== "") {
-      nearestSubLines.push(
-        `From customer: ${ngnCompact(Number(fromCust.amount))}${
-          fromCust.relative_label ? ` (${fromCust.relative_label})` : ""
-        }`
-      );
-    }
+
+    const nearestDate = np?.headline_date || np?.to_investor?.date || nearestHeadline;
+    const isOverdue = nearestDate && dayjs(nearestDate, ["YYYY-MM-DD", "DD MMM YYYY", "DD MMMM YYYY"]).isValid()
+      ? dayjs(nearestDate, ["YYYY-MM-DD", "DD MMM YYYY", "DD MMMM YYYY"]).isBefore(dayjs(), "day")
+      : false;
+    const nearestLabel = isOverdue ? "Overdue payment" : "Nearest payment";
+
+    const nearestSub =
+      toInv?.amount != null && fromCust?.amount != null
+        ? `From customer: ${ngnCompact(Number(fromCust.amount))} · To investor: ${ngnCompact(Number(toInv.amount))}${toInv.relative_label ? ` (${toInv.relative_label})` : ""}`
+        : undefined;
 
     return [
       {
@@ -1768,7 +1854,8 @@ function InvestorAdministration() {
         label: "Total invested (investors)",
         value: totalInvestedVal,
         sub: totalRepaidSub,
-        variant: "purple",
+        bg: "linear-gradient(135deg, #5C12A7 100%, #4c1d95 100%)",
+        decorationColor: "rgba(255,255,255,0.06)",
       },
       {
         key: "b",
@@ -1776,7 +1863,8 @@ function InvestorAdministration() {
         label: "Customers expected (all-in)",
         value: expectedVal,
         sub: expectedSub,
-        variant: "blue",
+        bg: "linear-gradient(135deg, #5C12A7 100%, #4c1d95 100%)",
+        decorationColor: "rgba(255,255,255,0.06)",
       },
       {
         key: "c",
@@ -1784,7 +1872,8 @@ function InvestorAdministration() {
         label: "Active projects",
         value: projectsVal,
         sub: projectsSub,
-        variant: "teal",
+        bg: "linear-gradient(135deg, #5C12A7 100%, #4c1d95 100%)",
+        decorationColor: "rgba(255,255,255,0.06)",
       },
       {
         key: "d",
@@ -1792,15 +1881,17 @@ function InvestorAdministration() {
         label: "Active investors",
         value: investorsVal,
         sub: investorsSub,
-        variant: "mint",
+        bg: "linear-gradient(135deg, #5C12A7 100%, #4c1d95 100%)",
+        decorationColor: "rgba(255,255,255,0.06)",
       },
       {
         key: "e",
         icon: <ThunderboltOutlined />,
-        label: nearestPaymentsCardLabel(np),
+        label: nearestLabel,
         value: nearestHeadline,
-        subLines: nearestSubLines.length ? nearestSubLines : undefined,
-        variant: "amber",
+        sub: nearestSub,
+        bg: "linear-gradient(135deg, #fb923c 0%, #ea580c 100%)",
+        decorationColor: "rgba(255,255,255,0.07)",
       },
     ];
   }, [
@@ -2093,7 +2184,8 @@ function InvestorAdministration() {
     const results = adminProjectsList?.results || [];
     const q = projectSearch.trim().toLowerCase();
     let next = results;
-    if (q) {
+    if (q)
+    {
       next = results.filter(
         (r) =>
           r.name?.toLowerCase().includes(q) ||
@@ -2599,7 +2691,8 @@ function InvestorAdministration() {
     const results = adminInvestorPayoutsList?.results || [];
     const q = payoutSearch.trim().toLowerCase();
     let next = results;
-    if (q) {
+    if (q)
+    {
       next = results.filter(
         (r) =>
           String(r.id).includes(q) ||
@@ -2852,9 +2945,11 @@ function InvestorAdministration() {
     const results = customerSchedules?.results || [];
     const lineId = activePaymentMeta?.customerScheduleLineId;
     if (activePaymentMeta?.type !== "customer") return mockCustomerRepaymentSchedule;
-    if (lineId != null && results.length) {
+    if (lineId != null && results.length)
+    {
       const anchor = results.find((r) => r.id === lineId || String(r.id) === String(lineId));
-      if (anchor) {
+      if (anchor)
+      {
         const pid = anchor.customer_repayment_plan_id;
         return results
           .filter((r) => r.customer_repayment_plan_id === pid)
@@ -2878,11 +2973,13 @@ function InvestorAdministration() {
     const results = investorSchedulesList?.results || [];
     const invId = activePaymentMeta?.investmentId;
     if (activePaymentMeta?.type !== "investor") return mockInvestorPaymentSchedule;
-    if (invId != null && results.length) {
+    if (invId != null && results.length)
+    {
       const lines = results
         .filter((r) => r.investment_id === invId || String(r.investment_id) === String(invId))
         .sort((a, b) => (a.installment_number || 0) - (b.installment_number || 0));
-      if (lines.length) {
+      if (lines.length)
+      {
         return lines.map((r) => ({
           key: String(r.id),
           idx: r.installment_number,
@@ -3138,7 +3235,8 @@ function InvestorAdministration() {
     );
   }, [openTicketResponse, supportTicketsList, supportTicketsListLoading, ticketPostResponses, ticketsTableMode]);
 
-  if (!isSuperAdmin) {
+  if (!isSuperAdmin)
+  {
     return (
       <div style={{ padding: 18 }}>
         <Card bordered={false}>
@@ -4822,40 +4920,40 @@ function InvestorAdministration() {
         footer={
           customerPaymentEditing
             ? [
-                <Button
-                  key="cancel"
-                  onClick={() => {
-                    setCustomerPaymentEditing(false);
-                    customerPaymentEditForm.resetFields();
-                  }}
-                >
-                  Cancel edit
-                </Button>,
-                <Button key="save" type="primary" loading={customerPaymentUpdateLoading} onClick={submitCustomerPaymentEdit}>
-                  Save changes
-                </Button>,
-              ]
+              <Button
+                key="cancel"
+                onClick={() => {
+                  setCustomerPaymentEditing(false);
+                  customerPaymentEditForm.resetFields();
+                }}
+              >
+                Cancel edit
+              </Button>,
+              <Button key="save" type="primary" loading={customerPaymentUpdateLoading} onClick={submitCustomerPaymentEdit}>
+                Save changes
+              </Button>,
+            ]
             : [
-                <Button
-                  key="edit"
-                  onClick={() => {
-                    if (!customerPaymentDetail) return;
-                    setCustomerPaymentEditing(true);
-                    customerPaymentEditForm.setFieldsValue({
-                      amount_received: Number(customerPaymentDetail.amount_received),
-                      payment_date: customerPaymentDetail.payment_date ? dayjs(customerPaymentDetail.payment_date) : null,
-                      payment_method: customerPaymentDetail.payment_method,
-                      reference: customerPaymentDetail.reference,
-                      notes: customerPaymentDetail.notes,
-                    });
-                  }}
-                >
-                  Edit
-                </Button>,
-                <Button key="close" type="primary" onClick={closeCustomerPaymentDetail}>
-                  Close
-                </Button>,
-              ]
+              <Button
+                key="edit"
+                onClick={() => {
+                  if (!customerPaymentDetail) return;
+                  setCustomerPaymentEditing(true);
+                  customerPaymentEditForm.setFieldsValue({
+                    amount_received: Number(customerPaymentDetail.amount_received),
+                    payment_date: customerPaymentDetail.payment_date ? dayjs(customerPaymentDetail.payment_date) : null,
+                    payment_method: customerPaymentDetail.payment_method,
+                    reference: customerPaymentDetail.reference,
+                    notes: customerPaymentDetail.notes,
+                  });
+                }}
+              >
+                Edit
+              </Button>,
+              <Button key="close" type="primary" onClick={closeCustomerPaymentDetail}>
+                Close
+              </Button>,
+            ]
         }
         destroyOnClose
       >
@@ -4885,7 +4983,7 @@ function InvestorAdministration() {
                     ? ` (${customerPaymentDetail.payment_score.percent}%)`
                     : ""}
                   {customerPaymentDetail.payment_score?.paid_installments != null &&
-                  customerPaymentDetail.payment_score?.total_installments != null
+                    customerPaymentDetail.payment_score?.total_installments != null
                     ? ` — ${customerPaymentDetail.payment_score.paid_installments}/${customerPaymentDetail.payment_score.total_installments} paid`
                     : ""}
                 </Descriptions.Item>
@@ -5056,39 +5154,39 @@ function InvestorAdministration() {
         footer={
           payoutEditing
             ? [
-                <Button
-                  key="cancel"
-                  onClick={() => {
-                    setPayoutEditing(false);
-                    payoutEditForm.resetFields();
-                  }}
-                >
-                  Cancel edit
-                </Button>,
-                <Button key="save" type="primary" loading={payoutUpdateLoading} onClick={submitPayoutEdit}>
-                  Save changes
-                </Button>,
-              ]
+              <Button
+                key="cancel"
+                onClick={() => {
+                  setPayoutEditing(false);
+                  payoutEditForm.resetFields();
+                }}
+              >
+                Cancel edit
+              </Button>,
+              <Button key="save" type="primary" loading={payoutUpdateLoading} onClick={submitPayoutEdit}>
+                Save changes
+              </Button>,
+            ]
             : [
-                <Button
-                  key="edit"
-                  onClick={() => {
-                    if (!payoutDetail) return;
-                    setPayoutEditing(true);
-                    payoutEditForm.setFieldsValue({
-                      amount_paid: Number(payoutDetail.amount_paid),
-                      paid_date: payoutDetail.paid_date ? dayjs(payoutDetail.paid_date) : null,
-                      payment_method: payoutDetail.payment_method,
-                      reference: payoutDetail.reference,
-                    });
-                  }}
-                >
-                  Edit
-                </Button>,
-                <Button key="close" type="primary" onClick={closePayoutDetail}>
-                  Close
-                </Button>,
-              ]
+              <Button
+                key="edit"
+                onClick={() => {
+                  if (!payoutDetail) return;
+                  setPayoutEditing(true);
+                  payoutEditForm.setFieldsValue({
+                    amount_paid: Number(payoutDetail.amount_paid),
+                    paid_date: payoutDetail.paid_date ? dayjs(payoutDetail.paid_date) : null,
+                    payment_method: payoutDetail.payment_method,
+                    reference: payoutDetail.reference,
+                  });
+                }}
+              >
+                Edit
+              </Button>,
+              <Button key="close" type="primary" onClick={closePayoutDetail}>
+                Close
+              </Button>,
+            ]
         }
         destroyOnClose
       >

@@ -3226,7 +3226,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   margin-top: 14px;
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
+  gap: 14px;
   align-items: stretch;
 }
 
@@ -3254,6 +3254,20 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   height: 160px;
   top: -80px;
   right: -40px;
+}
+
+.admin-investor-metric-decoration--lg {
+  width: 110px;
+  height: 110px;
+  top: -24px;
+  right: -6px;
+}
+
+.admin-investor-metric-decoration--sm {
+  width: 60px;
+  height: 60px;
+  top: 28px;
+  right: 50px;
 }
 
 .admin-investor-metric-value {
