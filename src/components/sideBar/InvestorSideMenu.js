@@ -148,38 +148,18 @@ function InvestorSideMenu({ collapsed, setCollapsed, logUserOut, basePath = "" }
   const MenuContent = () => (
     <div className="investor-sider-inner">
       <div className="investor-sider-top">
-        <div
-          className={`investor-sider-brand${collapsed && !isMobile ? " investor-sider-brand--collapsed" : ""}`}
-        >
-          <Image
-            className="investor-sider-brand-logo"
-            width={80}
-            preview={false}
-            src="/Images/Wyre white-08 1.png"
-          />
-          {collapsed && !isMobile ? (
-            <button
-              type="button"
-              className="investor-sider-collapse-btn"
+        <div className="wyre-logo investor-sider-brand" style={{ textAlign: "center" }}>
+          <Image width={80} preview={false} src="/Images/Wyre white-08 1.png" />
+          {!collapsed && (
+            <div className="investor-sider-role-pill">Investor</div>
+          )}
+          {!isMobile && (
+            <Button
+              type="text"
+              icon={<MenuOutlined style={{ color: "white" }} />}
               onClick={() => setCollapsed(!collapsed)}
-              aria-label="Expand sidebar"
-            >
-              <MenuOutlined />
-            </button>
-          ) : (
-            <div className="investor-sider-brand-bar">
-              <span className="investor-sider-role-pill">Investor</span>
-              {!isMobile ? (
-                <button
-                  type="button"
-                  className="investor-sider-collapse-btn"
-                  onClick={() => setCollapsed(!collapsed)}
-                  aria-label="Collapse sidebar"
-                >
-                  <MenuOutlined />
-                </button>
-              ) : null}
-            </div>
+              style={{ marginLeft: 10, color: "white" }}
+            />
           )}
         </div>
         <Menu

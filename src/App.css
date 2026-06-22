@@ -153,8 +153,6 @@ body.wyre-investor-app .wyre-app-layout {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding-top: 35px;
-  box-sizing: border-box;
 }
 
 .investor-sider-menu.SideMenuVertical {
@@ -219,57 +217,10 @@ body.wyre-investor-app .wyre-app-layout {
   min-height: 100%;
 }
 
-.investor-sider-brand {
-  display: flex;
+.investor-sider-brand.wyre-logo {
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  width: 100%;
-  padding: 0 8px;
-  margin-bottom: 20px;
-  box-sizing: border-box;
-}
-
-.investor-sider-brand-logo {
-  display: block;
-  flex-shrink: 0;
-}
-
-.investor-sider-brand-bar {
-  display: inline-flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  max-width: 100%;
-}
-
-.investor-sider-brand--collapsed {
-  gap: 10px;
-  margin-bottom: 0;
-}
-
-.investor-sider-collapse-btn {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: #fff;
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  margin: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  line-height: 1;
-}
-
-.investor-sider-collapse-btn .anticon {
-  font-size: 16px;
-  color: #fff;
 }
 
 .investor-sider-role-pill {
@@ -279,9 +230,6 @@ body.wyre-investor-app .wyre-app-layout {
   letter-spacing: 0.14em;
   color: rgba(255, 255, 255, 0.78);
   text-transform: uppercase;
-  line-height: 1;
-  white-space: nowrap;
-  flex: 0 0 auto;
 }
 
 .SideMenu{
@@ -4893,16 +4841,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: flex;
   width: 100%;
   margin-top: 0;
-}
-
-.investor-open-project-progress {
-  margin-top: 14px;
-  min-height: 22px;
-  flex-shrink: 0;
-}
-
-.investor-open-project-progress .ant-progress-bg {
-  background-color: #fa8c16 !important;
 }
 
 .investor-open-project-foot {
