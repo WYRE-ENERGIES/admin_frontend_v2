@@ -17,7 +17,15 @@ import {
   Typography,
   message,
 } from "antd";
-import { DownloadOutlined, FileTextOutlined } from "@ant-design/icons";
+import {
+  DownloadOutlined,
+  FileTextOutlined,
+  DollarOutlined,
+  PieChartOutlined,
+  ThunderboltOutlined,
+  CloudOutlined,
+  WalletOutlined,
+} from "@ant-design/icons";
 import {
   Bar,
   BarChart,
@@ -40,6 +48,11 @@ import { formatCompactNgn } from "../../helpers/investorPortfolioMappers";
 dayjs.extend(relativeTime);
 
 const PORTFOLIO_ACTIVITY_PREVIEW_LIMIT = 5;
+
+const INVESTOR_METRIC_GRADIENT = {
+  background: "linear-gradient(135deg, #5C12A7, #4c1d95)",
+};
+const INVESTOR_METRIC_DECORATION = { background: "rgba(255,255,255,0.06)" };
 
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
@@ -321,76 +334,130 @@ function PortfolioOverview() {
           className={`investor-metrics${isWalletInvestor ? " investor-metrics--five" : ""}`}
         >
           {isWalletInvestor ? (
-            <Card
-              bordered={false}
-              className="investor-metric-card investor-metric-card--primary"
-            >
-              <div className="investor-metric-label">Total deposited</div>
-              <div className="investor-metric-value">{kpis.totalDeposited.display}</div>
-              <div className="investor-metric-sub">{kpis.totalDeposited.sub}</div>
-            </Card>
+            <div className="admin-investor-metric" style={INVESTOR_METRIC_GRADIENT}>
+              <div
+                className="admin-investor-metric-decoration admin-investor-metric-decoration--xl"
+                style={INVESTOR_METRIC_DECORATION}
+              />
+              <div className="admin-investor-metric-mid">
+                <div className="admin-investor-metric-icon">
+                  <WalletOutlined />
+                </div>
+                <Text className="admin-investor-metric-label">Total deposited</Text>
+              </div>
+              <div className="admin-investor-metric-value">{kpis.totalDeposited.display}</div>
+              {kpis.totalDeposited?.sub ? (
+                <div className="admin-investor-metric-badges">
+                  <span className="admin-investor-metric-badge">{kpis.totalDeposited.sub}</span>
+                </div>
+              ) : null}
+            </div>
           ) : null}
 
-          <Card
-            bordered={false}
-            className={`investor-metric-card${
-              isWalletInvestor ? "" : " investor-metric-card--primary"
-            }`}
-          >
-            <div className="investor-metric-label">Total receivables</div>
-            <div className="investor-metric-value">
+          <div className="admin-investor-metric" style={INVESTOR_METRIC_GRADIENT}>
+            <div
+              className="admin-investor-metric-decoration admin-investor-metric-decoration--xl"
+              style={INVESTOR_METRIC_DECORATION}
+            />
+            <div className="admin-investor-metric-mid">
+              <div className="admin-investor-metric-icon">
+                <DollarOutlined />
+              </div>
+              <Text className="admin-investor-metric-label">Total receivables</Text>
+            </div>
+            <div className="admin-investor-metric-value">
               {kpis.primaryReceivables?.totalReceivable != null
                 ? formatCompactNgn(kpis.primaryReceivables.totalReceivable)
                 : "—"}
             </div>
-            {kpis.primaryReceivables?.compositionSub ? (
-              <div className="investor-metric-primary-composition">
-                {kpis.primaryReceivables.compositionSub}
-              </div>
-            ) : null}
-            <div className="investor-metric-primary-stack">
-              <div>
+            <div className="admin-investor-metric-badges">
+              {kpis.primaryReceivables?.compositionSub ? (
+                <span className="admin-investor-metric-badge">
+                  {kpis.primaryReceivables.compositionSub}
+                </span>
+              ) : null}
+              <span className="admin-investor-metric-badge">
                 Payments received{" "}
                 {kpis.primaryReceivables?.paymentsReceived != null
                   ? formatCompactNgn(kpis.primaryReceivables.paymentsReceived)
                   : "—"}
-              </div>
-              <div>
+              </span>
+              <span className="admin-investor-metric-badge">
                 Outstanding{" "}
                 {kpis.primaryReceivables?.outstanding != null
                   ? formatCompactNgn(kpis.primaryReceivables.outstanding)
                   : "—"}
-              </div>
+              </span>
             </div>
-          </Card>
+          </div>
 
-          <Card bordered={false} className="investor-metric-card investor-metric-card--portfolio-score">
-            <div className="investor-metric-label">Portfolio score</div>
-            <div className="investor-metric-value">
+          <div className="admin-investor-metric" style={INVESTOR_METRIC_GRADIENT}>
+            <div
+              className="admin-investor-metric-decoration admin-investor-metric-decoration--xl"
+              style={INVESTOR_METRIC_DECORATION}
+            />
+            <div className="admin-investor-metric-mid">
+              <div className="admin-investor-metric-icon">
+                <PieChartOutlined />
+              </div>
+              <Text className="admin-investor-metric-label">Portfolio score</Text>
+            </div>
+            <div className="admin-investor-metric-value">
               {kpis.portfolioScore?.display ?? "—"}
             </div>
-            {kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—" ? (
-              <div className="investor-metric-score-summary">{kpis.portfolioScore.summary}</div>
+            {(kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—") ||
+            kpis.portfolioScore?.sub ? (
+              <div className="admin-investor-metric-badges">
+                <span className="admin-investor-metric-badge">
+                  {kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—"
+                    ? kpis.portfolioScore.summary
+                    : kpis.portfolioScore.sub}
+                </span>
+              </div>
             ) : null}
-          </Card>
+          </div>
 
-          <Card bordered={false} className="investor-metric-card">
-            <div className="investor-metric-label">Portfolio generation</div>
-            <div className="investor-metric-value">
+          <div className="admin-investor-metric" style={INVESTOR_METRIC_GRADIENT}>
+            <div
+              className="admin-investor-metric-decoration admin-investor-metric-decoration--xl"
+              style={INVESTOR_METRIC_DECORATION}
+            />
+            <div className="admin-investor-metric-mid">
+              <div className="admin-investor-metric-icon">
+                <ThunderboltOutlined />
+              </div>
+              <Text className="admin-investor-metric-label">Portfolio generation</Text>
+            </div>
+            <div className="admin-investor-metric-value">
               {kpis.portfolioGeneration?.value ?? "—"}
             </div>
             {(kpis.portfolioGeneration?.nairaSub ?? kpis.portfolioGeneration?.sub) ? (
-              <div className="investor-metric-sub">
-                {kpis.portfolioGeneration?.nairaSub ?? kpis.portfolioGeneration?.sub}
+              <div className="admin-investor-metric-badges">
+                <span className="admin-investor-metric-badge">
+                  {kpis.portfolioGeneration.nairaSub ?? kpis.portfolioGeneration.sub}
+                </span>
               </div>
             ) : null}
-          </Card>
+          </div>
 
-          <Card bordered={false} className="investor-metric-card">
-            <div className="investor-metric-label">CO₂ offset</div>
-            <div className="investor-metric-value">{kpis.co2?.value ?? "—"}</div>
-            <div className="investor-metric-sub">{kpis.co2?.sub}</div>
-          </Card>
+          <div className="admin-investor-metric" style={INVESTOR_METRIC_GRADIENT}>
+            <div
+              className="admin-investor-metric-decoration admin-investor-metric-decoration--xl"
+              style={INVESTOR_METRIC_DECORATION}
+            />
+            <div className="admin-investor-metric-mid">
+              <div className="admin-investor-metric-icon">
+                <CloudOutlined />
+              </div>
+              <Text className="admin-investor-metric-label">CO₂ offset</Text>
+            </div>
+            <div className="admin-investor-metric-value">{kpis.co2?.value ?? "—"}</div>
+            {kpis.co2?.sub ? (
+              <div className="admin-investor-metric-badges">
+                <span className="admin-investor-metric-badge">{kpis.co2.sub}</span>
+              </div>
+            ) : null}
+          </div>
         </div>
       </Spin>
 
