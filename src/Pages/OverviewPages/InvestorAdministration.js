@@ -1660,6 +1660,8 @@ function InvestorAdministration() {
     }
   };
 
+  const createWalletInvestor = Form.useWatch("isWalletInvestor", investorForm);
+
   const submitCreateInvestor = async () => {
     try {
       const values = await investorForm.validateFields();
@@ -1678,7 +1680,18 @@ function InvestorAdministration() {
         kyc_tier: values.kycTier,
         kyc_status: values.kycStatus,
         is_active: active,
+        is_wallet_investor: Boolean(values.isWalletInvestor),
       };
+      if (
+        values.isWalletInvestor &&
+        values.totalDeposited != null &&
+        values.totalDeposited !== ""
+      ) {
+        const amt = Number(values.totalDeposited);
+        if (Number.isFinite(amt) && amt >= 0) {
+          payload.total_deposited = amt.toFixed(2);
+        }
+      }
       const res = await dispatch(createAdminInvestorUser(payload));
       if (res.fulfilled) {
         message.success(res.message || "Created");
@@ -3669,7 +3682,13 @@ function InvestorAdministration() {
           form={investorForm}
           layout="vertical"
           className="admin-modal-form"
-          initialValues={{ country: "NG", kycTier: "pending", kycStatus: "pending", active: "Yes" }}
+          initialValues={{
+            country: "NG",
+            kycTier: "pending",
+            kycStatus: "pending",
+            active: "Yes",
+            isWalletInvestor: false,
+          }}
         >
           <div className="admin-modal-grid">
             <Form.Item name="username" label="Username" rules={[{ required: true, message: "Required" }]}>
@@ -3710,6 +3729,26 @@ function InvestorAdministration() {
             <Form.Item name="active" label="Active">
               <Select options={[{ value: "Yes" }, { value: "No" }].map((o) => ({ value: o.value, label: o.value }))} />
             </Form.Item>
+
+            <Form.Item
+              name="isWalletInvestor"
+              label="Wallet investor"
+              valuePropName="checked"
+              className="admin-modal-wide"
+            >
+              <Switch />
+            </Form.Item>
+
+            {createWalletInvestor ? (
+              <Form.Item
+                name="totalDeposited"
+                label="Total deposited (₦)"
+                extra="Optional initial wallet deposit"
+                className="admin-modal-wide"
+              >
+                <InputNumber min={0} style={{ width: "100%" }} placeholder="e.g. 500000000" />
+              </Form.Item>
+            ) : null}
           </div>
 
           <Divider className="admin-modal-divider" />

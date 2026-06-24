@@ -30,6 +30,7 @@ const initialState = {
       portfolioGeneration: null,
       repaymentTotals: null,
       co2: null,
+      totalDeposited: null,
     },
     financedProjects: [],
     chartData: [],
@@ -64,6 +65,21 @@ const investorReducer = (state = initialState, action) => {
           loading: false,
           error: null,
           ...action.payload,
+          kpis: {
+            ...action.payload.kpis,
+            totalDeposited: state.portfolioOverview.kpis.totalDeposited,
+          },
+        },
+      };
+    case investorTypes.INVESTOR_TOTAL_DEPOSITED_SUCCESS:
+      return {
+        ...state,
+        portfolioOverview: {
+          ...state.portfolioOverview,
+          kpis: {
+            ...state.portfolioOverview.kpis,
+            totalDeposited: action.payload,
+          },
         },
       };
     case investorTypes.INVESTOR_PORTFOLIO_OVERVIEW_FAIL:

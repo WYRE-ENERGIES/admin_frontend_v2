@@ -10,6 +10,7 @@ import {
   investorPortfolioOverviewSuccess,
   investorProjectsLoading,
   investorProjectsSuccess,
+  investorTotalDepositedSuccess,
 } from "./investor.creator";
 import {
   mapCo2Card,
@@ -21,6 +22,7 @@ import {
   mapRecentPaymentActivity,
   mapPortfolioScoreCard,
   mapRepaymentTotalsCard,
+  mapTotalDepositedCard,
 } from "../../../helpers/investorPortfolioMappers";
 import {
   mapFinancedProjectsTiles,
@@ -111,6 +113,16 @@ export const fetchInvestorPortfolioOverview =
     dispatch(investorPortfolioOverviewLoading(false));
     return { fulfilled: true, partial: errors.length > 0 };
   };
+
+/** Wallet-investor only — loaded separately so it does not affect other portfolio KPIs. */
+export const fetchInvestorTotalDeposited = () => async (dispatch) => {
+  try {
+    const res = await APIService.get(INVESTOR_API.totalDeposited);
+    dispatch(investorTotalDepositedSuccess(mapTotalDepositedCard(res.data)));
+  } catch {
+    dispatch(investorTotalDepositedSuccess(null));
+  }
+};
 
 /** Projects page: KPIs, open projects, financed sites, investment tickets. */
 export const fetchInvestorProjects = () => async (dispatch) => {

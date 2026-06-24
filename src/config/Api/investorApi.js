@@ -20,6 +20,7 @@ export const INVESTOR_API = {
   },
   financedProjects: "/api/v1/investors/financed-projects/",
   totalReceivables: "/api/v1/investors/total-receivables/",
+  totalDeposited: "/api/v1/investors/total-deposited/",
   paymentsTotalCredited: "/api/v1/investors/payments/kpi/total-credited/",
   paymentsDueNext30: "/api/v1/investors/payments/kpi/due-next-30-days/",
   paymentsOverdue90d: "/api/v1/investors/payments/kpi/overdue-90d-plus/",

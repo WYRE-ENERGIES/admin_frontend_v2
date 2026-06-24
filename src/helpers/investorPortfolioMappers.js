@@ -140,6 +140,31 @@ export function mapPrimaryReceivablesCard(totalReceivablesRaw, repaymentTotalsRa
   };
 }
 
+/** investors/total-deposited — wallet investor KPI card */
+export function mapTotalDepositedCard(raw) {
+  const o = unwrapInvestorEnvelope(raw) ?? unwrapListOrObject(raw) ?? raw;
+  if (!o || typeof o !== "object") {
+    return {
+      isWalletInvestor: false,
+      totalDeposited: null,
+      display: "—",
+      sub: "—",
+    };
+  }
+  const isWalletInvestor = Boolean(o?.is_wallet_investor);
+  const totalDeposited =
+    firstNumber(o, ["total_deposited", "totalDeposited"]) ??
+    firstNumber(o?.data, ["total_deposited"]);
+  const currency = firstString(o, ["currency"], "NGN");
+
+  return {
+    isWalletInvestor,
+    totalDeposited,
+    display: totalDeposited != null ? formatCompactNgn(totalDeposited) : "—",
+    sub: currency === "NGN" ? "Lifetime wallet deposits" : `Lifetime deposits (${currency})`,
+  };
+}
+
 /** @deprecated Use mapTotalReceivablesCard — kept for legacy callers. */
 export function mapTotalInvestedCard(raw) {
   const rec = mapTotalReceivablesCard(raw);

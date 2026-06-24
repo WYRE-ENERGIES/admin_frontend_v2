@@ -31,7 +31,10 @@ import {
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Link, useLocation } from "react-router-dom";
-import { fetchInvestorPortfolioOverview } from "../../redux/actions/investor/investor.action";
+import {
+  fetchInvestorPortfolioOverview,
+  fetchInvestorTotalDeposited,
+} from "../../redux/actions/investor/investor.action";
 import { formatCompactNgn } from "../../helpers/investorPortfolioMappers";
 
 dayjs.extend(relativeTime);
@@ -94,6 +97,10 @@ function PortfolioOverview() {
     );
   }, [dispatch, rangeKey]);
 
+  useEffect(() => {
+    dispatch(fetchInvestorTotalDeposited());
+  }, [dispatch]);
+
   const financedProjects = portfolioOverview.financedProjects || [];
 
   const filteredProjects = useMemo(() => {
@@ -106,6 +113,7 @@ function PortfolioOverview() {
   const activity = portfolioOverview.activity || [];
   const chartData = portfolioOverview.chartData || [];
   const kpis = portfolioOverview.kpis || {};
+  const isWalletInvestor = Boolean(kpis.totalDeposited?.isWalletInvestor);
 
   const paymentsPagePath = location.pathname.startsWith("/__investor_preview")
     ? "/__investor_preview/payments"
@@ -309,10 +317,25 @@ function PortfolioOverview() {
       ) : null}
 
       <Spin spinning={portfolioOverview.loading}>
-        <div className="investor-metrics">
+        <div
+          className={`investor-metrics${isWalletInvestor ? " investor-metrics--five" : ""}`}
+        >
+          {isWalletInvestor ? (
+            <Card
+              bordered={false}
+              className="investor-metric-card investor-metric-card--primary"
+            >
+              <div className="investor-metric-label">Total deposited</div>
+              <div className="investor-metric-value">{kpis.totalDeposited.display}</div>
+              <div className="investor-metric-sub">{kpis.totalDeposited.sub}</div>
+            </Card>
+          ) : null}
+
           <Card
             bordered={false}
-            className="investor-metric-card investor-metric-card--primary"
+            className={`investor-metric-card${
+              isWalletInvestor ? "" : " investor-metric-card--primary"
+            }`}
           >
             <div className="investor-metric-label">Total receivables</div>
             <div className="investor-metric-value">

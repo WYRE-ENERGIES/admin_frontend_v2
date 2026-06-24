@@ -2883,6 +2883,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.investor-metric-card--primary .investor-metric-primary-composition {
   color: rgba(255, 255, 255, 0.82);
 }
 
@@ -2895,6 +2899,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.investor-metric-card--primary .investor-metric-primary-stack {
   color: rgba(255, 255, 255, 0.92);
 }
 
@@ -4443,6 +4451,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.investor-metrics--five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
 .investor-mock-banner {
   border-radius: 12px;
   margin-bottom: 0;
@@ -5274,6 +5286,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 @media (max-width: 1200px) {
   .investor-metrics--four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .investor-metrics--five {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
