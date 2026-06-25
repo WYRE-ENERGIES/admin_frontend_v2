@@ -372,17 +372,34 @@ function PortfolioOverview() {
             </div>
             <div className="admin-investor-metric-badges">
               {kpis.primaryReceivables?.compositionSub ? (
-                <span className="admin-investor-metric-badge">
+                <span
+                  className="admin-investor-metric-badge"
+                  title={kpis.primaryReceivables.compositionSub}
+                >
                   {kpis.primaryReceivables.compositionSub}
                 </span>
               ) : null}
-              <span className="admin-investor-metric-badge">
+              <span
+                className="admin-investor-metric-badge"
+                title={`Payments received ${
+                  kpis.primaryReceivables?.paymentsReceived != null
+                    ? formatCompactNgn(kpis.primaryReceivables.paymentsReceived)
+                    : "—"
+                }`}
+              >
                 Payments received{" "}
                 {kpis.primaryReceivables?.paymentsReceived != null
                   ? formatCompactNgn(kpis.primaryReceivables.paymentsReceived)
                   : "—"}
               </span>
-              <span className="admin-investor-metric-badge">
+              <span
+                className="admin-investor-metric-badge"
+                title={`Outstanding ${
+                  kpis.primaryReceivables?.outstanding != null
+                    ? formatCompactNgn(kpis.primaryReceivables.outstanding)
+                    : "—"
+                }`}
+              >
                 Outstanding{" "}
                 {kpis.primaryReceivables?.outstanding != null
                   ? formatCompactNgn(kpis.primaryReceivables.outstanding)
@@ -407,12 +424,17 @@ function PortfolioOverview() {
             </div>
             {(kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—") ||
             kpis.portfolioScore?.sub ? (
-              <div className="admin-investor-metric-badges">
-                <span className="admin-investor-metric-badge">
-                  {kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—"
+              <div
+                className="admin-investor-metric-caption"
+                title={
+                  kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—"
                     ? kpis.portfolioScore.summary
-                    : kpis.portfolioScore.sub}
-                </span>
+                    : kpis.portfolioScore.sub
+                }
+              >
+                {kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—"
+                  ? kpis.portfolioScore.summary
+                  : kpis.portfolioScore.sub}
               </div>
             ) : null}
           </div>

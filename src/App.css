@@ -2866,6 +2866,61 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   align-items: stretch;
 }
 
+.investor-page .investor-metrics .admin-investor-metric {
+  box-sizing: border-box;
+  height: 128px;
+  min-height: 128px;
+  max-height: 128px;
+  padding: 8px 12px 10px;
+  gap: 0;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-value {
+  font-size: 20px;
+  margin-block: 2px 0;
+  flex-shrink: 0;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-lines,
+.investor-page .investor-metrics .admin-investor-metric-caption,
+.investor-page .investor-metrics .admin-investor-metric-badges {
+  margin-top: auto;
+  padding-top: 4px;
+  min-width: 0;
+  align-content: flex-end;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-caption {
+  font-size: 9px;
+  line-height: 1.35;
+  margin-top: auto;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-badge {
+  font-family: "Montserrat", sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 7px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  line-height: 1.4;
+}
+
 .investor-metric-card {
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -3290,13 +3345,14 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 .admin-investor-metric {
   position: relative;
   border-radius: 16px;
-  padding: 10px 16px 10px;
+  padding: 10px 16px 12px;
   color: #ffffff;
   overflow: hidden;
   min-height: 120px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
 }
 
@@ -3389,6 +3445,18 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   overflow: hidden;
   white-space: nowrap;
   max-width: 100%;
+}
+
+.admin-investor-metric-caption {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.92);
+  z-index: 1;
+  margin-top: 2px;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .admin-investor-tabs-card {

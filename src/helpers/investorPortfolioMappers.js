@@ -105,11 +105,11 @@ export function mapTotalReceivablesCard(raw) {
 
   let compositionSub = null;
   if (investedFmt && interestFmt) {
-    compositionSub = `(${investedFmt} invested · ${interestFmt} interest)`;
+    compositionSub = `${investedFmt} invested · ${interestFmt} interest`;
   } else if (investedFmt) {
-    compositionSub = `(${investedFmt} invested)`;
+    compositionSub = `${investedFmt} invested`;
   } else if (interestFmt) {
-    compositionSub = `(${interestFmt} interest)`;
+    compositionSub = `${interestFmt} interest`;
   }
 
   return {
@@ -196,7 +196,7 @@ export function formatPortfolioGenerationMwh(kwh) {
   return `${mwh.toFixed(2)} MWh`;
 }
 
-/** investors/portfolio-generation — MWh headline + (₦…) naira equivalent subline */
+/** investors/portfolio-generation — MWh headline + ₦ naira equivalent badge */
 export function mapPortfolioGenerationCard(raw) {
   const o = unwrapInvestorEnvelope(raw) ?? unwrapListOrObject(raw) ?? raw;
 
@@ -237,7 +237,7 @@ export function mapPortfolioGenerationCard(raw) {
     "value_ngn",
   ]);
 
-  const nairaSub = ngnVal != null ? `(${formatCompactNgn(ngnVal)})` : null;
+  const nairaSub = ngnVal != null ? formatCompactNgn(ngnVal) : null;
 
   return {
     value,
