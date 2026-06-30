@@ -24,6 +24,7 @@ import {
   PieChartOutlined,
   ThunderboltOutlined,
   CloudOutlined,
+  WalletOutlined,
 } from "@ant-design/icons";
 import {
   Bar,
@@ -38,16 +39,27 @@ import {
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Link, useLocation } from "react-router-dom";
-import { fetchInvestorPortfolioOverview } from "../../redux/actions/investor/investor.action";
+import {
+  fetchInvestorPortfolioOverview,
+  fetchInvestorTotalDeposited,
+} from "../../redux/actions/investor/investor.action";
 import { formatCompactNgn } from "../../helpers/investorPortfolioMappers";
 
 dayjs.extend(relativeTime);
 
 const PORTFOLIO_ACTIVITY_PREVIEW_LIMIT = 5;
 
+const INVESTOR_METRIC_GRADIENT = {
+  background: "linear-gradient(135deg, #5C12A7, #4c1d95)",
+};
+const INVESTOR_METRIC_DECORATION = { background: "rgba(255,255,255,0.06)" };
+
 const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
 const { TextArea } = Input;
+
+/** Percentage width for financed projects table (sums to 100%). */
+const financedColPct = (pct, col) => ({ ...col, width: `${pct}%` });
 
 function formatPosted(row) {
   if (row.statusPosted && row.statusPosted !== "—") return row.statusPosted;
@@ -98,6 +110,10 @@ function PortfolioOverview() {
     );
   }, [dispatch, rangeKey]);
 
+  useEffect(() => {
+    dispatch(fetchInvestorTotalDeposited());
+  }, [dispatch]);
+
   const financedProjects = portfolioOverview.financedProjects || [];
 
   const filteredProjects = useMemo(() => {
@@ -110,6 +126,7 @@ function PortfolioOverview() {
   const activity = portfolioOverview.activity || [];
   const chartData = portfolioOverview.chartData || [];
   const kpis = portfolioOverview.kpis || {};
+  const isWalletInvestor = Boolean(kpis.totalDeposited?.isWalletInvestor);
 
   const paymentsPagePath = location.pathname.startsWith("/__investor_preview")
     ? "/__investor_preview/payments"
@@ -123,21 +140,24 @@ function PortfolioOverview() {
 
   const columns = useMemo(
     () => [
-      {
+      financedColPct(14, {
         title: "Installation",
         key: "installation",
-        width: 200,
+        ellipsis: true,
         render: (_, row) => (
           <div className="investor-project-cell">
-            <div className="investor-project-name">{row.installationTitle}</div>
-            <div className="investor-project-branch">{row.installationSub}</div>
+            <div className="investor-project-name" title={row.installationTitle}>
+              {row.installationTitle}
+            </div>
+            <div className="investor-project-branch" title={row.installationSub}>
+              {row.installationSub}
+            </div>
           </div>
         ),
-      },
-      {
+      }),
+      financedColPct(12, {
         title: "Status",
         key: "status",
-        width: 148,
         render: (_, row) => (
           <HealthCell
             dot={row.healthDot}
@@ -145,60 +165,69 @@ function PortfolioOverview() {
             posted={formatPosted(row)}
           />
         ),
-      },
-      {
+      }),
+      financedColPct(11, {
         title: "kWp",
         dataIndex: "capacityKwp",
         key: "capacityKwp",
-        width: 88,
+        align: "right",
+        className: "investor-financed-col-numeric",
         render: (v) => <span className="investor-table-nowrap">{v}</span>,
-      },
-      {
+      }),
+      financedColPct(12, {
         title: "Project cost",
-        dataIndex: "projectCostDisplay",
         key: "projectCostDisplay",
-        width: 120,
-      },
-      {
-        title: "ROI",
-        key: "kpiRemark",
-        width: 140,
+        align: "right",
+        className: "investor-financed-col-numeric",
         render: (_, row) => (
-          <div className="investor-financed-kpi-cell">
-            <div className="investor-financed-kpi-main">{row.kpiRemarkMain}</div>
-            {row.kpiRemarkSub ? (
-              <Text type="secondary" className="investor-financed-kpi-sub">
-                {row.kpiRemarkSub}
-              </Text>
-            ) : null}
+          <div
+            className="investor-financed-cost-cell"
+            title={`${row.projectCostDisplay} · Invested ${row.investedDisplay}`}
+          >
+            <div className="investor-financed-cost-main">{row.projectCostDisplay}</div>
+            <Text type="secondary" className="investor-financed-cost-invested">
+              Invested {row.investedDisplay}
+            </Text>
           </div>
         ),
-      },
-      {
+      }),
+      financedColPct(12, {
         title: "Yield (kWh)",
         key: "energy",
-        width: 120,
+        align: "right",
+        className: "investor-financed-col-numeric",
         render: (_, row) => (
-          <div className="investor-financed-energy-cell">
+          <div
+            className="investor-financed-energy-cell"
+            title={`${row.energyKwhDisplay} ${row.energyValueDisplay}`}
+          >
             <div className="investor-financed-energy-kwh">{row.energyKwhDisplay}</div>
             <Text type="secondary" className="investor-financed-energy-ngn">
               {row.energyValueDisplay}
             </Text>
           </div>
         ),
-      },
-      {
-        title: "Carbon offset",
-        dataIndex: "carbonDisplay",
-        key: "carbonDisplay",
-        width: 110,
-      },
-      {
+      }),
+      financedColPct(11, {
+        title: "ROI",
+        key: "kpiRemark",
+        align: "right",
+        className: "investor-financed-col-numeric",
+        render: (_, row) => (
+          <span
+            className="investor-financed-kpi-main investor-table-nowrap"
+            title={row.kpiRemarkSub || row.kpiRemarkMain}
+          >
+            {row.kpiRemarkMain}
+          </span>
+        ),
+      }),
+      financedColPct(14, {
         title: "Repayment",
         key: "repayment",
         ellipsis: true,
         render: (_, row) => (
-          <div className="investor-financed-repay-cell">
+          <div className="investor-financed-repay-cell" title={`${row.repaymentMain} · ${row.repaymentSub}`}>
             <div className="investor-financed-repay-main">{row.repaymentMain}</div>
             <div
               className={
@@ -211,7 +240,15 @@ function PortfolioOverview() {
             </div>
           </div>
         ),
-      },
+      }),
+      financedColPct(14, {
+        title: "Carbon offset",
+        dataIndex: "carbonDisplay",
+        key: "carbonDisplay",
+        align: "right",
+        className: "investor-financed-col-numeric",
+        render: (v) => <span className="investor-table-nowrap">{v}</span>,
+      }),
     ],
     []
   );
@@ -293,76 +330,155 @@ function PortfolioOverview() {
       ) : null}
 
       <Spin spinning={portfolioOverview.loading}>
-        <div className="investor-metrics">
-          <div className="admin-investor-metric" style={{ background: "linear-gradient(135deg, #5C12A7, #4c1d95)" }}>
-            <div className="admin-investor-metric-decoration admin-investor-metric-decoration--xl" style={{ background: "rgba(255,255,255,0.06)" }} />
+        <div
+          className={`investor-metrics${isWalletInvestor ? " investor-metrics--five" : ""}`}
+        >
+          {isWalletInvestor ? (
+            <div className="admin-investor-metric" style={INVESTOR_METRIC_GRADIENT}>
+              <div
+                className="admin-investor-metric-decoration admin-investor-metric-decoration--xl"
+                style={INVESTOR_METRIC_DECORATION}
+              />
+              <div className="admin-investor-metric-mid">
+                <div className="admin-investor-metric-icon">
+                  <WalletOutlined />
+                </div>
+                <Text className="admin-investor-metric-label">Total deposited</Text>
+              </div>
+              <div className="admin-investor-metric-value">{kpis.totalDeposited.display}</div>
+              {kpis.totalDeposited?.sub ? (
+                <div className="admin-investor-metric-badges">
+                  <span className="admin-investor-metric-badge">{kpis.totalDeposited.sub}</span>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+
+          <div className="admin-investor-metric" style={INVESTOR_METRIC_GRADIENT}>
+            <div
+              className="admin-investor-metric-decoration admin-investor-metric-decoration--xl"
+              style={INVESTOR_METRIC_DECORATION}
+            />
             <div className="admin-investor-metric-mid">
-              <div className="admin-investor-metric-icon"><DollarOutlined /></div>
-              <Text className="admin-investor-metric-label">Total invested</Text>
+              <div className="admin-investor-metric-icon">
+                <DollarOutlined />
+              </div>
+              <Text className="admin-investor-metric-label">Total receivables</Text>
             </div>
             <div className="admin-investor-metric-value">
-              {kpis.primaryInvested?.amount != null
-                ? formatCompactNgn(kpis.primaryInvested.amount)
+              {kpis.primaryReceivables?.totalReceivable != null
+                ? formatCompactNgn(kpis.primaryReceivables.totalReceivable)
                 : "—"}
             </div>
             <div className="admin-investor-metric-badges">
-              <span className="admin-investor-metric-badge">
-                Payments received {kpis.primaryInvested?.paymentsReceived != null
-                  ? formatCompactNgn(kpis.primaryInvested.paymentsReceived) : "—"}
+              {kpis.primaryReceivables?.compositionSub ? (
+                <span
+                  className="admin-investor-metric-badge"
+                  title={kpis.primaryReceivables.compositionSub}
+                >
+                  {kpis.primaryReceivables.compositionSub}
+                </span>
+              ) : null}
+              <span
+                className="admin-investor-metric-badge"
+                title={`Payments received ${
+                  kpis.primaryReceivables?.paymentsReceived != null
+                    ? formatCompactNgn(kpis.primaryReceivables.paymentsReceived)
+                    : "—"
+                }`}
+              >
+                Payments received{" "}
+                {kpis.primaryReceivables?.paymentsReceived != null
+                  ? formatCompactNgn(kpis.primaryReceivables.paymentsReceived)
+                  : "—"}
               </span>
-              <span className="admin-investor-metric-badge">
-                Outstanding {kpis.primaryInvested?.outstanding != null
-                  ? formatCompactNgn(kpis.primaryInvested.outstanding) : "—"}
+              <span
+                className="admin-investor-metric-badge"
+                title={`Outstanding ${
+                  kpis.primaryReceivables?.outstanding != null
+                    ? formatCompactNgn(kpis.primaryReceivables.outstanding)
+                    : "—"
+                }`}
+              >
+                Outstanding{" "}
+                {kpis.primaryReceivables?.outstanding != null
+                  ? formatCompactNgn(kpis.primaryReceivables.outstanding)
+                  : "—"}
               </span>
             </div>
           </div>
 
-          <div className="admin-investor-metric" style={{ background: "linear-gradient(135deg, #5C12A7, #4c1d95)" }}>
-            <div className="admin-investor-metric-decoration admin-investor-metric-decoration--xl" style={{ background: "rgba(255,255,255,0.06)" }} />
+          <div className="admin-investor-metric" style={INVESTOR_METRIC_GRADIENT}>
+            <div
+              className="admin-investor-metric-decoration admin-investor-metric-decoration--xl"
+              style={INVESTOR_METRIC_DECORATION}
+            />
             <div className="admin-investor-metric-mid">
-              <div className="admin-investor-metric-icon"><PieChartOutlined /></div>
+              <div className="admin-investor-metric-icon">
+                <PieChartOutlined />
+              </div>
               <Text className="admin-investor-metric-label">Portfolio score</Text>
             </div>
             <div className="admin-investor-metric-value">
               {kpis.portfolioScore?.display ?? "—"}
             </div>
-            {kpis.portfolioScore?.sub && (
-              <div className="admin-investor-metric-badges">
-                <span className="admin-investor-metric-badge">{kpis.portfolioScore.sub}</span>
+            {(kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—") ||
+            kpis.portfolioScore?.sub ? (
+              <div
+                className="admin-investor-metric-caption"
+                title={
+                  kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—"
+                    ? kpis.portfolioScore.summary
+                    : kpis.portfolioScore.sub
+                }
+              >
+                {kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—"
+                  ? kpis.portfolioScore.summary
+                  : kpis.portfolioScore.sub}
               </div>
-            )}
+            ) : null}
           </div>
 
-          <div className="admin-investor-metric" style={{ background: "linear-gradient(135deg, #5C12A7, #4c1d95)" }}>
-            <div className="admin-investor-metric-decoration admin-investor-metric-decoration--xl" style={{ background: "rgba(255,255,255,0.06)" }} />
+          <div className="admin-investor-metric" style={INVESTOR_METRIC_GRADIENT}>
+            <div
+              className="admin-investor-metric-decoration admin-investor-metric-decoration--xl"
+              style={INVESTOR_METRIC_DECORATION}
+            />
             <div className="admin-investor-metric-mid">
-              <div className="admin-investor-metric-icon"><ThunderboltOutlined /></div>
+              <div className="admin-investor-metric-icon">
+                <ThunderboltOutlined />
+              </div>
               <Text className="admin-investor-metric-label">Portfolio generation</Text>
             </div>
             <div className="admin-investor-metric-value">
               {kpis.portfolioGeneration?.value ?? "—"}
             </div>
-            {(kpis.portfolioGeneration?.nairaSub ?? kpis.portfolioGeneration?.sub) && (
+            {(kpis.portfolioGeneration?.nairaSub ?? kpis.portfolioGeneration?.sub) ? (
               <div className="admin-investor-metric-badges">
                 <span className="admin-investor-metric-badge">
                   {kpis.portfolioGeneration.nairaSub ?? kpis.portfolioGeneration.sub}
                 </span>
               </div>
-            )}
+            ) : null}
           </div>
 
-          <div className="admin-investor-metric" style={{ background: "linear-gradient(135deg, #5C12A7, #4c1d95)" }}>
-            <div className="admin-investor-metric-decoration admin-investor-metric-decoration--xl" style={{ background: "rgba(255,255,255,0.06)" }} />
+          <div className="admin-investor-metric" style={INVESTOR_METRIC_GRADIENT}>
+            <div
+              className="admin-investor-metric-decoration admin-investor-metric-decoration--xl"
+              style={INVESTOR_METRIC_DECORATION}
+            />
             <div className="admin-investor-metric-mid">
-              <div className="admin-investor-metric-icon"><CloudOutlined /></div>
+              <div className="admin-investor-metric-icon">
+                <CloudOutlined />
+              </div>
               <Text className="admin-investor-metric-label">CO₂ offset</Text>
             </div>
             <div className="admin-investor-metric-value">{kpis.co2?.value ?? "—"}</div>
-            {kpis.co2?.sub && (
+            {kpis.co2?.sub ? (
               <div className="admin-investor-metric-badges">
                 <span className="admin-investor-metric-badge">{kpis.co2.sub}</span>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </Spin>
@@ -385,7 +501,7 @@ function PortfolioOverview() {
         className="investor-card"
         bordered={false}
       >
-        <div className="table-responsive-wrapper investor-table-wrap">
+        <div className="table-responsive-wrapper investor-table-wrap investor-table-wrap--financed">
           <Table
             className="investor-table investor-financed-table"
             columns={columns}

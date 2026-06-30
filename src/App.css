@@ -2866,6 +2866,61 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   align-items: stretch;
 }
 
+.investor-page .investor-metrics .admin-investor-metric {
+  box-sizing: border-box;
+  height: 128px;
+  min-height: 128px;
+  max-height: 128px;
+  padding: 8px 12px 10px;
+  gap: 0;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-value {
+  font-size: 20px;
+  margin-block: 2px 0;
+  flex-shrink: 0;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-lines,
+.investor-page .investor-metrics .admin-investor-metric-caption,
+.investor-page .investor-metrics .admin-investor-metric-badges {
+  margin-top: auto;
+  padding-top: 4px;
+  min-width: 0;
+  align-content: flex-end;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-caption {
+  font-size: 9px;
+  line-height: 1.35;
+  margin-top: auto;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-badge {
+  font-family: "Montserrat", sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 7px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  line-height: 1.4;
+}
+
 .investor-metric-card {
   border-radius: 14px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
@@ -2902,6 +2957,19 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   color: #fff;
 }
 
+.investor-metric-primary-composition {
+  margin-top: 4px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.investor-metric-card--primary .investor-metric-primary-composition {
+  color: rgba(255, 255, 255, 0.82);
+}
+
 .investor-metric-primary-stack {
   margin-top: 12px;
   display: flex;
@@ -2911,7 +2979,20 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 12px;
   font-weight: 600;
   line-height: 1.4;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.investor-metric-card--primary .investor-metric-primary-stack {
   color: rgba(255, 255, 255, 0.92);
+}
+
+.investor-metric-card--portfolio-score .investor-metric-score-summary {
+  margin-top: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgba(0, 0, 0, 0.55);
 }
 
 .investor-metric-label {
@@ -3046,6 +3127,29 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.investor-financed-cost-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.investor-financed-cost-main {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+  white-space: nowrap;
+}
+
+.investor-financed-cost-invested {
+  font-size: 12px !important;
+  white-space: nowrap;
 }
 
 .investor-financed-energy-kwh {
@@ -3063,6 +3167,8 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  align-items: flex-end;
+  min-width: 0;
 }
 
 .investor-financed-kpi-main {
@@ -3090,6 +3196,9 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 13px;
   color: #141414;
   line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .investor-financed-repay-sub {
@@ -3097,6 +3206,9 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 12px;
   font-weight: 500;
   color: rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .investor-financed-repay-sub--overdue {
@@ -3233,13 +3345,14 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 .admin-investor-metric {
   position: relative;
   border-radius: 16px;
-  padding: 10px 16px 10px;
+  padding: 10px 16px 12px;
   color: #ffffff;
   overflow: hidden;
   min-height: 120px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
 }
 
@@ -3332,6 +3445,18 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   overflow: hidden;
   white-space: nowrap;
   max-width: 100%;
+}
+
+.admin-investor-metric-caption {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.92);
+  z-index: 1;
+  margin-top: 2px;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .admin-investor-tabs-card {
@@ -3857,6 +3982,9 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-size: 14px;
   line-height: 1.35;
   color: #141414;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .investor-project-branch {
@@ -3865,6 +3993,9 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-weight: 500;
   line-height: 1.4;
   color: rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .investor-table-wrap {
@@ -3879,6 +4010,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   min-width: 0;
 }
 
+.investor-table-wrap--financed {
+  overflow-x: hidden;
+}
+
 .investor-financed-table .ant-table-content,
 .investor-financed-table .ant-table-body {
   overflow-x: hidden !important;
@@ -3886,11 +4021,27 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-financed-table table {
   width: 100% !important;
+  min-width: 0;
   table-layout: fixed;
 }
 
 .investor-financed-table .ant-table-thead > tr > th {
-  white-space: nowrap;
+  white-space: normal !important;
+  line-height: 1.3;
+  vertical-align: bottom;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.investor-financed-table .ant-table-thead > tr > th.investor-financed-col-numeric,
+.investor-financed-table .ant-table-tbody > tr > td.investor-financed-col-numeric {
+  text-align: right !important;
+}
+
+.investor-financed-table .ant-table-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .investor-table-nowrap {
@@ -3969,6 +4120,22 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-weight: 500;
 }
 
+@media (max-width: 900px) {
+  .investor-table-wrap--financed {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .investor-financed-table .ant-table-content,
+  .investor-financed-table .ant-table-body {
+    overflow-x: auto !important;
+  }
+
+  .investor-financed-table table {
+    min-width: 820px;
+  }
+}
+
 @media (max-width: 768px) {
   .investor-table-wrap {
     overflow-x: auto;
@@ -3978,12 +4145,22 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
   .investor-table-wrap .ant-table,
   .investor-table-wrap .ant-table-container {
-    min-width: 640px;
+    min-width: 0;
   }
 
-  .investor-financed-table .ant-table-content,
-  .investor-financed-table .ant-table-body {
-    overflow-x: auto !important;
+  .investor-financed-table table {
+    min-width: 760px;
+  }
+
+  .investor-financed-table .ant-table-thead > tr > th,
+  .investor-financed-table .ant-table-tbody > tr > td {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .investor-financed-legend {
+    flex-direction: column;
+    gap: 10px;
   }
 }
 
@@ -4008,6 +4185,24 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   font-weight: 500;
   padding: 14px 16px !important;
   vertical-align: top;
+}
+
+.investor-financed-table .ant-table-thead > tr > th {
+  padding: 10px 8px !important;
+  font-size: 11px !important;
+  white-space: normal !important;
+  line-height: 1.3;
+  vertical-align: bottom;
+}
+
+.investor-financed-table .ant-table-tbody > tr > td {
+  padding: 10px 8px !important;
+}
+
+.investor-financed-table .ant-table-thead > tr > th.investor-financed-col-numeric,
+.investor-financed-table .ant-table-tbody > tr > td.investor-financed-col-numeric {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 
 .investor-table .ant-table-tbody > tr > td:not(:first-child) {
@@ -4356,6 +4551,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .investor-metrics--four {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.investor-metrics--five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .investor-mock-banner {
@@ -4756,16 +4955,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   display: flex;
   width: 100%;
   margin-top: 0;
-}
-
-.investor-open-project-progress {
-  margin-top: 14px;
-  min-height: 22px;
-  flex-shrink: 0;
-}
-
-.investor-open-project-progress .ant-progress-bg {
-  background-color: #fa8c16 !important;
 }
 
 .investor-open-project-foot {
@@ -5199,6 +5388,10 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 @media (max-width: 1200px) {
   .investor-metrics--four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .investor-metrics--five {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

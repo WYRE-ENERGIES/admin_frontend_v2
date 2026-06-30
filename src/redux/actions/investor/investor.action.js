@@ -10,6 +10,7 @@ import {
   investorPortfolioOverviewSuccess,
   investorProjectsLoading,
   investorProjectsSuccess,
+  investorTotalDepositedSuccess,
 } from "./investor.creator";
 import {
   mapCo2Card,
@@ -17,10 +18,11 @@ import {
   mapNotificationsToAlert,
   mapPerformanceSnapshotChart,
   mapPortfolioGenerationCard,
-  mapPrimaryInvestedCard,
+  mapPrimaryReceivablesCard,
   mapRecentPaymentActivity,
   mapPortfolioScoreCard,
   mapRepaymentTotalsCard,
+  mapTotalDepositedCard,
 } from "../../../helpers/investorPortfolioMappers";
 import {
   mapFinancedProjectsTiles,
@@ -55,7 +57,7 @@ export const fetchInvestorPortfolioOverview =
 
     const requests = [
       ["notifications", "/api/v1/investors/notifications/"],
-      ["totalInvested", "/api/v1/investors/total-invested/"],
+      ["totalReceivables", INVESTOR_API.totalReceivables],
       ["portfolioScore", INVESTOR_API.portfolioScore],
       ["portfolioGeneration", INVESTOR_API.portfolioGeneration(startMonth, endMonth)],
       ["repaymentTotals", "/api/v1/investors/repayment-totals/"],
@@ -93,7 +95,10 @@ export const fetchInvestorPortfolioOverview =
       partialErrors: errors.length ? errors : null,
       alert: mapNotificationsToAlert(raw.notifications),
       kpis: {
-        primaryInvested: mapPrimaryInvestedCard(raw.totalInvested, raw.repaymentTotals),
+        primaryReceivables: mapPrimaryReceivablesCard(
+          raw.totalReceivables,
+          raw.repaymentTotals
+        ),
         portfolioScore: mapPortfolioScoreCard(raw.portfolioScore),
         portfolioGeneration: mapPortfolioGenerationCard(raw.portfolioGeneration),
         repaymentTotals: mapRepaymentTotalsCard(raw.repaymentTotals),
@@ -108,6 +113,16 @@ export const fetchInvestorPortfolioOverview =
     dispatch(investorPortfolioOverviewLoading(false));
     return { fulfilled: true, partial: errors.length > 0 };
   };
+
+/** Wallet-investor only — loaded separately so it does not affect other portfolio KPIs. */
+export const fetchInvestorTotalDeposited = () => async (dispatch) => {
+  try {
+    const res = await APIService.get(INVESTOR_API.totalDeposited);
+    dispatch(investorTotalDepositedSuccess(mapTotalDepositedCard(res.data)));
+  } catch {
+    dispatch(investorTotalDepositedSuccess(null));
+  }
+};
 
 /** Projects page: KPIs, open projects, financed sites, investment tickets. */
 export const fetchInvestorProjects = () => async (dispatch) => {

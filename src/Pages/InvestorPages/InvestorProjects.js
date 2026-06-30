@@ -383,15 +383,6 @@ function InvestorProjects() {
                 </div>
               </div>
 
-              <div className="investor-open-project-progress">
-                <Progress
-                  percent={p.raisedPct ?? 0}
-                  showInfo
-                  strokeColor="#5BB56F"
-                  format={(pct) => `${pct}% raised`}
-                />
-              </div>
-
               <div className="investor-open-project-actions">
                 <div className="investor-open-project-foot">
                   <Button type="link" size="small" onClick={() => openProjectDetail(p)}>
