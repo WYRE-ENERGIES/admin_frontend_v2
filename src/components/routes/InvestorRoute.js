@@ -5,6 +5,7 @@ import PlaceholderPage from "../../Pages/InvestorPages/PlaceholderPage";
 import InvestorProjects from "../../Pages/InvestorPages/InvestorProjects";
 import InvestorPayments from "../../Pages/InvestorPages/InvestorPayments";
 import InvestorAccountKyc from "../../Pages/InvestorPages/InvestorAccountKyc";
+import InvestorSupport from "../../Pages/InvestorPages/InvestorSupport";
 
 function joinBase(basePath, path) {
   const base = String(basePath || "").replace(/\/+$/, "");
@@ -37,7 +38,7 @@ function InvestorRoute({ basePath = "" }) {
         />
         <Route
           path={joinBase(basePath, "/support")}
-          element={<PlaceholderPage title="Support" />}
+          element={<InvestorSupport />}
         />
         <Route path="*" element={<Navigate to={joinBase(basePath, "/")} replace />} />
       </Routes>

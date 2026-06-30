@@ -49,3 +49,37 @@ export const investorTotalDepositedSuccess = (payload) => ({
   type: investorTypes.INVESTOR_TOTAL_DEPOSITED_SUCCESS,
   payload,
 });
+
+export const investorSupportTicketsLoading = (payload = true) => ({
+  type: investorTypes.INVESTOR_SUPPORT_TICKETS_LOADING,
+  payload,
+});
+
+export const investorSupportTicketsSuccess = (payload) => ({
+  type: investorTypes.INVESTOR_SUPPORT_TICKETS_SUCCESS,
+  payload,
+});
+
+export const investorSupportTicketsFail = (payload) => ({
+  type: investorTypes.INVESTOR_SUPPORT_TICKETS_FAIL,
+  payload,
+});
+
+export const investorSupportTicketDetailLoading = (payload = true) => ({
+  type: investorTypes.INVESTOR_SUPPORT_TICKET_DETAIL_LOADING,
+  payload,
+});
+
+export const investorSupportTicketDetailSuccess = (payload) => ({
+  type: investorTypes.INVESTOR_SUPPORT_TICKET_DETAIL_SUCCESS,
+  payload,
+});
+
+export const investorSupportTicketDetailClear = () => ({
+  type: investorTypes.INVESTOR_SUPPORT_TICKET_DETAIL_CLEAR,
+});
+
+export const investorSupportTicketCreateLoading = (payload = true) => ({
+  type: investorTypes.INVESTOR_SUPPORT_TICKET_CREATE_LOADING,
+  payload,
+});

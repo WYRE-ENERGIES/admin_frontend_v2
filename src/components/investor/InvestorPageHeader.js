@@ -1,15 +1,15 @@
-import { Button, DatePicker, Typography } from "antd";
-import { DownloadOutlined, FileTextOutlined } from "@ant-design/icons";
+import { Button, Typography } from "antd";
+import { DownloadOutlined } from "@ant-design/icons";
 
-const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
 
 function InvestorPageHeader({
   title,
   subtitle,
   banner,
-  range,
-  onRangeChange,
+  showDownloadReport = true,
+  onDownloadReport,
+  downloadLoading = false,
 }) {
   return (
     <>
@@ -25,32 +25,19 @@ function InvestorPageHeader({
             </Text>
           ) : null}
         </div>
-        <div className="investor-header-actions">
-          <RangePicker
-            value={range}
-            onChange={(next) => {
-              if (!next) return;
-              onRangeChange(next);
-            }}
-            allowClear={false}
-            className="investor-range"
-            getPopupContainer={() => document.body}
-            popupClassName="investor-shell-picker-dropdown"
-          />
-          <Button
-            icon={<FileTextOutlined />}
-            className="investor-btn-light investor-header-btn"
-          >
-            Export statement
-          </Button>
-          <Button
-            type="primary"
-            icon={<DownloadOutlined />}
-            className="investor-header-btn investor-header-btn--primary"
-          >
-            Download report
-          </Button>
-        </div>
+        {showDownloadReport ? (
+          <div className="investor-header-actions">
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              className="investor-header-btn investor-header-btn--primary"
+              loading={downloadLoading}
+              onClick={onDownloadReport}
+            >
+              Download report
+            </Button>
+          </div>
+        ) : null}
       </div>
     </>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {
   Alert,
   Button,
@@ -11,9 +11,10 @@ import {
   Timeline,
   Typography,
 } from "antd";
-import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
+import { buildAccountKycReportRows } from "../../helpers/investorReportExport";
+import { runInvestorReportDownload } from "../../helpers/investorReportDownload";
 import { fetchInvestorAccountKyc } from "../../redux/actions/investor/investor.action";
 
 const { Text, Title } = Typography;
@@ -29,7 +30,6 @@ function docStatusTag(status) {
 function InvestorAccountKyc() {
   const dispatch = useDispatch();
   const { accountKyc: data, accountKycLoading } = useSelector((s) => s.investorPage);
-  const [range, setRange] = useState([dayjs().month(0).date(1), dayjs().month(3).endOf("month")]);
 
   useEffect(() => {
     dispatch(fetchInvestorAccountKyc());
@@ -47,13 +47,22 @@ function InvestorAccountKyc() {
     { title: "Status", dataIndex: "status", key: "status", render: (v) => docStatusTag(v) },
   ];
 
+  const handleDownloadReport = async () => {
+    const { title, filename, rows } = buildAccountKycReportRows(data);
+    await runInvestorReportDownload({
+      title,
+      filename,
+      rows,
+      emptyMessage: "No account data available to export yet.",
+    });
+  };
+
   return (
     <div className="investor-page investor-account-page">
       <InvestorPageHeader
         title="Account & KYC"
         subtitle="Profile, payout details, and investor verification."
-        range={range}
-        onRangeChange={setRange}
+        onDownloadReport={handleDownloadReport}
       />
 
       <Alert

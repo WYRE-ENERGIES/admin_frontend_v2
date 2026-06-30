@@ -187,6 +187,41 @@ export function mapInvestmentTicketsList(raw) {
   });
 }
 
+function mapSupportTicketRow(item) {
+  const id = item.ticket_id ?? item.id;
+  const tag = item.subject_tag ? String(item.subject_tag).toUpperCase() : null;
+  return {
+    id,
+    key: String(id),
+    subject: item.subject || "",
+    subjectTag: tag,
+    subjectTagDisplay: tag ? `[${tag}]` : "—",
+    status: item.status || "Pending",
+    priority: item.priority,
+    responded: Boolean(item.responded),
+    staffNoteCount: item.staff_note_count ?? 0,
+    createdAt: item.created_at,
+    updatedAt: item.updated_at,
+    createdDisplay: item.created_at_display || item.created_at,
+    updatedDisplay: item.updated_at_display || item.updated_at,
+  };
+}
+
+/** investors/support-tickets/ */
+export function mapInvestorSupportTicketsList(raw) {
+  return listFromPaged(raw).map(mapSupportTicketRow);
+}
+
+/** investors/support-tickets/:id/ */
+export function mapInvestorSupportTicketDetail(raw) {
+  const item = unwrapApiData(raw) ?? raw;
+  if (!item || typeof item !== "object") return null;
+  return {
+    ...mapSupportTicketRow(item),
+    description: item.description,
+  };
+}
+
 /** investors/projects/:id/ — cost breakdown for modal */
 export function mapProjectDetail(raw) {
   const item = unwrapApiData(raw) ?? raw;

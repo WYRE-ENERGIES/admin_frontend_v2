@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Button, Card, Select, Spin, Table, Tabs, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
+import { buildPaymentsReportRows } from "../../helpers/investorReportExport";
+import { runInvestorReportDownload } from "../../helpers/investorReportDownload";
 import {
   fetchInvestorFinancedInvestments,
   fetchInvestorPayments,
@@ -13,7 +15,7 @@ import {
 const { Text, Title } = Typography;
 
 const LEDGER_PAGE_SIZE = 10;
-const PAYOUT_HISTORY_PAGE_SIZE = 10;
+const PAYOUT_HISTORY_PAGE_SIZE = 5;
 
 /** Percentage width for investor payment tables (sums to 100% per table). */
 const investorColPct = (pct, col) => ({ ...col, width: `${pct}%` });
@@ -67,11 +69,6 @@ function InvestorPayments() {
   const [payoutSchedule, setPayoutSchedule] = useState(null);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleError, setScheduleError] = useState(null);
-
-  const upcomingScheduleRef = useRef(null);
-  const payoutHistoryBodyRef = useRef(null);
-  const [paymentsStackHeight, setPaymentsStackHeight] = useState(null);
-  const [payoutTableScrollY, setPayoutTableScrollY] = useState(220);
 
   const rangeKey = `${range[0]?.format("YYYY-MM-DD")}_${range[1]?.format("YYYY-MM-DD")}`;
 
@@ -158,69 +155,6 @@ function InvestorPayments() {
       })),
     [investmentOptions]
   );
-
-  const syncPaymentsSplitLayout = useCallback(() => {
-    if (typeof window !== "undefined" && window.innerWidth < 992) {
-      setPaymentsStackHeight(null);
-      setPayoutTableScrollY(220);
-      return;
-    }
-
-    const leftEl = upcomingScheduleRef.current;
-    if (!leftEl) return;
-
-    const leftHeight = leftEl.offsetHeight;
-    setPaymentsStackHeight(leftHeight > 0 ? leftHeight : null);
-  }, []);
-
-  const syncPayoutTableScroll = useCallback(() => {
-    if (typeof window !== "undefined" && window.innerWidth < 992) {
-      setPayoutTableScrollY(220);
-      return;
-    }
-
-    const bodyEl = payoutHistoryBodyRef.current;
-    const leftEl = upcomingScheduleRef.current;
-    if (!bodyEl || !leftEl || leftEl.offsetHeight <= 0) return;
-
-    const pagination = bodyEl.querySelector(".ant-pagination");
-    const paginationHeight = pagination?.offsetHeight ?? 32;
-    const scrollY = bodyEl.clientHeight - paginationHeight - 8;
-    setPayoutTableScrollY(Math.max(120, scrollY));
-  }, []);
-
-  useLayoutEffect(() => {
-    syncPaymentsSplitLayout();
-
-    const leftEl = upcomingScheduleRef.current;
-    const observer = new ResizeObserver(() => syncPaymentsSplitLayout());
-    if (leftEl) observer.observe(leftEl);
-
-    window.addEventListener("resize", syncPaymentsSplitLayout);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", syncPaymentsSplitLayout);
-    };
-  }, [syncPaymentsSplitLayout, paymentsLoading, bundle?.schedule?.length]);
-
-  useLayoutEffect(() => {
-    syncPayoutTableScroll();
-
-    const bodyEl = payoutHistoryBodyRef.current;
-    const observer = new ResizeObserver(() => syncPayoutTableScroll());
-    if (bodyEl) observer.observe(bodyEl);
-
-    window.addEventListener("resize", syncPayoutTableScroll);
-    return () => {
-      observer.disconnect();
-      window.removeEventListener("resize", syncPayoutTableScroll);
-    };
-  }, [
-    syncPayoutTableScroll,
-    paymentsStackHeight,
-    paymentsLoading,
-    bundle?.payoutHistory?.length,
-  ]);
 
   const kpis = useMemo(() => {
     const k = bundle?.kpis;
@@ -374,6 +308,20 @@ function InvestorPayments() {
     ];
   }, []);
 
+  const handleDownloadReport = async () => {
+    const { title, filename, rows } = buildPaymentsReportRows({
+      bundle,
+      payoutSchedule,
+      ledgerYear,
+    });
+    await runInvestorReportDownload({
+      title,
+      filename,
+      rows,
+      emptyMessage: "No payment data available to export yet.",
+    });
+  };
+
   return (
     <div className="investor-page investor-payments-page">
       {loadError ? (
@@ -393,8 +341,7 @@ function InvestorPayments() {
       <InvestorPageHeader
         title="Payments & receivables"
         subtitle="Schedule, payouts, receivable health, and cash ledger from your Wyre portfolio."
-        range={range}
-        onRangeChange={setRange}
+        onDownloadReport={handleDownloadReport}
       />
 
       <Spin spinning={paymentsLoading} wrapperClassName="investor-payments-spin">
@@ -440,28 +387,30 @@ function InvestorPayments() {
 
           {payoutSchedule ? (
             <>
-              <Text type="secondary" className="investor-payments-schedule-meta">
-                {payoutSchedule.projectName}
-                {scheduleSummary
-                  ? ` · ${scheduleSummary.totalInstallments} installments · ${scheduleSummary.paidCount} paid · ${scheduleSummary.openCount} open`
-                  : ""}
-              </Text>
-              {scheduleSummary ? (
-                <div className="investor-payments-schedule-summary">
-                  <div>
-                    <span className="investor-mini-label">Total due</span>
-                    <span className="investor-mini-value">{scheduleSummary.totalDue}</span>
+              <div className="investor-payments-schedule-head">
+                <Text className="investor-payments-schedule-meta">
+                  {payoutSchedule.projectName}
+                  {scheduleSummary
+                    ? ` · ${scheduleSummary.totalInstallments} installments · ${scheduleSummary.paidCount} paid · ${scheduleSummary.openCount} open`
+                    : ""}
+                </Text>
+                {scheduleSummary ? (
+                  <div className="investor-payments-schedule-summary">
+                    <div>
+                      <span className="investor-mini-label">Total due</span>
+                      <span className="investor-mini-value">{scheduleSummary.totalDue}</span>
+                    </div>
+                    <div>
+                      <span className="investor-mini-label">Total paid</span>
+                      <span className="investor-mini-value investor-pay-pos">{scheduleSummary.totalPaid}</span>
+                    </div>
+                    <div>
+                      <span className="investor-mini-label">Remaining</span>
+                      <span className="investor-mini-value">{scheduleSummary.totalRemaining}</span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="investor-mini-label">Total paid</span>
-                    <span className="investor-mini-value investor-pay-pos">{scheduleSummary.totalPaid}</span>
-                  </div>
-                  <div>
-                    <span className="investor-mini-label">Remaining</span>
-                    <span className="investor-mini-value">{scheduleSummary.totalRemaining}</span>
-                  </div>
-                </div>
-              ) : null}
+                ) : null}
+              </div>
             </>
           ) : !scheduleLoading && !investmentsLoading ? (
             <Text type="secondary">Select a financed investment to view its payout schedule.</Text>
@@ -487,84 +436,76 @@ function InvestorPayments() {
           </Spin>
         </Card>
 
-        <div className="investor-payments-split">
-          <div ref={upcomingScheduleRef} className="investor-payments-split-left">
-            <Card
-              title="Upcoming schedule"
-              bordered={false}
-              className="investor-card investor-card--upcoming-schedule"
-            >
-              <div className="table-responsive-wrapper investor-table-wrap">
-                <Table
-                  className="investor-table investor-schedule-table"
-                  columns={scheduleCols}
-                  dataSource={bundle?.schedule || []}
-                  pagination={{
-                    pageSize: 10,
-                    showSizeChanger: false,
-                    hideOnSinglePage: true,
-                  }}
-                  size="small"
-                  rowKey="key"
-                  tableLayout="fixed"
-                  locale={{ emptyText: "No upcoming installments" }}
-                />
-              </div>
-            </Card>
+        <Card
+          title="Upcoming schedule"
+          bordered={false}
+          className="investor-card investor-card--upcoming-schedule investor-payments-upcoming-card"
+        >
+          <div className="table-responsive-wrapper investor-table-wrap">
+            <Table
+              className="investor-table investor-schedule-table"
+              columns={scheduleCols}
+              dataSource={bundle?.schedule || []}
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: false,
+                hideOnSinglePage: true,
+              }}
+              size="small"
+              rowKey="key"
+              tableLayout="fixed"
+              locale={{ emptyText: "No upcoming installments" }}
+            />
           </div>
+        </Card>
 
-          <div
-            className="investor-payments-stack"
-            style={paymentsStackHeight != null ? { height: paymentsStackHeight } : undefined}
+        <div className="investor-payments-bottom-split">
+          <Card
+            title="Payout history"
+            bordered={false}
+            className="investor-card investor-card--payout-history"
           >
-            <Card
-              title="Payout history"
-              bordered={false}
-              className="investor-card investor-card--payout-history"
-            >
-              <div ref={payoutHistoryBodyRef} className="investor-payout-history-body">
-                <Table
-                  className="investor-table investor-payout-history-table"
-                  showHeader={false}
-                  columns={payoutHistoryCols}
-                  dataSource={bundle?.payoutHistory || []}
-                  scroll={{ y: payoutTableScrollY }}
-                  pagination={{
-                    pageSize: PAYOUT_HISTORY_PAGE_SIZE,
-                    showSizeChanger: false,
-                    hideOnSinglePage: true,
-                    size: "small",
-                  }}
-                  size="small"
-                  rowKey="key"
-                  tableLayout="fixed"
-                  locale={{ emptyText: "No payouts recorded yet." }}
-                />
-              </div>
-            </Card>
+            <div className="investor-payout-history-body">
+              <Table
+                className="investor-table investor-payout-history-table"
+                showHeader={false}
+                columns={payoutHistoryCols}
+                dataSource={bundle?.payoutHistory || []}
+                pagination={{
+                  pageSize: PAYOUT_HISTORY_PAGE_SIZE,
+                  showSizeChanger: false,
+                  hideOnSinglePage: true,
+                  size: "small",
+                }}
+                size="small"
+                rowKey="key"
+                tableLayout="fixed"
+                locale={{ emptyText: "No payouts recorded yet." }}
+              />
+            </div>
+          </Card>
 
-            <Card title="Receivable health" bordered={false} className="investor-card">
-              <div className="investor-health-lines">
-                <div>
-                  <span className="investor-mini-label">Weighted days past due (portfolio)</span>
-                  <span className="investor-mini-value">{health?.dpd ?? "—"}</span>
-                </div>
-                <div>
-                  <span className="investor-mini-label">Projects with any overdue line</span>
-                  <span className="investor-mini-value">{health?.projectsOverdue ?? "—"}</span>
-                </div>
-                <div>
-                  <span className="investor-mini-label">Expected IRR range (model)</span>
-                  <span className="investor-mini-value">{health?.irrRange ?? "—"}</span>
-                </div>
+          <Card title="Receivable health" bordered={false} className="investor-card investor-card--receivable-health">
+            <div className="investor-health-lines">
+              <div>
+                <span className="investor-mini-label">Weighted days past due (portfolio)</span>
+                <span className="investor-mini-value">{health?.dpd ?? "—"}</span>
               </div>
-              {health?.disclaimer ? (
-                <Text type="secondary" className="investor-health-disclaimer">
-                  {health.disclaimer}
-                </Text>
-              ) : null}
-            </Card>
-          </div>
+              <div>
+                <span className="investor-mini-label">Projects with any overdue line</span>
+                <span className="investor-mini-value">{health?.projectsOverdue ?? "—"}</span>
+              </div>
+              <div>
+                <span className="investor-mini-label">Expected IRR range (model)</span>
+                <span className="investor-mini-value">{health?.irrRange ?? "—"}</span>
+              </div>
+            </div>
+            {health?.disclaimer ? (
+              <Text type="secondary" className="investor-health-disclaimer">
+                {health.disclaimer}
+              </Text>
+            ) : null}
+          </Card>
         </div>
 
         <Card

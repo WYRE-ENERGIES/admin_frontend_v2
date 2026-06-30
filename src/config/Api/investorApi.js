@@ -9,6 +9,8 @@ export const INVESTOR_API = {
   projectDetail: (id) => `/api/v1/investors/projects/${id}/`,
   projectContactWyre: (id) => `/api/v1/investors/projects/${id}/contact-wyre/`,
   investmentTickets: "/api/v1/investors/investment-tickets/",
+  supportTickets: "/api/v1/investors/investment-tickets/",
+  supportTicketDetail: (id) => `/api/v1/investors/investment-tickets/${id}/`,
   kpiActiveProjects: "/api/v1/investors/projects/kpi/active-projects/",
   kpiPortfolioCapacity: "/api/v1/investors/projects/kpi/portfolio-capacity/",
   kpiPortfolioGenerationYtd: "/api/v1/investors/projects/kpi/portfolio-generation-ytd/",

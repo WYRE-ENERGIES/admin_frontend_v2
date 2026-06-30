@@ -11,6 +11,13 @@ import {
   investorProjectsLoading,
   investorProjectsSuccess,
   investorTotalDepositedSuccess,
+  investorSupportTicketsLoading,
+  investorSupportTicketsSuccess,
+  investorSupportTicketsFail,
+  investorSupportTicketDetailLoading,
+  investorSupportTicketDetailSuccess,
+  investorSupportTicketDetailClear,
+  investorSupportTicketCreateLoading,
 } from "./investor.creator";
 import {
   mapCo2Card,
@@ -27,6 +34,8 @@ import {
 import {
   mapFinancedProjectsTiles,
   mapInvestmentTicketsList,
+  mapInvestorSupportTicketDetail,
+  mapInvestorSupportTicketsList,
   mapOpenProjectsList,
   mapProjectsPageSummary,
 } from "../../../helpers/investorProjectsMappers";
@@ -330,5 +339,89 @@ export const fetchInvestorAccountKyc = () => async (dispatch) => {
     return { fulfilled: false, message: error?.response?.data?.detail || error.message };
   } finally {
     dispatch(investorAccountKycLoading(false));
+  }
+};
+
+const normalizeSupportPriority = (priority) => {
+  const value = String(priority || "Normal").trim();
+  if (value.toLowerCase() === "high") return "Urgent";
+  return value;
+};
+
+/** GET investors/support-tickets/ */
+export const fetchInvestorSupportTickets =
+  (params = {}) =>
+  async (dispatch) => {
+    dispatch(investorSupportTicketsLoading(true));
+    try {
+      const search = new URLSearchParams();
+      if (params.page != null) search.set("page", String(params.page));
+      if (params.page_size != null) search.set("page_size", String(params.page_size));
+      const qs = search.toString();
+      const url = qs ? `${INVESTOR_API.supportTickets}?${qs}` : INVESTOR_API.supportTickets;
+      const response = await APIService.get(url);
+      const body = response.data;
+      if (body?.status === false) {
+        const message = body.message || "Failed to load support tickets";
+        dispatch(investorSupportTicketsFail(message));
+        return { fulfilled: false, message };
+      }
+      const list = mapInvestorSupportTicketsList(body.data ?? body);
+      dispatch(investorSupportTicketsSuccess(list));
+      return { fulfilled: true, data: list };
+    } catch (error) {
+      const message = readErrorMessage(error);
+      dispatch(investorSupportTicketsFail(message));
+      return { fulfilled: false, message };
+    }
+  };
+
+/** GET investors/support-tickets/:id/ */
+export const fetchInvestorSupportTicketDetail = (ticketId) => async (dispatch) => {
+  dispatch(investorSupportTicketDetailLoading(true));
+  try {
+    const response = await APIService.get(INVESTOR_API.supportTicketDetail(ticketId));
+    const body = response.data;
+    dispatch(investorSupportTicketDetailLoading(false));
+    if (body?.status === false) {
+      return { fulfilled: false, message: body.message || "Failed to load ticket" };
+    }
+    const detail = mapInvestorSupportTicketDetail(body.data ?? body);
+    dispatch(investorSupportTicketDetailSuccess(detail));
+    return { fulfilled: true, data: detail };
+  } catch (error) {
+    dispatch(investorSupportTicketDetailLoading(false));
+    return { fulfilled: false, message: readErrorMessage(error) };
+  }
+};
+
+export const clearInvestorSupportTicketDetail = () => (dispatch) => {
+  dispatch(investorSupportTicketDetailClear());
+};
+
+/** POST investors/support-tickets/ */
+export const createInvestorSupportTicket = (payload) => async (dispatch) => {
+  dispatch(investorSupportTicketCreateLoading(true));
+  try {
+    const bodyPayload = {
+      topic: payload.topic,
+      priority: normalizeSupportPriority(payload.priority),
+      message: payload.message || "",
+    };
+    const response = await APIService.post(INVESTOR_API.supportTickets, bodyPayload);
+    const body = response.data;
+    dispatch(investorSupportTicketCreateLoading(false));
+    if (body?.status === false) {
+      return { fulfilled: false, message: body.message || "Could not create support ticket" };
+    }
+    await dispatch(fetchInvestorSupportTickets({ page: 1, page_size: 50 }));
+    return {
+      fulfilled: true,
+      message: body.message || "Your request has been sent to Wyre support.",
+      data: body.data,
+    };
+  } catch (error) {
+    dispatch(investorSupportTicketCreateLoading(false));
+    return { fulfilled: false, message: readErrorMessage(error) };
   }
 };

@@ -22,6 +22,8 @@ import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
 import { mapProjectDetail } from "../../helpers/investorProjectsMappers";
+import { buildProjectsReportRows } from "../../helpers/investorReportExport";
+import { runInvestorReportDownload } from "../../helpers/investorReportDownload";
 import {
   fetchInvestorProjectDetail,
   fetchInvestorProjects,
@@ -103,10 +105,6 @@ function InvestorProjects() {
     projectsLoading,
     projectsPartialErrors,
   } = useSelector((s) => s.investorPage);
-  const [range, setRange] = useState([
-    dayjs().month(0).date(1),
-    dayjs().month(3).endOf("month"),
-  ]);
   const [projectTab, setProjectTab] = useState("Financed");
   const [investModalOpen, setInvestModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -226,6 +224,16 @@ function InvestorProjects() {
       ? "Financed projects"
       : "Open projects (available to invest)";
 
+  const handleDownloadReport = async () => {
+    const { title, filename, rows } = buildProjectsReportRows(bundle);
+    await runInvestorReportDownload({
+      title,
+      filename,
+      rows,
+      emptyMessage: "No project data available to export yet.",
+    });
+  };
+
   return (
     <div className="investor-page investor-projects-page">
       {projectsPartialErrors?.length ? (
@@ -242,8 +250,7 @@ function InvestorProjects() {
       <InvestorPageHeader
         title="Projects"
         subtitle="Financed sites, open pools, and investment tickets from your Wyre portfolio."
-        range={range}
-        onRangeChange={setRange}
+        onDownloadReport={handleDownloadReport}
       />
 
       <Spin spinning={projectsLoading} wrapperClassName="investor-projects-spin">
