@@ -348,7 +348,7 @@ function PortfolioOverview() {
               <div className="admin-investor-metric-value">{kpis.totalDeposited.display}</div>
               {kpis.totalDeposited?.sub ? (
                 <div className="admin-investor-metric-badges">
-                  <span className="admin-investor-metric-badge">{kpis.totalDeposited.sub}</span>
+                  <span className="admin-investor-metric-badge">{kpis.totalDeposited.sub?.replace(/\.\s*$/, "")}</span>
                 </div>
               ) : null}
             </div>
@@ -376,7 +376,7 @@ function PortfolioOverview() {
                   className="admin-investor-metric-badge"
                   title={kpis.primaryReceivables.compositionSub}
                 >
-                  {kpis.primaryReceivables.compositionSub}
+                  {kpis.primaryReceivables.compositionSub?.replace(/\.\s*$/, "")}
                 </span>
               ) : null}
               <span
@@ -424,18 +424,12 @@ function PortfolioOverview() {
             </div>
             {(kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—") ||
             kpis.portfolioScore?.sub ? (
-              <div
-                className="admin-investor-metric-caption"
-                title={
-                  kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—"
-                    ? kpis.portfolioScore.summary
-                    : kpis.portfolioScore.sub
-                }
-              >
-                {kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—"
+              <Text className="admin-investor-metric-caption">
+                {(kpis.portfolioScore?.summary && kpis.portfolioScore.summary !== "—"
                   ? kpis.portfolioScore.summary
-                  : kpis.portfolioScore.sub}
-              </div>
+                  : kpis.portfolioScore.sub
+                )?.replace(/\.\s*$/, "")}
+              </Text>
             ) : null}
           </div>
 
@@ -456,7 +450,7 @@ function PortfolioOverview() {
             {(kpis.portfolioGeneration?.nairaSub ?? kpis.portfolioGeneration?.sub) ? (
               <div className="admin-investor-metric-badges">
                 <span className="admin-investor-metric-badge">
-                  {kpis.portfolioGeneration.nairaSub ?? kpis.portfolioGeneration.sub}
+                  {(kpis.portfolioGeneration.nairaSub ?? kpis.portfolioGeneration.sub)?.replace(/\.\s*$/, "")}
                 </span>
               </div>
             ) : null}
@@ -476,7 +470,7 @@ function PortfolioOverview() {
             <div className="admin-investor-metric-value">{kpis.co2?.value ?? "—"}</div>
             {kpis.co2?.sub ? (
               <div className="admin-investor-metric-badges">
-                <span className="admin-investor-metric-badge">{kpis.co2.sub}</span>
+                <span className="admin-investor-metric-badge">{kpis.co2.sub?.replace(/\.\s*$/, "")}</span>
               </div>
             ) : null}
           </div>
