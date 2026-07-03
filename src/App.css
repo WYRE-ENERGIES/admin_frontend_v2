@@ -5137,6 +5137,28 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   border: 1px solid rgba(250, 140, 22, 0.22);
 }
 
+.investor-support-page .investor-support-tickets-card {
+  margin-bottom: 20px;
+}
+
+.investor-support-tickets-head {
+  margin-bottom: 16px;
+}
+
+.investor-support-tickets-table .ant-table {
+  background: transparent;
+}
+
+.investor-support-detail-meta {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.investor-support-detail-body {
+  margin-top: 8px;
+  background: #fafafa;
+}
+
 .investor-payments-spin {
   width: 100%;
 }
@@ -5163,64 +5185,27 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   margin-top: -4px;
 }
 
-.investor-payments-split {
+.investor-payments-upcoming-card {
+  width: 100%;
+}
+
+.investor-payments-bottom-split {
   display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+  grid-template-columns: minmax(0, 2.2fr) minmax(240px, 1fr);
   gap: 16px;
   align-items: start;
 }
 
-.investor-payments-split-left {
-  min-width: 0;
-}
-
-.investor-payments-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-
 .investor-card--payout-history {
-  flex: 1 1 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  min-width: 0;
 }
 
-.investor-card--payout-history .ant-card-body {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  padding-bottom: 12px;
+.investor-card--receivable-health {
+  min-width: 0;
 }
 
 .investor-payout-history-body {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.investor-payout-history-table {
-  flex: 1;
-  min-height: 0;
-}
-
-.investor-payout-history-table .ant-pagination {
-  margin-top: 8px !important;
-  margin-bottom: 0 !important;
-  flex-shrink: 0;
-}
-
-.investor-payments-stack > .investor-card:last-child {
-  flex-shrink: 0;
+  min-width: 0;
 }
 
 .investor-health-lines {
@@ -5240,16 +5225,28 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   gap: 8px;
 }
 
+.investor-payments-schedule-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 16px;
+}
+
 .investor-payments-schedule-meta {
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 0;
+  color: #000;
 }
 
 .investor-payments-schedule-summary {
   display: flex;
   flex-wrap: wrap;
   gap: 20px 32px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
+  margin-left: auto;
+  justify-content: flex-end;
 }
 
 .investor-payments-schedule-summary > div {
@@ -5402,7 +5399,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 }
 
 @media (max-width: 992px) {
-  .investor-payments-split {
+  .investor-payments-bottom-split {
     grid-template-columns: 1fr;
   }
 

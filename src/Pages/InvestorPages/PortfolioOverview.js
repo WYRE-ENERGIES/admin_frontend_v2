@@ -4,7 +4,6 @@ import {
   Alert,
   Button,
   Card,
-  DatePicker,
   Form,
   Input,
   Modal,
@@ -18,8 +17,6 @@ import {
   message,
 } from "antd";
 import {
-  DownloadOutlined,
-  FileTextOutlined,
   DollarOutlined,
   PieChartOutlined,
   ThunderboltOutlined,
@@ -39,11 +36,21 @@ import {
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Link, useLocation } from "react-router-dom";
+import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
 import {
+  createInvestorSupportTicket,
   fetchInvestorPortfolioOverview,
   fetchInvestorTotalDeposited,
 } from "../../redux/actions/investor/investor.action";
 import { formatCompactNgn } from "../../helpers/investorPortfolioMappers";
+import {
+  SUPPORT_PRIORITY_OPTIONS,
+  SUPPORT_TOPIC_OPTIONS,
+} from "../../helpers/investorTicketUi";
+import {
+  buildPortfolioReportRows,
+} from "../../helpers/investorReportExport";
+import { runInvestorReportDownload } from "../../helpers/investorReportDownload";
 
 dayjs.extend(relativeTime);
 
@@ -54,7 +61,6 @@ const INVESTOR_METRIC_GRADIENT = {
 };
 const INVESTOR_METRIC_DECORATION = { background: "rgba(255,255,255,0.06)" };
 
-const { RangePicker } = DatePicker;
 const { Title, Text } = Typography;
 const { TextArea } = Input;
 
@@ -89,8 +95,9 @@ function PortfolioOverview() {
   const dispatch = useDispatch();
   const location = useLocation();
   const portfolioOverview = useSelector((s) => s.investorPage.portfolioOverview);
+  const supportCreateLoading = useSelector((s) => s.investorPage.supportTickets?.createLoading);
 
-  const [range, setRange] = useState([
+  const [range] = useState([
     dayjs().startOf("month"),
     dayjs().endOf("month"),
   ]);
@@ -253,54 +260,45 @@ function PortfolioOverview() {
     []
   );
 
+  const submitSupport = async () => {
+    try {
+      const values = await supportForm.validateFields();
+      const res = await dispatch(createInvestorSupportTicket(values));
+      if (!res.fulfilled) {
+        message.error(res.message || "Could not create support ticket");
+        return;
+      }
+      message.success(res.message || "Your request has been sent to Wyre support.");
+      setSupportOpen(false);
+      supportForm.resetFields();
+    } catch {
+      /* validation */
+    }
+  };
+
   const openSupport = () => {
     supportForm.resetFields();
     supportForm.setFieldsValue({ topic: "General support", priority: "Normal" });
     setSupportOpen(true);
   };
 
-  const submitSupport = async () => {
-    try {
-      const values = await supportForm.validateFields();
-      message.success("Your request has been sent to Wyre support.");
-      setSupportOpen(false);
-      supportForm.resetFields();
-      return values;
-    } catch {
-      return null;
-    }
+  const handleDownloadReport = async () => {
+    const { title, filename, rows } = buildPortfolioReportRows(portfolioOverview, range);
+    await runInvestorReportDownload({
+      title,
+      filename,
+      rows,
+      emptyMessage: "Load portfolio data before downloading a report.",
+    });
   };
 
   return (
     <div className="investor-page">
-      <div className="investor-header">
-        <div className="investor-header-left">
-          <Title level={3} className="investor-page-title">
-            Portfolio overview
-          </Title>
-          <Text type="secondary" className="investor-page-subtitle">
-            Solar receivables across your financed projects
-          </Text>
-        </div>
-
-        <div className="investor-header-actions">
-          {/* <RangePicker
-            value={range}
-            onChange={(next) => {
-              if (!next) return;
-              setRange(next);
-            }}
-            allowClear={false}
-            className="investor-range"
-          /> */}
-          <Button icon={<FileTextOutlined />} className="investor-btn-light investor-header-btn">
-            Export statement
-          </Button>
-          <Button type="primary" icon={<DownloadOutlined />} className="investor-header-btn investor-header-btn--primary">
-            Download report
-          </Button>
-        </div>
-      </div>
+      <InvestorPageHeader
+        title="Portfolio overview"
+        subtitle="Solar receivables across your financed projects"
+        onDownloadReport={handleDownloadReport}
+      />
 
       {portfolioOverview.error ? (
         <Alert
@@ -642,7 +640,7 @@ function PortfolioOverview() {
           <Button key="cancel" onClick={() => setSupportOpen(false)}>
             Cancel
           </Button>,
-          <Button key="create" type="primary" onClick={submitSupport}>
+          <Button key="create" type="primary" loading={supportCreateLoading} onClick={submitSupport}>
             Create support ticket
           </Button>,
         ]}
@@ -661,14 +659,7 @@ function PortfolioOverview() {
               className="investor-modal-item"
               rules={[{ required: true, message: "Select a topic" }]}
             >
-              <Select
-                options={[
-                  { value: "General support", label: "General support" },
-                  { value: "Project inquiry", label: "Project inquiry" },
-                  { value: "Repayment inquiry", label: "Repayment inquiry" },
-                  { value: "Generation dispute", label: "Generation dispute" },
-                ]}
-              />
+              <Select options={SUPPORT_TOPIC_OPTIONS} />
             </Form.Item>
             <Form.Item
               name="priority"
@@ -676,13 +667,7 @@ function PortfolioOverview() {
               className="investor-modal-item"
               rules={[{ required: true, message: "Select a priority" }]}
             >
-              <Select
-                options={[
-                  { value: "Normal", label: "Normal" },
-                  { value: "High", label: "High" },
-                  { value: "Urgent", label: "Urgent" },
-                ]}
-              />
+              <Select options={SUPPORT_PRIORITY_OPTIONS} />
             </Form.Item>
           </div>
 

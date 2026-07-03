@@ -44,6 +44,14 @@ const initialState = {
   paymentsPartialErrors: null,
   accountKycLoading: false,
   accountKyc: MOCK_INVESTOR_ACCOUNT_KYC,
+  supportTickets: {
+    list: [],
+    listLoading: false,
+    listError: null,
+    detail: null,
+    detailLoading: false,
+    createLoading: false,
+  },
 };
 
 const investorReducer = (state = initialState, action) => {
@@ -120,6 +128,66 @@ const investorReducer = (state = initialState, action) => {
       return { ...state, accountKycLoading: action.payload };
     case investorTypes.INVESTOR_ACCOUNT_KYC_SUCCESS:
       return { ...state, accountKyc: action.payload };
+    case investorTypes.INVESTOR_SUPPORT_TICKETS_LOADING:
+      return {
+        ...state,
+        supportTickets: {
+          ...state.supportTickets,
+          listLoading: action.payload,
+          ...(action.payload ? { listError: null } : {}),
+        },
+      };
+    case investorTypes.INVESTOR_SUPPORT_TICKETS_SUCCESS:
+      return {
+        ...state,
+        supportTickets: {
+          ...state.supportTickets,
+          list: action.payload,
+          listLoading: false,
+          listError: null,
+        },
+      };
+    case investorTypes.INVESTOR_SUPPORT_TICKETS_FAIL:
+      return {
+        ...state,
+        supportTickets: {
+          ...state.supportTickets,
+          listLoading: false,
+          listError: action.payload,
+        },
+      };
+    case investorTypes.INVESTOR_SUPPORT_TICKET_DETAIL_LOADING:
+      return {
+        ...state,
+        supportTickets: {
+          ...state.supportTickets,
+          detailLoading: action.payload,
+        },
+      };
+    case investorTypes.INVESTOR_SUPPORT_TICKET_DETAIL_SUCCESS:
+      return {
+        ...state,
+        supportTickets: {
+          ...state.supportTickets,
+          detail: action.payload,
+        },
+      };
+    case investorTypes.INVESTOR_SUPPORT_TICKET_DETAIL_CLEAR:
+      return {
+        ...state,
+        supportTickets: {
+          ...state.supportTickets,
+          detail: null,
+        },
+      };
+    case investorTypes.INVESTOR_SUPPORT_TICKET_CREATE_LOADING:
+      return {
+        ...state,
+        supportTickets: {
+          ...state.supportTickets,
+          createLoading: action.payload,
+        },
+      };
     default:
       return state;
   }
