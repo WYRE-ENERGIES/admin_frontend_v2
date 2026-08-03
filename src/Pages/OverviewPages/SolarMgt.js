@@ -462,6 +462,19 @@ const SolarMgt = ({
     const totalMwh = totalProduction?.mwh;
     const plantCount = totalProduction?.plant_count;
 
+    const dailyCarbon = dailyProduction?.carbon_offset_tonnes;
+    const monthlyCarbon = monthlyProduction?.carbon_offset_tonnes;
+    const totalCarbon = totalProduction?.carbon_offset_tonnes;
+
+    const formatCarbon = (t) => {
+      if (t == null) return null;
+      const n = Number(t);
+      if (Number.isNaN(n)) return null;
+      return n >= 1000
+        ? `${formatNumber(n / 1000, 2)} kt`
+        : `${formatNumber(n, 2)} t`;
+    };
+
     const formatMonth = (m) => {
       if (!m) return '';
       const [year, month] = String(m).split('-');
@@ -496,6 +509,7 @@ const SolarMgt = ({
         sub: deltaPct != null
           ? `vs yesterday: ${deltaPct > 0 ? '+' : ''}${formatNumber(deltaPct, 1)}%`
           : 'vs yesterday: —',
+        carbon: formatCarbon(dailyCarbon),
         bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
         decorationColor: 'rgba(255,255,255,0.08)',
         loading: dailyProductionLoading,
@@ -508,6 +522,7 @@ const SolarMgt = ({
         sub: monthLabel
           ? `${formatMonth(monthLabel)} month-to-date`
           : 'Month-to-date',
+        carbon: formatCarbon(monthlyCarbon),
         bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
         decorationColor: 'rgba(255,255,255,0.08)',
         loading: monthlyProductionLoading,
@@ -520,6 +535,7 @@ const SolarMgt = ({
         sub: plantCount != null
           ? `Lifetime across ${plantCount} plant${plantCount === 1 ? '' : 's'}`
           : 'Lifetime',
+        carbon: formatCarbon(totalCarbon),
         bg: 'linear-gradient(135deg, #fb923c 0%, #ea580c 100%)',
         decorationColor: 'rgba(255,255,255,0.12)',
         loading: totalProductionLoading,
@@ -554,7 +570,6 @@ const SolarMgt = ({
           >
             <div className="solar-kpi-decoration solar-kpi-decoration--xl" style={{ background: card.decorationColor }} />
             <div className="solar-kpi-decoration solar-kpi-decoration--lg" style={{ background: card.decorationColor }} />
-            <div className="solar-kpi-decoration solar-kpi-decoration--sm" style={{ background: card.decorationColor }} />
             <div className="solar-kpi-icon-wrap">
               <div className="solar-kpi-icon">
                 <SunIcon />
@@ -572,6 +587,14 @@ const SolarMgt = ({
               )}
             </div>
             <Text className="solar-kpi-sub">{card.sub}</Text>
+            {card.carbon ? (
+              <div className="solar-kpi-footer">
+                <Text className="solar-kpi-sub-carbon">Carbon Saved:</Text>
+                <span className="solar-kpi-carbon" title={`CO₂ saved: ${card.carbon}`}>
+                  <span className="solar-kpi-carbon-icon">🌱</span> {card.carbon} CO₂ saved
+                </span>
+              </div>
+            ) : null}
           </div>
         ))}
       </div>
@@ -760,179 +783,179 @@ const SolarMgt = ({
 
         <div className="solar-table-scroll">
           <div className="solar-table">
-          <div className="solar-table-head">
-            <div className="solar-th solar-th-checkbox">
-              <Checkbox
-                indeterminate={someSelected && !allSelected}
-                checked={allSelected}
-                onChange={handleSelectAll}
-                disabled={!plants.length}
-              />
-            </div>
-            <div
-              className="solar-th solar-th-name"
-              onClick={() => setSortAsc((prev) => !prev)}
-            >
-              Name {sortAsc ? <CaretUpFilled style={{ fontSize: 10 }} /> : <CaretDownFilled style={{ fontSize: 10 }} />}
-            </div>
-            <div className="solar-th solar-th-status">
-              <div>Status</div>
-              <div className="solar-th-sub">(Last Posted)</div>
-            </div>
-            <div className="solar-th solar-th-alerts">Alerts</div>
-            <div className="solar-th solar-th-capacity">Capacity (kWp)</div>
-            <div className="solar-th solar-th-production">Production (kW)</div>
-            <div className="solar-th solar-th-trend">Trend</div>
-            <div className="solar-th solar-th-daily">Daily Production (kWh)</div>
-            <div className="solar-th solar-th-tag">Tag</div>
-            <div className="solar-th solar-th-fav">Favourite</div>
-          </div>
-
-          <div className="solar-table-body">
-            {plantsLoading ? (
-              <div className="solar-empty-state">
-                <Spin />
+            <div className="solar-table-head">
+              <div className="solar-th solar-th-checkbox">
+                <Checkbox
+                  indeterminate={someSelected && !allSelected}
+                  checked={allSelected}
+                  onChange={handleSelectAll}
+                  disabled={!plants.length}
+                />
               </div>
-            ) : tableRows.length === 0 ? (
-              <div className="solar-empty-state">
-                <Text type="secondary">No plants match the current filters.</Text>
+              <div
+                className="solar-th solar-th-name"
+                onClick={() => setSortAsc((prev) => !prev)}
+              >
+                Name {sortAsc ? <CaretUpFilled style={{ fontSize: 10 }} /> : <CaretDownFilled style={{ fontSize: 10 }} />}
               </div>
-            ) : (
-              tableRows.map((plant) => {
-                const statusCom = plant?.status?.com || 'unknown';
-                const lastPostedLabel = plant?.status?.last_posted_label || '—';
-                const lastPostedAt = plant?.status?.last_posted_at;
-                const alertsState = plant?.status?.alerts || 'unknown';
-                const capacityKwp = plant?.capacity?.installed_pv_kwp;
-                const powerKw = plant?.now?.power_kw;
-                const dailyKwh = plant?.production?.daily_kwh;
-                const trendData = normalizeTrend(plant?.trend);
-                const tagsArr = Array.isArray(plant?.tags) ? plant.tags : [];
-                const isSelected = !!selectedRows[plant.id];
-                const isFavLoading = String(toggleFavouriteLoadingId) === String(plant.id);
-                const branchId = getPlantBranchId(plant);
-                const isDashboardLoginLoading =
-                  branchId != null && String(dashboardLoginBranchId) === String(branchId);
-                const isNever = !lastPostedAt && (lastPostedLabel === 'Never' || lastPostedLabel === '—');
-                const statusKey = isNever ? 'never' : statusCom;
-                const dotColor = getStatusDotColor(statusKey);
-                const alertsDotColor = alertsState === 'ok'
-                  ? '#22c55e'
-                  : alertsState === 'warn'
-                    ? '#f59e0b'
-                    : alertsState === 'crit' || alertsState === 'critical'
-                      ? '#ef4444'
-                      : '#9ca3af';
+              <div className="solar-th solar-th-status">
+                <div>Status</div>
+                <div className="solar-th-sub">(Last Posted)</div>
+              </div>
+              <div className="solar-th solar-th-alerts">Alerts</div>
+              <div className="solar-th solar-th-capacity">Capacity (kWp)</div>
+              <div className="solar-th solar-th-production">Production (kW)</div>
+              <div className="solar-th solar-th-trend">Trend</div>
+              <div className="solar-th solar-th-daily">Daily Production (kWh)</div>
+              <div className="solar-th solar-th-tag">Tag</div>
+              <div className="solar-th solar-th-fav">Favourite</div>
+            </div>
 
-                return (
-                  <div key={plant.id} className={`solar-tr ${isSelected ? 'is-selected' : ''}`}>
-                    <div className="solar-td solar-td-checkbox">
-                      <Checkbox
-                        checked={isSelected}
-                        onChange={() => toggleSelectRow(plant.id)}
-                      />
-                    </div>
-                    <div className="solar-td solar-td-name">
-                      <div className="solar-plant-name">
+            <div className="solar-table-body">
+              {plantsLoading ? (
+                <div className="solar-empty-state">
+                  <Spin />
+                </div>
+              ) : tableRows.length === 0 ? (
+                <div className="solar-empty-state">
+                  <Text type="secondary">No plants match the current filters.</Text>
+                </div>
+              ) : (
+                tableRows.map((plant) => {
+                  const statusCom = plant?.status?.com || 'unknown';
+                  const lastPostedLabel = plant?.status?.last_posted_label || '—';
+                  const lastPostedAt = plant?.status?.last_posted_at;
+                  const alertsState = plant?.status?.alerts || 'unknown';
+                  const capacityKwp = plant?.capacity?.installed_pv_kwp;
+                  const powerKw = plant?.now?.power_kw;
+                  const dailyKwh = plant?.production?.daily_kwh;
+                  const trendData = normalizeTrend(plant?.trend);
+                  const tagsArr = Array.isArray(plant?.tags) ? plant.tags : [];
+                  const isSelected = !!selectedRows[plant.id];
+                  const isFavLoading = String(toggleFavouriteLoadingId) === String(plant.id);
+                  const branchId = getPlantBranchId(plant);
+                  const isDashboardLoginLoading =
+                    branchId != null && String(dashboardLoginBranchId) === String(branchId);
+                  const isNever = !lastPostedAt && (lastPostedLabel === 'Never' || lastPostedLabel === '—');
+                  const statusKey = isNever ? 'never' : statusCom;
+                  const dotColor = getStatusDotColor(statusKey);
+                  const alertsDotColor = alertsState === 'ok'
+                    ? '#22c55e'
+                    : alertsState === 'warn'
+                      ? '#f59e0b'
+                      : alertsState === 'crit' || alertsState === 'critical'
+                        ? '#ef4444'
+                        : '#9ca3af';
+
+                  return (
+                    <div key={plant.id} className={`solar-tr ${isSelected ? 'is-selected' : ''}`}>
+                      <div className="solar-td solar-td-checkbox">
+                        <Checkbox
+                          checked={isSelected}
+                          onChange={() => toggleSelectRow(plant.id)}
+                        />
+                      </div>
+                      <div className="solar-td solar-td-name">
+                        <div className="solar-plant-name">
+                          <button
+                            type="button"
+                            className="solar-plant-name-link"
+                            onClick={() => handleOpenSolarDashboard(plant)}
+                            disabled={isDashboardLoginLoading}
+                            title={`Open ${plant.name || 'plant'} solar dashboard`}
+                          >
+                            {isDashboardLoginLoading ? (
+                              <Spin size="small" />
+                            ) : (
+                              <>
+                                <span className="solar-plant-name-text">{plant.name || '—'}</span>
+                                <ArrowUpOutlined className="solar-plant-arrow" />
+                              </>
+                            )}
+                          </button>
+                        </div>
+                        {plant.address && (
+                          <div className="solar-plant-address">
+                            <LocationPin /> {plant.address}
+                          </div>
+                        )}
+                      </div>
+                      <div className="solar-td solar-td-status">
+                        <span
+                          className="solar-status-dot solar-status-dot--lg"
+                          style={{ background: dotColor }}
+                        />
+                        <span
+                          className="solar-status-time"
+                          style={statusKey === 'never' ? { color: dotColor } : undefined}
+                        >
+                          {lastPostedLabel}
+                        </span>
+                      </div>
+                      <div className="solar-td solar-td-alerts">
+                        <span
+                          className="solar-status-dot solar-status-dot--lg"
+                          style={{ background: alertsDotColor }}
+                        />
+                      </div>
+                      <div className="solar-td solar-td-capacity">
+                        {formatCompact(capacityKwp, 1)}
+                      </div>
+                      <div className="solar-td solar-td-production">
+                        {formatCompact(powerKw, 2)}
+                      </div>
+                      <div className="solar-td solar-td-trend">
+                        {trendData ? (
+                          <div className="solar-trend-wrap">
+                            <ResponsiveContainer width="100%" height={36}>
+                              <LineChart data={trendData} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
+                                <YAxis hide domain={[0, 'dataMax + 0.5']} />
+                                <Line
+                                  type="monotone"
+                                  dataKey="y"
+                                  stroke="#7c3aed"
+                                  strokeWidth={1.5}
+                                  dot={false}
+                                  isAnimationActive={false}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          </div>
+                        ) : (
+                          <span className="solar-trend-flat">—</span>
+                        )}
+                      </div>
+                      <div className="solar-td solar-td-daily">
+                        {formatCompact(dailyKwh, 1)}
+                      </div>
+                      <div className="solar-td solar-td-tag">
+                        {tagsArr.length > 0 && (
+                          <span className="solar-tag-pill">{tagsArr[0]}</span>
+                        )}
+                        <button type="button" className="solar-tag-edit">Edit</button>
+                      </div>
+                      <div className="solar-td solar-td-fav">
                         <button
                           type="button"
-                          className="solar-plant-name-link"
-                          onClick={() => handleOpenSolarDashboard(plant)}
-                          disabled={isDashboardLoginLoading}
-                          title={`Open ${plant.name || 'plant'} solar dashboard`}
+                          className="solar-fav-btn"
+                          onClick={() => handleToggleFavourite(plant.id)}
+                          aria-label="Toggle favourite"
+                          disabled={isFavLoading}
                         >
-                          {isDashboardLoginLoading ? (
+                          {isFavLoading ? (
                             <Spin size="small" />
+                          ) : plant.is_favourited ? (
+                            <StarFilled style={{ color: '#f59e0b' }} />
                           ) : (
-                            <>
-                              <span className="solar-plant-name-text">{plant.name || '—'}</span>
-                              <ArrowUpOutlined className="solar-plant-arrow" />
-                            </>
+                            <StarOutlined style={{ color: '#9ca3af' }} />
                           )}
                         </button>
                       </div>
-                      {plant.address && (
-                        <div className="solar-plant-address">
-                          <LocationPin /> {plant.address}
-                        </div>
-                      )}
                     </div>
-                    <div className="solar-td solar-td-status">
-                      <span
-                        className="solar-status-dot solar-status-dot--lg"
-                        style={{ background: dotColor }}
-                      />
-                      <span
-                        className="solar-status-time"
-                        style={statusKey === 'never' ? { color: dotColor } : undefined}
-                      >
-                        {lastPostedLabel}
-                      </span>
-                    </div>
-                    <div className="solar-td solar-td-alerts">
-                      <span
-                        className="solar-status-dot solar-status-dot--lg"
-                        style={{ background: alertsDotColor }}
-                      />
-                    </div>
-                    <div className="solar-td solar-td-capacity">
-                      {formatCompact(capacityKwp, 1)}
-                    </div>
-                    <div className="solar-td solar-td-production">
-                      {formatCompact(powerKw, 2)}
-                    </div>
-                    <div className="solar-td solar-td-trend">
-                      {trendData ? (
-                        <div className="solar-trend-wrap">
-                          <ResponsiveContainer width="100%" height={36}>
-                            <LineChart data={trendData} margin={{ top: 2, right: 2, bottom: 2, left: 2 }}>
-                              <YAxis hide domain={[0, 'dataMax + 0.5']} />
-                              <Line
-                                type="monotone"
-                                dataKey="y"
-                                stroke="#7c3aed"
-                                strokeWidth={1.5}
-                                dot={false}
-                                isAnimationActive={false}
-                              />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </div>
-                      ) : (
-                        <span className="solar-trend-flat">—</span>
-                      )}
-                    </div>
-                    <div className="solar-td solar-td-daily">
-                      {formatCompact(dailyKwh, 1)}
-                    </div>
-                    <div className="solar-td solar-td-tag">
-                      {tagsArr.length > 0 && (
-                        <span className="solar-tag-pill">{tagsArr[0]}</span>
-                      )}
-                      <button type="button" className="solar-tag-edit">Edit</button>
-                    </div>
-                    <div className="solar-td solar-td-fav">
-                      <button
-                        type="button"
-                        className="solar-fav-btn"
-                        onClick={() => handleToggleFavourite(plant.id)}
-                        aria-label="Toggle favourite"
-                        disabled={isFavLoading}
-                      >
-                        {isFavLoading ? (
-                          <Spin size="small" />
-                        ) : plant.is_favourited ? (
-                          <StarFilled style={{ color: '#f59e0b' }} />
-                        ) : (
-                          <StarOutlined style={{ color: '#9ca3af' }} />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
 

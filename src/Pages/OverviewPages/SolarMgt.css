@@ -124,10 +124,38 @@
   font-weight: 500;
 }
 
+.solar-kpi-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  z-index: 1;
+}
+
 .solar-kpi-sub {
   color: rgba(255, 255, 255, 0.82) !important;
   font-size: 11px !important;
-  z-index: 1;
+}
+
+.solar-kpi-carbon {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+  padding: 4px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.solar-kpi-sub-carbon {
+  font-size: 10px !important;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.solar-kpi-carbon-icon {
+  font-size: 16px;
 }
 
 /* ---------- Watchlist Bar ---------- */
