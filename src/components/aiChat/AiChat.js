@@ -1,9 +1,61 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Button, Input } from "antd";
 import { DownloadOutlined, SendOutlined, DownOutlined, ShrinkOutlined, InfoCircleOutlined } from "@ant-design/icons";
 import { APIService } from "../../config/Api/apiServices";
+import DOMPurify from "dompurify";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
+
+function stripMarkdownArtifacts(raw) {
+  if (!raw || typeof raw !== "string") return "";
+  let text = raw;
+  text = text.replace(/<br\s*\/?>\s*-\s*/gi, "\n- ");
+  text = text.replace(/<br\s*\/?>/gi, "\n");
+  text = text.replace(/^(#{1,6})\s*<\/?strong>/gm, "$1 ");
+  text = text.replace(/<\/?strong>/gi, "**");
+  text = text.replace(/<\/?em>/gi, "*");
+  text = text.replace(/<p>(.*?)<\/p>/gis, "$1\n\n");
+  return text.trim();
+}
+
+function AiMessageContent({ html }) {
+  const markdown = useMemo(() => stripMarkdownArtifacts(html), [html]);
+  const clean = useMemo(() => DOMPurify.sanitize(markdown, {
+    ALLOWED_TAGS: [
+      "p", "br", "strong", "b", "em", "i", "u", "a",
+      "ul", "ol", "li", "h1", "h2", "h3", "h4",
+      "table", "thead", "tbody", "tr", "th", "td",
+      "code", "pre", "blockquote", "hr", "span", "div", "sub", "sup",
+    ],
+    ALLOWED_ATTR: ["href", "target", "rel", "title", "class"],
+  }), [markdown]);
+
+  return (
+    <div className="wyre-ai-content">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
+        components={{
+          a: ({ href, children, ...props }) => (
+            <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
+              {children}
+            </a>
+          ),
+          table: ({ children, ...props }) => (
+            <div className="wyre-ai-table-wrap">
+              <table {...props}>{children}</table>
+            </div>
+          ),
+        }}
+      >
+        {clean}
+      </ReactMarkdown>
+    </div>
+  );
+}
 
 export default function AiChat() {
   const [isOpen, setIsOpen] = useState(true);
@@ -389,35 +441,14 @@ export default function AiChat() {
                   >
                   <img src="/icon/wyre-ai-logo.svg" alt="Wyre Ai Logo" style={{ width: "15px", height: "15px" }} />
                   </div>
-                  <div
-                    style={{
-                      backgroundColor: "white",
-                      borderRadius: "8px",
-                      padding: "2px 12px",
-                      maxWidth: "200px",
-                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-                      border: "1px solid #b9b9b9",
-                    }}
-                  >
-                    <p style={{ fontSize: "12px", lineHeight: "1.4", wordBreak: "break-word" }}>
-                      <div dangerouslySetInnerHTML={{ __html: message.content }} />
-                    </p>
+                  <div className="wyre-ai-bubble wyre-ai-bubble--ai">
+                    <AiMessageContent html={message.content} />
                   </div>
                 </div>
               ) : (
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                  <div
-                    style={{
-                      backgroundColor: "#5C35922B",
-                      borderRadius: "8px",
-                      padding: "2px 12px",
-                      border: "1px solid #b9b9b9",
-                      maxWidth: "200px",
-                    }}
-                  >
-                    <p style={{ fontSize: "12px", wordBreak: "break-word" }}>
-                      <div dangerouslySetInnerHTML={{ __html: message.content }} />
-                    </p>
+                  <div className="wyre-ai-bubble wyre-ai-bubble--user">
+                    <AiMessageContent html={message.content} />
                   </div>
                 </div>
               )}
@@ -428,7 +459,7 @@ export default function AiChat() {
                   marginTop: "4px",
                 }}
               >
-                <p style={{ color: "#999", fontSize: "10px" }}>{message.timestamp}</p>
+                <span style={{ color: "#999", fontSize: "10px" }}>{message.timestamp}</span>
               </div>
             </div>
           ))}
@@ -594,6 +625,106 @@ export default function AiChat() {
             transform: translateY(0);
           }
         }
+
+        .wyre-ai-bubble {
+          border-radius: 10px;
+          padding: 10px 14px;
+          max-width: 85%;
+          word-break: break-word;
+        }
+        .wyre-ai-bubble--ai {
+          background: #ffffff;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+          border: 1px solid #e8e8e8;
+        }
+        .wyre-ai-bubble--user {
+          background: rgba(92, 53, 146, 0.11);
+          border: 1px solid #d4c5e6;
+        }
+
+        .wyre-ai-content {
+          font-size: 12.5px;
+          line-height: 1.55;
+          color: #1f1f1f;
+        }
+        .wyre-ai-content p {
+          margin: 0 0 8px;
+        }
+        .wyre-ai-content p:last-child {
+          margin-bottom: 0;
+        }
+        .wyre-ai-content strong {
+          font-weight: 700;
+          color: #111;
+        }
+        .wyre-ai-content br {
+          display: block;
+          content: "";
+          margin-top: 2px;
+        }
+        .wyre-ai-content ul,
+        .wyre-ai-content ol {
+          margin: 4px 0 8px;
+          padding-left: 18px;
+        }
+        .wyre-ai-content li {
+          margin-bottom: 3px;
+        }
+        .wyre-ai-content table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 8px 0;
+          font-size: 11.5px;
+        }
+        .wyre-ai-content table th,
+        .wyre-ai-content table td {
+          border: 1px solid #e0e0e0;
+          padding: 5px 8px;
+          text-align: left;
+        }
+        .wyre-ai-content table th {
+          background: #f5f0fa;
+          font-weight: 600;
+          color: #333;
+        }
+        .wyre-ai-content table tr:nth-child(even) {
+          background: #fafafa;
+        }
+        .wyre-ai-content a {
+          color: #5C12A7;
+          text-decoration: underline;
+        }
+        .wyre-ai-content code {
+          background: #f3f0f7;
+          padding: 1px 5px;
+          border-radius: 4px;
+          font-size: 11.5px;
+          font-family: 'SF Mono', Menlo, monospace;
+        }
+        .wyre-ai-content pre {
+          background: #1e1e2e;
+          color: #cdd6f4;
+          padding: 10px 12px;
+          border-radius: 8px;
+          overflow-x: auto;
+          font-size: 11px;
+          margin: 8px 0;
+        }
+        .wyre-ai-content pre code {
+          background: none;
+          padding: 0;
+          color: inherit;
+        }
+        .wyre-ai-content h1,
+        .wyre-ai-content h2,
+        .wyre-ai-content h3 {
+          margin: 10px 0 6px;
+          font-weight: 700;
+          line-height: 1.3;
+        }
+        .wyre-ai-content h1 { font-size: 15px; }
+        .wyre-ai-content h2 { font-size: 14px; }
+        .wyre-ai-content h3 { font-size: 13px; }
       `}</style>
     </>
   );
