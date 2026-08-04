@@ -464,13 +464,26 @@ const SolarOverview = ({
     const todayUnit = useTodayMwh ? 'MWh' : 'kWh';
     const deltaPct = today?.delta_pct;
 
-    // Monthly: { mwh, month_to_date_kwh, month }
+    // Monthly: { mwh, month_to_date_kwh, month, carbon_offset_tonnes }
     const monthMwh = thisMonth?.mwh;
     const monthLabel = thisMonth?.month;
 
-    // Lifetime: { mwh, kwh, plant_count, branch_count }
+    // Lifetime: { mwh, kwh, plant_count, branch_count, carbon_offset_tonnes }
     const lifetimeMwh = lifetime?.mwh;
     const lifetimeBranches = lifetime?.branch_count;
+
+    const todayCarbon = today?.carbon_offset_tonnes;
+    const monthlyCarbon = thisMonth?.carbon_offset_tonnes;
+    const totalCarbon = lifetime?.carbon_offset_tonnes;
+
+    const formatCarbon = (t) => {
+      if (t == null) return null;
+      const n = Number(t);
+      if (Number.isNaN(n)) return null;
+      return n >= 1000
+        ? `${formatNumber(n / 1000, 2)} kt`
+        : `${formatNumber(n, 2)} t`;
+    };
 
     return [
       {
@@ -483,7 +496,8 @@ const SolarOverview = ({
           installedKwp != null
             ? `Installed: ${formatNumber(installedKwp, 1)} kWp`
             : 'Installed: —',
-        bg: 'linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%)',
+        bg: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+        decorationColor: 'rgba(255,255,255,0.08)',
         loading: generatingNowLoading,
       },
       {
@@ -496,7 +510,9 @@ const SolarOverview = ({
           deltaPct != null
             ? `vs yesterday: ${deltaPct > 0 ? '+' : ''}${formatNumber(deltaPct, deltaPct % 1 === 0 ? 0 : 1)}%`
             : 'vs yesterday: —',
+        carbon: formatCarbon(todayCarbon),
         bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+        decorationColor: 'rgba(255,255,255,0.08)',
         loading: todayLoading,
       },
       {
@@ -506,7 +522,9 @@ const SolarOverview = ({
         value: monthMwh != null ? formatNumber(monthMwh, 1) : '—',
         unit: 'MWh',
         sub: monthLabel ? `${formatMonth(monthLabel)} month-to-date` : 'Month-to-date',
-        bg: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
+        carbon: formatCarbon(monthlyCarbon),
+        bg: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)',
+        decorationColor: 'rgba(255,255,255,0.08)',
         loading: thisMonthLoading,
       },
       {
@@ -519,7 +537,9 @@ const SolarOverview = ({
           lifetimeBranches != null
             ? `Across ${lifetimeBranches} solar branch${lifetimeBranches === 1 ? '' : 'es'}`
             : 'All your solar branches',
+        carbon: formatCarbon(totalCarbon),
         bg: 'linear-gradient(135deg, #fb923c 0%, #ea580c 100%)',
+        decorationColor: 'rgba(255,255,255,0.12)',
         loading: lifetimeLoading,
       },
     ];
@@ -574,16 +594,15 @@ const SolarOverview = ({
             className="cso-kpi-card"
             style={{ background: card.bg }}
           >
-            <div className="cso-kpi-decoration cso-kpi-decoration--xl" />
-            <div className="cso-kpi-decoration cso-kpi-decoration--lg" />
-            <div className="cso-kpi-decoration cso-kpi-decoration--sm" />
-            <div className="cso-kpi-icon-row">
-              <span className="cso-kpi-icon">{card.icon}</span>
+            <div className="cso-kpi-decoration cso-kpi-decoration--xl" style={{ background: card.decorationColor }} />
+            <div className="cso-kpi-decoration cso-kpi-decoration--lg" style={{ background: card.decorationColor }} />
+            <div className="cso-kpi-icon-wrap">
+              <div className="cso-kpi-icon">{card.icon}</div>
               <Text className="cso-kpi-label">{card.label}</Text>
             </div>
             <div className="cso-kpi-value-row">
               {card.loading ? (
-                <Spin size="small" />
+                <Spin size="small" style={{ color: '#fff' }} />
               ) : (
                 <>
                   <span className="cso-kpi-value">{card.value}</span>
@@ -592,6 +611,14 @@ const SolarOverview = ({
               )}
             </div>
             <Text className="cso-kpi-sub">{card.sub}</Text>
+            {card.carbon ? (
+              <div className="cso-kpi-footer">
+                <Text className="cso-kpi-sub-carbon">Carbon saved:</Text>
+                <span className="cso-kpi-carbon" title={`CO₂ saved: ${card.carbon}`}>
+                  <span className="cso-kpi-carbon-icon">🌱</span> {card.carbon} CO₂ saved
+                </span>
+              </div>
+            ) : null}
           </div>
         ))}
       </div>
