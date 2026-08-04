@@ -94,102 +94,119 @@
 
 .cso-kpi-card {
   position: relative;
+  border-radius: 16px;
+  padding: 18px 22px 20px;
+  color: #ffffff;
   overflow: hidden;
-  border-radius: 14px;
-  color: #fff;
-  padding: 18px 18px 16px;
-  min-height: 130px;
+  min-height: 116px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+  justify-content: center;
+  gap: 6px;
+  box-shadow: 0 6px 18px rgba(76, 29, 149, 0.18);
 }
 
 .cso-kpi-decoration {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
   pointer-events: none;
 }
 
 .cso-kpi-decoration--xl {
-  width: 170px;
-  height: 170px;
-  right: -56px;
-  bottom: -80px;
+  width: 180px;
+  height: 180px;
+  top: -90px;
+  right: -50px;
 }
 
 .cso-kpi-decoration--lg {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
+  top: -30px;
   right: -10px;
-  top: -40px;
-  background: rgba(255, 255, 255, 0.1);
 }
 
-.cso-kpi-decoration--sm {
-  width: 36px;
-  height: 36px;
-  right: 60px;
-  bottom: 22px;
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.cso-kpi-icon-row {
-  position: relative;
-  z-index: 1;
+.cso-kpi-icon-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13.5px;
+  z-index: 1;
 }
 
 .cso-kpi-icon {
-  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.18);
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.18);
-  color: #fff;
-  font-size: 14px;
+  color: #ffffff;
 }
 
-.cso-kpi-label.ant-typography {
-  color: rgba(255, 255, 255, 0.95);
-  font-size: 13.5px;
+.cso-kpi-label {
+  color: #ffffff !important;
+  font-size: 12px !important;
   font-weight: 500;
-  letter-spacing: 0.1px;
+  letter-spacing: 0.2px;
+  opacity: 0.95;
 }
 
 .cso-kpi-value-row {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: baseline;
   gap: 6px;
+  z-index: 1;
 }
 
 .cso-kpi-value {
   font-size: 32px;
   font-weight: 700;
-  color: #fff;
   line-height: 1;
-  letter-spacing: -0.5px;
 }
 
 .cso-kpi-unit {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  opacity: 0.92;
   font-weight: 500;
 }
 
-.cso-kpi-sub.ant-typography {
-  position: relative;
+.cso-kpi-sub {
+  color: rgba(255, 255, 255, 0.82) !important;
+  font-size: 11px !important;
+}
+
+.cso-kpi-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   z-index: 1;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 12.5px;
+}
+
+.cso-kpi-sub-carbon {
+  font-size: 10px !important;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.cso-kpi-carbon {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.16);
+  padding: 3px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+  border-radius: 999px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.cso-kpi-carbon-icon {
+  font-size: 16px;
 }
 
 /* ---------- Toolbar (view toggle + search) ---------- */
