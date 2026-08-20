@@ -1,5 +1,4 @@
 import investorTypes from "./investor.type";
-import { MOCK_INVESTOR_ACCOUNT_KYC } from "./investor.initialData";
 
 const EMPTY_PROJECTS_BUNDLE = {
   summary: {},
@@ -42,8 +41,6 @@ const initialState = {
   paymentsLoading: false,
   payments: EMPTY_PAYMENTS_BUNDLE,
   paymentsPartialErrors: null,
-  accountKycLoading: false,
-  accountKyc: MOCK_INVESTOR_ACCOUNT_KYC,
   supportTickets: {
     list: [],
     listLoading: false,
@@ -124,10 +121,6 @@ const investorReducer = (state = initialState, action) => {
         payments: action.payload,
         paymentsPartialErrors: action.payload?.partialErrors ?? null,
       };
-    case investorTypes.INVESTOR_ACCOUNT_KYC_LOADING:
-      return { ...state, accountKycLoading: action.payload };
-    case investorTypes.INVESTOR_ACCOUNT_KYC_SUCCESS:
-      return { ...state, accountKyc: action.payload };
     case investorTypes.INVESTOR_SUPPORT_TICKETS_LOADING:
       return {
         ...state,

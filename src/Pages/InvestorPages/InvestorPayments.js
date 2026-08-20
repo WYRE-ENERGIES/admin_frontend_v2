@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Button, Card, Select, Spin, Table, Tabs, Tag, Typography } from "antd";
+import { Button, Card, Select, Spin, Table, Tabs, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
@@ -14,8 +14,13 @@ import {
 
 const { Text, Title } = Typography;
 
-const LEDGER_PAGE_SIZE = 10;
-const PAYOUT_HISTORY_PAGE_SIZE = 5;
+/** Default list pagination: 5 rows, with an opt-in size changer up to 20. */
+const INVESTOR_TABLE_PAGINATION = {
+  pageSize: 5,
+  showSizeChanger: true,
+  pageSizeOptions: ["5", "10", "15", "20"],
+  hideOnSinglePage: true,
+};
 
 /** Percentage width for investor payment tables (sums to 100% per table). */
 const investorColPct = (pct, col) => ({ ...col, width: `${pct}%` });
@@ -50,12 +55,7 @@ function scheduleStatusTag(statusKey, label, title) {
 function InvestorPayments() {
   const dispatch = useDispatch();
   const [searchParams, setSearchParams] = useSearchParams();
-  const {
-    payments: bundle,
-    paymentsLoading,
-    paymentsPartialErrors,
-  } = useSelector((s) => s.investorPage);
-  const loadError = bundle?.loadError;
+  const { payments: bundle, paymentsLoading } = useSelector((s) => s.investorPage);
 
   const [range, setRange] = useState([
     dayjs().month(0).date(1),
@@ -68,7 +68,6 @@ function InvestorPayments() {
   const [selectedInvestmentId, setSelectedInvestmentId] = useState(null);
   const [payoutSchedule, setPayoutSchedule] = useState(null);
   const [scheduleLoading, setScheduleLoading] = useState(false);
-  const [scheduleError, setScheduleError] = useState(null);
 
   const rangeKey = `${range[0]?.format("YYYY-MM-DD")}_${range[1]?.format("YYYY-MM-DD")}`;
 
@@ -120,11 +119,9 @@ function InvestorPayments() {
       return;
     }
     setScheduleLoading(true);
-    setScheduleError(null);
     const res = await dispatch(fetchInvestorProjectPayoutSchedule(investmentId));
     setScheduleLoading(false);
     if (!res.fulfilled) {
-      setScheduleError(res.message || "Could not load payment schedule");
       setPayoutSchedule(null);
       return;
     }
@@ -168,23 +165,23 @@ function InvestorPayments() {
   }, [bundle?.kpis]);
 
   const scheduleCols = [
-    investorColPct(12, { title: "Due", dataIndex: "due", key: "due" }),
-    investorColPct(26, { title: "Project", dataIndex: "project", key: "project", ellipsis: true }),
-    investorColPct(14, {
+    investorColPct(11, { title: "Due", dataIndex: "due", key: "due" }),
+    investorColPct(34, { title: "Project", dataIndex: "project", key: "project", ellipsis: true }),
+    investorColPct(16, {
       title: "Total due",
       dataIndex: "totalDue",
       key: "totalDue",
       align: "right",
       render: (v) => <span className="investor-table-nowrap">{v}</span>,
     }),
-    investorColPct(14, {
+    investorColPct(16, {
       title: "Your credit",
       dataIndex: "yourCredit",
       key: "yourCredit",
       align: "right",
       render: (v) => <span className="investor-pay-pos investor-table-nowrap">{v}</span>,
     }),
-    investorColPct(34, {
+    investorColPct(23, {
       title: "Status",
       dataIndex: "status",
       key: "status",
@@ -196,51 +193,57 @@ function InvestorPayments() {
     }),
   ];
 
-  const payoutHistoryCols = useMemo(
+  const repaymentHistoryCols = useMemo(
     () => [
-      investorColPct(68, {
-        title: "Payout",
-        dataIndex: "line",
-        key: "line",
+      investorColPct(22, { title: "Paid date", dataIndex: "paidDate", key: "paidDate" }),
+      investorColPct(38, {
+        title: "Project",
+        dataIndex: "projectName",
+        key: "projectName",
         ellipsis: true,
-        render: (v) => <span className="investor-payout-history-line">{v}</span>,
       }),
-      investorColPct(32, {
+      investorColPct(22, {
         title: "Amount",
         dataIndex: "amount",
         key: "amount",
         align: "right",
-        render: (v, row) => (
-          <span
-            className={`investor-table-nowrap investor-activity-amount ${
-              row.isBad ? "is-bad" : "is-good"
-            }`}
-          >
-            {v}
-          </span>
-        ),
+        render: (v) => <span className="investor-table-nowrap investor-pay-pos">{v}</span>,
+      }),
+      investorColPct(18, {
+        title: "Status",
+        dataIndex: "status",
+        key: "status",
+        render: (v, row) => {
+          const t = String(row.statusKey || v || "").toLowerCase();
+          const color = t === "full" ? "green" : t === "partial" ? "gold" : "default";
+          return (
+            <Tag color={color} className="investor-schedule-status-tag">
+              {v}
+            </Tag>
+          );
+        },
       }),
     ],
     []
   );
 
   const payoutScheduleCols = [
-    investorColPct(14, { title: "Due date", dataIndex: "due", key: "due" }),
-    investorColPct(14, {
+    investorColPct(17, { title: "Due date", dataIndex: "due", key: "due" }),
+    investorColPct(17, {
       title: "Amount due",
       dataIndex: "amountDue",
       key: "amountDue",
       align: "right",
       render: (v) => <span className="investor-table-nowrap">{v}</span>,
     }),
-    investorColPct(14, {
+    investorColPct(17, {
       title: "Amount paid",
       dataIndex: "amountPaid",
       key: "amountPaid",
       align: "right",
       render: (v) => <span className="investor-table-nowrap">{v}</span>,
     }),
-    investorColPct(14, {
+    investorColPct(16, {
       title: "Remaining",
       dataIndex: "amountRemaining",
       key: "amountRemaining",
@@ -251,8 +254,8 @@ function InvestorPayments() {
         return <span className={`investor-table-nowrap${isOver ? " investor-pay-neg" : ""}`}>{v}</span>;
       },
     }),
-    investorColPct(14, { title: "Paid date", dataIndex: "paidDate", key: "paidDate" }),
-    investorColPct(30, {
+    investorColPct(15, { title: "Paid date", dataIndex: "paidDate", key: "paidDate" }),
+    investorColPct(18, {
       title: "Status",
       dataIndex: "status",
       key: "status",
@@ -261,38 +264,6 @@ function InvestorPayments() {
           {scheduleStatusTag(row.statusKey, v, row.statusDetail)}
         </div>
       ),
-    }),
-  ];
-
-  const ledgerCols = [
-    investorColPct(14, { title: "Date", dataIndex: "date", key: "date" }),
-    investorColPct(17, {
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-      render: (v) => <span className="investor-table-nowrap">{v}</span>,
-    }),
-    investorColPct(24, { title: "Project", dataIndex: "ref", key: "ref", ellipsis: true }),
-    investorColPct(14, {
-      title: "Customer",
-      dataIndex: "customer",
-      key: "customer",
-      align: "right",
-      render: (v) => <span className="investor-table-nowrap">{v}</span>,
-    }),
-    investorColPct(14, {
-      title: "Allocation",
-      dataIndex: "allocation",
-      key: "allocation",
-      align: "right",
-      render: (v) => <span className="investor-pay-pos investor-table-nowrap">{v}</span>,
-    }),
-    investorColPct(17, {
-      title: "Effect",
-      dataIndex: "effect",
-      key: "effect",
-      align: "right",
-      render: (v) => <span className="investor-table-nowrap">{v}</span>,
     }),
   ];
 
@@ -324,23 +295,8 @@ function InvestorPayments() {
 
   return (
     <div className="investor-page investor-payments-page">
-      {loadError ? (
-        <Alert type="error" showIcon message="Could not load payments" description={loadError} />
-      ) : null}
-
-      {paymentsPartialErrors?.length ? (
-        <Alert
-          type="warning"
-          showIcon
-          closable
-          message="Some payment data could not be loaded"
-          description="Showing the sections that are available. Refresh the page or try again later."
-        />
-      ) : null}
-
       <InvestorPageHeader
         title="Payments & receivables"
-        subtitle="Schedule, payouts, receivable health, and cash ledger from your Wyre portfolio."
         onDownloadReport={handleDownloadReport}
       />
 
@@ -381,10 +337,6 @@ function InvestorPayments() {
             />
           }
         >
-          {scheduleError ? (
-            <Alert type="error" showIcon message={scheduleError} style={{ marginBottom: 12 }} />
-          ) : null}
-
           {payoutSchedule ? (
             <>
               <div className="investor-payments-schedule-head">
@@ -422,11 +374,7 @@ function InvestorPayments() {
                 className="investor-table investor-schedule-table"
                 columns={payoutScheduleCols}
                 dataSource={payoutSchedule?.installments || []}
-                pagination={{
-                  pageSize: 10,
-                  showSizeChanger: false,
-                  hideOnSinglePage: true,
-                }}
+                pagination={INVESTOR_TABLE_PAGINATION}
                 size="small"
                 rowKey="key"
                 tableLayout="fixed"
@@ -446,11 +394,7 @@ function InvestorPayments() {
               className="investor-table investor-schedule-table"
               columns={scheduleCols}
               dataSource={bundle?.schedule || []}
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: false,
-                hideOnSinglePage: true,
-              }}
+              pagination={INVESTOR_TABLE_PAGINATION}
               size="small"
               rowKey="key"
               tableLayout="fixed"
@@ -461,26 +405,35 @@ function InvestorPayments() {
 
         <div className="investor-payments-bottom-split">
           <Card
-            title="Payout history"
+            title={
+              <div className="investor-ledger-head">
+                <Title level={5} style={{ margin: 0 }}>
+                  Repayment history
+                </Title>
+                <Tabs
+                  size="small"
+                  activeKey={ledgerYear}
+                  onChange={setLedgerYear}
+                  items={ledgerTabYears}
+                />
+              </div>
+            }
             bordered={false}
             className="investor-card investor-card--payout-history"
           >
             <div className="investor-payout-history-body">
               <Table
-                className="investor-table investor-payout-history-table"
-                showHeader={false}
-                columns={payoutHistoryCols}
-                dataSource={bundle?.payoutHistory || []}
+                className="investor-table investor-ledger-table"
+                columns={repaymentHistoryCols}
+                dataSource={bundle?.ledger || []}
                 pagination={{
-                  pageSize: PAYOUT_HISTORY_PAGE_SIZE,
-                  showSizeChanger: false,
-                  hideOnSinglePage: true,
-                  size: "small",
+                  ...INVESTOR_TABLE_PAGINATION,
+                  ...(ledgerMeta?.total != null ? { total: ledgerMeta.total } : {}),
                 }}
                 size="small"
                 rowKey="key"
                 tableLayout="fixed"
-                locale={{ emptyText: "No payouts recorded yet." }}
+                locale={{ emptyText: `No repayment history for ${ledgerYear}` }}
               />
             </div>
           </Card>
@@ -507,42 +460,6 @@ function InvestorPayments() {
             ) : null}
           </Card>
         </div>
-
-        <Card
-          title={
-            <div className="investor-ledger-head">
-              <Title level={5} style={{ margin: 0 }}>
-                All cash movements
-              </Title>
-              <Tabs
-                size="small"
-                activeKey={ledgerYear}
-                onChange={setLedgerYear}
-                items={ledgerTabYears}
-              />
-            </div>
-          }
-          bordered={false}
-          className="investor-card"
-        >
-          <div className="table-responsive-wrapper investor-table-wrap">
-            <Table
-              className="investor-table investor-ledger-table"
-              columns={ledgerCols}
-              dataSource={bundle?.ledger || []}
-              pagination={{
-                pageSize: LEDGER_PAGE_SIZE,
-                showSizeChanger: false,
-                hideOnSinglePage: true,
-                ...(ledgerMeta?.total != null ? { total: ledgerMeta.total } : {}),
-              }}
-              size="small"
-              rowKey="key"
-              tableLayout="fixed"
-              locale={{ emptyText: `No ledger entries for ${ledgerYear}` }}
-            />
-          </div>
-        </Card>
         </div>
       </Spin>
 

@@ -35,16 +35,6 @@ export const investorPaymentsSuccess = (payload) => ({
   payload,
 });
 
-export const investorAccountKycLoading = (payload = true) => ({
-  type: investorTypes.INVESTOR_ACCOUNT_KYC_LOADING,
-  payload,
-});
-
-export const investorAccountKycSuccess = (payload) => ({
-  type: investorTypes.INVESTOR_ACCOUNT_KYC_SUCCESS,
-  payload,
-});
-
 export const investorTotalDepositedSuccess = (payload) => ({
   type: investorTypes.INVESTOR_TOTAL_DEPOSITED_SUCCESS,
   payload,

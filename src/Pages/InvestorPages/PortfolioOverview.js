@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  Alert,
   Button,
   Card,
   Form,
@@ -296,36 +295,8 @@ function PortfolioOverview() {
     <div className="investor-page">
       <InvestorPageHeader
         title="Portfolio overview"
-        subtitle="Solar receivables across your financed projects"
         onDownloadReport={handleDownloadReport}
       />
-
-      {portfolioOverview.error ? (
-        <Alert
-          type="error"
-          showIcon
-          className="investor-alert"
-          message={portfolioOverview.error}
-        />
-      ) : null}
-
-      {!portfolioOverview.error && portfolioOverview.partialErrors?.length ? (
-        <Alert
-          type="info"
-          showIcon
-          className="investor-alert"
-          message="Some sections could not be loaded. You can try another date range or refresh the page."
-        />
-      ) : null}
-
-      {portfolioOverview.alert ? (
-        <Alert
-          type={portfolioOverview.alert.type}
-          showIcon
-          className="investor-alert"
-          message={portfolioOverview.alert.message}
-        />
-      ) : null}
 
       <Spin spinning={portfolioOverview.loading}>
         <div
@@ -504,7 +475,12 @@ function PortfolioOverview() {
             className="investor-table investor-financed-table"
             columns={columns}
             dataSource={filteredProjects}
-            pagination={false}
+            pagination={{
+              pageSize: 5,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "15", "20"],
+              hideOnSinglePage: true,
+            }}
             size="middle"
             rowKey="key"
             loading={portfolioOverview.loading}

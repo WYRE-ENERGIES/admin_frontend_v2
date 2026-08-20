@@ -1,8 +1,6 @@
 import { APIService } from "../../../config/Api/apiServices";
 import { INVESTOR_API } from "../../../config/Api/investorApi";
 import {
-  investorAccountKycLoading,
-  investorAccountKycSuccess,
   investorPaymentsLoading,
   investorPaymentsSuccess,
   investorPortfolioOverviewFail,
@@ -40,7 +38,6 @@ import {
   mapProjectsPageSummary,
 } from "../../../helpers/investorProjectsMappers";
 import { buildPaymentsPagePayload, mapProjectPayoutSchedule } from "../../../helpers/investorPaymentsMappers";
-import { MOCK_INVESTOR_ACCOUNT_KYC } from "../../reducers/investor/investor.initialData";
 
 const readErrorMessage = (error) => {
   const data = error.response?.data;
@@ -324,21 +321,6 @@ export const fetchInvestorProjectPayoutSchedule = (investmentId) => async () => 
     return { fulfilled: true, data: mapProjectPayoutSchedule(body) };
   } catch (error) {
     return { fulfilled: false, message: readErrorMessage(error) };
-  }
-};
-
-export const fetchInvestorAccountKyc = () => async (dispatch) => {
-  dispatch(investorAccountKycLoading(true));
-  try {
-    // const response = await APIService.get("/api/v1/investor/account-kyc/");
-    // dispatch(investorAccountKycSuccess(response.data));
-    dispatch(investorAccountKycSuccess(MOCK_INVESTOR_ACCOUNT_KYC));
-    return { fulfilled: true };
-  } catch (error) {
-    dispatch(investorAccountKycSuccess(MOCK_INVESTOR_ACCOUNT_KYC));
-    return { fulfilled: false, message: error?.response?.data?.detail || error.message };
-  } finally {
-    dispatch(investorAccountKycLoading(false));
   }
 };
 

@@ -42,20 +42,6 @@ function formatScheduleStatus(statusDisplay) {
   return raw.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function formatLedgerType(type) {
-  const t = String(type || "").replace(/_/g, " ");
-  if (!t) return "—";
-  return t.replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatBalanceEffect(effect) {
-  const e = String(effect || "").toLowerCase();
-  if (e === "credited") return "Credited";
-  if (e === "flagged") return "Flagged";
-  if (!e) return "—";
-  return e.replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
 /** Top four KPI cards — aligned with Payments & receivables mock. */
 export function mapPaymentsKpis({
   totalCreditedRaw,
@@ -218,33 +204,27 @@ export function mapReceivableHealth(raw) {
   };
 }
 
-/** investors/payments/ledger/ */
+/** investors/payments/ledger/ — backs the "Repayment history" table. */
 export function mapPaymentsLedger(raw) {
   const envelope = unwrapInvestorEnvelope(raw);
   const rows = listFromPaged(raw);
   const periodYear = envelope?.period?.year;
 
   const ledger = rows.map((row, idx) => {
-    const date =
-      row.date && dayjs(row.date).isValid()
-        ? dayjs(row.date).format("DD MMM YYYY")
+    const paidDate =
+      row.paid_date && dayjs(row.paid_date).isValid()
+        ? dayjs(row.paid_date).format("DD MMM YYYY")
         : "—";
 
     return {
-      key: String(row.customer_payment_id ?? row.disbursement_id ?? `${row.date}-${idx}`),
-      date,
-      dateIso: row.date,
-      type: formatLedgerType(row.type),
-      ref: row.project_name
-        ? String(row.project_name)
-        : row.reference
-          ? String(row.reference)
-          : "—",
-      customer:
-        row.customer_amount != null ? formatTableNgnAmount(row.customer_amount) : "—",
-      allocation: formatTableNgnAmount(row.your_allocation),
-      effect: formatBalanceEffect(row.balance_effect),
-      projectName: row.project_name,
+      key: String(`${row.project_id ?? "p"}-${row.paid_date ?? idx}-${idx}`),
+      paidDate,
+      paidDateIso: row.paid_date,
+      projectId: row.project_id,
+      projectName: row.project_name || "—",
+      amount: formatTableNgnAmount(row.amount),
+      status: formatScheduleStatus(row.status),
+      statusKey: String(row.status || "").toLowerCase(),
     };
   });
 
