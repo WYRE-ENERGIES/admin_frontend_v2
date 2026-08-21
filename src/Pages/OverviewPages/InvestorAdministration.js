@@ -30,6 +30,7 @@ import {
   ProjectOutlined,
   FundOutlined,
   ThunderboltOutlined,
+  DownOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import authHelper from "../../helpers/authHelper";
@@ -67,16 +68,6 @@ import {
   updateAdminCustomerPayment,
   clearCustomerPaymentDetail,
 } from "../../redux/actions/adminCustomerPayment/adminCustomerPayment.action";
-import {
-  createAdminInvestorPayout,
-  deleteAdminInvestorPayout,
-  fetchAdminInvestorPayoutDetail,
-  fetchAdminInvestorPayoutsList,
-  fetchAdminInvestorPaymentSchedulesList,
-  updateAdminInvestorPayout,
-  clearInvestorPayoutDetail,
-  fetchInvestorPaymentSchedules,
-} from "../../redux/actions/adminInvestorPayout/adminInvestorPayout.action";
 import { fetchAdminInvestorOverview } from "../../redux/actions/adminInvestorOverview/adminInvestorOverview.action";
 import { fetchAdminFinanceByInvestor } from "../../redux/actions/adminInvestorDirectory/adminInvestorDirectory.action";
 import {
@@ -95,7 +86,6 @@ const MODAL = {
   CREATE_PROJECT: "createProject",
   CREATE_INVESTMENT: "createInvestment",
   RECORD_PAYMENT: "recordPayment",
-  POST_PAYOUT: "postPayout",
 };
 
 const KYC_TIER_OPTIONS = [
@@ -237,18 +227,6 @@ const formatKwpDisplay = (kwp) => {
   return n.toLocaleString("en-NG", { maximumFractionDigits: 2 });
 };
 
-/** Investment reference for payment tables — always prefixed with #. */
-const formatInvestmentRef = (value) => {
-  if (value == null || value === "" || value === "—") return "—";
-  const bare = String(value).replace(/^#/, "").trim();
-  if (!bare) return "—";
-  return `#${bare}`;
-};
-
-const renderInvestmentRefCell = (value) => (
-  <span className="admin-table-nowrap">{formatInvestmentRef(value)}</span>
-);
-
 /** Default list pagination for investor admin tables. */
 const ADMIN_TABLE_PAGINATION = {
   pageSize: 10,
@@ -388,16 +366,6 @@ function InvestorAdministration() {
   const customerSchedules = useSelector((s) => s.adminCustomerPaymentsPage?.customerSchedules);
   const customerSchedulesLoading = useSelector((s) => s.adminCustomerPaymentsPage?.customerSchedulesLoading);
 
-  const adminInvestorPayoutsList = useSelector((s) => s.adminInvestorPayoutsPage?.list);
-  const payoutsListLoading = useSelector((s) => s.adminInvestorPayoutsPage?.listLoading);
-  const payoutCreateLoading = useSelector((s) => s.adminInvestorPayoutsPage?.createLoading);
-  const payoutDetail = useSelector((s) => s.adminInvestorPayoutsPage?.detail);
-  const payoutDetailLoading = useSelector((s) => s.adminInvestorPayoutsPage?.detailLoading);
-  const payoutDeleteLoading = useSelector((s) => s.adminInvestorPayoutsPage?.deleteLoading);
-  const payoutUpdateLoading = useSelector((s) => s.adminInvestorPayoutsPage?.updateLoading);
-  const investorSchedulesList = useSelector((s) => s.adminInvestorPayoutsPage?.investorSchedulesList);
-  const investorSchedulesLoading = useSelector((s) => s.adminInvestorPayoutsPage?.investorSchedulesLoading);
-
   const overviewTotalInvested = useSelector((s) => s.adminInvestorOverviewPage?.totalInvested);
   const overviewCustomersExpected = useSelector((s) => s.adminInvestorOverviewPage?.customersExpected);
   const overviewActiveProjects = useSelector((s) => s.adminInvestorOverviewPage?.activeProjects);
@@ -421,17 +389,15 @@ function InvestorAdministration() {
   const [investmentEditOpen, setInvestmentEditOpen] = useState(false);
   const [projectCustomerSchedules, setProjectCustomerSchedules] = useState([]);
   const [investmentPaymentSchedules, setInvestmentPaymentSchedules] = useState([]);
-  const [showProjectCostBreakdown, setShowProjectCostBreakdown] = useState(false);
+  const [showProjectCostBreakdown, setShowProjectCostBreakdown] = useState(true);
+  const [showInvestmentContractDetails, setShowInvestmentContractDetails] = useState(true);
+  const [showInvestmentRepaymentPlan, setShowInvestmentRepaymentPlan] = useState(true);
   const [customerPaymentDetailOpen, setCustomerPaymentDetailOpen] = useState(false);
   const [investorSearch, setInvestorSearch] = useState("");
   const [projectSearch, setProjectSearch] = useState("");
   const [projectProgrammeStateFilter, setProjectProgrammeStateFilter] = useState("all");
   const [investmentSearch, setInvestmentSearch] = useState("");
   const [customerPaymentSearch, setCustomerPaymentSearch] = useState("");
-  const [payoutSearch, setPayoutSearch] = useState("");
-  const [payoutDetailOpen, setPayoutDetailOpen] = useState(false);
-  const [payoutSchedules, setPayoutSchedules] = useState([]);
-  const [payoutSchedulesLoading, setPayoutSchedulesLoading] = useState(false);
   const [ticketsTableMode, setTicketsTableMode] = useState("all");
   const [ticketResponseOpen, setTicketResponseOpen] = useState(false);
   const [activeTicketId, setActiveTicketId] = useState(null);
@@ -440,7 +406,6 @@ function InvestorAdministration() {
   /** Staff responses posted this session (API returns each POST result; list refreshes for `responded`). */
   const [ticketPostResponses, setTicketPostResponses] = useState({});
   const [customerRepaymentOpen, setCustomerRepaymentOpen] = useState(false);
-  const [investorPaymentOpen, setInvestorPaymentOpen] = useState(false);
   const [activePaymentMeta, setActivePaymentMeta] = useState(null);
   const [investorForm] = Form.useForm();
   const [investorEditForm] = Form.useForm();
@@ -449,21 +414,14 @@ function InvestorAdministration() {
   const [investmentForm] = Form.useForm();
   const [investmentEditForm] = Form.useForm();
   const [recordPaymentForm] = Form.useForm();
-  const [payoutForm] = Form.useForm();
   const [customerPaymentEditForm] = Form.useForm();
-  const [payoutEditForm] = Form.useForm();
   const [customerPaymentEditing, setCustomerPaymentEditing] = useState(false);
-  const [payoutEditing, setPayoutEditing] = useState(false);
   const recordPaymentProjectId = Form.useWatch("project_id", recordPaymentForm);
-  const payoutInvestmentId = Form.useWatch("investment_id", payoutForm);
   const createInvestmentProjectId = Form.useWatch("project_id", investmentForm);
-  const createProjectTotalCost = Form.useWatch("totalProjectCost", projectForm);
-  const createProjectClientContribution = Form.useWatch("clientContribution", projectForm);
-  const createInvestmentInterestPercent = Form.useWatch("interestPercent", investmentForm);
-  const createInvestmentInterestBasis = Form.useWatch("interestBasis", investmentForm);
+  const createInvestmentClientContribution = Form.useWatch("clientContribution", investmentForm);
 
   const closeModal = () => {
-    setShowProjectCostBreakdown(false);
+    setShowProjectCostBreakdown(true);
     setActiveModal(MODAL.NONE);
   };
 
@@ -499,16 +457,9 @@ function InvestorAdministration() {
     if (isSuperAdmin) dispatch(fetchAdminCustomerPaymentsList());
   }, [dispatch, isSuperAdmin]);
 
-  const refreshInvestorPayouts = useCallback(() => {
-    if (isSuperAdmin) dispatch(fetchAdminInvestorPayoutsList());
-  }, [dispatch, isSuperAdmin]);
-
   const refreshPaymentSchedules = useCallback(() => {
     if (!isSuperAdmin) return undefined;
-    return Promise.all([
-      dispatch(fetchAdminCustomerPaymentSchedules({ page: 1, page_size: 100 })),
-      dispatch(fetchAdminInvestorPaymentSchedulesList({ page: 1, page_size: 100 })),
-    ]);
+    return dispatch(fetchAdminCustomerPaymentSchedules({ page: 1, page_size: 100 }));
   }, [dispatch, isSuperAdmin]);
 
   useEffect(() => {
@@ -516,18 +467,15 @@ function InvestorAdministration() {
     refreshAdminProjects();
     refreshAdminInvestments();
     refreshCustomerPayments();
-    refreshInvestorPayouts();
-  }, [refreshInvestorUsers, refreshAdminProjects, refreshAdminInvestments, refreshCustomerPayments, refreshInvestorPayouts]);
+  }, [refreshInvestorUsers, refreshAdminProjects, refreshAdminInvestments, refreshCustomerPayments]);
 
   useEffect(() => {
     if (!isSuperAdmin) return undefined;
     let cancelled = false;
     (async () => {
-      const results = await refreshPaymentSchedules();
-      if (cancelled || !results) return;
-      const [r1, r2] = results;
-      if (r1 && !r1.fulfilled) message.error(r1.message || "Could not load customer payment schedules");
-      if (r2 && !r2.fulfilled) message.error(r2.message || "Could not load investor payment schedules");
+      const res = await refreshPaymentSchedules();
+      if (cancelled || !res) return;
+      if (!res.fulfilled) message.error(res.message || "Could not load customer payment schedules");
     })();
     return () => {
       cancelled = true;
@@ -573,33 +521,6 @@ function InvestorAdministration() {
       cancelled = true;
     };
   }, [dispatch, isSuperAdmin]);
-
-  useEffect(() => {
-    if (activeModal !== MODAL.POST_PAYOUT || payoutInvestmentId == null || payoutInvestmentId === "")
-    {
-      setPayoutSchedules([]);
-      setPayoutSchedulesLoading(false);
-      return undefined;
-    }
-    let cancelled = false;
-    setPayoutSchedulesLoading(true);
-    (async () => {
-      const res = await dispatch(fetchInvestorPaymentSchedules(payoutInvestmentId));
-      if (cancelled) return;
-      setPayoutSchedulesLoading(false);
-      if (res.fulfilled)
-      {
-        setPayoutSchedules(res.data?.results || []);
-      } else
-      {
-        setPayoutSchedules([]);
-        message.warning(res.message || "Could not load payment schedules");
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [activeModal, payoutInvestmentId, dispatch]);
 
   const openTicketResponse = useCallback(
     async (ticketId, meta) => {
@@ -719,36 +640,8 @@ function InvestorAdministration() {
     setCustomerRepaymentOpen(true);
   }, []);
 
-  const openInvestorPayment = useCallback((row) => {
-    if (row && typeof row === "object" && row.investmentId != null)
-    {
-      setActivePaymentMeta({
-        type: "investor",
-        title: `${row.projectName || "Project"} — investor repayment`,
-        subtitle: [row.projectName, row.investorName ? `Investor: ${row.investorName}` : null].filter(Boolean).join("  •  "),
-        ref: row.reference || `Investment #${row.investmentId}`,
-        cadence: row.repaymentScoreLabel || null,
-        actionLabel: "Post investor payout",
-        investmentId: row.investmentId,
-      });
-    } else
-    {
-      setActivePaymentMeta({
-        type: "investor",
-        title: "Investor repayment schedule",
-        subtitle: "Select a payout or upcoming line with an investment",
-        ref: "—",
-        cadence: null,
-        actionLabel: "Post investor payout",
-        investmentId: undefined,
-      });
-    }
-    setInvestorPaymentOpen(true);
-  }, []);
-
   const closePaymentModal = useCallback(() => {
     setCustomerRepaymentOpen(false);
-    setInvestorPaymentOpen(false);
     setActivePaymentMeta(null);
   }, []);
 
@@ -764,16 +657,6 @@ function InvestorAdministration() {
       { key: "16", idx: 16, due: "28 Sept 2026", dueAmount: "₦306.7M", paid: "NO", left: "₦306.7M", status: "Open" },
       { key: "17", idx: 17, due: "28 Oct 2026", dueAmount: "₦306.7M", paid: "NO", left: "₦306.7M", status: "Open" },
       { key: "18", idx: 18, due: "28 Nov 2026", dueAmount: "₦306.7M", paid: "NO", left: "₦306.7M", status: "Open" },
-    ],
-    []
-  );
-
-  const mockInvestorPaymentSchedule = useMemo(
-    () => [
-      { key: "1", idx: 1, due: "05 Jan 2026", dueAmount: "₦166.7M", paid: "₦166.7M", left: "NO", status: "Paid" },
-      { key: "2", idx: 2, due: "06 Feb 2026", dueAmount: "₦166.7M", paid: "NO", left: "₦166.7M", status: "Scheduled" },
-      { key: "3", idx: 3, due: "06 Mar 2026", dueAmount: "₦166.7M", paid: "NO", left: "₦166.7M", status: "Open" },
-      { key: "4", idx: 4, due: "05 Apr 2026", dueAmount: "₦166.7M", paid: "NO", left: "₦166.7M", status: "Open" },
     ],
     []
   );
@@ -1411,55 +1294,6 @@ function InvestorAdministration() {
     }
   };
 
-  const handleDeactivatePayout = useCallback(
-    (record) => {
-      Modal.confirm({
-        title: "Deactivate this investor payout?",
-        content: `Payout #${record.id} — ${record.projectName || "Project"}`,
-        okText: "Deactivate",
-        okType: "danger",
-        confirmLoading: payoutDeleteLoading,
-        onOk: async () => {
-          const res = await dispatch(deleteAdminInvestorPayout(record.id));
-          if (res.fulfilled)
-          {
-            message.success(res.message || "Deactivated");
-            refreshInvestorPayouts();
-            void refreshPaymentSchedules();
-          } else
-          {
-            message.error(res.message || "Request failed");
-            throw new Error(res.message);
-          }
-        },
-      });
-    },
-    [dispatch, payoutDeleteLoading, refreshInvestorPayouts]
-  );
-
-  const handleViewPayout = useCallback(
-    async (id) => {
-      setPayoutEditing(false);
-      payoutEditForm.resetFields();
-      setPayoutDetailOpen(true);
-      dispatch(clearInvestorPayoutDetail());
-      const res = await dispatch(fetchAdminInvestorPayoutDetail(id));
-      if (!res.fulfilled)
-      {
-        message.error(res.message || "Failed to load payout");
-        setPayoutDetailOpen(false);
-      }
-    },
-    [dispatch, payoutEditForm]
-  );
-
-  const closePayoutDetail = () => {
-    setPayoutDetailOpen(false);
-    setPayoutEditing(false);
-    payoutEditForm.resetFields();
-    dispatch(clearInvestorPayoutDetail());
-  };
-
   const submitCustomerPaymentEdit = useCallback(async () => {
     if (!customerPaymentDetail?.id) return;
     try
@@ -1488,116 +1322,29 @@ function InvestorAdministration() {
     }
   }, [customerPaymentDetail, customerPaymentEditForm, dispatch, refreshCustomerPayments, refreshPaymentSchedules]);
 
-  const submitPayoutEdit = useCallback(async () => {
-    if (!payoutDetail?.id) return;
-    try
-    {
-      const values = await payoutEditForm.validateFields();
-      const payload = {
-        amount_paid: String(Number(values.amount_paid)),
-        paid_date: dayjs(values.paid_date).format("YYYY-MM-DD"),
-        payment_method: values.payment_method,
-        reference: values.reference?.trim() || "",
-      };
-      const res = await dispatch(updateAdminInvestorPayout(payoutDetail.id, payload));
-      if (res.fulfilled)
-      {
-        message.success(res.message || "Updated");
-        setPayoutEditing(false);
-        refreshInvestorPayouts();
-        void refreshPaymentSchedules();
-      } else
-      {
-        message.error(res.message || "Update failed");
-      }
-    } catch {
-      /* validation */
-    }
-  }, [dispatch, payoutDetail, payoutEditForm, refreshInvestorPayouts, refreshPaymentSchedules]);
-
-  const submitPostPayout = async () => {
-    try
-    {
-      await payoutForm.validateFields(["investment_id", "payment_method", "reference"]);
-      const values = payoutForm.getFieldsValue(true);
-      const selectedScheduleIds = Array.isArray(values.schedule_ids) ? values.schedule_ids : [];
-      const rawLines = values.line_items || [];
-      const line_items = rawLines
-        .map((li) => {
-          if (li?.schedule_id == null || li.schedule_id === "") return null;
-          const ap = Number(li.amount_paid);
-          if (!Number.isFinite(ap) || ap < 0) return null;
-          if (!li?.paid_date) return null;
-          return {
-            schedule_id: Number(li.schedule_id),
-            amount_paid: ap.toFixed(2),
-            paid_date: dayjs(li.paid_date).format("YYYY-MM-DD"),
-          };
-        })
-        .filter(Boolean);
-      if (!line_items.length)
-      {
-        message.error(
-          selectedScheduleIds.length
-            ? "Fill amount and paid date for the selected schedule lines"
-            : "Add at least one line with schedule ID, amount paid, and paid date"
-        );
-        return;
-      }
-      const payload = {
-        investment_id: values.investment_id,
-        payment_method: (values.payment_method || "").trim(),
-        reference: values.reference?.trim() || "",
-        line_items,
-      };
-      const res = await dispatch(createAdminInvestorPayout(payload));
-      if (res.fulfilled)
-      {
-        message.success(res.message || "Created");
-        closeModal();
-        payoutForm.resetFields();
-        setPayoutSchedules([]);
-        refreshInvestorPayouts();
-        void refreshPaymentSchedules();
-      } else
-      {
-        message.error(res.message || "Create failed");
-      }
-    } catch {
-      /* validation */
-    }
-  };
-
   const submitCreateInvestment = async () => {
     try
     {
       const values = await investmentForm.validateFields();
-      const cap = Number(createInvestmentCapitalAmount);
-      if (!Number.isFinite(cap) || cap <= 0)
-      {
-        message.error("Select a project with a valid funding target / principal");
-        return;
-      }
-      const totalRep = Number(createInvestmentTotalRepayable);
-      if (!Number.isFinite(totalRep) || totalRep <= 0)
-      {
-        message.error("Enter a valid interest percent");
-        return;
-      }
       const payload = {
         investor_id: values.investor_id,
         project_id: values.project_id,
-        contract_start_date: dayjs(values.contractStart).format("YYYY-MM-DD"),
-        capital_amount: cap.toFixed(2),
-        notes: values.notes?.trim() || "",
-        repayment_plan: {
+        expected_commission_date: dayjs(values.expectedCommissionDate).format("YYYY-MM-DD"),
+        status: values.status || "active",
+        customer_repayment_plan: {
           plan_type: values.planType,
-          first_due_date: dayjs(values.firstDueDate).format("YYYY-MM-DD"),
-          interest_percent: String(values.interestPercent ?? "").trim(),
+          interest_rate: Number(values.interestRate),
           interest_basis: values.interestBasis || "annual",
-          total_repayable: totalRep.toFixed(2),
         },
       };
+      if (values.projectDurationMonths != null && values.projectDurationMonths !== "")
+      {
+        payload.project_duration_months = Math.floor(Number(values.projectDurationMonths));
+      }
+      if (values.clientContribution != null && values.clientContribution !== "")
+      {
+        payload.client_contribution = Number(values.clientContribution);
+      }
 
       const res = await dispatch(createAdminInvestorInvestment(payload));
       if (res.fulfilled)
@@ -1619,15 +1366,7 @@ function InvestorAdministration() {
     try
     {
       // Validate required fields only; partial validateFields() omits other form values.
-      await projectForm.validateFields([
-        "projectName",
-        "totalProjectCost",
-        "installationDate",
-        "crProjectDurationMonths",
-        "crPlanType",
-        "crFirstDueDate",
-        "crInterestRatePa",
-      ]);
+      await projectForm.validateFields(["projectName", "totalProjectCost"]);
       const values = projectForm.getFieldsValue(true);
       const branchRaw =
         values.branchId != null && values.branchId !== "" ? String(values.branchId).trim() : "";
@@ -1643,42 +1382,10 @@ function InvestorAdministration() {
         branch_id = n;
       }
       const total = Number(values.totalProjectCost);
-      const client = Number(values.clientContribution ?? 0);
       const kwp = Number(values.systemCapacityKwp ?? 0);
       if (!Number.isFinite(total) || total < 0)
       {
         message.error("Enter a valid total project cost");
-        return;
-      }
-      if (!values.installationDate)
-      {
-        message.error("Installation date is required");
-        return;
-      }
-      if (!values.crFirstDueDate)
-      {
-        message.error("First due date is required for the customer repayment plan");
-        return;
-      }
-
-      const durationMonths = Math.floor(Number(values.crProjectDurationMonths));
-      if (!Number.isFinite(durationMonths) || durationMonths < 1)
-      {
-        message.error("Enter a valid project duration (months)");
-        return;
-      }
-
-      const principal = total - (Number.isFinite(client) ? client : 0);
-      if (!Number.isFinite(principal) || principal < 0)
-      {
-        message.error("Principal (total cost − client contribution) must be zero or positive");
-        return;
-      }
-
-      const interestRatePa = Number(values.crInterestRatePa);
-      if (!Number.isFinite(interestRatePa) || interestRatePa < 0)
-      {
-        message.error("Enter a valid interest rate % p.a.");
         return;
       }
 
@@ -1694,46 +1401,33 @@ function InvestorAdministration() {
         const amount = Number(ci?.amount);
         const hasAny = category || label || Number.isFinite(amount);
         if (!hasAny) continue;
-        if (!category || !label || !Number.isFinite(amount) || amount < 0)
+        if (!category || !Number.isFinite(amount) || amount < 0)
         {
-          message.error("Each cost item needs category, label, and amount — or remove the row");
+          message.error("Each cost item needs a category and amount — or remove the row");
           return;
         }
         cost_items.push({
           category,
-          label,
           amount: amount.toFixed(2),
-          notes: ci?.notes ? String(ci.notes).trim() : "",
+          ...(label ? { label } : {}),
+          ...(ci?.notes ? { notes: String(ci.notes).trim() } : {}),
         });
       }
 
       const payload = {
         name: values.projectName.trim(),
-        total_project_cost: total.toFixed(2),
-        client_contribution: (Number.isFinite(client) ? client : 0).toFixed(2),
         branch_id,
-        description: values.description?.trim() || "",
-        location_label: values.locationLabel?.trim() || "",
-        system_capacity_kwp: formatDecimalField(Number.isFinite(kwp) ? kwp : 0),
         project_type: values.projectType,
-        status: values.status,
-        installation_date: dayjs(values.installationDate).format("YYYY-MM-DD"),
-        project_duration_months: durationMonths,
-        customer_repayment_plan: {
-          plan_type: values.crPlanType,
-          first_due_date: dayjs(values.crFirstDueDate).format("YYYY-MM-DD"),
-          interest_rate_pa: formatDecimalField(interestRatePa),
-          principal_amount: principal.toFixed(2),
-          grace_period_days: Math.max(0, Math.floor(Number(values.crGracePeriodDays ?? 0))),
-          notes: values.crNotes?.trim() || "",
-        },
+        system_capacity_kwp: formatDecimalField(Number.isFinite(kwp) ? kwp : 0),
+        description: values.description?.trim() || "",
+        total_project_cost: total.toFixed(2),
         cost_items,
       };
       const res = await dispatch(createAdminInvestorProject(payload));
       if (res.fulfilled)
       {
         message.success(res.message || "Created");
-        setShowProjectCostBreakdown(false);
+        setShowProjectCostBreakdown(true);
         closeModal();
         projectForm.resetFields();
         refreshAdminProjects();
@@ -1818,10 +1512,6 @@ function InvestorAdministration() {
 
     const totalInvestedVal =
       ti?.total_invested != null && ti.total_invested !== "" ? ngnCompact(Number(ti.total_invested)) : dash();
-    const totalRepaidSub =
-      ti?.total_repaid_to_investors != null && ti.total_repaid_to_investors !== ""
-        ? `Total repaid: ${ngnCompact(Number(ti.total_repaid_to_investors))}`
-        : undefined;
 
     const expectedVal =
       ce?.expected != null && ce.expected !== "" ? ngnCompact(Number(ce.expected)) : dash();
@@ -1846,7 +1536,6 @@ function InvestorAdministration() {
 
     const nearestHeadline =
       np?.headline_relative_label || np?.to_investor?.relative_label || dash();
-    const toInv = np?.to_investor;
     const fromCust = np?.from_customer;
 
     const nearestDate = np?.headline_date || np?.to_investor?.date || nearestHeadline;
@@ -1855,10 +1544,7 @@ function InvestorAdministration() {
       : false;
     const nearestLabel = isOverdue ? "Overdue payment" : "Nearest payment";
 
-    const nearestSub =
-      toInv?.amount != null && fromCust?.amount != null
-        ? `From customer: ${ngnCompact(Number(fromCust.amount))} · To investor: ${ngnCompact(Number(toInv.amount))}${toInv.relative_label ? ` (${toInv.relative_label})` : ""}`
-        : undefined;
+    const nearestSub = fromCust?.amount != null ? ngnCompact(Number(fromCust.amount)) : undefined;
 
     return [
       {
@@ -1866,7 +1552,6 @@ function InvestorAdministration() {
         icon: <DollarOutlined />,
         label: "Total invested (investors)",
         value: totalInvestedVal,
-        sub: totalRepaidSub,
         bg: "linear-gradient(135deg, #5C12A7 100%, #4c1d95 100%)",
         decorationColor: "rgba(255,255,255,0.06)",
       },
@@ -1918,17 +1603,10 @@ function InvestorAdministration() {
 
   const customerRepaymentColumns = useMemo(
     () => [
-      {
-        title: "Project",
-        dataIndex: "project",
-        key: "project",
-        ellipsis: true,
-        ...adminTableFlexCol,
-      },
-      {
+      adminColPct(38, { title: "Project", dataIndex: "project", key: "project", ellipsis: true }),
+      adminColPct(12, {
         title: "status",
         key: "status",
-        width: 88,
         render: (_, row) => (
           <Tag
             color={
@@ -1945,14 +1623,27 @@ function InvestorAdministration() {
             {row.status}
           </Tag>
         ),
-      },
-      { title: "Amount", dataIndex: "amount", key: "amount", width: 96, align: "right" },
-      { title: "date", dataIndex: "when", key: "date", width: 96 },
-      {
+      }),
+      adminColPct(15, {
+        title: "Amount",
+        dataIndex: "amount",
+        key: "amount",
+        align: "right",
+        onHeaderCell: () => ({ className: "admin-table-col-gap-r" }),
+        onCell: () => ({ className: "admin-table-col-gap-r" }),
+      }),
+      adminColPct(15, {
+        title: "date",
+        dataIndex: "when",
+        key: "date",
+        render: (v) => <span className="admin-table-nowrap">{v}</span>,
+        onHeaderCell: () => ({ className: "admin-table-col-gap-l" }),
+        onCell: () => ({ className: "admin-table-col-gap-l" }),
+      }),
+      adminColPct(20, {
         title: "Payment scores",
         key: "next",
         dataIndex: "next",
-        width: 108,
         render: (v) =>
           v === "Past due" ? (
             <Tag color="red" className="admin-investor-pill">
@@ -1961,7 +1652,7 @@ function InvestorAdministration() {
           ) : (
             v
           ),
-      },
+      }),
     ],
     []
   );
@@ -1983,81 +1674,49 @@ function InvestorAdministration() {
     });
   }, [adminCustomerPaymentsList]);
 
-  const disbursementColumns = useMemo(
-    () => [
-      { title: "Due", dataIndex: "due", key: "due", width: 96 },
-      { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true, ...adminTableFlexCol },
-      { title: "Due amount", dataIndex: "amount", key: "amount", width: 96, align: "right" },
-      {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        width: 96,
-        render: (v) => {
-          const s = String(v || "").toLowerCase();
-          const color = s.includes("miss") ? "red" : s.includes("pending") ? "gold" : s.includes("sched") ? "green" : "default";
-          return (
-            <Tag color={color} className="admin-investor-pill">
-              {v}
-            </Tag>
-          );
-        },
-      },
-    ],
-    []
-  );
-
-  const overviewDisbursementRows = useMemo(() => {
-    const results = investorSchedulesList?.results || [];
-    const sorted = [...results].sort((a, b) => dayjs(a.due_date).valueOf() - dayjs(b.due_date).valueOf());
-    return sorted.map((r) => ({
-      key: String(r.id),
-      due: r.due_date ? dayjs(r.due_date).format("DD MMM YYYY") : "—",
-      investor: r.investor_name || "—",
-      investment: formatInvestmentRef(r.investment_id),
-      amount: ngnCompact(Number(r.amount_due_investor_share ?? r.amount_due_total)),
-      status: r.status ? String(r.status).replace(/^\w/, (c) => c.toUpperCase()) : "—",
-    }));
-  }, [investorSchedulesList]);
-
   const perfColumns = useMemo(
     () => [
-      {
-        title: "Project",
-        dataIndex: "project",
-        key: "project",
-        ellipsis: true,
-        onHeaderCell: () => ({ className: "admin-perf-col-project" }),
-        onCell: () => ({ className: "admin-perf-col-project" }),
-      },
-      {
+      adminColPct(36, { title: "Project", dataIndex: "project", key: "project", ellipsis: true }),
+      adminColPct(10, {
         title: "kWp",
         dataIndex: "capacityKwp",
         key: "capacityKwp",
-        width: 88,
         align: "right",
         render: (v) => <span className="admin-table-nowrap">{formatKwpDisplay(v)}</span>,
-      },
-      {
+        onHeaderCell: () => ({ className: "admin-table-col-gap-r" }),
+        onCell: () => ({ className: "admin-table-col-gap-r" }),
+      }),
+      adminColPct(16, {
         title: "Total gen (MWh)",
         dataIndex: "totalGenMwh",
         key: "totalGenMwh",
-        width: 116,
         align: "right",
-      },
-      {
+        render: (v) => <span className="admin-table-nowrap">{v}</span>,
+        onHeaderCell: () => ({ className: "admin-table-col-gap-l admin-table-col-gap-r" }),
+        onCell: () => ({ className: "admin-table-col-gap-l admin-table-col-gap-r" }),
+      }),
+      adminColPct(16, {
         title: "Avg daily (MWh)",
         dataIndex: "avgDailyMwh",
         key: "avgDailyMwh",
-        width: 120,
         align: "right",
-      },
-      { title: "Solar %", dataIndex: "solarPct", key: "solarPct", width: 80, align: "right" },
-      {
+        render: (v) => <span className="admin-table-nowrap">{v}</span>,
+        onHeaderCell: () => ({ className: "admin-table-col-gap-l admin-table-col-gap-r" }),
+        onCell: () => ({ className: "admin-table-col-gap-l admin-table-col-gap-r" }),
+      }),
+      adminColPct(10, {
+        title: "Solar %",
+        dataIndex: "solarPct",
+        key: "solarPct",
+        align: "right",
+        render: (v) => <span className="admin-table-nowrap">{v}</span>,
+        onHeaderCell: () => ({ className: "admin-table-col-gap-l" }),
+        onCell: () => ({ className: "admin-table-col-gap-l" }),
+      }),
+      adminColPct(12, {
         title: "Status",
         dataIndex: "status",
         key: "status",
-        width: 96,
         render: (v) => (
           <Tag
             color={String(v).toLowerCase() === "active" ? "green" : String(v).toLowerCase().includes("watch") ? "gold" : "default"}
@@ -2066,7 +1725,7 @@ function InvestorAdministration() {
             {v}
           </Tag>
         ),
-      },
+      }),
     ],
     []
   );
@@ -2101,6 +1760,68 @@ function InvestorAdministration() {
     [financeByInvestorList]
   );
 
+  /** Shared by the Overview and Investments & Investors tabs — same finance-by-investor figures. */
+  const financeByInvestorColumns = useMemo(
+    () => [
+      adminColPct(34, { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true }),
+      adminColPct(14, {
+        title: "Ref",
+        dataIndex: "ref",
+        key: "ref",
+        ellipsis: true,
+        onHeaderCell: () => ({ className: "admin-table-col-gap-r" }),
+        onCell: () => ({ className: "admin-table-col-gap-r" }),
+      }),
+      adminColPct(14, {
+        title: "Capital",
+        dataIndex: "capital",
+        key: "capital",
+        align: "right",
+        render: (v) => <span className="admin-table-nowrap">{v}</span>,
+        onHeaderCell: () => ({ className: "admin-table-col-gap-r" }),
+        onCell: () => ({ className: "admin-table-col-gap-r" }),
+      }),
+      adminColPct(12, {
+        title: "Interest %",
+        dataIndex: "interest",
+        key: "interest",
+        align: "right",
+        render: (v) => <span className="admin-table-nowrap">{v}</span>,
+        onHeaderCell: () => ({ className: "admin-table-col-gap-l admin-table-col-gap-r" }),
+        onCell: () => ({ className: "admin-table-col-gap-l admin-table-col-gap-r" }),
+      }),
+      adminColPct(14, {
+        title: "Paid YTD",
+        dataIndex: "paid",
+        key: "paid",
+        align: "right",
+        render: (v) => <span className="admin-table-nowrap">{v}</span>,
+        onHeaderCell: () => ({ className: "admin-table-col-gap-l" }),
+        onCell: () => ({ className: "admin-table-col-gap-l" }),
+      }),
+      adminColPct(12, {
+        title: "Health",
+        dataIndex: "health",
+        key: "health",
+        render: (v) => (
+          <Tag
+            color={
+              String(v).toLowerCase().includes("overdue")
+                ? "red"
+                : String(v).toLowerCase().includes("kyc")
+                  ? "gold"
+                  : "green"
+            }
+            className="admin-investor-pill"
+          >
+            {v}
+          </Tag>
+        ),
+      }),
+    ],
+    []
+  );
+
   const filteredInvestorResults = useMemo(() => {
     const results = investorUsersList?.results || [];
     const q = investorSearch.trim().toLowerCase();
@@ -2132,24 +1853,27 @@ function InvestorAdministration() {
 
   const investorsColumns = useMemo(
     () => [
-      { title: "Legal name", dataIndex: "name", key: "name", ellipsis: true, ...adminTableFlexCol },
-      { title: "Ref", dataIndex: "ref", key: "ref", width: 88 },
-      {
+      adminColPct(30, { title: "Legal name", dataIndex: "name", key: "name", ellipsis: true }),
+      adminColPct(13, {
+        title: "Ref",
+        dataIndex: "ref",
+        key: "ref",
+        ellipsis: true,
+      }),
+      adminColPct(10, {
         title: "KYC",
         key: "kyc",
-        width: 80,
         render: (_, row) =>
           row.kycTier ? (
             <Tag className="admin-investor-pill">{row.kycTier}</Tag>
           ) : (
             "—"
           ),
-      },
-      { title: "No. invest.", dataIndex: "count", key: "count", width: 72 },
-      {
+      }),
+      adminColPct(9, { title: "No. invest.", dataIndex: "count", key: "count" }),
+      adminColPct(11, {
         title: "Status",
         key: "status",
-        width: 88,
         render: (_, row) => {
           const active = row.status === "Active" && row.userActive;
           return (
@@ -2158,12 +1882,16 @@ function InvestorAdministration() {
             </Tag>
           );
         },
-      },
-      { title: "Last activity", dataIndex: "last", key: "last", width: 104 },
-      {
+      }),
+      adminColPct(14, {
+        title: "Last activity",
+        dataIndex: "last",
+        key: "last",
+        render: (v) => <span className="admin-table-nowrap">{v}</span>,
+      }),
+      adminColPct(13, {
         title: "Actions",
         key: "actions",
-        width: 88,
         render: (_, record) => (
           <Dropdown
             menu={{
@@ -2188,7 +1916,7 @@ function InvestorAdministration() {
             </Button>
           </Dropdown>
         ),
-      },
+      }),
     ],
     [handleDeactivateInvestor, handleViewInvestor]
   );
@@ -2234,69 +1962,59 @@ function InvestorAdministration() {
 
   const projectsProgrammeColumns = useMemo(
     () => [
-      {
-        title: "Project",
-        dataIndex: "project",
-        key: "project",
-        ellipsis: true,
-        onHeaderCell: () => ({ className: "admin-projects-col-project" }),
-        onCell: () => ({ className: "admin-projects-col-project" }),
-      },
-      {
+      adminColPct(22, { title: "Project", dataIndex: "project", key: "project", ellipsis: true }),
+      adminColPct(8, {
         title: "Type",
         dataIndex: "typeLabel",
         key: "typeLabel",
-        width: 72,
         render: (v) => <Tag className="admin-investor-pill">{v}</Tag>,
-        onHeaderCell: () => ({ className: "admin-projects-col-type" }),
-        onCell: () => ({ className: "admin-projects-col-type" }),
-      },
-      {
+      }),
+      adminColPct(8, {
         title: "kWp",
         dataIndex: "capacityKwp",
         key: "capacityKwp",
-        width: 88,
         align: "right",
         render: (v) => <span className="admin-table-nowrap">{formatKwpDisplay(v)}</span>,
-      },
-      {
+        onHeaderCell: () => ({ className: "admin-table-col-gap-r" }),
+        onCell: () => ({ className: "admin-table-col-gap-r" }),
+      }),
+      adminColPct(11, {
         title: "Total cost",
         dataIndex: "totalCost",
         key: "totalCost",
-        width: 96,
         align: "right",
         render: (v) => <span className="admin-table-nowrap">{ngnCompact(Number(v))}</span>,
-      },
-      {
+        onHeaderCell: () => ({ className: "admin-table-col-gap-l admin-table-col-gap-r" }),
+        onCell: () => ({ className: "admin-table-col-gap-l admin-table-col-gap-r" }),
+      }),
+      adminColPct(12, {
         title: "Client contr.",
         dataIndex: "clientContr",
         key: "clientContr",
-        width: 104,
         align: "right",
         render: (v) => <span className="admin-table-nowrap">{ngnCompact(Number(v))}</span>,
-      },
-      {
+        onHeaderCell: () => ({ className: "admin-table-col-gap-l" }),
+        onCell: () => ({ className: "admin-table-col-gap-l" }),
+      }),
+      adminColPct(9, {
         title: "State",
         dataIndex: "stateUi",
         key: "stateUi",
-        width: 92,
         render: (v) => (
           <Tag color={projectProgrammeStateTagColor(v)} className="admin-investor-pill">
             {v}
           </Tag>
         ),
-      },
-      {
+      }),
+      adminColPct(18, {
         title: "Investor",
         dataIndex: "investorName",
         key: "investorName",
         ellipsis: true,
-        ...adminTableFlexCol,
-      },
-      {
+      }),
+      adminColPct(12, {
         title: "Actions",
         key: "actions",
-        width: 88,
         render: (_, record) => (
           <Dropdown
             menu={{
@@ -2317,7 +2035,7 @@ function InvestorAdministration() {
             </Button>
           </Dropdown>
         ),
-      },
+      }),
     ],
     [handleDeactivateProject, handleViewProject]
   );
@@ -2355,6 +2073,7 @@ function InvestorAdministration() {
           </div>
           <Table
             {...ADMIN_DATA_TABLE_PROPS}
+            className="admin-investor-data-table admin-investor-data-table--compact"
             columns={projectsProgrammeColumns}
             dataSource={projectsTableRows}
             loading={projectsListLoading}
@@ -2377,6 +2096,7 @@ function InvestorAdministration() {
           </div>
           <Table
             {...ADMIN_DATA_TABLE_PROPS}
+            className="admin-investor-data-table admin-investor-data-table--compact"
             columns={perfColumns}
             dataSource={perfRows}
             loading={projectsPerformanceLoading}
@@ -2419,54 +2139,23 @@ function InvestorAdministration() {
     [adminProjectsList]
   );
 
+  /** Preview only — the API computes the real capital_amount server-side. */
   const createInvestmentCapitalAmount = useMemo(() => {
     const pid = Number(createInvestmentProjectId);
     if (!Number.isFinite(pid)) return null;
     const p = (adminProjectsList?.results || []).find((x) => Number(x.id) === pid);
     if (!p) return null;
-    const tgt = Number(p.investor_funding_target ?? 0);
-    if (Number.isFinite(tgt) && tgt > 0) return tgt;
     const total = Number(p.total_project_cost ?? 0);
-    const client = Number(p.client_contribution ?? 0);
-    const computed = total - client;
-    return Number.isFinite(computed) && computed > 0 ? computed : null;
-  }, [adminProjectsList, createInvestmentProjectId]);
-
-  const createProjectPrincipalAmount = useMemo(() => {
-    const total = Number(createProjectTotalCost ?? 0);
-    const client = Number(createProjectClientContribution ?? 0);
-    const computed = total - client;
-    if (!Number.isFinite(computed)) return 0;
-    return Math.max(0, computed);
-  }, [createProjectTotalCost, createProjectClientContribution]);
-
-  const createInvestmentTotalRepayable = useMemo(() => {
-    const cap = Number(createInvestmentCapitalAmount ?? 0);
-    const pct = Number(createInvestmentInterestPercent ?? 0);
-    if (!Number.isFinite(cap) || cap <= 0) return null;
-    if (!Number.isFinite(pct) || pct < 0) return null;
-    return cap * (1 + pct / 100);
-  }, [createInvestmentCapitalAmount, createInvestmentInterestPercent]);
-
-  const investmentIdSelectOptions = useMemo(
-    () =>
-      (adminInvestmentsList?.results || []).map((inv) => ({
-        value: inv.id,
-        label: `#${inv.id} ${inv.investor_name} → ${inv.project_name}`,
-      })),
-    [adminInvestmentsList]
-  );
-
-  const payoutScheduleSelectOptions = useMemo(
-    () =>
-      payoutSchedules.map((s) => ({
-        value: s.id,
-        label: `${s.label || `ID ${s.id}`} · due ${s.due_date} · rem ${ngnCompact(
-          Number(s.amount_remaining ?? s.amount_due_investor_share ?? s.amount_due ?? 0)
-        )}`,
-      })),
-    [payoutSchedules]
-  );
+    const clientEntered = Number(createInvestmentClientContribution);
+    const client = Number.isFinite(clientEntered) ? clientEntered : Number(p.client_contribution ?? 0);
+    if (Number.isFinite(total) && total > 0)
+    {
+      const computed = total - (Number.isFinite(client) ? client : 0);
+      if (Number.isFinite(computed) && computed > 0) return computed;
+    }
+    const tgt = Number(p.investor_funding_target ?? 0);
+    return Number.isFinite(tgt) && tgt > 0 ? tgt : null;
+  }, [adminProjectsList, createInvestmentProjectId, createInvestmentClientContribution]);
 
   const customerScheduleSelectOptions = useMemo(() => {
     const results = customerSchedules?.results || [];
@@ -2514,44 +2203,39 @@ function InvestorAdministration() {
   const investmentsListColumns = useMemo(
     () => [
       // (ID column removed as instructed)
-      {
+      adminColPct(28, {
         title: "Investor",
         dataIndex: "investorName",
         key: "investorName",
         ellipsis: true,
-        ...adminTableFlexCol,
-      },
-      { title: "Project", dataIndex: "projectName", key: "projectName", ellipsis: true, ...adminTableFlexCol },
-      {
+      }),
+      adminColPct(24, { title: "Project", dataIndex: "projectName", key: "projectName", ellipsis: true }),
+      adminColPct(14, {
         title: "Capital",
         dataIndex: "capital",
         key: "capital",
-        width: 96,
         align: "right",
         render: (v) => <span className="admin-table-nowrap">{ngnCompact(Number(v))}</span>,
-      },
-      {
+      }),
+      adminColPct(13, {
         title: "Score",
         key: "score",
-        width: 96,
         render: (_, row) => (
           <div className="admin-investor-score-cell">
             <div className="admin-investor-score-main">{row.scoreMain}</div>
             <div className="admin-investor-score-sub">{row.scoreSub}</div>
           </div>
         ),
-      },
-      {
+      }),
+      adminColPct(9, {
         title: "Plan",
         dataIndex: "planLabel",
         key: "planLabel",
-        width: 80,
         render: (v) => <Tag className="admin-investor-pill">{v}</Tag>,
-      },
-      {
+      }),
+      adminColPct(12, {
         title: "Actions",
         key: "actions",
-        width: 88,
         render: (_, record) => (
           <Dropdown
             menu={{
@@ -2572,7 +2256,7 @@ function InvestorAdministration() {
             </Button>
           </Dropdown>
         ),
-      },
+      }),
     ],
     [handleDeactivateInvestment, handleViewInvestment]
   );
@@ -2627,8 +2311,17 @@ function InvestorAdministration() {
         key: "amount",
         align: "right",
         render: (v) => <span className="admin-table-nowrap">{ngnCompact(Number(v))}</span>,
+        onHeaderCell: () => ({ className: "admin-table-col-gap-r" }),
+        onCell: () => ({ className: "admin-table-col-gap-r" }),
       }),
-      adminColPct(10, { title: "date", dataIndex: "paymentDate", key: "paymentDate" }),
+      adminColPct(10, {
+        title: "date",
+        dataIndex: "paymentDate",
+        key: "paymentDate",
+        render: (v) => <span className="admin-table-nowrap">{v}</span>,
+        onHeaderCell: () => ({ className: "admin-table-col-gap-l" }),
+        onCell: () => ({ className: "admin-table-col-gap-l" }),
+      }),
       adminColPct(10, { title: "Method", dataIndex: "method", key: "method", ellipsis: true }),
       adminColPct(13, { title: "Reference", dataIndex: "reference", key: "reference", ellipsis: true }),
       adminColPct(10, {
@@ -2700,109 +2393,14 @@ function InvestorAdministration() {
     [handleDeactivateCustomerPayment, handleViewCustomerPayment, openCustomerRepayment]
   );
 
-  const investorRepaymentsReceivedRows = useMemo(() => {
-    const results = adminInvestorPayoutsList?.results || [];
-    const q = payoutSearch.trim().toLowerCase();
-    let next = results;
-    if (q)
-    {
-      next = results.filter(
-        (r) =>
-          String(r.id).includes(q) ||
-          String(r.investment_id || "").includes(q) ||
-          String(r.schedule_id || "").includes(q) ||
-          r.reference?.toLowerCase().includes(q) ||
-          r.investor_name?.toLowerCase().includes(q) ||
-          r.project?.name?.toLowerCase().includes(q)
-      );
-    }
-    return next.map((r) => ({
-      key: String(r.id),
-      id: r.id,
-      when: r.paid_date ? dayjs(r.paid_date).format("DD MMM YYYY") : "—",
-      investor: r.investor_name || "—",
-      investment: formatInvestmentRef(r.investment_id),
-      amount: ngnCompact(Number(r.amount_paid)),
-      status: "Paid",
-      investmentId: r.investment_id,
-      projectName: r.project?.name,
-      investorName: r.investor_name,
-      reference: r.reference,
-      repaymentScoreLabel: r.repayment_score?.label,
-    }));
-  }, [adminInvestorPayoutsList, payoutSearch]);
-
-  const investorRepaymentsReceivedColumns = useMemo(
-    () => [
-      adminColPct(10, { title: "date", dataIndex: "when", key: "date" }),
-      adminColPct(19, { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true }),
-      adminColPct(9, {
-        title: "Investment no.",
-        dataIndex: "investment",
-        key: "investment",
-        align: "center",
-        render: renderInvestmentRefCell,
-      }),
-      adminColPct(11, { title: "Amount", dataIndex: "amount", key: "amount", align: "right" }),
-      adminColPct(11, {
-        title: "Progress",
-        dataIndex: "repaymentScoreLabel",
-        key: "repaymentScoreLabel",
-        ellipsis: true,
-        render: (v) => v || "—",
-      }),
-      adminColPct(9, {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        render: (v) => (
-          <Tag color="green" className="admin-investor-pill">
-            {v}
-          </Tag>
-        ),
-      }),
-      adminColPct(10, {
-        title: "Schedule",
-        key: "view",
-        onHeaderCell: () => ({ className: "admin-table-col-action" }),
-        onCell: () => ({ className: "admin-table-col-action" }),
-        render: (_, record) => (
-          <Button size="small" className="admin-investor-action-btn" onClick={() => openInvestorPayment(record)}>
-            View
-          </Button>
-        ),
-      }),
-      adminActionCol(21, {
-        title: "Actions",
-        key: "actions",
-        render: (_, record) => (
-          <Dropdown
-            menu={{
-              items: [
-                { key: "view", label: "View", onClick: () => handleViewPayout(record.id) },
-                {
-                  key: "deactivate",
-                  label: "Deactivate",
-                  danger: true,
-                  onClick: () => handleDeactivatePayout(record),
-                },
-              ],
-            }}
-            trigger={["click"]}
-          >
-            <Button size="small" className="admin-investor-action-btn">
-              Actions ▾
-            </Button>
-          </Dropdown>
-        ),
-      }),
-    ],
-    [handleDeactivatePayout, handleViewPayout, openInvestorPayment]
-  );
-
   const upcomingCustomerPaymentColumns = useMemo(
     () => [
-      adminColPct(12, { title: "date", dataIndex: "when", key: "date" }),
+      adminColPct(12, {
+        title: "date",
+        dataIndex: "when",
+        key: "date",
+        render: (v) => <span className="admin-table-nowrap">{v}</span>,
+      }),
       adminColPct(22, { title: "Project", dataIndex: "branch", key: "branch", ellipsis: true }),
       adminColPct(16, { title: "Line", dataIndex: "lineLabel", key: "lineLabel", ellipsis: true }),
       adminColPct(12, { title: "Amount", dataIndex: "amount", key: "amount", align: "right" }),
@@ -2849,61 +2447,6 @@ function InvestorAdministration() {
     [openCustomerRepayment]
   );
 
-  const upcomingInvestorRepaymentColumns = useMemo(
-    () => [
-      adminColPct(12, { title: "date", dataIndex: "due", key: "due" }),
-      adminColPct(21, { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true }),
-      adminColPct(9, {
-        title: "Investment no.",
-        dataIndex: "investment",
-        key: "investment",
-        align: "center",
-        render: renderInvestmentRefCell,
-      }),
-      adminColPct(13, { title: "Due amount", dataIndex: "dueAmount", key: "dueAmount", align: "right" }),
-      adminColPct(11, {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        render: (v) => (
-          <Tag
-            color={
-              String(v).toLowerCase().includes("missed")
-                ? "red"
-                : String(v).toLowerCase() === "scheduled"
-                  ? "blue"
-                  : "green"
-            }
-            className="admin-investor-pill"
-          >
-            {v}
-          </Tag>
-        ),
-      }),
-      adminColPct(11, {
-        title: "Schedule",
-        key: "viewsched",
-        onHeaderCell: () => ({ className: "admin-table-col-action" }),
-        onCell: () => ({ className: "admin-table-col-action" }),
-        render: (_, record) => (
-          <Button size="small" className="admin-investor-action-btn" onClick={() => openInvestorPayment(record)}>
-            View
-          </Button>
-        ),
-      }),
-      adminActionCol(23, {
-        title: "Action",
-        key: "action",
-        render: () => (
-          <Button size="small" type="primary" className="admin-investor-action-btn" onClick={() => setActiveModal(MODAL.POST_PAYOUT)}>
-            Post payout
-          </Button>
-        ),
-      }),
-    ],
-    [openInvestorPayment]
-  );
-
   const upcomingCustomerPaymentRows = useMemo(() => {
     const results = customerSchedules?.results || [];
     const today = dayjs().startOf("day");
@@ -2929,30 +2472,6 @@ function InvestorAdministration() {
         reference: r.label,
       }));
   }, [customerSchedules]);
-
-  const upcomingInvestorRepaymentRows = useMemo(() => {
-    const results = investorSchedulesList?.results || [];
-    const today = dayjs().startOf("day");
-    return results
-      .filter((r) => {
-        const st = String(r.status || "").toLowerCase();
-        if (st !== "scheduled") return false;
-        return !dayjs(r.due_date).startOf("day").isBefore(today);
-      })
-      .sort((a, b) => dayjs(a.due_date).valueOf() - dayjs(b.due_date).valueOf())
-      .map((r) => ({
-        key: String(r.id),
-        due: dayjs(r.due_date).format("DD MMM YYYY"),
-        investor: r.investor_name || "—",
-        investment: formatInvestmentRef(r.investment_id),
-        dueAmount: ngnCompact(Number(r.amount_due_investor_share ?? r.amount_due_total)),
-        status: r.status,
-        investmentId: r.investment_id,
-        projectName: r.project_name,
-        investorName: r.investor_name,
-        reference: r.label,
-      }));
-  }, [investorSchedulesList]);
 
   const customerScheduleModalRows = useMemo(() => {
     const results = customerSchedules?.results || [];
@@ -2981,32 +2500,6 @@ function InvestorAdministration() {
     }
     return mockCustomerRepaymentSchedule;
   }, [activePaymentMeta, customerSchedules, mockCustomerRepaymentSchedule]);
-
-  const investorScheduleModalRows = useMemo(() => {
-    const results = investorSchedulesList?.results || [];
-    const invId = activePaymentMeta?.investmentId;
-    if (activePaymentMeta?.type !== "investor") return mockInvestorPaymentSchedule;
-    if (invId != null && results.length)
-    {
-      const lines = results
-        .filter((r) => r.investment_id === invId || String(r.investment_id) === String(invId))
-        .sort((a, b) => (a.installment_number || 0) - (b.installment_number || 0));
-      if (lines.length)
-      {
-        return lines.map((r) => ({
-          key: String(r.id),
-          idx: r.installment_number,
-          due: r.due_date ? dayjs(r.due_date).format("DD MMM YYYY") : "—",
-          dueAmount: ngnCompact(Number(r.amount_due_investor_share ?? r.amount_due_total)),
-          paid: Number(r.amount_paid) > 0 ? ngnCompact(Number(r.amount_paid)) : "—",
-          left: ngnCompact(Number(r.amount_remaining)),
-          status: r.status,
-        }));
-      }
-      return [];
-    }
-    return mockInvestorPaymentSchedule;
-  }, [activePaymentMeta, investorSchedulesList, mockInvestorPaymentSchedule]);
 
   const paymentsTabPanel = useMemo(
     () => (
@@ -3038,31 +2531,6 @@ function InvestorAdministration() {
 
         <Card bordered={false} className="admin-investor-panel">
           <div className="admin-investor-panel-head admin-investor-panel-head--plain">
-            <span>Investor repayments received</span>
-            <Space>
-              <Search
-                placeholder="Search project, investment, reference…"
-                allowClear
-                style={{ width: 280 }}
-                value={payoutSearch}
-                onChange={(e) => setPayoutSearch(e.target.value)}
-              />
-              <Button type="primary" onClick={() => setActiveModal(MODAL.POST_PAYOUT)}>
-                Post payout
-              </Button>
-            </Space>
-          </div>
-          <Table
-            {...ADMIN_DATA_TABLE_PROPS}
-            columns={investorRepaymentsReceivedColumns}
-            dataSource={investorRepaymentsReceivedRows}
-            loading={payoutsListLoading}
-            rowKey="key"
-          />
-        </Card>
-
-        <Card bordered={false} className="admin-investor-panel">
-          <div className="admin-investor-panel-head admin-investor-panel-head--plain">
             <span>Upcoming customer payments</span>
             <Button size="small" className="admin-investor-filter-btn">
               Scheduled ▾
@@ -3076,41 +2544,16 @@ function InvestorAdministration() {
             rowKey="key"
           />
         </Card>
-
-        <Card bordered={false} className="admin-investor-panel">
-          <div className="admin-investor-panel-head admin-investor-panel-head--plain">
-            <span>Upcoming investor repayments</span>
-            <Button size="small" className="admin-investor-filter-btn">
-              Scheduled ▾
-            </Button>
-          </div>
-          <Table
-            {...ADMIN_DATA_TABLE_PROPS}
-            columns={upcomingInvestorRepaymentColumns}
-            dataSource={upcomingInvestorRepaymentRows}
-            loading={investorSchedulesLoading}
-            rowKey="key"
-          />
-        </Card>
       </div>
     ),
     [
       customerPaymentSearch,
-      payoutSearch,
       customerPaymentsListColumns,
       customerPaymentsListRows,
       customerPaymentsListLoading,
-      openCustomerRepayment,
-      openInvestorPayment,
       upcomingCustomerPaymentColumns,
-      upcomingInvestorRepaymentColumns,
-      investorRepaymentsReceivedColumns,
-      investorRepaymentsReceivedRows,
-      payoutsListLoading,
       upcomingCustomerPaymentRows,
       customerSchedulesLoading,
-      upcomingInvestorRepaymentRows,
-      investorSchedulesLoading,
     ]
   );
 
@@ -3197,8 +2640,22 @@ function InvestorAdministration() {
                 },
               }),
               adminColPct(8, { title: "Priority", dataIndex: "priority", key: "priority" }),
-              adminColPct(12, { title: "Created", dataIndex: "created", key: "created" }),
-              adminColPct(12, { title: "Updated", dataIndex: "updated", key: "updated" }),
+              adminColPct(12, {
+                title: "Created",
+                dataIndex: "created",
+                key: "created",
+                render: (v) => <span className="admin-table-nowrap">{v}</span>,
+                onHeaderCell: () => ({ className: "admin-table-col-gap-r" }),
+                onCell: () => ({ className: "admin-table-col-gap-r" }),
+              }),
+              adminColPct(12, {
+                title: "Updated",
+                dataIndex: "updated",
+                key: "updated",
+                render: (v) => <span className="admin-table-nowrap">{v}</span>,
+                onHeaderCell: () => ({ className: "admin-table-col-gap-l" }),
+                onCell: () => ({ className: "admin-table-col-gap-l" }),
+              }),
               adminActionCol(18, {
                 title: "Respond",
                 key: "respond",
@@ -3288,9 +2745,6 @@ function InvestorAdministration() {
           <Button className="admin-investor-cta" onClick={() => setActiveModal(MODAL.RECORD_PAYMENT)}>
             Record customer payment
           </Button>
-          <Button className="admin-investor-cta" onClick={() => setActiveModal(MODAL.POST_PAYOUT)}>
-            Post investor payout
-          </Button>
         </Space>
       </div>
 
@@ -3323,6 +2777,7 @@ function InvestorAdministration() {
                   >
                     <Table
                       {...ADMIN_DATA_TABLE_PROPS}
+                      className="admin-investor-data-table admin-investor-data-table--compact"
                       columns={customerRepaymentColumns}
                       dataSource={overviewCustomerRepaymentRows}
                       loading={customerPaymentsListLoading}
@@ -3330,30 +2785,6 @@ function InvestorAdministration() {
                     />
                     <Text type="secondary" className="admin-investor-footnote">
                       Recent customer payments. See Payments for search and recording.
-                    </Text>
-                  </Card>
-
-                  <Card
-                    bordered={false}
-                    className="admin-investor-panel"
-                    title={
-                      <div className="admin-investor-panel-head">
-                        <span>Investors disbursement</span>
-                        <Button size="small" className="admin-investor-filter-btn">
-                          Upcoming ▾
-                        </Button>
-                      </div>
-                    }
-                  >
-                    <Table
-                      {...ADMIN_DATA_TABLE_PROPS}
-                      columns={disbursementColumns}
-                      dataSource={overviewDisbursementRows}
-                      loading={investorSchedulesLoading}
-                      rowKey="key"
-                    />
-                    <Text type="secondary" className="admin-investor-footnote">
-                      Upcoming disbursements by due date.
                     </Text>
                   </Card>
 
@@ -3379,6 +2810,7 @@ function InvestorAdministration() {
                   >
                     <Table
                       {...ADMIN_DATA_TABLE_PROPS}
+                      className="admin-investor-data-table admin-investor-data-table--compact"
                       columns={perfColumns}
                       dataSource={overviewPerfRows}
                       loading={projectsPerformanceLoading}
@@ -3395,33 +2827,8 @@ function InvestorAdministration() {
                     </div>
                     <Table
                       {...ADMIN_DATA_TABLE_PROPS}
-                      columns={[
-                        { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true, ...adminTableFlexCol },
-                        { title: "Ref", dataIndex: "ref", key: "ref", width: 88 },
-                        { title: "Capital", dataIndex: "capital", key: "capital", width: 96, align: "right" },
-                        { title: "Interest %", dataIndex: "interest", key: "interest", width: 88, align: "right" },
-                        { title: "Paid YTD", dataIndex: "paid", key: "paid", width: 96, align: "right" },
-                        {
-                          title: "Health",
-                          dataIndex: "health",
-                          key: "health",
-                          width: 96,
-                          render: (v) => (
-                            <Tag
-                              color={
-                                String(v).toLowerCase().includes("overdue")
-                                  ? "red"
-                                  : String(v).toLowerCase().includes("kyc")
-                                    ? "gold"
-                                    : "green"
-                              }
-                              className="admin-investor-pill"
-                            >
-                              {v}
-                            </Tag>
-                          ),
-                        },
-                      ]}
+                      className="admin-investor-data-table admin-investor-data-table--compact"
+                      columns={financeByInvestorColumns}
                       dataSource={overviewFinanceByInvestorRows}
                       loading={financeByInvestorLoading}
                       rowKey="key"
@@ -3435,7 +2842,7 @@ function InvestorAdministration() {
             },
             {
               key: "investors",
-              label: "Investments & Investors",
+              label: "Investors",
               children: (
                 <div className="admin-investor-stack">
                   <Card bordered={false} className="admin-investor-panel">
@@ -3456,6 +2863,7 @@ function InvestorAdministration() {
                     </div>
                     <Table
                       {...ADMIN_DATA_TABLE_PROPS}
+                      className="admin-investor-data-table admin-investor-data-table--compact"
                       columns={investorsColumns}
                       dataSource={investorsTableRows}
                       loading={listLoading}
@@ -3472,50 +2880,24 @@ function InvestorAdministration() {
                     </div>
                     <Table
                       {...ADMIN_DATA_TABLE_PROPS}
-                      columns={[
-                        { title: "Investor", dataIndex: "investor", key: "investor", ellipsis: true, ...adminTableFlexCol },
-                        { title: "Ref", dataIndex: "ref", key: "ref", width: 88 },
-                        { title: "Capital", dataIndex: "capital", key: "capital", width: 96, align: "right" },
-                        { title: "Interest %", dataIndex: "interest", key: "interest", width: 88, align: "right" },
-                        { title: "Paid YTD", dataIndex: "paid", key: "paid", width: 96, align: "right" },
-                        {
-                          title: "Health",
-                          dataIndex: "health",
-                          key: "health",
-                          width: 96,
-                          render: (v) => (
-                            <Tag
-                              color={
-                                String(v).toLowerCase().includes("overdue")
-                                  ? "red"
-                                  : String(v).toLowerCase().includes("kyc")
-                                    ? "gold"
-                                    : "green"
-                              }
-                              className="admin-investor-pill"
-                            >
-                              {v}
-                            </Tag>
-                          ),
-                        },
-                      ]}
+                      className="admin-investor-data-table admin-investor-data-table--compact"
+                      columns={financeByInvestorColumns}
                       loading={financeByInvestorLoading}
-                      dataSource={(financeByInvestorList?.results || []).map((r) => ({
-                        key: String(r.id),
-                        investor: r.legal_name,
-                        ref: r.investor_ref,
-                        capital: ngnCompact(Number(r.capital_deployed)),
-                        interest: ngnCompact(Number(r.interest_flat_amount)),
-                        paid: ngnCompact(Number(r.paid_to_investor_ytd)),
-                        health: r.health,
-                      }))}
+                      dataSource={overviewFinanceByInvestorRows}
                       rowKey="key"
                     />
                     <Text type="secondary" className="admin-investor-footnote">
-                      Same finance columns as Overview; project-level detail stays in the Investments table below.
+                      Same finance columns as Overview; project-level detail stays in the Investments tab.
                     </Text>
                   </Card>
-
+                </div>
+              ),
+            },
+            {
+              key: "investments",
+              label: "Investments",
+              children: (
+                <div className="admin-investor-stack">
                   <Card bordered={false} className="admin-investor-panel">
                     <div className="admin-investor-panel-head admin-investor-panel-head--plain">
                       <span>Investments</span>
@@ -3534,6 +2916,7 @@ function InvestorAdministration() {
                     </div>
                     <Table
                       {...ADMIN_DATA_TABLE_PROPS}
+                      className="admin-investor-data-table admin-investor-data-table--compact"
                       columns={investmentsListColumns}
                       dataSource={investmentsListRows}
                       loading={investmentsListLoading}
@@ -3682,61 +3065,6 @@ function InvestorAdministration() {
             { title: "#", dataIndex: "idx", width: 60 },
             { title: "Due date", dataIndex: "due", width: 140 },
             { title: "Due amount", dataIndex: "dueAmount", width: 140 },
-            { title: "Paid", dataIndex: "paid", width: 140 },
-            { title: "Remaining", dataIndex: "left", width: 120 },
-            {
-              title: "Status",
-              dataIndex: "status",
-              width: 140,
-              render: (v) => (
-                <Tag
-                  color={String(v).toLowerCase() === "paid" ? "green" : String(v).toLowerCase() === "scheduled" ? "gold" : "blue"}
-                  className="admin-investor-pill"
-                >
-                  {v}
-                </Tag>
-              ),
-            },
-          ]}
-        />
-      </Modal>
-
-      <Modal
-        open={investorPaymentOpen}
-        onCancel={closePaymentModal}
-        title={activePaymentMeta?.title || "Investor payment"}
-        width={860}
-        className="admin-investor-modal"
-        destroyOnClose
-        footer={[
-          <Button key="action" type="primary" className="admin-investor-cta" onClick={() => setActiveModal(MODAL.POST_PAYOUT)}>
-            {activePaymentMeta?.actionLabel || "Post investor payout"}
-          </Button>,
-          <Button key="close" onClick={closePaymentModal}>
-            Close
-          </Button>,
-        ]}
-      >
-        <Text type="secondary" style={{ display: "block", marginTop: -6 }}>
-          {activePaymentMeta?.subtitle || "—"}
-        </Text>
-        <Divider className="admin-modal-divider" />
-        <div className="admin-investor-payment-head">
-          <Text className="admin-investor-payment-head-title">Investor payment</Text>
-          <Space size={10}>
-            <Text type="secondary">{activePaymentMeta?.ref}</Text>
-          </Space>
-        </div>
-        <Table
-          {...ADMIN_DATA_TABLE_PROPS}
-          rowKey="key"
-          loading={investorSchedulesLoading && activePaymentMeta?.type === "investor"}
-          pagination={{ pageSize: 10, showSizeChanger: false }}
-          dataSource={investorScheduleModalRows}
-          columns={[
-            { title: "#", dataIndex: "idx", width: 60 },
-            { title: "Due date", dataIndex: "due", width: 140 },
-            { title: "Due (investor)", dataIndex: "dueAmount", width: 140 },
             { title: "Paid", dataIndex: "paid", width: 140 },
             { title: "Remaining", dataIndex: "left", width: 120 },
             {
@@ -3989,7 +3317,7 @@ function InvestorAdministration() {
         open={activeModal === MODAL.CREATE_PROJECT}
         onCancel={closeModal}
         title="Create project"
-        width={820}
+        width={680}
         className="admin-investor-modal"
         destroyOnClose
         footer={[
@@ -4001,184 +3329,145 @@ function InvestorAdministration() {
           </Button>,
         ]}
       >
-        <Text type="secondary" className="admin-modal-subtitle">
-          Enter project details and customer repayment plan.
-        </Text>
         <Form
           form={projectForm}
           layout="vertical"
           className="admin-modal-form"
+          requiredMark={(label, { required }) =>
+            required ? (
+              <>
+                {label}
+                <span className="admin-modal-required-mark">*</span>
+              </>
+            ) : (
+              label
+            )
+          }
           initialValues={{
             projectType: "solar",
-            status: "funding",
-            systemCapacityKwp: 0,
-            clientContribution: 0,
+            systemCapacityKwp: undefined,
             totalProjectCost: undefined,
-            cost_items: [],
-            crPlanType: "monthly",
-            crGracePeriodDays: 0,
-            crInterestRatePa: undefined,
+            cost_items: [{ category: "materials", label: "", amount: undefined, notes: "" }],
           }}
         >
+          <div className="admin-modal-section-heading-row admin-modal-section-heading-row--first">
+            <span className="admin-modal-section-heading">Basics</span>
+          </div>
           <div className="admin-modal-grid">
             <Form.Item name="projectName" label="Project name" rules={[{ required: true, message: "Required" }]}>
               <Input placeholder="e.g. Access Ayobo 2" />
             </Form.Item>
-            <Form.Item name="branchId" label="Branch (optional ID)">
-              <Input placeholder="Nullable (link later)" />
+            <Form.Item
+              name="branchId"
+              label={
+                <>
+                  Branch
+                  <span className="admin-modal-label-hint">(optional ID)</span>
+                </>
+              }
+            >
+              <Input placeholder="Nullable — link later" />
             </Form.Item>
 
             <Form.Item name="projectType" label="Project type">
               <Select options={PROJECT_TYPE_OPTIONS} />
             </Form.Item>
-            <Form.Item name="status" label="Status">
-              <Select options={PROJECT_STATUS_OPTIONS} />
-            </Form.Item>
-
-            <Form.Item name="locationLabel" label="Location label">
-              <Input placeholder="e.g. Lagos" />
-            </Form.Item>
             <Form.Item name="systemCapacityKwp" label="System capacity (kWp)">
-              <InputNumber min={0} step={0.0001} style={{ width: "100%" }} />
+              <InputNumber min={0} step={0.0001} style={{ width: "100%" }} placeholder="0.0000" />
             </Form.Item>
+          </div>
 
+          <div className="admin-modal-section-heading-row">
+            <span className="admin-modal-section-heading">Cost</span>
+          </div>
+          <div className="admin-modal-grid">
             <Form.Item
               name="totalProjectCost"
               label="Total project cost (₦)"
+              className="admin-modal-wide"
               rules={[{ required: true, message: "Required" }]}
             >
-              <InputNumber min={0} style={{ width: "100%" }} placeholder="e.g. 50000000000" />
-            </Form.Item>
-            <Form.Item name="clientContribution" label="Client contribution (₦)">
-              <InputNumber min={0} style={{ width: "100%" }} />
-            </Form.Item>
-
-            <Form.Item
-              name="installationDate"
-              label="Installation date"
-              rules={[{ required: true, message: "Required" }]}
-            >
-              <AdminDatePicker disablePast style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
-            </Form.Item>
-            <Form.Item
-              name="crProjectDurationMonths"
-              label="Project duration (months)"
-              rules={[{ required: true, message: "Required" }]}
-            >
-              <InputNumber min={1} step={1} style={{ width: "100%" }} placeholder="e.g. 36" />
+              <InputNumber
+                min={0}
+                style={{ width: "100%" }}
+                placeholder="e.g. 50,000,000"
+                formatter={(value) =>
+                  value === undefined || value === null || value === "" ? "" : `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                }
+                parser={(value) => (value ? value.replace(/,/g, "") : "")}
+              />
             </Form.Item>
             <Form.Item name="description" label="Description" className="admin-modal-wide">
               <Input.TextArea rows={3} placeholder="Optional" />
             </Form.Item>
           </div>
 
+          <div className="admin-modal-section-heading-row">
+            <span className="admin-modal-section-heading">Cost breakdown</span>
+            {showProjectCostBreakdown && (
+              <Button type="link" className="admin-modal-link-action" onClick={hideProjectCostBreakdown}>
+                Remove section
+              </Button>
+            )}
+          </div>
+
           {!showProjectCostBreakdown ? (
-            <Button
-              type="dashed"
-              block
-              icon={<PlusOutlined />}
-              onClick={openProjectCostBreakdown}
-              style={{ marginBottom: 8 }}
-            >
+            <Button type="dashed" block icon={<PlusOutlined />} onClick={openProjectCostBreakdown}>
               Add cost breakdown (optional)
             </Button>
           ) : (
-            <>
-              <Divider className="admin-modal-divider" />
-              <div
-                className="admin-modal-section-title"
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}
-              >
-                <span>Cost breakdown</span>
-                <Button type="link" size="small" onClick={hideProjectCostBreakdown} style={{ padding: 0 }}>
-                  Remove
-                </Button>
-              </div>
-              <Text type="secondary" className="admin-modal-section-sub">
-                Optional. Empty rows are ignored; remove this section to submit with an empty list.
-              </Text>
-
-              <Form.List name="cost_items">
-                {(fields, { add, remove }) => (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {fields.map(({ key, name, ...restField }) => (
-                      <Space key={key} align="baseline" wrap style={{ marginBottom: 8 }}>
-                        <Form.Item {...restField} name={[name, "category"]}>
+            <Form.List name="cost_items">
+              {(fields, { add, remove }) => (
+                <div className="admin-modal-cost-items">
+                  {fields.map(({ key, name, ...restField }) => (
+                    <div key={key} className="admin-modal-cost-item-row">
+                      <div className="admin-modal-cost-item-fields">
+                        <Form.Item
+                          {...restField}
+                          name={[name, "category"]}
+                          className="admin-modal-cost-item-category"
+                        >
                           <Select
-                            style={{ width: 160 }}
                             placeholder="Category"
-                            allowClear
                             options={[
-                              { value: "materials", label: "materials" },
-                              { value: "labor", label: "labor" },
-                              { value: "logistics", label: "logistics" },
-                              { value: "services", label: "services" },
-                              { value: "other", label: "other" },
+                              { value: "materials", label: "Materials" },
+                              { value: "labor", label: "Labor" },
+                              { value: "logistics", label: "Logistics" },
+                              { value: "services", label: "Services" },
+                              { value: "other", label: "Other" },
                             ]}
                           />
                         </Form.Item>
-                        <Form.Item {...restField} name={[name, "label"]}>
-                          <Input style={{ width: 220 }} placeholder="e.g. PV modules" />
+                        <Form.Item {...restField} name={[name, "label"]} className="admin-modal-cost-item-label">
+                          <Input placeholder="e.g. PV modules" />
                         </Form.Item>
-                        <Form.Item {...restField} name={[name, "amount"]}>
-                          <InputNumber min={0} style={{ width: 180 }} placeholder="Amount ₦" />
+                        <Form.Item {...restField} name={[name, "amount"]} className="admin-modal-cost-item-amount">
+                          <InputNumber min={0} style={{ width: "100%" }} placeholder="Amount ₦" />
                         </Form.Item>
-                        <Form.Item {...restField} name={[name, "notes"]}>
-                          <Input style={{ width: 220 }} placeholder="Notes (optional)" />
-                        </Form.Item>
-                        <MinusCircleOutlined
-                          onClick={() => remove(name)}
-                          style={{ color: "#ff4d4f", cursor: "pointer" }}
-                        />
-                      </Space>
-                    ))}
-                    <Button
-                      type="dashed"
-                      onClick={() => add({ category: "materials", label: "", amount: undefined, notes: "" })}
-                      block
-                      icon={<PlusOutlined />}
-                    >
-                      Add cost item
-                    </Button>
-                  </div>
-                )}
-              </Form.List>
-            </>
+                        {fields.length > 1 && (
+                          <MinusCircleOutlined
+                            className="admin-modal-cost-item-remove"
+                            onClick={() => remove(name)}
+                          />
+                        )}
+                      </div>
+                      <Form.Item {...restField} name={[name, "notes"]}>
+                        <Input placeholder="Notes (optional)" />
+                      </Form.Item>
+                    </div>
+                  ))}
+                  <Button
+                    type="dashed"
+                    block
+                    className="admin-modal-add-item-btn"
+                    onClick={() => add({ category: "materials", label: "", amount: undefined, notes: "" })}
+                  >
+                    + Add cost item
+                  </Button>
+                </div>
+              )}
+            </Form.List>
           )}
-
-          <Divider className="admin-modal-divider" />
-          <div className="admin-modal-section-title">Customer repayment plan</div>
-          <Text type="secondary" className="admin-modal-section-sub">
-            Principal amount is computed as total project cost − client contribution.
-          </Text>
-
-          <div className="admin-modal-grid">
-            <Form.Item name="crPlanType" label="Plan type" rules={[{ required: true, message: "Required" }]}>
-              <Select options={REPAYMENT_PLAN_TYPE_OPTIONS} />
-            </Form.Item>
-            <Form.Item name="crFirstDueDate" label="First due date" rules={[{ required: true, message: "Required" }]}>
-              <AdminDatePicker disablePast style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
-            </Form.Item>
-
-            <Form.Item label="Principal amount (₦)">
-              <InputNumber disabled value={createProjectPrincipalAmount} style={{ width: "100%" }} />
-            </Form.Item>
-
-            <Form.Item
-              name="crInterestRatePa"
-              label="Interest rate % p.a."
-              rules={[{ required: true, message: "Required" }]}
-            >
-              <InputNumber min={0} max={100} step={0.1} style={{ width: "100%" }} placeholder="e.g. 12.5" />
-            </Form.Item>
-
-            <Form.Item name="crGracePeriodDays" label="Grace period (days)">
-              <InputNumber min={0} step={1} style={{ width: "100%" }} placeholder="0" />
-            </Form.Item>
-            <Form.Item name="crNotes" label="Plan notes">
-              <Input placeholder="Optional" />
-            </Form.Item>
-          </div>
         </Form>
       </Modal>
 
@@ -4464,7 +3753,7 @@ function InvestorAdministration() {
         open={activeModal === MODAL.CREATE_INVESTMENT}
         onCancel={closeModal}
         title="Create investment"
-        width={860}
+        width={680}
         className="admin-investor-modal"
         destroyOnClose
         footer={[
@@ -4476,21 +3765,29 @@ function InvestorAdministration() {
           </Button>,
         ]}
       >
-        <Text type="secondary" className="admin-modal-subtitle">
-          Link an investor to a project with a repayment plan.
-        </Text>
-        <Text type="secondary" className="admin-modal-section-sub">
-          Installment count follows the project duration and plan type. Set duration on the project before creating the investment.
-        </Text>
         <Form
           form={investmentForm}
           layout="vertical"
           className="admin-modal-form"
+          requiredMark={(label, { required }) =>
+            required ? (
+              <>
+                {label}
+                <span className="admin-modal-required-mark">*</span>
+              </>
+            ) : (
+              label
+            )
+          }
           initialValues={{
+            status: "active",
             planType: "monthly",
             interestBasis: "annual",
           }}
         >
+          <div className="admin-modal-section-heading-row admin-modal-section-heading-row--first">
+            <span className="admin-modal-section-heading">Link</span>
+          </div>
           <div className="admin-modal-grid">
             <Form.Item name="investor_id" label="Investor" rules={[{ required: true, message: "Required" }]}>
               <Select
@@ -4508,71 +3805,80 @@ function InvestorAdministration() {
                 options={projectIdSelectOptions}
               />
             </Form.Item>
-
-            <Form.Item
-              className="admin-modal-wide"
-              label="Capital amount (₦)"
-              extra="Principal from the selected project (investor funding target, or total cost − client contribution)."
-            >
-              <InputNumber
-                disabled
-                value={createInvestmentCapitalAmount ?? undefined}
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
-
-            <Form.Item name="contractStart" label="Contract start date" rules={[{ required: true, message: "Required" }]}>
-              <AdminDatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
-            </Form.Item>
-
-            <Form.Item name="notes" label="Notes" className="admin-modal-wide">
-              <Input.TextArea rows={3} placeholder="Optional" />
-            </Form.Item>
           </div>
 
-          <Divider className="admin-modal-divider" />
-          <div className="admin-modal-section-title">Investor repayment plan</div>
-          <Text type="secondary" className="admin-modal-section-sub">
-            Complete the repayment plan below.
-          </Text>
-
-          <div className="admin-modal-grid">
-            <Form.Item name="planType" label="Plan type" rules={[{ required: true, message: "Required" }]}>
-              <Select options={REPAYMENT_PLAN_TYPE_OPTIONS} />
-            </Form.Item>
-            <Form.Item
-              name="firstDueDate"
-              label="First due date"
-              rules={[{ required: true, message: "Required" }]}
-              extra="Required"
-            >
-              <AdminDatePicker disablePast style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
-            </Form.Item>
-
-            <Form.Item
-              name="interestPercent"
-              label="Interest percent"
-              rules={[{ required: true, message: "Required" }]}
-              extra="Percentage figure; see interest basis below."
-            >
-              <InputNumber min={0} max={100} step={0.0001} style={{ width: "100%" }} placeholder="e.g. 10" />
-            </Form.Item>
-            <Form.Item name="interestBasis" label="Interest basis">
-              <Select options={REPAYMENT_INTEREST_BASIS_OPTIONS} />
-            </Form.Item>
-
-            <Form.Item
-              className="admin-modal-wide"
-              label="Total repayable (₦)"
-              extra="Read-only: capital × (1 + interest percent ÷ 100)."
-            >
-              <InputNumber
-                disabled
-                value={createInvestmentTotalRepayable ?? undefined}
-                style={{ width: "100%" }}
-              />
-            </Form.Item>
+          <div
+            className="admin-modal-section-heading-row admin-modal-section-heading-row--collapsible"
+            onClick={() => setShowInvestmentContractDetails((v) => !v)}
+          >
+            <span className="admin-modal-section-heading">Project &amp; contract details</span>
+            <DownOutlined
+              className={`admin-modal-section-chevron${showInvestmentContractDetails ? "" : " admin-modal-section-chevron--collapsed"}`}
+            />
           </div>
+          {showInvestmentContractDetails && (
+            <div className="admin-modal-grid">
+              <Form.Item
+                name="expectedCommissionDate"
+                label="Expected commission date"
+                rules={[{ required: true, message: "Required" }]}
+              >
+                <AdminDatePicker style={{ width: "100%" }} format="DD/MM/YYYY" placeholder="dd/mm/yyyy" />
+              </Form.Item>
+              <Form.Item name="projectDurationMonths" label="Project duration (months)">
+                <InputNumber min={1} step={1} style={{ width: "100%" }} placeholder="e.g. 36" />
+              </Form.Item>
+
+              <Form.Item name="clientContribution" label="Client contribution (₦)">
+                <InputNumber min={0} style={{ width: "100%" }} placeholder="0" />
+              </Form.Item>
+              <Form.Item name="status" label="Status">
+                <Select options={INVESTMENT_STATUS_OPTIONS} />
+              </Form.Item>
+
+              <Form.Item className="admin-modal-wide" label="Capital amount (₦)">
+                <InputNumber
+                  disabled
+                  value={createInvestmentCapitalAmount ?? undefined}
+                  style={{ width: "100%" }}
+                  placeholder="Auto-filled from the selected project"
+                />
+              </Form.Item>
+            </div>
+          )}
+
+          <div
+            className="admin-modal-section-heading-row admin-modal-section-heading-row--collapsible"
+            onClick={() => setShowInvestmentRepaymentPlan((v) => !v)}
+          >
+            <span className="admin-modal-section-heading">Repayment plan</span>
+            <DownOutlined
+              className={`admin-modal-section-chevron${showInvestmentRepaymentPlan ? "" : " admin-modal-section-chevron--collapsed"}`}
+            />
+          </div>
+          {showInvestmentRepaymentPlan && (
+            <div className="admin-modal-grid">
+              <Form.Item
+                name="planType"
+                label="Plan type"
+                className="admin-modal-wide"
+                rules={[{ required: true, message: "Required" }]}
+              >
+                <Select options={REPAYMENT_PLAN_TYPE_OPTIONS} />
+              </Form.Item>
+
+              <Form.Item
+                name="interestRate"
+                label="Interest rate (%)"
+                rules={[{ required: true, message: "Required" }]}
+              >
+                <InputNumber min={0} max={100} step={0.0001} style={{ width: "100%" }} placeholder="e.g. 10" />
+              </Form.Item>
+              <Form.Item name="interestBasis" label="Interest basis">
+                <Select options={REPAYMENT_INTEREST_BASIS_OPTIONS} />
+              </Form.Item>
+            </div>
+          )}
         </Form>
       </Modal>
 
@@ -5055,225 +4361,6 @@ function InvestorAdministration() {
         )}
       </Modal>
 
-      {/* Post investor payout */}
-      <Modal
-        open={activeModal === MODAL.POST_PAYOUT}
-        onCancel={closeModal}
-        title="Post investor payout"
-        width={900}
-        className="admin-investor-modal"
-        destroyOnClose
-        footer={[
-          <Button key="cancel" onClick={closeModal} disabled={payoutCreateLoading}>
-            Cancel
-          </Button>,
-          <Button key="save" type="primary" loading={payoutCreateLoading} onClick={submitPostPayout}>
-            Save
-          </Button>,
-        ]}
-      >
-        <Text type="secondary" className="admin-modal-subtitle">
-          Select an investment, then add one or more payout lines from its schedule.
-        </Text>
-        <Form
-          form={payoutForm}
-          layout="vertical"
-          className="admin-modal-form"
-          initialValues={{
-            payment_method: "Bank sweep",
-            schedule_ids: [],
-            line_items: [{ schedule_id: undefined, amount_paid: undefined, paid_date: undefined }],
-          }}
-        >
-          <div className="admin-modal-grid">
-            <Form.Item name="investment_id" label="Investment" rules={[{ required: true, message: "Required" }]}>
-              <Select
-                showSearch
-                optionFilterProp="label"
-                placeholder="Select investment"
-                options={investmentIdSelectOptions}
-              />
-            </Form.Item>
-            <Form.Item name="payment_method" label="Payment method" rules={[{ required: true, message: "Required" }]}>
-              <Input placeholder="e.g. Bank sweep" />
-            </Form.Item>
-            <Form.Item name="reference" label="Reference" rules={[{ required: true, message: "Required" }]}>
-              <Input placeholder="e.g. PAYOUT-22020" />
-            </Form.Item>
-          </div>
-
-          {payoutInvestmentId ? (
-            <div style={{ marginBottom: 12 }}>
-              {payoutSchedulesLoading ? (
-                <Spin size="small" />
-              ) : payoutSchedules.length ? (
-                <Text type="secondary">
-                  {payoutSchedules.length} schedule line(s) — select one or more schedules below.
-                </Text>
-              ) : (
-                <Text type="secondary">No schedule rows returned for this investment.</Text>
-              )}
-            </div>
-          ) : null}
-
-          <Divider className="admin-modal-divider" />
-          <div className="admin-modal-section-title">Payment schedules</div>
-
-          <Form.Item
-            name="schedule_ids"
-            label="Payment schedules (select one or more)"
-            extra="Selecting schedules will auto-create line items below."
-          >
-            <Select
-              mode="multiple"
-              allowClear
-              showSearch
-              optionFilterProp="label"
-              placeholder={payoutScheduleSelectOptions.length ? "Select schedules" : "No schedules loaded yet"}
-              options={payoutScheduleSelectOptions}
-              onChange={(ids) => {
-                const uniq = Array.from(new Set((ids || []).map((v) => Number(v)).filter((n) => Number.isFinite(n))));
-                payoutForm.setFieldsValue({
-                  line_items: uniq.length
-                    ? uniq.map((id) => ({ schedule_id: id, amount_paid: undefined, paid_date: undefined }))
-                    : [{ schedule_id: undefined, amount_paid: undefined, paid_date: undefined }],
-                });
-              }}
-            />
-          </Form.Item>
-
-          <Divider className="admin-modal-divider" />
-          <div className="admin-modal-section-title">Line items</div>
-          <Form.List name="line_items">
-            {(fields, { add, remove }) => (
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Space key={key} align="baseline" wrap>
-                    <Form.Item {...restField} name={[name, "schedule_id"]} label={fields.length > 1 ? "Schedule" : undefined}>
-                      {payoutScheduleSelectOptions.length ? (
-                        <Select
-                          disabled={Boolean((payoutForm.getFieldValue("schedule_ids") || []).length)}
-                          allowClear
-                          showSearch
-                          optionFilterProp="label"
-                          placeholder="Schedule"
-                          style={{ minWidth: 280 }}
-                          options={payoutScheduleSelectOptions}
-                        />
-                      ) : (
-                        <InputNumber min={1} step={1} style={{ width: 160 }} placeholder="Schedule ID" />
-                      )}
-                    </Form.Item>
-                    <Form.Item {...restField} name={[name, "amount_paid"]} label={fields.length > 1 ? "Amount ₦" : undefined}>
-                      <InputNumber min={0} style={{ width: 140 }} placeholder="Amount" />
-                    </Form.Item>
-                    <Form.Item {...restField} name={[name, "paid_date"]} label={fields.length > 1 ? "Paid date" : undefined}>
-                      <AdminDatePicker format="DD/MM/YYYY" style={{ width: 160 }} placeholder="Date" />
-                    </Form.Item>
-                    {fields.length > 1 ? (
-                      <MinusCircleOutlined onClick={() => remove(name)} style={{ color: "#ff4d4f", cursor: "pointer" }} />
-                    ) : null}
-                  </Space>
-                ))}
-                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                  Add line item
-                </Button>
-              </div>
-            )}
-          </Form.List>
-        </Form>
-      </Modal>
-
-      <Modal
-        open={payoutDetailOpen}
-        onCancel={closePayoutDetail}
-        title="Investor payout details"
-        width={720}
-        className="admin-investor-modal"
-        footer={
-          payoutEditing
-            ? [
-              <Button
-                key="cancel"
-                onClick={() => {
-                  setPayoutEditing(false);
-                  payoutEditForm.resetFields();
-                }}
-              >
-                Cancel edit
-              </Button>,
-              <Button key="save" type="primary" loading={payoutUpdateLoading} onClick={submitPayoutEdit}>
-                Save changes
-              </Button>,
-            ]
-            : [
-              <Button
-                key="edit"
-                onClick={() => {
-                  if (!payoutDetail) return;
-                  setPayoutEditing(true);
-                  payoutEditForm.setFieldsValue({
-                    amount_paid: Number(payoutDetail.amount_paid),
-                    paid_date: payoutDetail.paid_date ? dayjs(payoutDetail.paid_date) : null,
-                    payment_method: payoutDetail.payment_method,
-                    reference: payoutDetail.reference,
-                  });
-                }}
-              >
-                Edit
-              </Button>,
-              <Button key="close" type="primary" onClick={closePayoutDetail}>
-                Close
-              </Button>,
-            ]
-        }
-        destroyOnClose
-      >
-        {payoutDetailLoading ? (
-          <Text type="secondary">Loading…</Text>
-        ) : payoutDetail ? (
-          <>
-            {!payoutEditing ? (
-              <Descriptions bordered size="small" column={1} className="admin-investor-detail-desc">
-                <Descriptions.Item label="ID">{payoutDetail.id}</Descriptions.Item>
-                <Descriptions.Item label="Investor">{payoutDetail.investor_name || "—"}</Descriptions.Item>
-                <Descriptions.Item label="Investment ID">{payoutDetail.investment_id}</Descriptions.Item>
-                <Descriptions.Item label="Project">{payoutDetail.project?.name || "—"}</Descriptions.Item>
-                <Descriptions.Item label="Schedule ID">{payoutDetail.schedule_id}</Descriptions.Item>
-                <Descriptions.Item label="Amount paid">{ngnCompact(Number(payoutDetail.amount_paid))}</Descriptions.Item>
-                <Descriptions.Item label="Paid date">{payoutDetail.paid_date}</Descriptions.Item>
-                <Descriptions.Item label="Payment method">{payoutDetail.payment_method}</Descriptions.Item>
-                <Descriptions.Item label="Reference">{payoutDetail.reference || "—"}</Descriptions.Item>
-                <Descriptions.Item label="Repayment progress">
-                  {payoutDetail.repayment_score?.label ?? "—"}
-                  {payoutDetail.repayment_score?.percent != null ? ` (${payoutDetail.repayment_score.percent}%)` : ""}
-                </Descriptions.Item>
-                <Descriptions.Item label="Disbursed by">{payoutDetail.disbursed_by ?? "—"}</Descriptions.Item>
-                <Descriptions.Item label="Created">{payoutDetail.created_at || "—"}</Descriptions.Item>
-              </Descriptions>
-            ) : (
-              <Form form={payoutEditForm} layout="vertical" className="admin-modal-form">
-                <div className="admin-modal-grid">
-                  <Form.Item name="amount_paid" label="Amount paid (₦)" rules={[{ required: true, message: "Required" }]}>
-                    <InputNumber min={0} style={{ width: "100%" }} />
-                  </Form.Item>
-                  <Form.Item name="paid_date" label="Paid date" rules={[{ required: true, message: "Required" }]}>
-                    <AdminDatePicker style={{ width: "100%" }} format="DD/MM/YYYY" />
-                  </Form.Item>
-                  <Form.Item name="payment_method" label="Payment method" rules={[{ required: true, message: "Required" }]}>
-                    <Input placeholder="e.g. bank_transfer" />
-                  </Form.Item>
-                  <Form.Item name="reference" label="Reference" rules={[{ required: true, message: "Required" }]}>
-                    <Input />
-                  </Form.Item>
-                </div>
-              </Form>
-            )}
-          </>
-        ) : (
-          <Text type="secondary">No data.</Text>
-        )}
-      </Modal>
     </div>
   );
 }

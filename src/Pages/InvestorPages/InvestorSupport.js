@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Alert,
   Button,
   Card,
   Form,
@@ -114,6 +113,7 @@ function InvestorSupport() {
         title: "Subject",
         dataIndex: "subject",
         key: "subject",
+        width: 240,
         ellipsis: true,
       },
       {
@@ -143,15 +143,23 @@ function InvestorSupport() {
         title: "Created",
         dataIndex: "createdDisplay",
         key: "createdDisplay",
-        width: 160,
-        render: (_, record) => record.createdDisplay || formatTicketTime(record.createdAt),
+        width: 190,
+        render: (_, record) => (
+          <span className="investor-table-nowrap">
+            {record.createdDisplay || formatTicketTime(record.createdAt)}
+          </span>
+        ),
       },
       {
         title: "Updated",
         dataIndex: "updatedDisplay",
         key: "updatedDisplay",
-        width: 160,
-        render: (_, record) => record.updatedDisplay || formatTicketTime(record.updatedAt),
+        width: 190,
+        render: (_, record) => (
+          <span className="investor-table-nowrap">
+            {record.updatedDisplay || formatTicketTime(record.updatedAt)}
+          </span>
+        ),
       },
       {
         title: "",
@@ -183,13 +191,8 @@ function InvestorSupport() {
     <div className="investor-page investor-support-page">
       <InvestorPageHeader
         title="Support"
-        subtitle="Contact Wyre about repayments, statements, and project questions."
         onDownloadReport={handleDownloadReport}
       />
-
-      {supportTickets.listError ? (
-        <Alert type="error" showIcon className="investor-alert" message={supportTickets.listError} />
-      ) : null}
 
       <Card className="investor-tickets-card investor-support-tickets-card" bordered={false}>
         <div className="investor-tickets-head investor-support-tickets-head">
@@ -210,19 +213,28 @@ function InvestorSupport() {
           </Space>
         </div>
 
-        <Table
-          className="investor-support-tickets-table"
-          columns={columns}
-          dataSource={filteredTickets}
-          loading={supportTickets.listLoading}
-          rowKey="key"
-          pagination={{ pageSize: 10, hideOnSinglePage: true }}
-          locale={{
-            emptyText: supportTickets.listLoading
-              ? "Loading tickets…"
-              : "No tickets yet. Create one to contact Wyre support.",
-          }}
-        />
+        <div className="table-responsive-wrapper">
+          <Table
+            className="investor-support-tickets-table"
+            columns={columns}
+            dataSource={filteredTickets}
+            loading={supportTickets.listLoading}
+            rowKey="key"
+            tableLayout="fixed"
+            scroll={{ x: 1048 }}
+            pagination={{
+              pageSize: 5,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "15", "20"],
+              hideOnSinglePage: true,
+            }}
+            locale={{
+              emptyText: supportTickets.listLoading
+                ? "Loading tickets…"
+                : "No tickets yet. Create one to contact Wyre support.",
+            }}
+          />
+        </div>
       </Card>
 
       <Card className="investor-support-card investor-support-card--peach" bordered={false}>

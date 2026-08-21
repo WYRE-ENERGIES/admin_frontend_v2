@@ -1,226 +1,122 @@
-import { useEffect } from "react";
-import {
-  Alert,
-  Button,
-  Card,
-  Col,
-  Input,
-  Row,
-  Table,
-  Tag,
-  Timeline,
-  Typography,
-} from "antd";
-import { useDispatch, useSelector } from "react-redux";
+import { Avatar, Button, Card, Tag, Typography } from "antd";
+import { useLocation, useNavigate } from "react-router-dom";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
-import { buildAccountKycReportRows } from "../../helpers/investorReportExport";
-import { runInvestorReportDownload } from "../../helpers/investorReportDownload";
-import { fetchInvestorAccountKyc } from "../../redux/actions/investor/investor.action";
+import authHelper from "../../helpers/authHelper";
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
-function docStatusTag(status) {
-  const t = String(status || "").toLowerCase();
-  if (t.includes("approved") || t.includes("passed"))
-    return <Tag color="success">{status}</Tag>;
-  if (t.includes("not submitted")) return <Tag color="warning">{status}</Tag>;
-  return <Tag>{status}</Tag>;
+function pick(obj, keys) {
+  for (const key of keys) {
+    const v = obj?.[key];
+    if (v != null && v !== "") return v;
+  }
+  return null;
+}
+
+function initialsFromName(name) {
+  const parts = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "IN";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function tierTagColor(tier) {
+  const t = String(tier || "").toLowerCase();
+  if (t.includes("2") || t.includes("full")) return "success";
+  if (t.includes("1")) return "processing";
+  if (t.includes("pending")) return "gold";
+  return "default";
+}
+
+function statusTagColor(status) {
+  const s = String(status || "").toLowerCase();
+  if (s.includes("verified") || s.includes("approved") || s.includes("passed")) return "success";
+  if (s.includes("review") || s.includes("pending")) return "gold";
+  if (s.includes("reject") || s.includes("fail")) return "error";
+  return "default";
+}
+
+/** Reads the identity claims already present in the investor's decoded login token — no separate KYC/profile endpoint involved. */
+function tokenProfile(decoded) {
+  if (!decoded) return null;
+  const firstName = pick(decoded, ["first_name", "firstName"]);
+  const lastName = pick(decoded, ["last_name", "lastName"]);
+  const fullName =
+    [firstName, lastName].filter(Boolean).join(" ") ||
+    pick(decoded, ["legal_name", "legalName", "name", "full_name", "fullName"]) ||
+    pick(decoded, ["username"]);
+
+  return {
+    fullName: fullName || "Investor",
+    email: pick(decoded, ["email", "user_email"]),
+    phone: pick(decoded, ["phone", "phone_number", "phoneNumber", "msisdn"]),
+    username: pick(decoded, ["username"]),
+    investorRef: pick(decoded, ["investor_ref", "investorRef", "ref", "reference"]),
+    kycTier: pick(decoded, ["kyc_tier", "kycTier", "tier"]),
+    kycStatus: pick(decoded, ["kyc_status", "kycStatus", "verification_status"]),
+  };
+}
+
+function DetailRow({ label, value }) {
+  if (value == null || value === "") return null;
+  return (
+    <div className="investor-account-detail-row">
+      <span className="investor-mini-label">{label}</span>
+      <span className="investor-account-detail-value">{value}</span>
+    </div>
+  );
 }
 
 function InvestorAccountKyc() {
-  const dispatch = useDispatch();
-  const { accountKyc: data, accountKycLoading } = useSelector((s) => s.investorPage);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const supportPath = location.pathname.startsWith("/__investor_preview")
+    ? "/__investor_preview/support"
+    : "/support";
 
-  useEffect(() => {
-    dispatch(fetchInvestorAccountKyc());
-  }, [dispatch]);
-
-  const profile = data?.profile || {};
-  const payout = data?.payout || {};
-  const meta = data?.meta || {};
-  const documents = data?.documents || [];
-  const declarations = data?.declarations || {};
-
-  const docCols = [
-    { title: "Document", dataIndex: "name", key: "name" },
-    { title: "Submitted", dataIndex: "submitted", key: "submitted" },
-    { title: "Status", dataIndex: "status", key: "status", render: (v) => docStatusTag(v) },
-  ];
-
-  const handleDownloadReport = async () => {
-    const { title, filename, rows } = buildAccountKycReportRows(data);
-    await runInvestorReportDownload({
-      title,
-      filename,
-      rows,
-      emptyMessage: "No account data available to export yet.",
-    });
-  };
+  const decoded = authHelper();
+  const profile = tokenProfile(decoded);
 
   return (
     <div className="investor-page investor-account-page">
-      <InvestorPageHeader
-        title="Account & KYC"
-        subtitle="Profile, payout details, and investor verification."
-        onDownloadReport={handleDownloadReport}
-      />
+      <InvestorPageHeader title="Account & KYC" showDownloadReport={false} />
 
-      <Alert
-        type="success"
-        showIcon
-        className="investor-alert investor-kyc-verified-banner"
-        message="KYC verified — You can fund projects and receive payouts subject to limits in your agreement."
-      />
-
-      <div className="investor-account-meta-row">
-        <Card bordered={false} className="investor-account-chip">
-          <div className="investor-mini-label">Verification tier</div>
-          <Tag color="success" className="investor-tier-tag">
-            {meta.tier || "—"}
-          </Tag>
-        </Card>
-        <Card bordered={false} className="investor-account-chip">
-          <div className="investor-mini-label">Investor ID</div>
-          <div className="investor-account-chip-value">{meta.investorId}</div>
-        </Card>
-        <Card bordered={false} className="investor-account-chip">
-          <div className="investor-mini-label">Payout method</div>
-          <div className="investor-account-chip-value">{meta.payoutMethod}</div>
-        </Card>
-      </div>
-
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={12}>
-          <Card
-            title="Profile & contact"
-            extra={
-              <Button type="link" size="small">
-                Edit
-              </Button>
-            }
-            bordered={false}
-            className="investor-card"
-            loading={accountKycLoading}
-          >
-            <div className="investor-form-readonly">
-              <label>Legal name</label>
-              <Input readOnly value={profile.legalName} />
-              <label>Email</label>
-              <Input readOnly value={profile.email} />
-              <label>Phone</label>
-              <Input readOnly value={profile.phone} />
-              <label>Country of residence</label>
-              <Input readOnly value={profile.country} />
-              <label>Preferred language</label>
-              <Input readOnly value={profile.language} />
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} lg={12}>
-          <Card
-            title="Payout & banking"
-            extra={
-              <Button type="link" size="small">
-                Update
-              </Button>
-            }
-            bordered={false}
-            className="investor-card"
-          >
-            <div className="investor-form-readonly">
-              <label>Account name</label>
-              <Input readOnly value={payout.accountName} />
-              <label>Bank</label>
-              <Input readOnly value={payout.bankMasked} />
-              <label>Account number</label>
-              <Input readOnly value={payout.accountMasked} />
-              <label>NUBAN verified</label>
-              <div>
-                {payout.nubanVerified ? <Tag color="success">Verified</Tag> : <Tag>Pending</Tag>}
-              </div>
-              <label>Tax ID (TIN)</label>
-              <Input readOnly value={payout.tin} />
-            </div>
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={[16, 16]} style={{ marginTop: 4 }}>
-        <Col xs={24} lg={14}>
-          <Card title="KYC documents" bordered={false} className="investor-card">
-            <div className="table-responsive-wrapper investor-table-wrap">
-              <Table
-                className="investor-table"
-                columns={docCols}
-                dataSource={documents}
-                pagination={false}
-                size="small"
-                rowKey="key"
-                locale={{ emptyText: "No documents on file" }}
-              />
-            </div>
-            <div className="investor-upload-block">
-              <Title level={5} className="investor-upload-heading">
-                Replace a document
-              </Title>
-              <Text type="secondary" className="investor-upload-hint">
-                Upload a new file when you need to replace an existing document.
-              </Text>
-              <Button type="primary" disabled style={{ marginTop: 12 }}>
-                Choose file
-              </Button>
-            </div>
-          </Card>
-        </Col>
-        <Col xs={24} lg={10}>
-          <Card title="Compliance declarations" bordered={false} className="investor-card">
-            <p className="investor-decl-row">
-              <span className="investor-decl-label">PEP</span>
-              {declarations.pep}
-            </p>
-            <p className="investor-decl-row">
-              <span className="investor-decl-label">Source of funds</span>
-              {declarations.sof}
-            </p>
-            <p className="investor-decl-row">
-              <span className="investor-decl-label">Sanctions</span>
-              {declarations.sanctions}
-            </p>
-            <Button type="default" block style={{ marginTop: 8 }}>
-              Update declarations
-            </Button>
-          </Card>
-
-          <Card
-            title="Verification timeline"
-            bordered={false}
-            className="investor-card"
-            style={{ marginTop: 16 }}
-          >
-            <Timeline
-              items={[
-                { color: "green", children: "Application submitted" },
-                { color: "green", children: "Documents under review" },
-                { color: "green", children: "KYC approved · Tier 2" },
-                { color: "gray", children: "Annual refresh scheduled" },
-              ]}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Card className="investor-support-card" bordered={false} style={{ marginTop: 8 }}>
-        <div className="investor-support-inner">
-          <div>
-            <div className="investor-support-title">
-              Questions about verification or payout details?
-            </div>
-            <div className="investor-support-sub">
-              Use Support — do not send identity documents by unsecured email.
+      <Card bordered={false} className="investor-card investor-account-summary-card">
+        <div className="investor-account-summary-head">
+          <Avatar size={64} className="investor-account-avatar">
+            {initialsFromName(profile?.fullName)}
+          </Avatar>
+          <div className="investor-account-summary-headings">
+            <Title level={4} style={{ margin: 0 }}>
+              {profile?.fullName || "Investor"}
+            </Title>
+            <div className="investor-account-summary-tags">
+              <Tag color="purple">Investor</Tag>
+              {profile?.kycTier ? <Tag color={tierTagColor(profile.kycTier)}>{profile.kycTier}</Tag> : null}
+              {profile?.kycStatus ? <Tag color={statusTagColor(profile.kycStatus)}>{profile.kycStatus}</Tag> : null}
             </div>
           </div>
-          <Button type="primary" className="investor-support-cta">
-            Contact Wyre compliance
+        </div>
+
+        <div className="investor-account-detail-grid">
+          <DetailRow label="Email" value={profile?.email} />
+          <DetailRow label="Phone" value={profile?.phone} />
+          <DetailRow label="Username" value={profile?.username} />
+          <DetailRow label="Investor reference" value={profile?.investorRef} />
+        </div>
+      </Card>
+
+      <Card className="investor-support-card" bordered={false} style={{ marginTop: 16 }}>
+        <div className="investor-support-inner">
+          <div>
+            <div className="investor-support-title">Need to update these details?</div>
+            <div className="investor-support-sub">
+              This is the account information tied to your current login. For changes to your
+              profile, KYC documents, or payout details, reach out to Wyre support.
+            </div>
+          </div>
+          <Button type="primary" className="investor-support-cta" onClick={() => navigate(supportPath)}>
+            Contact support
           </Button>
         </div>
       </Card>

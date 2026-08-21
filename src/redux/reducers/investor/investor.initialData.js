@@ -194,36 +194,3 @@ export const MOCK_INVESTOR_PAYMENTS = {
   ],
 };
 
-export const MOCK_INVESTOR_ACCOUNT_KYC = {
-  profile: {
-    legalName: "Jane Chisom Daramola",
-    email: "j.daramola@example.com",
-    phone: "+234 803 000 0000",
-    country: "Nigeria",
-    language: "English",
-  },
-  payout: {
-    accountName: "Jane Chisom Daramola",
-    bankMasked: "****** Bank PLC",
-    accountMasked: "******** 4521",
-    nubanVerified: true,
-    tin: "12345678-0001",
-  },
-  meta: {
-    tier: "Tier 2 – Full investor",
-    investorId: "INV-2025-88421",
-    payoutMethod: "Naira · Bank",
-  },
-  documents: [
-    { key: "d1", name: "Government ID", submitted: "12 Jan 2025", status: "Approved" },
-    { key: "d2", name: "Proof of address", submitted: "12 Jan 2025", status: "Approved" },
-    { key: "d3", name: "Tax identification", submitted: "14 Jan 2025", status: "Approved" },
-    { key: "d4", name: "Selfie liveness check", submitted: "15 Jan 2025", status: "Passed" },
-    { key: "d5", name: "Certified accreditation", submitted: "—", status: "Not submitted" },
-  ],
-  declarations: {
-    pep: "No PEP match",
-    sof: "Salary & savings",
-    sanctions: "Clear",
-  },
-};

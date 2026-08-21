@@ -104,14 +104,13 @@ export function buildProjectsReportRows(bundle) {
     {
       label: "Portfolio AC capacity",
       value: summary.portfolioAcKwp != null ? `${summary.portfolioAcKwp} kWp` : "—",
-      sub: "Nameplate",
     },
     {
       label: "Portfolio generation YTD",
       value: summary.portfolioGenerationYtdDisplay,
       sub: "Year to date",
     },
-    { label: "Attention", value: summary.attentionCount, sub: "Overdue or under review" },
+    { label: "Attention", value: summary.attentionCount },
   ]);
 
   (bundle?.projects || []).forEach((p) => {
@@ -233,13 +232,11 @@ export function buildPaymentsReportRows({ bundle, payoutSchedule, ledgerYear }) 
 
   (bundle?.ledger || []).forEach((row) => {
     rows.push({
-      Section: "Cash ledger",
-      Date: row.date,
-      Type: row.type,
-      Project: row.ref,
-      Customer: row.customer,
-      Allocation: row.allocation,
-      Effect: row.effect,
+      Section: "Repayment history",
+      "Paid date": row.paidDate,
+      Project: row.projectName,
+      Amount: row.amount,
+      Status: row.status,
     });
   });
 
@@ -270,47 +267,3 @@ export function buildSupportReportRows(tickets = []) {
   };
 }
 
-export function buildAccountKycReportRows(accountKyc) {
-  const rows = [];
-  const profile = accountKyc?.profile || {};
-  const payout = accountKyc?.payout || {};
-  const meta = accountKyc?.meta || {};
-  const declarations = accountKyc?.declarations || {};
-
-  rows.push({ Section: "Report", Label: "Page", Value: "Account & KYC", Detail: stamp() });
-
-  pushMetricRows(rows, "Account", [
-    { label: "Verification tier", value: meta.tier },
-    { label: "Investor ID", value: meta.investorId },
-    { label: "Payout method", value: meta.payoutMethod },
-    { label: "Legal name", value: profile.legalName },
-    { label: "Email", value: profile.email },
-    { label: "Phone", value: profile.phone },
-    { label: "Country", value: profile.country },
-    { label: "Account name", value: payout.accountName },
-    { label: "Bank", value: payout.bankMasked },
-    { label: "Account number", value: payout.accountMasked },
-    { label: "TIN", value: payout.tin },
-  ]);
-
-  (accountKyc?.documents || []).forEach((doc) => {
-    rows.push({
-      Section: "Documents",
-      Document: doc.name,
-      Submitted: doc.submitted,
-      Status: doc.status,
-    });
-  });
-
-  pushMetricRows(rows, "Declarations", [
-    { label: "PEP", value: declarations.pep },
-    { label: "Source of funds", value: declarations.sof },
-    { label: "Sanctions", value: declarations.sanctions },
-  ]);
-
-  return {
-    title: "Account & KYC",
-    filename: `wyre-investor-account-kyc-${stamp()}.pdf`,
-    rows,
-  };
-}

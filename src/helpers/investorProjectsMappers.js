@@ -5,6 +5,7 @@ import {
   humanLocationLabel,
   unwrapListOrObject,
 } from "./investorPortfolioMappers";
+import { formatTicketTime } from "./investorTicketUi";
 
 function unwrapApiData(body) {
   if (body == null) return null;
@@ -202,8 +203,8 @@ function mapSupportTicketRow(item) {
     staffNoteCount: item.staff_note_count ?? 0,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
-    createdDisplay: item.created_at_display || item.created_at,
-    updatedDisplay: item.updated_at_display || item.updated_at,
+    createdDisplay: item.created_at_display || formatTicketTime(item.created_at),
+    updatedDisplay: item.updated_at_display || formatTicketTime(item.updated_at),
   };
 }
 

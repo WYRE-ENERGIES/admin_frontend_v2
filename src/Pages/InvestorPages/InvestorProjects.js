@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  Alert,
   Button,
   Card,
   Form,
@@ -100,11 +99,7 @@ function InvestorProjects() {
   const paymentsPath = location.pathname.startsWith("/__investor_preview")
     ? "/__investor_preview/payments"
     : "/payments";
-  const {
-    projects: bundle,
-    projectsLoading,
-    projectsPartialErrors,
-  } = useSelector((s) => s.investorPage);
+  const { projects: bundle, projectsLoading } = useSelector((s) => s.investorPage);
   const [projectTab, setProjectTab] = useState("Financed");
   const [investModalOpen, setInvestModalOpen] = useState(false);
   const [detailModalOpen, setDetailModalOpen] = useState(false);
@@ -143,7 +138,7 @@ function InvestorProjects() {
           summary?.portfolioAcKwp != null
             ? `${summary.portfolioAcKwp} kWp`
             : "—",
-        sub: "Nameplate (your tranches)",
+        // sub: "Nameplate (your tranches)",
       },
       {
         key: "c",
@@ -155,7 +150,7 @@ function InvestorProjects() {
         key: "d",
         label: "Attention",
         value: String(summary?.attentionCount ?? "—"),
-        sub: "Overdue or under review",
+        // sub: "Overdue or under review",
       },
     ],
     [summary]
@@ -236,20 +231,8 @@ function InvestorProjects() {
 
   return (
     <div className="investor-page investor-projects-page">
-      {projectsPartialErrors?.length ? (
-        <Alert
-          type="warning"
-          showIcon
-          closable
-          style={{ marginBottom: 16 }}
-          message="Some project data could not be loaded"
-          description="Showing the sections that are available. Refresh the page or try again later."
-        />
-      ) : null}
-
       <InvestorPageHeader
         title="Projects"
-        subtitle="Financed sites, open pools, and investment tickets from your Wyre portfolio."
         onDownloadReport={handleDownloadReport}
       />
 
