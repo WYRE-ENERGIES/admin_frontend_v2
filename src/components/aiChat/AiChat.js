@@ -290,16 +290,18 @@ export default function AiChat() {
           height: "50px",
           backgroundColor: "#5C12A7",
           borderColor: "#5C12A7",
-          fontSize: "18px",
-          fontWeight: "500",
           zIndex: 40,
           transition: "all 0.3s ease",
           transform: isOpen ? "scale(0)" : "scale(1)",
           opacity: isOpen ? 0 : 1,
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 0,
         }}
       >
-     <img src="/icon/wyre-ai-logo.svg" alt="Wyre Ai Logo" style={{ width: "30px", height: "30px" }} />
+        <img src="/icon/wyre-ai-logo.svg" alt="Wyre AI" style={{ width: "28px", height: "28px" }} />
       </Button>
       <Button
         type="primary"
@@ -415,13 +417,33 @@ export default function AiChat() {
           }}
         >
           {!isDownloading && (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-            <p style={{ fontSize: "14px", fontWeight: 550, letterSpacing: "0.5px", color: "gray" }}>Wyre AI Chat</p>
-            <p style={{ fontSize: "12px", fontWeight: 500, letterSpacing: "0.5px", color: "gray", marginTop: "-8px" }}>
-              <InfoCircleOutlined style={{ fontSize: "12px", marginRight: "6px" }} />
-              Please Ask Questions Related to Wyre
-            </p>
-          </div>
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "4px",
+              padding: "8px 0 4px",
+            }}>
+              <span style={{
+                fontSize: "13px",
+                fontWeight: 600,
+                letterSpacing: "0.3px",
+                color: "#5C12A7",
+              }}>
+                Wyre AI Chat
+              </span>
+              <span style={{
+                fontSize: "11px",
+                fontWeight: 500,
+                color: "#999",
+                display: "flex",
+                alignItems: "center",
+                gap: "5px",
+              }}>
+                <InfoCircleOutlined style={{ fontSize: "11px" }} />
+                Please ask questions related to Wyre
+              </span>
+            </div>
           )}
           {messages.map((message) => (
             <div key={message.id}>
