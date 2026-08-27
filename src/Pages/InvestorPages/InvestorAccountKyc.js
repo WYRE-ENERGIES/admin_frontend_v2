@@ -79,7 +79,7 @@ function InvestorAccountKyc() {
 
   return (
     <div className="investor-page investor-account-page">
-      <InvestorPageHeader title="Account & KYC" showDownloadReport={false} />
+      <InvestorPageHeader title="Account & KYC" />
 
       <Card bordered={false} className="investor-card investor-account-summary-card">
         <div className="investor-account-summary-head">

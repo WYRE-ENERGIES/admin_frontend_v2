@@ -7,7 +7,6 @@ import {
   Input,
   Modal,
   Select,
-  Segmented,
   Space,
   Spin,
   Table,
@@ -36,6 +35,9 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { Link, useLocation } from "react-router-dom";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
+import InvestorPillSegmented from "../../components/investor/InvestorPillSegmented";
+import InvestorResponsiveDataView from "../../components/investor/InvestorResponsiveDataView";
+import { InvestorFinancedProjectMobileList } from "../../components/investor/InvestorMobileDataLists";
 import {
   createInvestorSupportTicket,
   fetchInvestorPortfolioOverview,
@@ -103,6 +105,15 @@ function PortfolioOverview() {
   const [projectFilter, setProjectFilter] = useState("All");
   const [supportOpen, setSupportOpen] = useState(false);
   const [supportForm] = Form.useForm();
+  const [chartBarSize, setChartBarSize] = useState(18);
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 768px)");
+    const syncBarSize = () => setChartBarSize(media.matches ? 12 : 18);
+    syncBarSize();
+    media.addEventListener("change", syncBarSize);
+    return () => media.removeEventListener("change", syncBarSize);
+  }, []);
 
   const rangeKey = `${range[0]?.format("YYYY-MM")}_${range[1]?.format("YYYY-MM")}`;
 
@@ -295,6 +306,7 @@ function PortfolioOverview() {
     <div className="investor-page">
       <InvestorPageHeader
         title="Portfolio overview"
+        showDownloadReport
         onDownloadReport={handleDownloadReport}
       />
 
@@ -452,36 +464,45 @@ function PortfolioOverview() {
             <span className="investor-card-heading investor-card-heading--financed">
               Financed
             </span>
-            <Segmented
+            <InvestorPillSegmented
               options={["All", "On track", "Attention"]}
               value={projectFilter}
               onChange={setProjectFilter}
-              size="small"
-              className="investor-segmented"
             />
           </div>
         }
         className="investor-card"
         bordered={false}
       >
-        <div className="table-responsive-wrapper investor-table-wrap investor-table-wrap--financed">
-          <Table
-            className="investor-table investor-financed-table"
-            columns={columns}
-            dataSource={filteredProjects}
-            pagination={{
-              pageSize: 5,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "15", "20"],
-              hideOnSinglePage: true,
-            }}
-            size="middle"
-            rowKey="key"
-            loading={portfolioOverview.loading}
-            tableLayout="fixed"
-            locale={{ emptyText: "No financed projects in this period" }}
-          />
-        </div>
+        <InvestorResponsiveDataView
+          desktop={
+            <div className="table-responsive-wrapper investor-table-wrap investor-table-wrap--financed">
+              <Table
+                className="investor-table investor-financed-table"
+                columns={columns}
+                dataSource={filteredProjects}
+                pagination={{
+                  pageSize: 5,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["5", "10", "15", "20"],
+                  hideOnSinglePage: true,
+                }}
+                size="middle"
+                rowKey="key"
+                loading={portfolioOverview.loading}
+                tableLayout="fixed"
+                locale={{ emptyText: "No financed projects in this period" }}
+              />
+            </div>
+          }
+          mobile={
+            <InvestorFinancedProjectMobileList
+              projects={filteredProjects}
+              formatPosted={formatPosted}
+              loading={portfolioOverview.loading}
+            />
+          }
+        />
         <div className="investor-financed-legend">
           <span className="investor-financed-legend-item">
             <span className="investor-health-dot investor-health-dot--green" />{" "}
@@ -514,7 +535,7 @@ function PortfolioOverview() {
           <div className="investor-chart-wrap">
             {chartData.length ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} barSize={18}>
+                <BarChart data={chartData} barSize={chartBarSize}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} />
                   <XAxis dataKey="week" />
                   <YAxis />

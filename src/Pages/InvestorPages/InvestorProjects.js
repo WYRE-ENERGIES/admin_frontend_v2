@@ -8,7 +8,6 @@ import {
   InputNumber,
   Modal,
   Progress,
-  Segmented,
   Select,
   Space,
   Spin,
@@ -20,9 +19,8 @@ import { ArrowRightOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
+import InvestorPillSegmented from "../../components/investor/InvestorPillSegmented";
 import { mapProjectDetail } from "../../helpers/investorProjectsMappers";
-import { buildProjectsReportRows } from "../../helpers/investorReportExport";
-import { runInvestorReportDownload } from "../../helpers/investorReportDownload";
 import {
   fetchInvestorProjectDetail,
   fetchInvestorProjects,
@@ -219,22 +217,9 @@ function InvestorProjects() {
       ? "Financed projects"
       : "Open projects (available to invest)";
 
-  const handleDownloadReport = async () => {
-    const { title, filename, rows } = buildProjectsReportRows(bundle);
-    await runInvestorReportDownload({
-      title,
-      filename,
-      rows,
-      emptyMessage: "No project data available to export yet.",
-    });
-  };
-
   return (
     <div className="investor-page investor-projects-page">
-      <InvestorPageHeader
-        title="Projects"
-        onDownloadReport={handleDownloadReport}
-      />
+      <InvestorPageHeader title="Projects" />
 
       <Spin spinning={projectsLoading} wrapperClassName="investor-projects-spin">
         <div className="investor-projects-body">
@@ -258,12 +243,10 @@ function InvestorProjects() {
         <Title level={4} className="investor-section-title" style={{ margin: 0 }}>
           {sectionTitle}
         </Title>
-        <Segmented
+        <InvestorPillSegmented
           options={["Financed", "Open projects"]}
           value={projectTab}
           onChange={setProjectTab}
-          size="small"
-          className="investor-segmented"
         />
       </div>
 

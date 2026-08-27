@@ -16,8 +16,9 @@ import {
 import { PlusOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
-import { buildSupportReportRows } from "../../helpers/investorReportExport";
-import { runInvestorReportDownload } from "../../helpers/investorReportDownload";
+import InvestorPillSegmented from "../../components/investor/InvestorPillSegmented";
+import InvestorResponsiveDataView from "../../components/investor/InvestorResponsiveDataView";
+import { InvestorSupportTicketMobileList } from "../../components/investor/InvestorMobileDataLists";
 import {
   SUPPORT_PRIORITY_OPTIONS,
   SUPPORT_TOPIC_OPTIONS,
@@ -177,35 +178,20 @@ function InvestorSupport() {
 
   const detail = supportTickets.detail;
 
-  const handleDownloadReport = async () => {
-    const { title, filename, rows } = buildSupportReportRows(supportTickets.list || []);
-    await runInvestorReportDownload({
-      title,
-      filename,
-      rows,
-      emptyMessage: "No support tickets to export yet.",
-    });
-  };
-
   return (
     <div className="investor-page investor-support-page">
-      <InvestorPageHeader
-        title="Support"
-        onDownloadReport={handleDownloadReport}
-      />
+      <InvestorPageHeader title="Support" />
 
       <Card className="investor-tickets-card investor-support-tickets-card" bordered={false}>
         <div className="investor-tickets-head investor-support-tickets-head">
           <Title level={5} className="investor-tickets-title" style={{ margin: 0 }}>
             My support tickets
           </Title>
-          <Space wrap>
-            <Select
-              size="small"
+          <Space wrap align="center">
+            <InvestorPillSegmented
+              options={TICKET_FILTER_OPTIONS}
               value={filter}
               onChange={setFilter}
-              options={TICKET_FILTER_OPTIONS}
-              style={{ width: 160 }}
             />
             <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
               New ticket
@@ -213,28 +199,43 @@ function InvestorSupport() {
           </Space>
         </div>
 
-        <div className="table-responsive-wrapper">
-          <Table
-            className="investor-support-tickets-table"
-            columns={columns}
-            dataSource={filteredTickets}
-            loading={supportTickets.listLoading}
-            rowKey="key"
-            tableLayout="fixed"
-            scroll={{ x: 1048 }}
-            pagination={{
-              pageSize: 5,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "15", "20"],
-              hideOnSinglePage: true,
-            }}
-            locale={{
-              emptyText: supportTickets.listLoading
-                ? "Loading tickets…"
-                : "No tickets yet. Create one to contact Wyre support.",
-            }}
-          />
-        </div>
+        <InvestorResponsiveDataView
+          desktop={
+            <div className="table-responsive-wrapper investor-table-wrap">
+              <Table
+                className="investor-support-tickets-table"
+                columns={columns}
+                dataSource={filteredTickets}
+                loading={supportTickets.listLoading}
+                rowKey="key"
+                tableLayout="fixed"
+                pagination={{
+                  pageSize: 5,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["5", "10", "15", "20"],
+                  hideOnSinglePage: true,
+                }}
+                locale={{
+                  emptyText: supportTickets.listLoading
+                    ? "Loading tickets…"
+                    : "No tickets yet. Create one to contact Wyre support.",
+                }}
+              />
+            </div>
+          }
+          mobile={
+            <InvestorSupportTicketMobileList
+              tickets={filteredTickets}
+              loading={supportTickets.listLoading}
+              onView={openTicketDetail}
+              emptyText={
+                supportTickets.listLoading
+                  ? "Loading tickets…"
+                  : "No tickets yet. Create one to contact Wyre support."
+              }
+            />
+          }
+        />
       </Card>
 
       <Card className="investor-support-card investor-support-card--peach" bordered={false}>

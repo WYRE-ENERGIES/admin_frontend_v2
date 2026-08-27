@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Card, Select, Spin, Table, Tabs, Tag, Typography } from "antd";
+import { Button, Card, Select, Spin, Table, Tag, Typography } from "antd";
+import InvestorPillSegmented from "../../components/investor/InvestorPillSegmented";
 import dayjs from "dayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams } from "react-router-dom";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
-import { buildPaymentsReportRows } from "../../helpers/investorReportExport";
-import { runInvestorReportDownload } from "../../helpers/investorReportDownload";
+import InvestorResponsiveDataView from "../../components/investor/InvestorResponsiveDataView";
+import { InvestorPaymentMobileList } from "../../components/investor/InvestorMobileDataLists";
 import {
   fetchInvestorFinancedInvestments,
   fetchInvestorPayments,
@@ -271,34 +272,78 @@ function InvestorPayments() {
   const ledgerMeta = bundle?.ledgerMeta;
   const scheduleSummary = payoutSchedule?.summary;
 
-  const ledgerTabYears = useMemo(() => {
+  const ledgerYearOptions = useMemo(() => {
     const current = dayjs().year();
     return [
-      { key: String(current), label: String(current) },
-      { key: String(current - 1), label: String(current - 1) },
+      { value: String(current), label: String(current) },
+      { value: String(current - 1), label: String(current - 1) },
     ];
   }, []);
 
-  const handleDownloadReport = async () => {
-    const { title, filename, rows } = buildPaymentsReportRows({
-      bundle,
-      payoutSchedule,
-      ledgerYear,
-    });
-    await runInvestorReportDownload({
-      title,
-      filename,
-      rows,
-      emptyMessage: "No payment data available to export yet.",
-    });
-  };
+  const scheduleMobileFields = useMemo(
+    () => [
+      { key: "due", label: "Due" },
+      { key: "project", label: "Project" },
+      { key: "totalDue", label: "Total due" },
+      {
+        key: "yourCredit",
+        label: "Your credit",
+        render: (row) => <span className="investor-pay-pos">{row.yourCredit}</span>,
+      },
+      {
+        key: "status",
+        label: "Status",
+        render: (row) => scheduleStatusTag(row.statusKey, row.status, row.statusDetail),
+      },
+    ],
+    []
+  );
+
+  const payoutInstallmentMobileFields = useMemo(
+    () => [
+      { key: "due", label: "Due date" },
+      { key: "amountDue", label: "Amount due" },
+      { key: "amountPaid", label: "Amount paid" },
+      { key: "amountRemaining", label: "Remaining" },
+      { key: "paidDate", label: "Paid date" },
+      {
+        key: "status",
+        label: "Status",
+        render: (row) => scheduleStatusTag(row.statusKey, row.status, row.statusDetail),
+      },
+    ],
+    []
+  );
+
+  const ledgerMobileFields = useMemo(
+    () => [
+      { key: "paidDate", label: "Paid date" },
+      { key: "projectName", label: "Project" },
+      {
+        key: "amount",
+        label: "Amount",
+        render: (row) => <span className="investor-pay-pos">{row.amount}</span>,
+      },
+      {
+        key: "status",
+        label: "Status",
+        render: (row) => {
+          const t = String(row.statusKey || row.status || "").toLowerCase();
+          const color = t === "full" ? "green" : t === "partial" ? "gold" : "default";
+          return (
+            <Tag color={color} className="investor-schedule-status-tag">
+              {row.status}
+            </Tag>
+          );
+        },
+      },
+    ],
+    []
+  );
 
   return (
     <div className="investor-page investor-payments-page">
-      <InvestorPageHeader
-        title="Payments & receivables"
-        onDownloadReport={handleDownloadReport}
-      />
+      <InvestorPageHeader title="Payments & receivables" />
 
       <Spin spinning={paymentsLoading} wrapperClassName="investor-payments-spin">
         <div className="investor-payments-body">
@@ -329,7 +374,7 @@ function InvestorPayments() {
               placeholder="Select investment"
               optionFilterProp="label"
               loading={investmentsLoading}
-              style={{ minWidth: 280 }}
+              className="investor-payments-investment-select"
               value={selectedInvestmentId ?? undefined}
               options={investmentSelectOptions}
               onChange={handleInvestmentChange}
@@ -369,18 +414,30 @@ function InvestorPayments() {
           ) : null}
 
           <Spin spinning={scheduleLoading}>
-            <div className="table-responsive-wrapper investor-table-wrap">
-              <Table
-                className="investor-table investor-schedule-table"
-                columns={payoutScheduleCols}
-                dataSource={payoutSchedule?.installments || []}
-                pagination={INVESTOR_TABLE_PAGINATION}
-                size="small"
-                rowKey="key"
-                tableLayout="fixed"
-                locale={{ emptyText: "No installments for this investment" }}
-              />
-            </div>
+            <InvestorResponsiveDataView
+              desktop={
+                <div className="table-responsive-wrapper investor-table-wrap">
+                  <Table
+                    className="investor-table investor-schedule-table"
+                    columns={payoutScheduleCols}
+                    dataSource={payoutSchedule?.installments || []}
+                    pagination={INVESTOR_TABLE_PAGINATION}
+                    size="small"
+                    rowKey="key"
+                    tableLayout="fixed"
+                    locale={{ emptyText: "No installments for this investment" }}
+                  />
+                </div>
+              }
+              mobile={
+                <InvestorPaymentMobileList
+                  rows={payoutSchedule?.installments || []}
+                  fields={payoutInstallmentMobileFields}
+                  loading={scheduleLoading}
+                  emptyText="No installments for this investment"
+                />
+              }
+            />
           </Spin>
         </Card>
 
@@ -389,18 +446,30 @@ function InvestorPayments() {
           bordered={false}
           className="investor-card investor-card--upcoming-schedule investor-payments-upcoming-card"
         >
-          <div className="table-responsive-wrapper investor-table-wrap">
-            <Table
-              className="investor-table investor-schedule-table"
-              columns={scheduleCols}
-              dataSource={bundle?.schedule || []}
-              pagination={INVESTOR_TABLE_PAGINATION}
-              size="small"
-              rowKey="key"
-              tableLayout="fixed"
-              locale={{ emptyText: "No upcoming installments" }}
-            />
-          </div>
+          <InvestorResponsiveDataView
+            desktop={
+              <div className="table-responsive-wrapper investor-table-wrap">
+                <Table
+                  className="investor-table investor-schedule-table"
+                  columns={scheduleCols}
+                  dataSource={bundle?.schedule || []}
+                  pagination={INVESTOR_TABLE_PAGINATION}
+                  size="small"
+                  rowKey="key"
+                  tableLayout="fixed"
+                  locale={{ emptyText: "No upcoming installments" }}
+                />
+              </div>
+            }
+            mobile={
+              <InvestorPaymentMobileList
+                rows={bundle?.schedule || []}
+                fields={scheduleMobileFields}
+                loading={paymentsLoading}
+                emptyText="No upcoming installments"
+              />
+            }
+          />
         </Card>
 
         <div className="investor-payments-bottom-split">
@@ -410,11 +479,10 @@ function InvestorPayments() {
                 <Title level={5} style={{ margin: 0 }}>
                   Repayment history
                 </Title>
-                <Tabs
-                  size="small"
-                  activeKey={ledgerYear}
+                <InvestorPillSegmented
+                  options={ledgerYearOptions}
+                  value={ledgerYear}
                   onChange={setLedgerYear}
-                  items={ledgerTabYears}
                 />
               </div>
             }
@@ -422,18 +490,32 @@ function InvestorPayments() {
             className="investor-card investor-card--payout-history"
           >
             <div className="investor-payout-history-body">
-              <Table
-                className="investor-table investor-ledger-table"
-                columns={repaymentHistoryCols}
-                dataSource={bundle?.ledger || []}
-                pagination={{
-                  ...INVESTOR_TABLE_PAGINATION,
-                  ...(ledgerMeta?.total != null ? { total: ledgerMeta.total } : {}),
-                }}
-                size="small"
-                rowKey="key"
-                tableLayout="fixed"
-                locale={{ emptyText: `No repayment history for ${ledgerYear}` }}
+              <InvestorResponsiveDataView
+                desktop={
+                  <div className="table-responsive-wrapper investor-table-wrap">
+                    <Table
+                      className="investor-table investor-ledger-table"
+                      columns={repaymentHistoryCols}
+                      dataSource={bundle?.ledger || []}
+                      pagination={{
+                        ...INVESTOR_TABLE_PAGINATION,
+                        ...(ledgerMeta?.total != null ? { total: ledgerMeta.total } : {}),
+                      }}
+                      size="small"
+                      rowKey="key"
+                      tableLayout="fixed"
+                      locale={{ emptyText: `No repayment history for ${ledgerYear}` }}
+                    />
+                  </div>
+                }
+                mobile={
+                  <InvestorPaymentMobileList
+                    rows={bundle?.ledger || []}
+                    fields={ledgerMobileFields}
+                    loading={paymentsLoading}
+                    emptyText={`No repayment history for ${ledgerYear}`}
+                  />
+                }
               />
             </div>
           </Card>
