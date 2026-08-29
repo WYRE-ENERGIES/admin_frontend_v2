@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
 import InvestorPillSegmented from "../../components/investor/InvestorPillSegmented";
 import InvestorResponsiveDataView from "../../components/investor/InvestorResponsiveDataView";
+import InvestorSupportTicketThread from "../../components/investor/InvestorSupportTicketThread";
 import { InvestorSupportTicketMobileList } from "../../components/investor/InvestorMobileDataLists";
 import {
   SUPPORT_PRIORITY_OPTIONS,
@@ -187,16 +188,22 @@ function InvestorSupport() {
           <Title level={5} className="investor-tickets-title" style={{ margin: 0 }}>
             My support tickets
           </Title>
-          <Space wrap align="center">
+          <div className="investor-support-tickets-toolbar">
             <InvestorPillSegmented
+              className="investor-pill-segmented--scroll"
               options={TICKET_FILTER_OPTIONS}
               value={filter}
               onChange={setFilter}
             />
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              className="investor-support-new-ticket-btn"
+              onClick={openCreateModal}
+            >
               New ticket
             </Button>
-          </Space>
+          </div>
         </div>
 
         <InvestorResponsiveDataView
@@ -315,8 +322,6 @@ function InvestorSupport() {
           {detail ? (
             <div className="investor-support-detail">
               <Space wrap size={[8, 8]} style={{ marginBottom: 16 }}>
-                <Tag>{detail.subjectTagDisplay}</Tag>
-                <Tag color={statusPillColor(detail.status)}>{detail.status}</Tag>
                 {detail.priority ? <Tag>{detail.priority}</Tag> : null}
                 {detail.responded || detail.staffNoteCount > 0 ? (
                   <Tag color="green">Wyre responded</Tag>
@@ -326,7 +331,7 @@ function InvestorSupport() {
               </Space>
 
               <Title level={5} style={{ marginTop: 0 }}>
-                {detail.subject}
+                {detail.displaySubject || detail.subject}
               </Title>
 
               <Text type="secondary" className="investor-support-detail-meta">
@@ -336,10 +341,8 @@ function InvestorSupport() {
                   : ""}
               </Text>
 
-              {detail.description ? (
-                <Card size="small" bordered={false} className="investor-support-detail-body">
-                  <Text style={{ whiteSpace: "pre-wrap" }}>{detail.description}</Text>
-                </Card>
+              {detail.thread?.length || detail.displayDescription || detail.description ? (
+                <InvestorSupportTicketThread thread={detail.thread} />
               ) : (
                 <Text type="secondary">No description available for this ticket.</Text>
               )}

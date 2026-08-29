@@ -681,23 +681,33 @@ function formatActivityAmount(amountRaw, row) {
 
 function mapActivityRow(row, idx) {
   const key = String(
-    row.id ?? row.disbursement_id ?? row.payout_id ?? row.payment_id ?? `${row.paid_date}-${idx}`
+    row.id ?? row.disbursement_id ?? row.payout_id ?? row.payment_id ?? `${row.payment_date}-${idx}`
   );
-  const dateRaw = row.date ?? row.paid_date ?? row.posted_at ?? row.created_at ?? row.day;
+  const dateRaw =
+    row.payment_date ??
+    row.date ??
+    row.paid_date ??
+    row.posted_at ??
+    row.created_at ??
+    row.day;
   const date =
     dateRaw && dayjs(dateRaw).isValid()
       ? dayjs(dateRaw).format("DD MMM")
       : firstString(row, ["date_display", "date", "day"], "—");
 
-  const eventType = row.event_type ?? row.type ?? row.memo;
-  const project = row.project_name;
+  const projectName = firstString(row, ["project_name", "project", "installation_name"], "");
   let label = firstString(row, ["description", "label", "memo"], "");
   if (!label || label === "—") {
-    const parts = [eventType || "Payout", project].filter(Boolean);
-    label = parts.length ? parts.join(" · ") : "—";
+    const eventType = firstString(row, ["event_type", "type"], "Payout");
+    label =
+      projectName && projectName !== "—"
+        ? `${eventType} · ${projectName}`
+        : eventType;
   }
 
   const amountRaw =
+    row.your_amount ??
+    row.amount_received ??
     row.amount_paid ??
     row.your_allocation ??
     row.your_credit ??

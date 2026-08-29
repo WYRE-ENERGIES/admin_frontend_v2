@@ -5,7 +5,14 @@ import {
   humanLocationLabel,
   unwrapListOrObject,
 } from "./investorPortfolioMappers";
-import { formatTicketTime } from "./investorTicketUi";
+import {
+  buildInvestorSupportTicketThread,
+  buildStructuredSummaryLines,
+  extractSupportTicketResponses,
+  formatTicketTime,
+  sanitizeInvestorTicketDescription,
+  stripTicketSubjectPrefix,
+} from "./investorTicketUi";
 
 function unwrapApiData(body) {
   if (body == null) return null;
@@ -213,13 +220,37 @@ export function mapInvestorSupportTicketsList(raw) {
   return listFromPaged(raw).map(mapSupportTicketRow);
 }
 
-/** investors/support-tickets/:id/ */
+/** investors/investment-tickets/:id/ */
 export function mapInvestorSupportTicketDetail(raw) {
   const item = unwrapApiData(raw) ?? raw;
   if (!item || typeof item !== "object") return null;
-  return {
-    ...mapSupportTicketRow(item),
+  const row = mapSupportTicketRow(item);
+  const displayDescription = sanitizeInvestorTicketDescription(item.description);
+  const rawResponses = extractSupportTicketResponses(item);
+  const responses = rawResponses.map((note, index) => ({
+    id: note.id ?? note.note_id ?? note.response_id ?? index,
+    body: note.body ?? note.message ?? note.text ?? note.content,
+    authorDisplay: note.author_display ?? note.author_name ?? note.author,
+    createdAt: note.created_at,
+    createdDisplay: note.created_at_display || formatTicketTime(note.created_at),
+  }));
+  const thread = buildInvestorSupportTicketThread({
     description: item.description,
+    displayDescription,
+    createdAt: row.createdAt,
+    createdDisplay: row.createdDisplay,
+    responses: rawResponses,
+    message: item.message ?? item.investor_message ?? null,
+    summaryLines: buildStructuredSummaryLines(item),
+  });
+
+  return {
+    ...row,
+    displaySubject: stripTicketSubjectPrefix(row.subject, row.subjectTag),
+    description: item.description,
+    displayDescription,
+    responses,
+    thread,
   };
 }
 

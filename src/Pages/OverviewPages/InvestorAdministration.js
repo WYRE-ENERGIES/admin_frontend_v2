@@ -8,7 +8,6 @@ import {
   Divider,
   Dropdown,
   Form,
-  Segmented,
   Space,
   InputNumber,
   Modal,
@@ -70,12 +69,9 @@ import {
 } from "../../redux/actions/adminCustomerPayment/adminCustomerPayment.action";
 import { fetchAdminInvestorOverview } from "../../redux/actions/adminInvestorOverview/adminInvestorOverview.action";
 import { fetchAdminFinanceByInvestor } from "../../redux/actions/adminInvestorDirectory/adminInvestorDirectory.action";
-import {
-  fetchAdminSupportTicketsList,
-  fetchAdminSupportTicketDetail,
-  createAdminSupportTicketResponse,
-  clearSupportTicketDetail,
-} from "../../redux/actions/adminInvestorSupportTicket/adminInvestorSupportTicket.action";
+import AdminInvestorResponsiveTable from "../../components/investor/AdminInvestorResponsiveTable";
+import AdminInvestorTicketsPanel from "../../components/investor/AdminInvestorTicketsPanel";
+import { APIService } from "../../config/Api/apiServices";
 
 const { Title, Text } = Typography;
 const { Search } = Input;
@@ -325,6 +321,12 @@ function nearestPaymentsCardLabel(np) {
   return due.isBefore(dayjs().startOf("day")) ? "Overdue" : "Nearest";
 }
 
+function parseOptionalBranchId(raw) {
+  if (raw == null || raw === "") return null;
+  const n = Number(String(raw).trim());
+  return Number.isFinite(n) ? n : null;
+}
+
 function InvestorAdministration() {
   const decoded = authHelper();
   const isSuperAdmin = String(decoded?.role_text || "").toUpperCase() === "SUPERADMIN";
@@ -373,14 +375,9 @@ function InvestorAdministration() {
   const overviewNearestPayments = useSelector((s) => s.adminInvestorOverviewPage?.nearestPayments);
   const overviewLoading = useSelector((s) => s.adminInvestorOverviewPage?.loading);
 
-  const supportTicketsList = useSelector((s) => s.adminInvestorSupportTicketsPage?.list);
-  const supportTicketsListLoading = useSelector((s) => s.adminInvestorSupportTicketsPage?.listLoading);
-  const supportTicketDetail = useSelector((s) => s.adminInvestorSupportTicketsPage?.detail);
-  const supportTicketDetailLoading = useSelector((s) => s.adminInvestorSupportTicketsPage?.detailLoading);
-  const supportTicketResponseLoading = useSelector((s) => s.adminInvestorSupportTicketsPage?.createResponseLoading);
-
-  const [perfMode, setPerfMode] = useState("Top");
   const [activeModal, setActiveModal] = useState(MODAL.NONE);
+  const [createProjectBranchOptions, setCreateProjectBranchOptions] = useState([]);
+  const [createProjectBranchesLoading, setCreateProjectBranchesLoading] = useState(false);
   const [investorDetailOpen, setInvestorDetailOpen] = useState(false);
   const [investorEditOpen, setInvestorEditOpen] = useState(false);
   const [projectDetailOpen, setProjectDetailOpen] = useState(false);
@@ -398,13 +395,6 @@ function InvestorAdministration() {
   const [projectProgrammeStateFilter, setProjectProgrammeStateFilter] = useState("all");
   const [investmentSearch, setInvestmentSearch] = useState("");
   const [customerPaymentSearch, setCustomerPaymentSearch] = useState("");
-  const [ticketsTableMode, setTicketsTableMode] = useState("all");
-  const [ticketResponseOpen, setTicketResponseOpen] = useState(false);
-  const [activeTicketId, setActiveTicketId] = useState(null);
-  const [ticketResponseDraft, setTicketResponseDraft] = useState("");
-  const [activeTicketMeta, setActiveTicketMeta] = useState(null);
-  /** Staff responses posted this session (API returns each POST result; list refreshes for `responded`). */
-  const [ticketPostResponses, setTicketPostResponses] = useState({});
   const [customerRepaymentOpen, setCustomerRepaymentOpen] = useState(false);
   const [activePaymentMeta, setActivePaymentMeta] = useState(null);
   const [investorForm] = Form.useForm();
@@ -419,6 +409,42 @@ function InvestorAdministration() {
   const recordPaymentProjectId = Form.useWatch("project_id", recordPaymentForm);
   const createInvestmentProjectId = Form.useWatch("project_id", investmentForm);
   const createInvestmentClientContribution = Form.useWatch("clientContribution", investmentForm);
+
+  const resolveProjectBranchId = useCallback(
+    (projectId) => {
+      const pid = Number(projectId);
+      if (!Number.isFinite(pid)) return null;
+      const project = (adminProjectsList?.results || []).find((row) => Number(row.id) === pid);
+      return parseOptionalBranchId(project?.branch_id);
+    },
+    [adminProjectsList]
+  );
+
+  useEffect(() => {
+    if (activeModal !== MODAL.CREATE_PROJECT || !isSuperAdmin) return undefined;
+    let cancelled = false;
+    (async () => {
+      setCreateProjectBranchesLoading(true);
+      try {
+        const resp = await APIService.get("/cadmin/branches/");
+        const list = Array.isArray(resp?.data) ? resp.data : resp?.data?.results || [];
+        if (cancelled) return;
+        setCreateProjectBranchOptions(
+          list.map((branch) => ({
+            value: branch.id,
+            label: branch.name || branch.branch_name || `Branch ${branch.id}`,
+          }))
+        );
+      } catch {
+        if (!cancelled) setCreateProjectBranchOptions([]);
+      } finally {
+        if (!cancelled) setCreateProjectBranchesLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeModal, isSuperAdmin]);
 
   const closeModal = () => {
     setShowProjectCostBreakdown(true);
@@ -486,15 +512,14 @@ function InvestorAdministration() {
     if (!isSuperAdmin) return undefined;
     let cancelled = false;
     (async () => {
-      const rank_by = perfMode === "Bottom" ? "average_daily_generation_kwh" : "average_daily_generation_kwh";
-      const res = await dispatch(fetchAdminInvestorProjectsPerformance({ rank_by }));
+      const res = await dispatch(fetchAdminInvestorProjectsPerformance({ rank_by: "average_daily_generation_kwh" }));
       if (cancelled) return;
       if (!res.fulfilled) message.error(res.message || "Could not load project performance");
     })();
     return () => {
       cancelled = true;
     };
-  }, [dispatch, isSuperAdmin, perfMode]);
+  }, [dispatch, isSuperAdmin]);
 
   useEffect(() => {
     if (!isSuperAdmin) return undefined;
@@ -521,91 +546,6 @@ function InvestorAdministration() {
       cancelled = true;
     };
   }, [dispatch, isSuperAdmin]);
-
-  const openTicketResponse = useCallback(
-    async (ticketId, meta) => {
-      const idStr = String(ticketId);
-      setActiveTicketId(idStr);
-      setActiveTicketMeta(meta || null);
-      setTicketResponseDraft("");
-      dispatch(clearSupportTicketDetail());
-      setTicketResponseOpen(true);
-      const res = await dispatch(fetchAdminSupportTicketDetail(ticketId));
-      if (!res.fulfilled)
-      {
-        message.error(res.message || "Could not load ticket details");
-      }
-    },
-    [dispatch]
-  );
-
-  const closeTicketResponse = useCallback(() => {
-    setTicketResponseOpen(false);
-    setActiveTicketId(null);
-    setActiveTicketMeta(null);
-    setTicketResponseDraft("");
-    dispatch(clearSupportTicketDetail());
-  }, [dispatch]);
-
-  const saveTicketResponse = useCallback(async () => {
-    if (!activeTicketId) return;
-    const trimmed = String(ticketResponseDraft || "").trim();
-    if (!trimmed) return;
-    const res = await dispatch(createAdminSupportTicketResponse(Number(activeTicketId), { body: trimmed }));
-    if (res.fulfilled)
-    {
-      message.success(res.message || "Created");
-      const result = res.data?.result;
-      if (result)
-      {
-        setTicketPostResponses((prev) => {
-          const key = String(activeTicketId);
-          const existing = prev[key] || [];
-          return {
-            ...prev,
-            [key]: [
-              ...existing,
-              {
-                id: String(result.id),
-                text: result.body,
-                by: result.author_display,
-                at: result.created_at_display || result.created_at,
-              },
-            ],
-          };
-        });
-      }
-      await dispatch(fetchAdminSupportTicketsList({ page: 1, page_size: 50 }));
-      setTicketResponseOpen(false);
-      setTicketResponseDraft("");
-    } else
-    {
-      message.error(res.message || "Failed to post response");
-    }
-  }, [activeTicketId, dispatch, ticketResponseDraft]);
-
-  useEffect(() => {
-    if (!isSuperAdmin) return undefined;
-    let cancelled = false;
-    (async () => {
-      const res = await dispatch(fetchAdminSupportTicketsList({ page: 1, page_size: 50 }));
-      if (cancelled) return;
-      if (!res.fulfilled) message.error(res.message || "Could not load support tickets");
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [dispatch, isSuperAdmin]);
-
-  const copyToClipboard = useCallback(async (value) => {
-    try
-    {
-      await navigator.clipboard.writeText(String(value || ""));
-      message.success("Copied");
-    } catch {
-      message.warning("Could not copy");
-    }
-  }, []);
 
   const openCustomerRepayment = useCallback((row) => {
     if (row && typeof row === "object" && row.projectName != null)
@@ -833,7 +773,6 @@ function InvestorAdministration() {
     );
     projectEditForm.setFieldsValue({
       projectName: d.name,
-      branchId: d.branch_id != null ? String(d.branch_id) : "",
       description: d.description || "",
       locationLabel: d.location_label || "",
       systemCapacityKwp: Number(d.system_capacity_kwp ?? 0),
@@ -860,19 +799,7 @@ function InvestorAdministration() {
     try
     {
       const values = await projectEditForm.validateFields();
-      const branchRaw =
-        values.branchId != null && values.branchId !== "" ? String(values.branchId).trim() : "";
-      let branch_id = null;
-      if (branchRaw)
-      {
-        const n = Number(branchRaw);
-        if (!Number.isFinite(n))
-        {
-          message.error("Branch ID must be a number");
-          return;
-        }
-        branch_id = n;
-      }
+      const branch_id = parseOptionalBranchId(d.branch_id);
       const total = Number(values.totalProjectCost);
       const client = Number(values.clientContribution ?? 0);
       const kwp = Number(values.systemCapacityKwp ?? 0);
@@ -1219,19 +1146,10 @@ function InvestorAdministration() {
   };
 
   const submitRecordCustomerPayment = async () => {
-    const parseBranch = (raw) => {
-      if (raw == null || raw === "") return null;
-      const s = String(raw).trim();
-      if (!s) return null;
-      const n = Number(s);
-      return Number.isFinite(n) ? n : null;
-    };
-
     try
     {
       await recordPaymentForm.validateFields([
         "project_id",
-        "branch_id",
         "payment_method",
         "reference",
         "notes",
@@ -1239,12 +1157,7 @@ function InvestorAdministration() {
 
       const values = recordPaymentForm.getFieldsValue(true);
       const selectedScheduleIds = Array.isArray(values.customer_schedule_ids) ? values.customer_schedule_ids : [];
-      const branch_id = parseBranch(values.branch_id);
-      if (values.branch_id != null && String(values.branch_id).trim() !== "" && branch_id === null)
-      {
-        message.error("Branch ID must be numeric or empty");
-        return;
-      }
+      const branch_id = resolveProjectBranchId(values.project_id);
 
       const rawLines = values.line_items || [];
       const line_items = rawLines
@@ -1368,18 +1281,15 @@ function InvestorAdministration() {
       // Validate required fields only; partial validateFields() omits other form values.
       await projectForm.validateFields(["projectName", "totalProjectCost"]);
       const values = projectForm.getFieldsValue(true);
-      const branchRaw =
-        values.branchId != null && values.branchId !== "" ? String(values.branchId).trim() : "";
-      let branch_id = null;
-      if (branchRaw)
-      {
-        const n = Number(branchRaw);
-        if (!Number.isFinite(n))
-        {
+      const branch_id = parseOptionalBranchId(values.branchId ?? values.branchSelect);
+      if (
+        (values.branchId != null && String(values.branchId).trim() !== "") ||
+        (values.branchSelect != null && values.branchSelect !== "")
+      ) {
+        if (branch_id === null) {
           message.error("Branch ID must be a number");
           return;
         }
-        branch_id = n;
       }
       const total = Number(values.totalProjectCost);
       const kwp = Number(values.systemCapacityKwp ?? 0);
@@ -1529,10 +1439,15 @@ function InvestorAdministration() {
 
     const investorsVal =
       ai?.count != null && ai.count !== "" ? String(ai.count) : dash();
-    const investorsSub =
-      ai?.verified_count != null && ai?.under_review_count != null
-        ? `Verified: ${ai.verified_count} · Under review: ${ai.under_review_count}`
-        : undefined;
+    let investorsSub;
+    if (ai?.count != null && ai?.with_active_investments_count != null) {
+      const total = Number(ai.count);
+      const withInvestments = Number(ai.with_active_investments_count);
+      const withoutInvestments = Math.max(0, total - withInvestments);
+      investorsSub = `With investments: ${withInvestments} · Without: ${withoutInvestments}`;
+    } else if (ai?.with_active_investments_count != null) {
+      investorsSub = `With investments: ${ai.with_active_investments_count}`;
+    }
 
     const nearestHeadline =
       np?.headline_relative_label || np?.to_investor?.relative_label || dash();
@@ -2071,7 +1986,7 @@ function InvestorAdministration() {
               </Button>
             </Space>
           </div>
-          <Table
+          <AdminInvestorResponsiveTable
             {...ADMIN_DATA_TABLE_PROPS}
             className="admin-investor-data-table admin-investor-data-table--compact"
             columns={projectsProgrammeColumns}
@@ -2087,14 +2002,8 @@ function InvestorAdministration() {
         <Card bordered={false} className="admin-investor-panel">
           <div className="admin-investor-panel-head admin-investor-panel-head--plain">
             <span>Project performance</span>
-            <Space size={8}>
-              <Segmented size="small" options={["Top", "Bottom"]} value={perfMode} onChange={setPerfMode} />
-              <Button size="small" className="admin-investor-filter-btn">
-                Total generation (MWh) ▾
-              </Button>
-            </Space>
           </div>
-          <Table
+          <AdminInvestorResponsiveTable
             {...ADMIN_DATA_TABLE_PROPS}
             className="admin-investor-data-table admin-investor-data-table--compact"
             columns={perfColumns}
@@ -2114,7 +2023,6 @@ function InvestorAdministration() {
       projectsProgrammeColumns,
       projectsTableRows,
       projectsListLoading,
-      perfMode,
       perfColumns,
       perfRows,
       projectsPerformanceLoading,
@@ -2520,7 +2428,7 @@ function InvestorAdministration() {
               </Button>
             </Space>
           </div>
-          <Table
+          <AdminInvestorResponsiveTable
             {...ADMIN_DATA_TABLE_PROPS}
             columns={customerPaymentsListColumns}
             dataSource={customerPaymentsListRows}
@@ -2532,11 +2440,8 @@ function InvestorAdministration() {
         <Card bordered={false} className="admin-investor-panel">
           <div className="admin-investor-panel-head admin-investor-panel-head--plain">
             <span>Upcoming customer payments</span>
-            <Button size="small" className="admin-investor-filter-btn">
-              Scheduled ▾
-            </Button>
           </div>
-          <Table
+          <AdminInvestorResponsiveTable
             {...ADMIN_DATA_TABLE_PROPS}
             columns={upcomingCustomerPaymentColumns}
             dataSource={upcomingCustomerPaymentRows}
@@ -2556,154 +2461,6 @@ function InvestorAdministration() {
       customerSchedulesLoading,
     ]
   );
-
-  const ticketsTabPanel = useMemo(() => {
-    const raw = supportTicketsList?.results || [];
-    const mapped = raw.map((t) => {
-      const idStr = String(t.id);
-      const tag = t.subject_tag ? String(t.subject_tag).toUpperCase() : "—";
-      return {
-        key: idStr,
-        id: t.id,
-        idStr,
-        subjectTag: tag,
-        subjectTagDisplay: `[${tag}]`,
-        subject: t.subject,
-        investor: t.investor_name,
-        ref: t.investor_ref,
-        investorEmail: t.investor_email,
-        status: t.status,
-        priority: t.priority,
-        created: t.created_at_display || t.created_at,
-        updated: t.updated_at_display || t.updated_at,
-        responded: Boolean(t.responded),
-        staffNoteCount: t.staff_note_count ?? 0,
-      };
-    });
-
-    const rows = mapped.filter((t) => {
-      const localNotes = ticketPostResponses[t.idStr]?.length ?? 0;
-      const hasResponse = t.responded || t.staffNoteCount > 0 || localNotes > 0;
-      if (ticketsTableMode === "responded") return hasResponse;
-      if (ticketsTableMode === "open") return !["resolved", "closed"].includes(String(t.status || "").toLowerCase());
-      return true;
-    });
-
-    return (
-      <div className="admin-investor-stack">
-        <Card bordered={false} className="admin-investor-panel">
-          <div className="admin-investor-panel-head admin-investor-panel-head--plain">
-            <span>Support tickets (investment + general)</span>
-            <Space>
-              <Select
-                size="small"
-                value={ticketsTableMode}
-                onChange={setTicketsTableMode}
-                style={{ width: 160 }}
-                options={[
-                  { value: "all", label: "All tickets" },
-                  { value: "open", label: "Open only" },
-                  { value: "responded", label: "Responded" },
-                ]}
-              />
-            </Space>
-          </div>
-
-          <Table
-            {...ADMIN_DATA_TABLE_PROPS}
-            columns={[
-              adminColPct(28, { title: "Subject", dataIndex: "subject", key: "subject", ellipsis: true }),
-              adminColPct(22, {
-                title: "Investor",
-                dataIndex: "investor",
-                key: "investor",
-                ellipsis: true,
-                render: (_, r) => (
-                  <div className="admin-investor-ticket-investor">
-                    <div className="admin-investor-ticket-investor-name">{r.investor}</div>
-                    <div className="admin-investor-ticket-investor-ref">{r.ref}</div>
-                  </div>
-                ),
-              }),
-              adminColPct(10, {
-                title: "Status",
-                dataIndex: "status",
-                key: "status",
-                render: (v) => {
-                  const s = String(v || "").toLowerCase();
-                  const color = s === "resolved" ? "green" : s === "closed" ? "default" : s === "pending" ? "gold" : "blue";
-                  return (
-                    <Tag color={color} className="admin-investor-pill">
-                      {v}
-                    </Tag>
-                  );
-                },
-              }),
-              adminColPct(8, { title: "Priority", dataIndex: "priority", key: "priority" }),
-              adminColPct(12, {
-                title: "Created",
-                dataIndex: "created",
-                key: "created",
-                render: (v) => <span className="admin-table-nowrap">{v}</span>,
-                onHeaderCell: () => ({ className: "admin-table-col-gap-r" }),
-                onCell: () => ({ className: "admin-table-col-gap-r" }),
-              }),
-              adminColPct(12, {
-                title: "Updated",
-                dataIndex: "updated",
-                key: "updated",
-                render: (v) => <span className="admin-table-nowrap">{v}</span>,
-                onHeaderCell: () => ({ className: "admin-table-col-gap-l" }),
-                onCell: () => ({ className: "admin-table-col-gap-l" }),
-              }),
-              adminActionCol(18, {
-                title: "Respond",
-                key: "respond",
-                render: (_, r) => {
-                  const localNotes = ticketPostResponses[r.idStr]?.length ?? 0;
-                  const has = r.responded || r.staffNoteCount > 0 || localNotes > 0;
-                  return (
-                    <div className="admin-investor-ticket-respond-cell">
-                      {has ? (
-                        <Tag color="green" className="admin-investor-pill">
-                          Responded
-                        </Tag>
-                      ) : (
-                        <Text type="secondary" className="admin-investor-ticket-respond-hint">
-                          Not yet
-                        </Text>
-                      )}
-                      <Button
-                        size="small"
-                        type="primary"
-                        className="admin-investor-action-btn"
-                        onClick={() =>
-                          openTicketResponse(r.id, {
-                            ticketId: `#${r.id}`,
-                            subjectTag: r.subjectTagDisplay,
-                            subject: r.subject,
-                            investor: r.investor,
-                            investorRef: r.ref,
-                            investorEmail: r.investorEmail,
-                          })
-                        }
-                      >
-                        {has ? "Add response" : "Respond"}
-                      </Button>
-                    </div>
-                  );
-                },
-              }),
-            ]}
-            dataSource={rows}
-            loading={supportTicketsListLoading}
-            rowKey="key"
-          />
-
-        </Card>
-      </div>
-    );
-  }, [openTicketResponse, supportTicketsList, supportTicketsListLoading, ticketPostResponses, ticketsTableMode]);
 
   if (!isSuperAdmin)
   {
@@ -2766,16 +2523,9 @@ function InvestorAdministration() {
                   <Card
                     bordered={false}
                     className="admin-investor-panel"
-                    title={
-                      <div className="admin-investor-panel-head">
-                        <span>Customers Repayment</span>
-                        <Button size="small" className="admin-investor-filter-btn">
-                          Recent customer payments ▾
-                        </Button>
-                      </div>
-                    }
+                    title="Customers Repayment"
                   >
-                    <Table
+                    <AdminInvestorResponsiveTable
                       {...ADMIN_DATA_TABLE_PROPS}
                       className="admin-investor-data-table admin-investor-data-table--compact"
                       columns={customerRepaymentColumns}
@@ -2791,24 +2541,9 @@ function InvestorAdministration() {
                   <Card
                     bordered={false}
                     className="admin-investor-panel"
-                    title={
-                      <div className="admin-investor-panel-head">
-                        <span>Project performance</span>
-                        <Space size={8}>
-                          <Segmented
-                            size="small"
-                            options={["Top", "Bottom"]}
-                            value={perfMode}
-                            onChange={setPerfMode}
-                          />
-                          <Button size="small" className="admin-investor-filter-btn">
-                            Total generation (MWh) ▾
-                          </Button>
-                        </Space>
-                      </div>
-                    }
+                    title="Project performance"
                   >
-                    <Table
+                    <AdminInvestorResponsiveTable
                       {...ADMIN_DATA_TABLE_PROPS}
                       className="admin-investor-data-table admin-investor-data-table--compact"
                       columns={perfColumns}
@@ -2816,16 +2551,13 @@ function InvestorAdministration() {
                       loading={projectsPerformanceLoading}
                       rowKey="key"
                     />
-                    <Text type="secondary" className="admin-investor-footnote">
-                      Same Top/Bottom toggle as the Projects tab.
-                    </Text>
                   </Card>
 
                   <Card bordered={false} className="admin-investor-panel admin-investor-wide">
                     <div className="admin-investor-panel-head admin-investor-panel-head--plain">
                       <span>Finance overview — by investor</span>
                     </div>
-                    <Table
+                    <AdminInvestorResponsiveTable
                       {...ADMIN_DATA_TABLE_PROPS}
                       className="admin-investor-data-table admin-investor-data-table--compact"
                       columns={financeByInvestorColumns}
@@ -2833,9 +2565,6 @@ function InvestorAdministration() {
                       loading={financeByInvestorLoading}
                       rowKey="key"
                     />
-                    <Text type="secondary" className="admin-investor-footnote">
-                      Investors ranked by deployed capital.
-                    </Text>
                   </Card>
                 </div>
               ),
@@ -2861,7 +2590,7 @@ function InvestorAdministration() {
                         </Button>
                       </Space>
                     </div>
-                    <Table
+                    <AdminInvestorResponsiveTable
                       {...ADMIN_DATA_TABLE_PROPS}
                       className="admin-investor-data-table admin-investor-data-table--compact"
                       columns={investorsColumns}
@@ -2874,11 +2603,8 @@ function InvestorAdministration() {
                   <Card bordered={false} className="admin-investor-panel">
                     <div className="admin-investor-panel-head admin-investor-panel-head--plain">
                       <span>Investors & financed projects</span>
-                      <Button size="small" className="admin-investor-filter-btn">
-                        Most capital deployed ▾
-                      </Button>
                     </div>
-                    <Table
+                    <AdminInvestorResponsiveTable
                       {...ADMIN_DATA_TABLE_PROPS}
                       className="admin-investor-data-table admin-investor-data-table--compact"
                       columns={financeByInvestorColumns}
@@ -2914,13 +2640,15 @@ function InvestorAdministration() {
                         </Button>
                       </Space>
                     </div>
-                    <Table
+                    <AdminInvestorResponsiveTable
                       {...ADMIN_DATA_TABLE_PROPS}
                       className="admin-investor-data-table admin-investor-data-table--compact"
                       columns={investmentsListColumns}
                       dataSource={investmentsListRows}
                       loading={investmentsListLoading}
                       rowKey="key"
+                      mobileTitleKey="investorName"
+                      mobileSubtitleKey="projectName"
                     />
                   </Card>
                 </div>
@@ -2928,104 +2656,10 @@ function InvestorAdministration() {
             },
             { key: "projects", label: "Projects", children: projectsTabPanel },
             { key: "payments", label: "Payments", children: paymentsTabPanel },
-            { key: "tickets", label: "Tickets", children: ticketsTabPanel },
+            { key: "tickets", label: "Tickets", children: <AdminInvestorTicketsPanel /> },
           ]}
         />
       </Card>
-
-      <Modal
-        open={ticketResponseOpen}
-        onCancel={closeTicketResponse}
-        title="Respond to ticket"
-        width={860}
-        className="admin-investor-modal"
-        destroyOnClose
-        footer={[
-          <Button key="close" onClick={closeTicketResponse}>
-            Close
-          </Button>,
-          <Button
-            key="save"
-            type="primary"
-            loading={supportTicketResponseLoading}
-            onClick={saveTicketResponse}
-            disabled={!activeTicketId || !String(ticketResponseDraft || "").trim()}
-          >
-            Save response
-          </Button>,
-        ]}
-      >
-        <Text type="secondary" style={{ display: "block", marginTop: -6 }}>
-          {activeTicketMeta?.ticketId || activeTicketId || "—"} {activeTicketMeta?.subjectTag ? `· ${activeTicketMeta.subjectTag}` : ""}{" "}
-          {activeTicketMeta?.subject ? `— ${activeTicketMeta.subject}` : ""}
-        </Text>
-        <Divider className="admin-modal-divider" />
-
-        <Text type="secondary" style={{ display: "block", marginBottom: 10 }}>
-          Use the investor&apos;s login email for replies (same address they use on the Wyre investor portal).
-        </Text>
-
-        {supportTicketDetailLoading ? (
-          <Spin size="small" style={{ display: "block", marginBottom: 12 }} />
-        ) : supportTicketDetail?.description ? (
-          <>
-            <Text className="admin-investor-ticket-section-label">TICKET DESCRIPTION</Text>
-            <div className="admin-investor-ticket-responses-box" style={{ marginBottom: 12 }}>
-              <Text style={{ whiteSpace: "pre-wrap" }}>{supportTicketDetail.description}</Text>
-            </div>
-            <Divider className="admin-modal-divider" />
-          </>
-        ) : null}
-
-        <div className="admin-investor-ticket-email-box">
-          <div className="admin-investor-ticket-email-top">
-            <Text className="admin-investor-ticket-email-label">INVESTOR EMAIL</Text>
-            <Space>
-              <Text className="admin-investor-ticket-email">{activeTicketMeta?.investorEmail || "—"}</Text>
-              <Button size="small" className="admin-investor-filter-btn" onClick={() => copyToClipboard(activeTicketMeta?.investorEmail)}>
-                Copy email
-              </Button>
-            </Space>
-          </div>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            Investor: {activeTicketMeta?.investor || "—"}
-          </Text>
-        </div>
-
-        <Divider className="admin-modal-divider" />
-
-        <div className="admin-investor-ticket-responses">
-          <Text className="admin-investor-ticket-section-label">PREVIOUS RESPONSES</Text>
-          <div className="admin-investor-ticket-responses-box">
-            {(ticketPostResponses?.[activeTicketId] || []).length ? (
-              (ticketPostResponses?.[activeTicketId] || []).map((r) => (
-                <div key={r.id} className="admin-investor-ticket-response-item">
-                  <Text type="secondary" style={{ fontSize: 12 }}>
-                    {r.at} · {r.by}
-                  </Text>
-                  <div style={{ marginTop: 2 }}>{r.text}</div>
-                </div>
-              ))
-            ) : (
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                No staff responses yet. Add one below.
-              </Text>
-            )}
-          </div>
-        </div>
-
-        <Divider className="admin-modal-divider" />
-
-        <div>
-          <Text className="admin-investor-ticket-section-label">ADD A NEW RESPONSE</Text>
-          <Input.TextArea
-            value={ticketResponseDraft}
-            onChange={(e) => setTicketResponseDraft(e.target.value)}
-            rows={6}
-            placeholder="What you emailed or will send the investor — appended to this thread when you save."
-          />
-        </div>
-      </Modal>
 
       <Modal
         open={customerRepaymentOpen}
@@ -3357,16 +2991,27 @@ function InvestorAdministration() {
             <Form.Item name="projectName" label="Project name" rules={[{ required: true, message: "Required" }]}>
               <Input placeholder="e.g. Access Ayobo 2" />
             </Form.Item>
+            <Form.Item name="branchSelect" label="Branch">
+              <Select
+                allowClear
+                showSearch
+                optionFilterProp="label"
+                placeholder="Select branch"
+                loading={createProjectBranchesLoading}
+                options={createProjectBranchOptions}
+                onChange={(branchId) => {
+                  projectForm.setFieldsValue({
+                    branchId: branchId != null && branchId !== "" ? String(branchId) : "",
+                  });
+                }}
+              />
+            </Form.Item>
             <Form.Item
               name="branchId"
-              label={
-                <>
-                  Branch
-                  <span className="admin-modal-label-hint">(optional ID)</span>
-                </>
-              }
+              label="Branch ID"
+              className="admin-modal-wide"
             >
-              <Input placeholder="Nullable — link later" />
+              <Input readOnly placeholder="Populated when a branch is selected" />
             </Form.Item>
 
             <Form.Item name="projectType" label="Project type">
@@ -3571,9 +3216,6 @@ function InvestorAdministration() {
           <div className="admin-modal-grid">
             <Form.Item name="projectName" label="Project name" rules={[{ required: true, message: "Required" }]}>
               <Input />
-            </Form.Item>
-            <Form.Item name="branchId" label="Branch ID">
-              <Input placeholder="Numeric or empty" />
             </Form.Item>
             <Form.Item name="projectType" label="Project type" rules={[{ required: true, message: "Required" }]}>
               <Select options={PROJECT_TYPE_OPTIONS} />
@@ -4167,9 +3809,6 @@ function InvestorAdministration() {
           <div className="admin-modal-grid">
             <Form.Item name="project_id" label="Project" rules={[{ required: true, message: "Required" }]}>
               <Select showSearch optionFilterProp="label" placeholder="Select project" options={projectIdSelectOptions} />
-            </Form.Item>
-            <Form.Item name="branch_id" label="Branch ID (optional)">
-              <Input placeholder="Numeric or leave empty" />
             </Form.Item>
 
             <Form.Item name="payment_method" label="Payment method" rules={[{ required: true, message: "Required" }]}>
