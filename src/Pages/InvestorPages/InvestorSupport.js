@@ -16,8 +16,10 @@ import {
 import { PlusOutlined } from "@ant-design/icons";
 import { useDispatch, useSelector } from "react-redux";
 import InvestorPageHeader from "../../components/investor/InvestorPageHeader";
-import { buildSupportReportRows } from "../../helpers/investorReportExport";
-import { runInvestorReportDownload } from "../../helpers/investorReportDownload";
+import InvestorPillSegmented from "../../components/investor/InvestorPillSegmented";
+import InvestorResponsiveDataView from "../../components/investor/InvestorResponsiveDataView";
+import InvestorSupportTicketThread from "../../components/investor/InvestorSupportTicketThread";
+import { InvestorSupportTicketMobileList } from "../../components/investor/InvestorMobileDataLists";
 import {
   SUPPORT_PRIORITY_OPTIONS,
   SUPPORT_TOPIC_OPTIONS,
@@ -177,64 +179,70 @@ function InvestorSupport() {
 
   const detail = supportTickets.detail;
 
-  const handleDownloadReport = async () => {
-    const { title, filename, rows } = buildSupportReportRows(supportTickets.list || []);
-    await runInvestorReportDownload({
-      title,
-      filename,
-      rows,
-      emptyMessage: "No support tickets to export yet.",
-    });
-  };
-
   return (
     <div className="investor-page investor-support-page">
-      <InvestorPageHeader
-        title="Support"
-        onDownloadReport={handleDownloadReport}
-      />
+      <InvestorPageHeader title="Support" />
 
       <Card className="investor-tickets-card investor-support-tickets-card" bordered={false}>
         <div className="investor-tickets-head investor-support-tickets-head">
           <Title level={5} className="investor-tickets-title" style={{ margin: 0 }}>
             My support tickets
           </Title>
-          <Space wrap>
-            <Select
-              size="small"
+          <div className="investor-support-tickets-toolbar">
+            <InvestorPillSegmented
+              className="investor-pill-segmented--scroll"
+              options={TICKET_FILTER_OPTIONS}
               value={filter}
               onChange={setFilter}
-              options={TICKET_FILTER_OPTIONS}
-              style={{ width: 160 }}
             />
-            <Button type="primary" icon={<PlusOutlined />} onClick={openCreateModal}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              className="investor-support-new-ticket-btn"
+              onClick={openCreateModal}
+            >
               New ticket
             </Button>
-          </Space>
+          </div>
         </div>
 
-        <div className="table-responsive-wrapper">
-          <Table
-            className="investor-support-tickets-table"
-            columns={columns}
-            dataSource={filteredTickets}
-            loading={supportTickets.listLoading}
-            rowKey="key"
-            tableLayout="fixed"
-            scroll={{ x: 1048 }}
-            pagination={{
-              pageSize: 5,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "15", "20"],
-              hideOnSinglePage: true,
-            }}
-            locale={{
-              emptyText: supportTickets.listLoading
-                ? "Loading tickets…"
-                : "No tickets yet. Create one to contact Wyre support.",
-            }}
-          />
-        </div>
+        <InvestorResponsiveDataView
+          desktop={
+            <div className="table-responsive-wrapper investor-table-wrap">
+              <Table
+                className="investor-support-tickets-table"
+                columns={columns}
+                dataSource={filteredTickets}
+                loading={supportTickets.listLoading}
+                rowKey="key"
+                tableLayout="fixed"
+                pagination={{
+                  pageSize: 5,
+                  showSizeChanger: true,
+                  pageSizeOptions: ["5", "10", "15", "20"],
+                  hideOnSinglePage: true,
+                }}
+                locale={{
+                  emptyText: supportTickets.listLoading
+                    ? "Loading tickets…"
+                    : "No tickets yet. Create one to contact Wyre support.",
+                }}
+              />
+            </div>
+          }
+          mobile={
+            <InvestorSupportTicketMobileList
+              tickets={filteredTickets}
+              loading={supportTickets.listLoading}
+              onView={openTicketDetail}
+              emptyText={
+                supportTickets.listLoading
+                  ? "Loading tickets…"
+                  : "No tickets yet. Create one to contact Wyre support."
+              }
+            />
+          }
+        />
       </Card>
 
       <Card className="investor-support-card investor-support-card--peach" bordered={false}>
@@ -314,8 +322,6 @@ function InvestorSupport() {
           {detail ? (
             <div className="investor-support-detail">
               <Space wrap size={[8, 8]} style={{ marginBottom: 16 }}>
-                <Tag>{detail.subjectTagDisplay}</Tag>
-                <Tag color={statusPillColor(detail.status)}>{detail.status}</Tag>
                 {detail.priority ? <Tag>{detail.priority}</Tag> : null}
                 {detail.responded || detail.staffNoteCount > 0 ? (
                   <Tag color="green">Wyre responded</Tag>
@@ -325,7 +331,7 @@ function InvestorSupport() {
               </Space>
 
               <Title level={5} style={{ marginTop: 0 }}>
-                {detail.subject}
+                {detail.displaySubject || detail.subject}
               </Title>
 
               <Text type="secondary" className="investor-support-detail-meta">
@@ -335,10 +341,8 @@ function InvestorSupport() {
                   : ""}
               </Text>
 
-              {detail.description ? (
-                <Card size="small" bordered={false} className="investor-support-detail-body">
-                  <Text style={{ whiteSpace: "pre-wrap" }}>{detail.description}</Text>
-                </Card>
+              {detail.thread?.length || detail.displayDescription || detail.description ? (
+                <InvestorSupportTicketThread thread={detail.thread} />
               ) : (
                 <Text type="secondary">No description available for this ticket.</Text>
               )}

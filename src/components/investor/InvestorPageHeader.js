@@ -7,7 +7,7 @@ function InvestorPageHeader({
   title,
   subtitle,
   banner,
-  showDownloadReport = true,
+  showDownloadReport = false,
   onDownloadReport,
   downloadLoading = false,
 }) {

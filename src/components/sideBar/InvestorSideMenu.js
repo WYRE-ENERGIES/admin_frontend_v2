@@ -200,27 +200,16 @@ function InvestorSideMenu({ collapsed, setCollapsed, logUserOut, basePath = "" }
   );
 
   const MobileHeader = () => (
-    <div
-      className="mobile-header"
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        paddingBottom: "5px",
-        backgroundColor: "#5C12A7",
-        position: "sticky",
-        top: 0,
-        zIndex: 1000,
-      }}
-    >
-      <Image width={80} src="/Images/Wyre white-08 1.png" />
+    <header className="mobile-header investor-mobile-header">
+      <Image width={80} preview={false} src="/Images/Wyre white-08 1.png" />
       <Button
         type="text"
-        icon={<MenuOutlined style={{ color: "white" }} />}
+        icon={<MenuOutlined style={{ color: "white", fontSize: 20 }} />}
         onClick={() => setMobileDrawerOpen(true)}
-        style={{ color: "white" }}
+        aria-label="Open navigation menu"
+        className="investor-mobile-header__menu"
       />
-    </div>
+    </header>
   );
 
   if (isMobile) {
