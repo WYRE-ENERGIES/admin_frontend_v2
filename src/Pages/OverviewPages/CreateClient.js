@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { connect } from 'react-redux';
 import {
   Form,
@@ -353,9 +353,30 @@ const CreateClient = (props) => {
   const [stepData, setStepData] = useState({});
   const [logoFile, setLogoFile] = useState(null);
   const fileInputRef = useRef(null);
+  const regionsRequestedForClientRef = useRef(null);
+  const regionsRequestInFlightRef = useRef(false);
   const navigate = useNavigate();
 
   const { clientRegions = [], regionsLoading = false, getClientRegionsData: fetchClientRegions, clearClientRegions } = props;
+
+  const loadClientRegions = useCallback(async ({ force = false } = {}) => {
+    if (!clientId || regionsRequestInFlightRef.current) return;
+
+    const requestClientId = String(clientId);
+    if (!force && regionsRequestedForClientRef.current === requestClientId) return;
+
+    regionsRequestedForClientRef.current = requestClientId;
+    regionsRequestInFlightRef.current = true;
+
+    try {
+      const result = await fetchClientRegions(clientId);
+      if (result?.fulfilled === false) {
+        message.error('Failed to load client regions');
+      }
+    } finally {
+      regionsRequestInFlightRef.current = false;
+    }
+  }, [clientId, fetchClientRegions]);
 
   useEffect(() => {
     const savedData = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -454,22 +475,13 @@ const CreateClient = (props) => {
     form.setFieldsValue(merged);
     setStepData(loadedProgress);
     setInitialDataLoaded(true);
-    
-    // Load regions if we're past step 1 and have a client ID
-    if (savedClientId && savedStep && parseInt(savedStep, 10) >= 2) {
-      setClientId(savedClientId);
-      // Delay regions loading to ensure clientId is set
-      setTimeout(() => {
-        loadClientRegions();
-      }, 100);
-    }
   }, [form]);
 
   useEffect(() => {
-    if (clientId && currentStep >= 2 && clientRegions.length === 0 && !regionsLoading) {
+    if (clientId && currentStep >= 2 && !regionsLoading) {
       loadClientRegions();
     }
-  }, [clientId, currentStep, clientRegions.length, regionsLoading]);
+  }, [clientId, currentStep, regionsLoading, loadClientRegions]);
 
   const handleValuesChange = (changedValues, allValues) => {
      if (!initialDataLoaded) {
@@ -494,14 +506,6 @@ const CreateClient = (props) => {
       placement: 'topRight',
       duration: 5,
     });
-  };
-
-  const loadClientRegions = async () => {
-    if (!clientId) return;
-    const result = await fetchClientRegions(clientId);
-    if (result?.fulfilled === false) {
-      message.error('Failed to load client regions');
-    }
   };
 
   const submitClientInfo = async (values) => {
@@ -1234,7 +1238,7 @@ const CreateClient = (props) => {
                                 type="link" 
                                 size="small" 
                                 onClick={() => {
-                                  loadClientRegions();
+                                  loadClientRegions({ force: true });
                                 }}
                                 style={{ padding: 0, marginTop: '4px' }}
                               >
@@ -1368,6 +1372,7 @@ const CreateClient = (props) => {
     setClientId(null);
     setStepData({});
     setLogoFile(null);
+    regionsRequestedForClientRef.current = null;
     clearClientRegions();
     form.resetFields();
     
@@ -1404,6 +1409,7 @@ const CreateClient = (props) => {
       setClientId(null);
       setStepData({});
       setLogoFile(null);
+      regionsRequestedForClientRef.current = null;
       clearClientRegions();
       
       message.success('Corrupted data cleared. Form reset to initial state.');
