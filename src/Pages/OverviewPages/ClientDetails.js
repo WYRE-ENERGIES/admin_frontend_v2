@@ -364,9 +364,9 @@ const ClientDetails = () => {
   ];
 
   return (
-    <div style={{ margin: '30px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: "wrap" }}>
-       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="page-container">
+      <div className="page-header page-header--wrap">
+        <div className="page-header-left">
           <Button 
             type="text" 
             icon={<ArrowLeftOutlined />} 
@@ -375,7 +375,7 @@ const ClientDetails = () => {
           />
           <h2 style={{ margin: 0 }}>Client Details</h2>
         </div>
-        <Space>
+        <Space wrap>
           <Button 
             danger={client?.is_active}
             loading={actionLoading}
@@ -385,7 +385,7 @@ const ClientDetails = () => {
           </Button>
           <Button 
             type="primary"
-            style={{ background: '#5C12A7' }}
+            className="btn-primary-brand"
             onClick={handleLoginAsClient}
           >
             Login as Client
@@ -397,7 +397,7 @@ const ClientDetails = () => {
       <Card 
         title="Client Information" 
         extra={<Button type="text" icon={<EditOutlined />} onClick={() => setEditingSection('client')}>Edit</Button>}
-        style={{ marginBottom: '20px' }}
+        className="page-card"
       >
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} md={8}>
@@ -477,7 +477,7 @@ const ClientDetails = () => {
             <Button type="text" icon={<PlusOutlined />} onClick={() => setAddingSection('mainUser')}>Add</Button>
           )
         }
-        style={{ marginBottom: '20px' }}
+        className="page-card"
       >
         <Spin spinning={mainUserLoading}>
           <Row gutter={[16, 16]}>
@@ -511,15 +511,18 @@ const ClientDetails = () => {
         extra={
             <Button type="text" icon={<PlusOutlined />} onClick={() => setAddingSection('branches')}>Add</Button>
         }
-        style={{ marginBottom: '20px' }}
+        className="page-card"
       >
-        <Table 
-          dataSource={branches} 
-          columns={branchColumns}
-          rowKey="branch_id"
-          pagination={false}
-          loading={branchLoading}
-        />
+        <div className="table-responsive-wrapper">
+          <Table 
+            dataSource={branches} 
+            columns={branchColumns}
+            rowKey="branch_id"
+            pagination={false}
+            loading={branchLoading}
+            scroll={{ x: true }}
+          />
+        </div>
       </Card>
 
       {/* Additional Users Section */}
@@ -533,13 +536,16 @@ const ClientDetails = () => {
           )
         }
       >
-        <Table 
-          dataSource={additionalUsers} 
-          columns={userColumns}
-          rowKey="id"
-          pagination={false}
-          loading={additionalUsersLoading}
-        />
+        <div className="table-responsive-wrapper">
+          <Table 
+            dataSource={additionalUsers} 
+            columns={userColumns}
+            rowKey="id"
+            pagination={false}
+            loading={additionalUsersLoading}
+            scroll={{ x: true }}
+          />
+        </div>
       </Card>
 
       <EditClientModal

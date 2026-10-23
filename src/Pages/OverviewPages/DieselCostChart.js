@@ -26,19 +26,18 @@ ChartJS.register(
   Legend
 );
 
-
 function DieselCostChart(props) {
+  const { downloading = false } = props;
   const [selectedDate, setSelectedDate] = useState()
   const [costChartData, setCostChartData] = useState({
     labels: [],
     datasets: []
   })
-    const {downloading = false} = props
+
   dayjs.extend(customParseFormat);
 
   const showDieselCostBarchart = () => {
     const clientId = props.auth.userData.client_id
-    // const year = new Date().getFullYear();
     props.getClientDieselCostData(clientId);
   }
   
@@ -49,18 +48,11 @@ function DieselCostChart(props) {
   const utilityEnergyReducerStates = props.overviewPage.fetchedDieselCostBarChart
   useEffect(() => {
     if (utilityEnergyReducerStates) {
-      const labels = utilityEnergyReducerStates.cost_overview.map((reducer) => {
-        return reducer.month;
-      });
+      const labels = utilityEnergyReducerStates.cost_overview.map((reducer) => reducer.month);
       const averageCost = utilityEnergyReducerStates.historical_avg
-      const clientCost = utilityEnergyReducerStates.cost_overview.map((reducer) => {
-        return reducer.client_cost;
-      });
-      const wyreCost = utilityEnergyReducerStates.cost_overview.map((reducer) => {
-        return reducer.wyre_cost;
-      });
-
-      const averagecostLine = Array.from({ length: 12 }, (_, i) => averageCost)
+      const clientCost = utilityEnergyReducerStates.cost_overview.map((reducer) => reducer.client_cost);
+      const wyreCost = utilityEnergyReducerStates.cost_overview.map((reducer) => reducer.wyre_cost);
+      const averagecostLine = Array.from({ length: 12 }, () => averageCost)
 
       const costDataSource = {
         labels,
@@ -68,31 +60,24 @@ function DieselCostChart(props) {
           {
             label: "Historical Average",
             data: averagecostLine,
-            fontWeight: "bold",
             backgroundColor: "#EF0000",
             type: "line",
             borderColor: "#EF0000",
-            // borderWidth: 1,
             fill: false,
-            // xAxisID: "axis-bar",
           },
           {
             label: "Wyre Calculated Cost",
             data: wyreCost,
-            fontWeight: "bold",
             backgroundColor: "#5C12A7",
             borderRadius: 6,
-            barThickness: 40,
-            maxBarThickness: 40,
+            maxBarThickness: 60,
           },
           {
             label: "Recorded Cost",
             data: clientCost,
-            fontWeight: "bold",
             backgroundColor: "#F9CF40",
             borderRadius: 6,
-            barThickness: 40,
-            maxBarThickness: 40,
+            maxBarThickness: 60,
           },
         ],
       };
@@ -102,14 +87,12 @@ function DieselCostChart(props) {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: true,
     plugins: {
       legend: {
         position: 'top',
-        // align: 'start',
         display: true,
-        labels: {
-          usePointStyle: true,
-        },
+        labels: { usePointStyle: true },
       },
       title: {
         display: true,
@@ -118,7 +101,6 @@ function DieselCostChart(props) {
         position: 'left'
       },
     },
-
     scales: {
       x: {
         title: {
@@ -127,25 +109,15 @@ function DieselCostChart(props) {
           fontWeight: "bold",
           position: "left",
         },
-        ticks: {
-          font: {
-            weight: 'bold',
-          }
-        },
+        ticks: { font: { weight: 'bold' } },
         stacked: false,
-        grid: {
-          drawOnChartArea: false
-        }
+        grid: { drawOnChartArea: false },
       },
       y: {
         stacked: false,
-        grid: {
-          drawOnChartArea: true
-        }
-      }
+        grid: { drawOnChartArea: true },
+      },
     },
-
-
   };
 
   const onDateChange = (select) => {
@@ -155,63 +127,34 @@ function DieselCostChart(props) {
     props.getClientDieselCostData(clientId, getYear(useYear))
   }
 
-
-
   return (
-    <>
-      <div className="##########">
-        {/* {showUtilityCostPage ? (
-        ) : (
-          setShowUtilityCostPage(false)
-      )} */}
-          <section className="total-energy-bar-chart">
-            <Card
-              style={{
-                borderRadius: 22,
-              }}
-              loading={props.overviewPage.fetchDieselCostBarChartLoading}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <div>
-                  <h1
-                    style={{
-                      fontSize: "17Px",
-                    }}
-                  >
-                    Diesel Cost
-                  </h1>
-                </div>
-                {/* <div>
-                  <DatePicker
-                    defaultValue={selectedDate}
-                    picker="year"
-                    style={{ width: 120.65, height: 44 }}
-                    onChange={onDateChange}
-                  />
-                </div> */}
-                <div className="">
-                {/* <Button
-                  type="default"
-                  onClick={() => setSelectedIds([])}
-                  disabled={selectedIds.length === 0}
-                  style={{ marginTop: 16 }}
-                >
-                  Reset Selection
-                </Button> */}
-                <DatePicker
-                  defaultValue={selectedDate}
-                  picker="year"
-                  style={{}}
-                  onChange={onDateChange}
-                />
-              </div>
-              </div>
-              <Bar style={{maxWidth: downloading ? "78vw" : ""}} options={options} data={costChartData} />
-            </Card>
-          </section>
-        
-      </div>
-    </>
+    <div>
+      <section className="total-energy-bar-chart">
+        <Card className="chart-card" loading={props.overviewPage.fetchDieselCostBarChartLoading}>
+          <div className="chart-header">
+            <h1 className="chart-header-title">Diesel Cost</h1>
+            <div className="chart-filters">
+              <DatePicker
+                className="chart-filter-date"
+                defaultValue={selectedDate}
+                picker="year"
+                onChange={onDateChange}
+                placeholder="Select year"
+              />
+            </div>
+          </div>
+          <div className="chart-scroll-container">
+            <div className="chart-min-width-wrapper">
+              <Bar
+                style={{ maxWidth: downloading ? "78vw" : "" }}
+                options={options}
+                data={costChartData}
+              />
+            </div>
+          </div>
+        </Card>
+      </section>
+    </div>
   );
 }
 

@@ -5,6 +5,7 @@ import Settings from "../../Pages/OverviewPages/Settings";
 import SystemConstants from "../../Pages/OverviewPages/SystemContants";
 import HistoricalReadings from "../../Pages/OverviewPages/HistoricalReadings";
 import Documentation from "../../Pages/OverviewPages/Documentation";
+import InstallationsChecklist from "../../Pages/OverviewPages/InstallationsChecklist";
 
 function OperatorsRoute() {
   return (
@@ -13,6 +14,7 @@ function OperatorsRoute() {
         <Routes>
           <Route exact path='/' element={<DownloadPage />} />
           <Route path="/system-constants" element={<SystemConstants />}></Route>
+          <Route path="/installations-checklist" element={<InstallationsChecklist />} />
           <Route path="/settings" element={<Settings />}></Route>
           <Route path="/historical-readings" element={<HistoricalReadings />}></Route>
           <Route path="/documentation" element={<Documentation />}></Route>

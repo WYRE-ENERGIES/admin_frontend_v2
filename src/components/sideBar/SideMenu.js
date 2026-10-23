@@ -9,6 +9,7 @@ import {
   MailOutlined,
   ArrowLeftOutlined,
   SettingOutlined,
+  SunOutlined,
 } from "@ant-design/icons";
 import EnvData from '../../config/EnvData';
 import { Button, Image, Menu, Drawer } from "antd";
@@ -81,6 +82,11 @@ function SideMenu({collapsed, setCollapsed, logUserOut}) {
         label: "Location",
         key: "/locations",
         icon: <EnvironmentOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
+      },
+      {
+        label: "Solar overview",
+        key: "/solar-overview",
+        icon: <SunOutlined style={{scale: collapsed ? '1.1' : '1'}} />,
       },
       {
         label: "Set Target",

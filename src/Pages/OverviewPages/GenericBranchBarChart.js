@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
-import { Card, Input, DatePicker, Select, Space, Spin } from "antd";
+import { Card, Input, DatePicker, Select, Spin } from "antd";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -8,7 +8,6 @@ const { Option } = Select;
 const barStyle = {
   borderRadius: { topLeft: 6, topRight: 6 },
   borderSkipped: false,
-  barThickness: 40,
   maxBarThickness: 60,
 };
 
@@ -60,22 +59,11 @@ const GenericBranchBarChart = ({
   }, [seriesConfig, filteredData, chartLabel, values]);
 
   return (
-    <Card style={{ overflow: "hidden", borderRadius: 22 }}>
+    <Card className="chart-card">
       <Spin spinning={loading} size="large">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-            flexWrap: "wrap",
-            gap: 8,
-          }}
-        >
-          <h1 style={{ fontSize: "17px", margin: 0 }}>
-            {chartLabel}
-          </h1>
-          <Space>
+        <div className="chart-header">
+          <h1 className="chart-header-title">{chartLabel}</h1>
+          <div className="chart-filters">
             <Select
               mode="multiple"
               showSearch
@@ -83,7 +71,7 @@ const GenericBranchBarChart = ({
               placeholder="Search & select branches"
               value={selectedBranches}
               onChange={onBranchSelect}
-              style={{ width: 250 }}
+              className="chart-filter-branch"
               options={branchOptions}
               optionFilterProp="label"
               filterOption={(input, option) =>
@@ -95,7 +83,7 @@ const GenericBranchBarChart = ({
               allowClear
               onChange={onRegionChange}
               value={selectedRegion}
-              style={{ width: 180 }}
+              className="chart-filter-region"
             >
               {regionOptions.map(region => (
                 <Option key={region} value={region}>{region}</Option>
@@ -105,37 +93,34 @@ const GenericBranchBarChart = ({
               picker="month"
               onChange={onDateChange}
               value={selectedDate}
-              style={{ width: 140 }}
+              className="chart-filter-date"
               format="MM/YYYY"
               allowClear
             />
-          </Space>
+          </div>
         </div>
-        <Bar
-          style={{ maxWidth: downloading ? "78vw" : "" }}
-          data={{ labels, datasets }}
-          options={{
-            responsive: true,
-            plugins: {
-              legend: { display: !!seriesConfig?.length },
-              title: { display: false },
-            },
-            scales: {
-              x: { 
-                title: { display: true, text: "Branches" },
-                grid: { display: false }
-              },
-            },
-            layout: {
-              padding: {
-                top: 10,
-                bottom: 10,
-                left: 10,
-                right: 10
-              }
-            }
-          }}
-        />
+        <div className="chart-scroll-container">
+          <div className="chart-min-width-wrapper">
+            <Bar
+              style={{ maxWidth: downloading ? "78vw" : "" }}
+              data={{ labels, datasets }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                  legend: { display: !!seriesConfig?.length },
+                  title: { display: false },
+                },
+                scales: {
+                  x: { 
+                    title: { display: true, text: "Branches" },
+                    grid: { display: false }
+                  },
+                },
+              }}
+            />
+          </div>
+        </div>
       </Spin>
     </Card>
   );

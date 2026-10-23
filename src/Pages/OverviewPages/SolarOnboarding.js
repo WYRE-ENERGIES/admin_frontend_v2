@@ -266,13 +266,11 @@ const SolarOnboarding = ({
   ];
 
   return (
-    <div style={{ margin: '30px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <Title level={3} style={{ margin: 0 }}>
-            {showDeviceDetails ? 'Solar Station Details' : 'Solar Onboarding'}
-          </Title>
-        </div>
+    <div className="page-container">
+      <div className="page-header">
+        <Title level={3} style={{ margin: 0 }}>
+          {showDeviceDetails ? 'Solar Station Details' : 'Solar Onboarding'}
+        </Title>
         {showDeviceDetails && (
           <Button
             type="primary"
@@ -326,7 +324,7 @@ const SolarOnboarding = ({
                   loading={searching || searchStationLoading}
                   size="large"
                   block
-                  style={{ background: '#5C12A7', width: 'max-content' }}
+                  className="btn-primary-brand"
                 >
                   {searching ? 'Searching...' : 'Proceed'}
                 </Button>
@@ -335,7 +333,7 @@ const SolarOnboarding = ({
           </Card>
 
           <Card title="All Stations">
-            <div style={{ marginBottom: 16, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div className="page-filters">
               <Input.Search
                 placeholder="Search by Name, Station ID, or Address"
                 allowClear
@@ -345,14 +343,14 @@ const SolarOnboarding = ({
                 onChange={e =>
                   setSearchFilters((prev) => ({ ...prev, searchText: e.target.value }))
                 }
-                style={{ width: 300 }}
+                className="page-filter-search"
                 value={searchFilters?.searchText || ''}
                 enterButton
               />
               <Select
                 placeholder="Filter by Branch"
                 allowClear
-                style={{ width: 200 }}
+                className="page-filter-select"
                 loading={branchesLoading}
                 value={searchFilters?.branch_id || undefined}
                 onChange={(value) =>
@@ -371,6 +369,7 @@ const SolarOnboarding = ({
                 Reset Filters
               </Button>
             </div>
+            <div className="table-responsive-wrapper">
             <Table
               dataSource={
                 (stations || []).filter((station) => {
@@ -435,6 +434,7 @@ const SolarOnboarding = ({
               rowKey={(record) => record.id || record.deye_station_id}
               loading={stationsLoading}
               pagination={{ pageSize: 10 }}
+              scroll={{ x: true }}
               onRow={(record) => {
                 const branchIdentifier = record?.branch ?? record?.branch_id;
                 return {
@@ -457,6 +457,7 @@ const SolarOnboarding = ({
                 };
               }}
             />
+            </div>
           </Card>
         </>
       ) : (
@@ -582,7 +583,7 @@ const SolarOnboarding = ({
             </div>
           </Form>
           <div style={{ marginTop: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <div className="page-header">
               <Title level={4} style={{ margin: 0 }}>Devices</Title>
               <Input.Search
                 placeholder="Search by Device SN, Device ID, Type, or Product ID"
@@ -593,11 +594,12 @@ const SolarOnboarding = ({
                 onChange={e =>
                   setDeviceSearchText(e.target.value)
                 }
-                style={{ width: 350 }}
+                className="page-filter-search"
                 value={deviceSearchText}
                 enterButton
               />
             </div>
+            <div className="table-responsive-wrapper">
             <Table
               dataSource={
                 searchedDevices.filter((device) => {
@@ -615,7 +617,9 @@ const SolarOnboarding = ({
               columns={deviceColumns}
               rowKey="device_id"
               pagination={{ pageSize: 10 }}
+              scroll={{ x: true }}
             />
+            </div>
           </div>
         </Card>
       )}

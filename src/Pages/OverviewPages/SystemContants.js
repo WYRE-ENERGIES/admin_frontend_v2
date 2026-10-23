@@ -134,17 +134,15 @@ function SystemConstants(props) {
   };
 
   const renderHeader = () => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+    <div className="page-header">
       <h2 style={{ margin: 0 }}>System Constants</h2>
-      <div>
-        <Button
-          type="primary"
-          onClick={handleSaveBulk}
-          disabled={savingBulk || systemConstants.loading}
-        >
-          {savingBulk ? "Saving..." : "Save All Changes"}
-        </Button>
-      </div>
+      <Button
+        type="primary"
+        onClick={handleSaveBulk}
+        disabled={savingBulk || systemConstants.loading}
+      >
+        {savingBulk ? "Saving..." : "Save All Changes"}
+      </Button>
     </div>
   );
 
@@ -160,32 +158,20 @@ function SystemConstants(props) {
   );
 
   const renderDieselCard = () => (
-    <div style={{
-      border: "1px solid #e5e7eb",
-      borderRadius: 12,
-      padding: 16,
-      background: "#fff",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+    <div className="sys-const-card">
+      <div className="sys-const-card-header">
         <h3 style={{ margin: 0 }}>Diesel Price per Litre</h3>
         <button
           type="button"
           onClick={handleSaveDiesel}
           disabled={savingDiesel || systemConstants.loading}
-          style={{
-            padding: "8px 12px",
-            background: "#111827",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            cursor: savingDiesel || systemConstants.loading ? "not-allowed" : "pointer",
-          }}
+          className="sys-const-update-btn"
         >
           {savingDiesel ? "Updating..." : "Update"}
         </button>
       </div>
-      <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <label htmlFor="dieselPrice" style={{ minWidth: 180 }}>Price (NGN/Litre)</label>
+      <div className="sys-const-diesel-row">
+        <label htmlFor="dieselPrice">Price (NGN/Litre)</label>
         <input
           id="dieselPrice"
           type="number"
@@ -193,12 +179,7 @@ function SystemConstants(props) {
           value={dieselValue ?? ""}
           onChange={(e) => onChangeConstant(DIESEL_CONSTANT_NAME, e.target.value)}
           placeholder="e.g. 1100"
-          style={{
-            flex: 1,
-            padding: "10px 12px",
-            border: "1px solid #d1d5db",
-            borderRadius: 8,
-          }}
+          className="sys-const-input"
         />
       </div>
       {(() => {
@@ -218,12 +199,7 @@ function SystemConstants(props) {
   );
 
   const renderTariffCard = () => (
-    <div style={{
-      border: "1px solid #e5e7eb",
-      borderRadius: 12,
-      padding: 16,
-      background: "#fff",
-    }}>
+    <div className="sys-const-card">
       <h3 style={{ marginTop: 0 }}>Utility Tariff Structure</h3>
       <div style={{ overflowX: "auto" }}>
         <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 10 }}>
@@ -278,27 +254,22 @@ function SystemConstants(props) {
     const entries = Object.entries(systemConstants.values || {}).filter(([name]) => !exclude.has(name));
     if (entries.length === 0) return null;
     return (
-      <div style={{
-        border: "1px solid #e5e7eb",
-        borderRadius: 12,
-        padding: 16,
-        background: "#fff",
-      }}>
+      <div className="sys-const-card">
         <h3 style={{ marginTop: 0 }}>Other Constants</h3>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 12 }}>
+        <div className="sys-const-other-grid">
           {entries.map(([name, value]) => {
             const edited = editedValues[name];
             const shown = edited ?? value ?? "";
             const meta = getConstantMeta(name);
             return (
-              <div key={name} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <label style={{ fontSize: 12, fontWeight: 500, color: "#374151" }}>{name}</label>
+              <div key={name} className="sys-const-other-item">
+                <label className="sys-const-other-label">{name}</label>
                 <input
                   type="number"
                   step="0.000001"
                   value={shown}
                   onChange={(e) => onChangeConstant(name, e.target.value)}
-                  style={{ padding: "10px 12px", border: "1px solid #d1d5db", borderRadius: 8, height: "30px" }}
+                  className="sys-const-input"
                 />
                 {(meta?.description || meta?.source) ? (
                   <div style={{ color: "#6b7280", fontSize: 12 }}>
@@ -320,7 +291,7 @@ function SystemConstants(props) {
 
   if (systemConstants.loading) {
     return (
-      <div style={{ padding: "24px 32px" }}>
+      <div className="page-container">
         {renderHeader()}
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
           <Spin size="large" tip="Loading system constants..." />
@@ -330,13 +301,13 @@ function SystemConstants(props) {
   }
  
   return (
-    <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 16 }}>
+    <div className="page-container sys-const-page">
       {renderHeader()}
       {renderAlerts()}
       {renderDieselCard()}
       {renderTariffCard()}
       {renderOtherConstants()}
-  </div>
+    </div>
   );
 }
 

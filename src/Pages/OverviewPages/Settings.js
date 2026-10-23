@@ -297,7 +297,7 @@ function SettingsPage({ auth, updateUserProfile, updateUserPassword }) {
           style={{
             position: "absolute",
             bottom: "-140px",
-            left: "40px",
+            left: "30px",
             gap: "20px",
           }}
         >
@@ -321,7 +321,7 @@ function SettingsPage({ auth, updateUserProfile, updateUserPassword }) {
 
       <Content
         style={{
-          padding: "80px 40px 40px",
+          padding: "80px 15px 15px",
           background: "#f5f5f5",
           marginTop: "70px",
           minHeight: "calc(100vh - 180px)",

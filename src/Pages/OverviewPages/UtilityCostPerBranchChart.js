@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { Bar } from "react-chartjs-2";
-import { Card, Input, DatePicker, Select, Space, Spin } from "antd";
+import { Card, Input, DatePicker, Select, Spin } from "antd";
 
 const { Search } = Input;
 const { Option } = Select;
@@ -34,7 +34,6 @@ const UtilityCostPerBranchChart = ({
   const barStyle = {
     borderRadius: { topLeft: 6, topRight: 6 },
     borderSkipped: false,
-    barThickness: 40,
     maxBarThickness: 60,
   };
 
@@ -58,6 +57,7 @@ const UtilityCostPerBranchChart = ({
 
   const options = {
     responsive: true,
+    maintainAspectRatio: true,
     plugins: {
       legend: { display: true },
       title: { display: false },
@@ -68,31 +68,14 @@ const UtilityCostPerBranchChart = ({
         grid: { display: false }
       },
     },
-    layout: {
-      padding: {
-        top: 10,
-        bottom: 10,
-        left: 10,
-        right: 10
-      }
-    }
   };
 
   return (
-    <Card style={{ overflow: "hidden", borderRadius: 22 }}>
+    <Card className="chart-card">
       <Spin spinning={loading} size="large">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-            flexWrap: "wrap",
-            gap: 8,
-          }}
-        >
-          <h1 style={{ fontSize: "17px", margin: 0 }}>Utility Cost Per Branch</h1>
-          <Space>
+        <div className="chart-header">
+          <h1 className="chart-header-title">Utility Cost Per Branch</h1>
+          <div className="chart-filters">
             <Select
               mode="multiple"
               showSearch
@@ -100,7 +83,7 @@ const UtilityCostPerBranchChart = ({
               placeholder="Search & select branches"
               value={selectedBranches}
               onChange={onBranchSelect}
-              style={{ width: 250 }}
+              className="chart-filter-branch"
               options={branchOptions}
               optionFilterProp="label"
               filterOption={(input, option) =>
@@ -112,7 +95,7 @@ const UtilityCostPerBranchChart = ({
               allowClear
               onChange={onRegionChange}
               value={selectedRegion}
-              style={{ width: 180 }}
+              className="chart-filter-region"
             >
               {regionOptions.map(region => (
                 <Option key={region} value={region}>{region}</Option>
@@ -122,17 +105,21 @@ const UtilityCostPerBranchChart = ({
               picker="month"
               onChange={onDateChange}
               value={selectedDate}
-              style={{ width: 140 }}
+              className="chart-filter-date"
               format="MM/YYYY"
               allowClear
             />
-          </Space>
+          </div>
         </div>
-        <Bar
-          style={{ maxWidth: downloading ? "78vw" : "" }}
-          data={chartData} 
-          options={options} 
-        />
+        <div className="chart-scroll-container">
+          <div className="chart-min-width-wrapper">
+            <Bar
+              style={{ maxWidth: downloading ? "78vw" : "" }}
+              data={chartData} 
+              options={options} 
+            />
+          </div>
+        </div>
       </Spin>
     </Card>
   );

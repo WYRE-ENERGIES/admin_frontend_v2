@@ -2,14 +2,28 @@
   font-family: 'Montserrat', sans-serif;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+  height: 100%;
+}
+
 .App {
   font-family: 'Montserrat';
   font-style: normal;
   display: flex;
   flex-direction: column;
-  width: 100vw;
+  /* Avoid 100vw causing horizontal overflow on Windows */
+  width: 100%;
+  /* Make .App the scroll container (body is overflow:hidden) */
   height: 100vh;
-  overflow-y: scroll;
+  min-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Hide scrollbar across browsers (keep scroll behaviour) */
+  -ms-overflow-style: none; /* IE/Edge legacy */
+  scrollbar-width: none; /* Firefox */
   /* overflow-y: hidden; */
   /* overflow-x: hidden;  */
   /* background-color: #5C12A7; */
@@ -17,6 +31,17 @@
 
 .App::-webkit-scrollbar {
   display: none;
+}
+
+/* Prevent the browser window from being the scroller */
+body {
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
 
 .AppHeader {
@@ -42,7 +67,7 @@
 
 @media (max-width: 768px) {
   .mobile-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
   }
 }
@@ -56,7 +81,8 @@
 
 @media (max-width: 768px) {
   .mobile-button {
-    padding: 20px 15px;
+    padding: 10px 10px;
+    font-size: 12px;
   }
 }
 
@@ -74,6 +100,161 @@
   align-items: flex-start;
   /* background-color: rgba(0, 0, 0, 0.05); */
   background-color: #5C12A7;
+}
+
+/* Investor app — full viewport purple (matches clientadmin.wyreng.com shell) */
+body.wyre-investor-app {
+  margin: 0;
+  padding: 0;
+  background-color: #5c12a7;
+}
+
+body.wyre-investor-app .App {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #5c12a7;
+}
+
+body.wyre-investor-app .wyre-app-layout {
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Investor shell — match client admin (purple row + inset rounded PageContent) */
+.SidemenuAndPagecontent.investor-layout {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  min-height: 100vh;
+  align-items: flex-start;
+  background-color: #5c12a7;
+}
+
+.investor-layout .investor-app-sider.ant-layout-sider {
+  margin-left: 15px !important;
+  flex: 0 0 auto;
+  height: 100vh !important;
+  position: sticky !important;
+  top: 0;
+}
+
+/* Investor sidebar: menu + bottom profile (avatar, name, role) */
+.investor-sider-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.investor-sider-top {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.investor-sider-menu.SideMenuVertical {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  margin-top: 20px;
+}
+
+.investor-sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px 22px;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  flex-shrink: 0;
+}
+
+.investor-sidebar-profile--collapsed {
+  justify-content: center;
+  padding: 14px 8px 20px;
+}
+
+.investor-sidebar-avatar {
+  background: #ff9f1c !important;
+  color: #1a1a1a !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700 !important;
+  flex-shrink: 0;
+}
+
+.investor-sidebar-profile-text {
+  min-width: 0;
+}
+
+.investor-sidebar-profile-name {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.25;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.investor-sidebar-profile-role {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 1.35;
+  color: rgba(255, 255, 255, 0.78);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ant-drawer-body .investor-sider-inner {
+  min-height: 100%;
+}
+
+.investor-sider-brand {
+  display: flex;
+  align-items: center;
+  padding: 40px 12px 12px;
+  gap: 10px;
+}
+
+.investor-sider-brand--collapsed {
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 6px 6px;
+  gap: 8px;
+}
+
+.investor-sider-brand-logo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.investor-sider-toggle {
+  margin-left: auto;
+  color: white;
+  flex-shrink: 0;
+}
+
+.investor-sider-brand--collapsed .investor-sider-toggle {
+  margin-left: 0;
+}
+
+.investor-sider-role-pill {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.78);
+  text-transform: uppercase;
 }
 
 .SideMenu{
@@ -126,12 +307,37 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   background-color: #F2F2F8;
   border-radius: 40px;
   width: 100%;
-  /* min-height: 100vh; */
-  min-height: 1173px;
+  /* Occupy remaining row width beside the sidebar and allow shrinking so wide
+     children (e.g. Ant Table + fixed columns) get a bounded width and can
+     show horizontal scroll instead of clipping at the purple edge. */
+  flex: 1 1 0%;
+  min-width: 0;
+  /* let content define height (page scrolls on .App) */
+  min-height: calc(100vh - 70px);
   /* width: 1100px; */
   /* height: 2500px; */
-  overflow-y: hidden;
-  overflow-x: hidden; 
+  overflow-y: visible;
+  overflow-x: hidden;
+}
+
+/* Investor: same inset panel as client admin; scroll on .App not inside panel */
+.PageContent.investor-shell {
+  margin: 35px 25px 35px 18px;
+  background-color: #f2f2f8;
+  border-radius: 40px;
+  flex: 1 1 0%;
+  min-width: 0;
+  width: 100%;
+  min-height: calc(100vh - 70px);
+  overflow-x: hidden;
+  overflow-y: visible;
+  box-sizing: border-box;
+}
+
+.investor-shell .investor-route-outlet {
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 /* .admin-energy-top {
@@ -175,53 +381,8 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
   justify-content: space-between;
 }
 
-.client-user-table{
-  width: 71%;
-  /* width: 740px; */
-}
-
-.client-user-table{
-  width: 71%;
-  /* width: 740px; */
-}
-
-.percentage_container{
-  background-color: #FFFFFF;
-  /* width: 26%; */
-  width: 28%;
-  height: 10%;
-}
-
-@media (max-width: 1022px) {
-  .percentage_container{
-    width: 100%;
-  }
-}
-
-.client-user-table{
-  /* width: 71%; */
-  width: 70%;
-  margin-block: 15px;
-}
-
-@media (max-width: 1022px) {
-.client-user-table{
-    width: 100%;
-  }
-}
-
-.sidePage-add-user-container {
-  /* width: 26%; */
-  /* width: 409px;
-  height: 10%; */
-  background: #FFFFFF;
-  border-radius: 12px;
-  border-radius: 12px;
-}
-
-.sidePage-add-user input {
-  background: #F2F2F8;
-  height: 40px;
+.client-user-table {
+  width: 100%;
 }
 
 .ant-select-selector {
@@ -236,45 +397,16 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected{
 }
 
 .user-center-image {
-  /* display: block;
-  /* display: block;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 15px;
-  width: 100%; */
   display: flex;
-  justify-content: center;  /* Horizontally center */
+  justify-content: center;
   align-items: center;
-}
-
-.ant-image-mask {
-  /* width: 700px !important;
-  height: 700px !important; */
-  width: 100%;
-  display: flex;
-  justify-content: center;  /* Horizontally center */
-  align-items: center;
-}
-
-.ant-image-mask {
-  /* width: 700px !important;
-  height: 700px !important; */
-}
-
-.sidePage-add-user {
-  padding: 15px;
+  margin-bottom: 16px;
 }
 
 .user-form-heading {
-  /* font-weight: lighter; */
-  font-size: large;
-  margin-left: 10px;
-}
-
-.user-form-heading {
-  /* font-weight: lighter; */
-  font-size: large;
-  margin-left: 10px;
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .support_bottomSection {
@@ -785,6 +917,131 @@ a.header-short-button--auth {
     margin-inline: 30px;
   }
 }
+
+/* ===== Diesel Overview Page ===== */
+.diesel-page {
+  padding: 24px 32px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.diesel-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.diesel-page-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  margin-bottom: 0 !important;
+}
+
+.diesel-date-picker {
+  height: 40px;
+  border-radius: 10px;
+}
+
+.diesel-cards-row {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.diesel-card {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 20px 24px;
+  border-radius: 12px;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.diesel-card-title {
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px !important;
+  font-size: 16px !important;
+}
+
+.diesel-card-icon {
+  height: 28px;
+  width: 28px;
+}
+
+.diesel-card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.diesel-card-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.diesel-card-value {
+  font-weight: 600;
+  color: #5C12A7;
+}
+
+.diesel-card-branch-count {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80px;
+}
+
+.diesel-table-section {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+@media (max-width: 768px) {
+  .diesel-page {
+    padding: 16px;
+  }
+
+  .diesel-page-header {
+    margin-bottom: 20px;
+  }
+
+  .diesel-page-title {
+    font-size: 24px !important;
+  }
+
+  .diesel-cards-row {
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .diesel-card {
+    padding: 16px 20px;
+  }
+
+  .diesel-card-title {
+    font-size: 15px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .diesel-card-stat-row {
+    font-size: 13px;
+  }
+
+  .diesel-table-section {
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+}
+
 .set_target_page {
   font-family: 'Montserrat';
   font-size: medium;
@@ -792,10 +1049,105 @@ a.header-short-button--auth {
   margin: 30px;
 }
 
+.set-target-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.set-target-row--generators {
+  margin-bottom: 40px;
+}
+
+.set-target-field {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.set-target-field--empty {
+  visibility: hidden;
+}
+
+.set-target-input {
+  height: 52px;
+  width: 100%;
+}
+
+.set-target-section-label {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.set-target-submit-btn {
+  background-color: #5C12A7;
+  color: white;
+  width: 100%;
+  height: 52px;
+  font-weight: 600;
+  border-radius: 7px;
+  border: none;
+}
+
+.set-target-submit-btn:hover,
+.set-target-submit-btn:focus {
+  background-color: #4a0f8a !important;
+  color: white !important;
+}
+
+.set-target-submit-btn:disabled {
+  background-color: #d9d9d9;
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.set-target-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.set-target-reset-btn {
+  width: 100%;
+  height: 52px;
+  background-color: #ffffff;
+  color: #c72525;
+  border: 1px solid #e8e8e8;
+  border-radius: 7px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.set-target-reset-btn:hover,
+.set-target-reset-btn:focus {
+  color: #c72525 !important;
+  border-color: #c72525 !important;
+  background-color: #fff5f5 !important;
+}
+
 @media (max-width: 768px) {
   .set_target_page {
     margin: 16px;
-    font-size: 12px;
+    font-size: 13px;
+  }
+
+  .set-target-row {
+    flex-direction: column;
+    gap: 0;
+    margin-bottom: 0;
+  }
+
+  .set-target-row--generators {
+    margin-bottom: 16px;
+  }
+
+  .set-target-field--empty {
+    display: none;
+  }
+
+  .set-target-actions {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
   }
 }
 
@@ -951,15 +1303,197 @@ a.header-short-button--auth {
 }
 }
 
+/* ===== Client Users Page ===== */
+.client-users-page {
+  padding: 24px 32px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.client-users-header {
+  margin-bottom: 24px;
+}
+
+.client-users-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  margin-bottom: 0 !important;
+}
+
+.client-users-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.client-users-header-search-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.client-users-search-wrapper {
+  flex: 1 1 auto;
+  max-width: 520px;
+}
+
 .user-search-input {
-  width: 349.68px;
-  height: 49.69px;
+  width: 100%;
+  height: 44px;
+}
+
+.adding-btn {
+  height: 40px;
+  padding: 0 20px;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 10px;
+  background-color: #5c12a7;
+  color: white;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-user-btn:hover,
+.add-user-btn:focus {
+  background-color: #4a0f8a !important;
+  color: white !important;
+  border-color: #5c12a7 !important;
+}
+
+.add-user-btn--mobile {
+  display: none;
+}
+
+/* Table section */
+.client-users-table-section {
+  margin-top: 8px;
+}
+
+.client-users-table-card {
+  border-radius: 16px;
+}
+
+.options-dot-btn {
+  color: #5C12A7;
+  width: 44px;
+  height: 28px;
+  background-color: rgba(92, 18, 167, 0.08);
+  border-radius: 10px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.options-dot-btn:hover {
+  background-color: rgba(92, 18, 167, 0.16) !important;
+  color: #5C12A7 !important;
+}
+
+/* Pagination */
+.client-users-pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.pagination-btn {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.pagination-info {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Modal styles */
+.client-users-modal .ant-modal-content {
+  border-radius: 16px;
+  padding: 8px;
+}
+
+.user-form-modal-content {
+  padding: 8px 16px;
+}
+
+.user-form-modal-content .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.user-form-modal-content .ant-form-item input {
+  background: #F2F2F8;
+  height: 42px;
+  border-radius: 8px;
+}
+
+.user-form-submit-btn {
+  background-color: #5C12A7;
+  color: white;
+  height: 44px;
+  border-radius: 10px;
+  width: 100%;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
+}
+
+.user-form-submit-btn:hover,
+.user-form-submit-btn:focus {
+  background-color: #4a0f8a !important;
+  color: white !important;
 }
 
 @media (max-width: 768px) {
-  .user-search-input { 
-    width: 100%;
-    height: 49.69px;
+  .client-users-page {
+    padding: 24px 16px;
+  }
+
+  .client-users-title {
+    font-size: 24px !important;
+  }
+
+  .client-users-header-top {
+    margin-bottom: 16px;
+  }
+
+  .add-user-btn--mobile {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .add-user-btn--desktop-wrap {
+    display: none !important;
+  }
+
+  .client-users-header-search-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .client-users-search-wrapper {
+    max-width: 100%;
+  }
+
+  .client-users-table-card {
+    padding: 16px 12px;
+    border-radius: 12px;
+  }
+
+  .client-users-pagination {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
   }
 }
 
@@ -1985,6 +2519,108 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
   .top-cards-filter-row {
     gap: 8px;
+    flex-direction: column-reverse;
+  }
+}
+
+/* ===== Chart Cards & Filters ===== */
+.chart-card {
+  overflow: hidden;
+  border-radius: 22px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.chart-header-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.chart-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.chart-filter-search {
+  width: 200px;
+}
+
+.chart-filter-branch {
+  width: 220px;
+}
+
+.chart-filter-region {
+  width: 170px;
+}
+
+.chart-filter-date {
+  width: 140px;
+}
+
+.chart-scroll-container {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chart-min-width-wrapper {
+  min-width: 500px;
+}
+
+@media (max-width: 768px) {
+  .total-energy-bar-chart {
+    margin: 12px;
+  }
+
+  .chart-card {
+    border-radius: 14px;
+  }
+
+  .chart-card .ant-card-body {
+    padding: 14px;
+  }
+
+  .chart-header {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .chart-filters {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .chart-filter-search,
+  .chart-filter-branch,
+  .chart-filter-region,
+  .chart-filter-date {
+    width: 100% !important;
+  }
+
+  .chart-min-width-wrapper {
+    min-width: 450px;
+  }
+}
+
+@media (max-width: 480px) {
+  .total-energy-bar-chart {
+    margin: 8px;
+  }
+
+  .chart-card .ant-card-body {
+    padding: 10px;
   }
 }
 
@@ -1998,10 +2634,6 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
 
 .table-responsive-wrapper .ant-table {
   min-width: 100%;
-}
-
-.table-responsive-wrapper .ant-table-container {
-  border-radius: 8px;
 }
 
 @media (max-width: 768px) {
@@ -2034,4 +2666,3163 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   height: 40px;
   border-radius: 7px;
   width: 47%;
+}
+
+/* ===== Shared page-level responsive classes ===== */
+
+.page-container {
+  padding: 24px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.page-header--wrap {
+  flex-wrap: wrap;
+  row-gap: 12px;
+}
+
+.page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.page-header-left h2,
+.page-header-left h3,
+.page-header-left .ant-typography {
+  word-break: break-word;
+}
+
+.page-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+
+.page-filter-search {
+  width: 300px;
+  max-width: 100%;
+}
+
+.page-filter-select {
+  width: 200px;
+  max-width: 100%;
+}
+
+.page-card {
+  margin-bottom: 16px;
+}
+
+.btn-primary-brand {
+  background: #5C12A7 !important;
+  border-color: #5C12A7 !important;
+  width: max-content;
+}
+
+/* ===== Investor dashboard ===== */
+
+.investor-shell {
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tables/empty states: text only, no illustration */
+.investor-shell .ant-empty-image,
+.investor-shell .ant-empty-footer {
+  display: none;
+}
+
+.investor-shell .ant-empty-description {
+  margin-top: 0;
+}
+
+.investor-shell .ant-typography,
+.investor-shell .ant-card,
+.investor-shell .ant-btn,
+.investor-shell .ant-table,
+.investor-shell .ant-alert,
+.investor-shell .ant-picker,
+.investor-shell .ant-segmented,
+.investor-shell .ant-tag {
+  font-family: "Montserrat", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.investor-page {
+  padding: 24px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: min-content;
+}
+
+.investor-page-title {
+  margin: 0 !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 26px !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.02em;
+  color: #141414 !important;
+}
+
+.investor-page-subtitle {
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+  color: rgba(0, 0, 0, 0.52) !important;
+  display: block;
+  max-width: 520px;
+  margin-bottom: 0 !important;
+}
+
+.investor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.investor-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 240px;
+}
+
+.investor-header-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 1 auto;
+}
+
+.investor-range .ant-picker {
+  border-radius: 10px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  min-height: 40px;
+}
+
+.investor-btn-light {
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.investor-header-btn {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  height: 40px;
+  padding: 0 16px;
+}
+
+.investor-header-btn--primary {
+  box-shadow: none;
+}
+
+.investor-alert {
+  border-radius: 14px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.investor-alert .ant-alert-message {
+  font-weight: 500;
+}
+
+.investor-alert .ant-alert-message b {
+  font-weight: 700;
+}
+
+.investor-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.investor-page .investor-metrics .admin-investor-metric {
+  box-sizing: border-box;
+  min-height: 140px;
+  padding: 14px 16px 14px;
+  gap: 4px;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-value {
+  font-size: 22px;
+  margin-block: 4px 0;
+  flex-shrink: 0;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 12px;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-lines,
+.investor-page .investor-metrics .admin-investor-metric-caption,
+.investor-page .investor-metrics .admin-investor-metric-badges {
+  margin-top: auto;
+  padding-top: 6px;
+  min-width: 0;
+  align-content: flex-end;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-caption {
+  font-size: 11px;
+  line-height: 1.4;
+  margin-top: auto;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-badge {
+  font-family: "Montserrat", sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  padding: 3px 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  line-height: 1.4;
+}
+
+.investor-page .investor-metrics .admin-investor-metric-badge--wrap {
+  white-space: normal;
+  text-overflow: unset;
+  overflow: visible;
+  line-height: 1.45;
+}
+
+.investor-metric-card {
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.investor-metric-card.ant-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.investor-metric-card .ant-card-body {
+  padding: 16px 16px 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.investor-metric-card .investor-metric-sub {
+  margin-top: auto;
+}
+
+.investor-metric-card--primary {
+  background: #5C12A7;
+  color: #fff;
+}
+
+.investor-metric-card--primary .investor-metric-label,
+.investor-metric-card--primary .investor-metric-sub {
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.investor-metric-card--primary .investor-metric-value {
+  color: #fff;
+}
+
+.investor-metric-primary-composition {
+  margin-top: 4px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.investor-metric-card--primary .investor-metric-primary-composition {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.investor-metric-primary-stack {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.investor-metric-card--primary .investor-metric-primary-stack {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.investor-metric-card--portfolio-score .investor-metric-score-summary {
+  margin-top: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.investor-metric-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.5);
+  line-height: 1.3;
+}
+
+.investor-metric-value {
+  margin-top: 10px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #141414;
+}
+
+.investor-metric-sub {
+  margin-top: 8px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.investor-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.85fr) minmax(280px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.investor-card {
+  border-radius: 16px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  max-width: 100%;
+  min-width: 0;
+}
+
+.investor-card .ant-card-head {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  min-height: 56px;
+  padding: 0 20px;
+}
+
+.investor-card .ant-card-head-title {
+  padding: 14px 0;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.35;
+  color: #141414;
+}
+
+.investor-card .ant-card-body {
+  padding: 16px 20px 20px;
+}
+
+.investor-card-heading {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.35;
+  color: #141414;
+}
+
+.investor-card-heading--caps {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.investor-card-heading--financed {
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.investor-health-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.investor-health-dot--green {
+  background: #52c41a;
+}
+
+.investor-health-dot--yellow {
+  background: #faad14;
+}
+
+.investor-health-dot--red {
+  background: #ff4d4f;
+}
+
+.investor-financed-status-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.investor-financed-status-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.investor-financed-status-label {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+}
+
+.investor-financed-status-posted {
+  font-size: 12px !important;
+}
+
+.investor-financed-energy-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.investor-financed-cost-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.investor-financed-cost-main {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+  white-space: nowrap;
+}
+
+.investor-financed-cost-invested {
+  font-size: 12px !important;
+  white-space: nowrap;
+}
+
+.investor-financed-energy-kwh {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+}
+
+.investor-financed-energy-ngn {
+  font-size: 12px !important;
+}
+
+.investor-financed-kpi-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-end;
+  min-width: 0;
+}
+
+.investor-financed-kpi-main {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+  line-height: 1.35;
+}
+
+.investor-financed-kpi-sub {
+  font-size: 12px !important;
+}
+
+.investor-financed-repay-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.investor-financed-repay-main {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: #141414;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.investor-financed-repay-sub {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.investor-financed-repay-sub--overdue {
+  color: #cf1322;
+  font-weight: 600;
+}
+
+.investor-financed-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.investor-financed-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.investor-grid--bottom {
+  margin-top: 16px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  align-items: stretch;
+}
+
+.investor-grid--bottom .investor-card {
+  height: 100%;
+}
+
+.investor-card--activity .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.investor-activity-panel {
+  max-height: 280px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.investor-activity-view-all {
+  display: inline-block;
+  margin-top: 12px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5c3592;
+}
+
+.investor-activity-view-all:hover {
+  color: #7b4bb8;
+}
+
+.investor-support-modal-subtitle {
+  display: block;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* SUPERADMIN: Investors management */
+.admin-investor-page {
+  padding: 18px;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.admin-investor-page .ant-empty-image,
+.admin-investor-page .ant-empty-footer {
+  display: none;
+}
+
+.admin-investor-page .ant-empty-description {
+  margin-top: 0;
+}
+
+.admin-investor-page .ant-upload-drag-icon {
+  display: none;
+}
+
+/* Tabs + cards: break min-width:auto chain so tables scroll inside the white panel */
+.admin-investor-tabs-card .ant-card-body,
+.admin-investor-tabs-card .ant-tabs,
+.admin-investor-tabs-card .ant-tabs-content-holder,
+.admin-investor-tabs-card .ant-tabs-content,
+.admin-investor-tabs-card .ant-tabs-tabpane {
+  min-width: 0;
+}
+
+.admin-investor-stack > .admin-investor-panel {
+  min-width: 0;
+}
+
+.admin-investor-stack > .admin-investor-panel .ant-card-body {
+  min-width: 0;
+}
+
+.admin-investor-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-investor-title {
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 600 !important;
+  margin: 0 !important;
+}
+
+.admin-investor-cta {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+.admin-investor-metrics {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+}
+
+.admin-investor-metric {
+  position: relative;
+  border-radius: 16px;
+  padding: 10px 16px 12px;
+  color: #ffffff;
+  overflow: hidden;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 6px;
+}
+
+.admin-investor-metric-decoration {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.admin-investor-metric-decoration--xl {
+  width: 160px;
+  height: 160px;
+  top: -80px;
+  right: -40px;
+}
+
+.admin-investor-metric-decoration--lg {
+  width: 110px;
+  height: 110px;
+  top: -24px;
+  right: -6px;
+}
+
+.admin-investor-metric-decoration--sm {
+  width: 60px;
+  height: 60px;
+  top: 28px;
+  right: 50px;
+}
+
+.admin-investor-metric-value {
+  font-family: "Montserrat", sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  margin-block: 8px;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  line-height: 1.1;
+  z-index: 1;
+}
+
+.admin-investor-metric-mid {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1;
+}
+
+.admin-investor-metric-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.admin-investor-metric-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px !important;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  text-transform: capitalize;
+  color: #ffffff !important;
+  opacity: 0.92;
+}
+
+.admin-investor-metric-badges {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  gap: 5px;
+  z-index: 1;
+  margin-top: 2px;
+  min-width: 0;
+}
+
+.admin-investor-metric-badge {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.18);
+  padding: 3px 9px;
+  border-radius: 999px;
+  line-height: 1.4;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.admin-investor-metric-caption {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.92);
+  z-index: 1;
+  margin-top: 2px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.admin-investor-tabs-card {
+  margin-top: 14px;
+  border-radius: 18px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.admin-investor-overview-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-investor-wide {
+  width: 100%;
+}
+
+.admin-investor-panel {
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  height: 100%;
+}
+
+.admin-investor-panel.ant-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-investor-panel .ant-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-investor-panel .ant-card-head-title,
+.admin-investor-panel .ant-card-body {
+  font-family: "Montserrat", sans-serif;
+}
+
+.admin-investor-panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Investor admin tables: full width, no horizontal scrollbar, compact headers */
+.admin-investor-data-table .ant-table-content,
+.admin-investor-data-table .ant-table-body {
+  overflow-x: hidden !important;
+}
+
+.admin-investor-data-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.admin-investor-data-table .ant-table-thead > tr > th {
+  white-space: nowrap;
+  font-size: 11px;
+  padding: 8px 6px !important;
+}
+
+.admin-investor-data-table .ant-table-tbody > tr > td {
+  padding: 8px 6px !important;
+}
+
+.admin-table-nowrap {
+  white-space: nowrap;
+}
+
+/* Extra breathing room between two tightly-set columns (e.g. adjacent amount/date cells) — kept small so columns still read as one cohesive grid. */
+.admin-investor-data-table .ant-table-thead > tr > th.admin-table-col-gap-l,
+.admin-investor-data-table .ant-table-tbody > tr > td.admin-table-col-gap-l {
+  padding-left: 10px !important;
+}
+
+.admin-investor-data-table .ant-table-thead > tr > th.admin-table-col-gap-r,
+.admin-investor-data-table .ant-table-tbody > tr > td.admin-table-col-gap-r {
+  padding-right: 10px !important;
+}
+
+/**
+ * "Compact" dashboard tables (Overview tab summaries): every non-primary column gets an
+ * explicit, content-aware width (see column defs) so it doesn't inherit a share of 100%
+ * it doesn't need; the table itself stays width:100% and the primary text column (left
+ * unconstrained in the column def) absorbs whatever's left. Long headers wrap to two
+ * lines instead of forcing extra column width.
+ */
+.admin-investor-data-table--compact.admin-investor-data-table .ant-table-thead > tr > th {
+  white-space: normal;
+  line-height: 1.3;
+}
+
+.admin-investor-data-table .admin-table-col-flex {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 28%;
+}
+
+.admin-investor-data-table .admin-table-col-action {
+  overflow: visible !important;
+  white-space: nowrap;
+}
+
+.admin-investor-data-table .admin-table-col-action .admin-investor-action-btn {
+  white-space: nowrap;
+  max-width: none;
+}
+
+/* Edit modals: schedule grids may scroll horizontally inside the modal */
+.admin-investor-modal-schedule-table .ant-table-content,
+.admin-investor-modal-schedule-table .ant-table-body {
+  overflow-x: auto !important;
+}
+
+.admin-investor-panel-head--plain {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.admin-investor-filter-btn {
+  border-radius: 10px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+}
+
+.admin-investor-footnote {
+  display: block;
+  margin-top: auto;
+  padding-top: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.admin-investor-pill {
+  border-radius: 999px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.admin-investor-event {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-investor-event-text {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.admin-investor-stack {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-investor-action-btn {
+  border-radius: 10px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+}
+
+.admin-investor-score-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.admin-investor-score-main {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+}
+
+.admin-investor-score-sub {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.admin-investor-score-sub--overdue {
+  color: #cf1322;
+}
+
+.admin-investor-ticket-investor {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.admin-investor-ticket-investor-name {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+}
+
+.admin-investor-ticket-investor-ref {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.admin-investor-ticket-respond-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.admin-investor-ticket-respond-hint {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.admin-investor-ticket-email-box {
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+}
+
+.admin-investor-ticket-email-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.admin-investor-ticket-email-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.admin-investor-ticket-email {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  color: #2f54eb;
+}
+
+.admin-investor-ticket-section-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(0, 0, 0, 0.55);
+  display: block;
+  margin-bottom: 8px;
+}
+
+.admin-investor-ticket-responses-box {
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 12px 14px;
+  display: grid;
+  gap: 10px;
+}
+
+.admin-investor-ticket-response-item {
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.admin-investor-payment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.admin-investor-payment-head-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #141414;
+}
+
+/* Date pickers above modals / investor shell (installation, due dates, header range) */
+.investor-admin-picker-dropdown,
+.investor-shell-picker-dropdown {
+  z-index: 1400 !important;
+}
+
+.admin-investor-modal .ant-modal-content {
+  border-radius: 16px;
+}
+
+.admin-investor-modal .ant-modal-body {
+  overflow: visible;
+}
+
+.admin-investor-modal .ant-modal-header {
+  border-radius: 16px 16px 0 0;
+}
+
+.admin-investor-modal .ant-modal-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+}
+
+.admin-modal-subtitle {
+  display: block;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.55);
+  margin-top: -2px;
+}
+
+.admin-modal-form {
+  margin-top: 14px;
+}
+
+.admin-modal-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px 14px;
+  align-items: start;
+}
+
+.admin-modal-wide {
+  grid-column: 1 / -1;
+}
+
+/* Admin modal grids: equal columns, aligned controls (Input / InputNumber / DatePicker / Select) */
+.admin-investor-modal .admin-modal-grid > .ant-form-item {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-form-item-control-input,
+.admin-investor-modal .admin-modal-grid .ant-form-item-control-input-content {
+  min-width: 0;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-input,
+.admin-investor-modal .admin-modal-grid .ant-input-number,
+.admin-investor-modal .admin-modal-grid .ant-picker,
+.admin-investor-modal .admin-modal-grid .ant-select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-input,
+.admin-investor-modal .admin-modal-grid .ant-input-number,
+.admin-investor-modal .admin-modal-grid .ant-picker,
+.admin-investor-modal .admin-modal-grid .ant-select-selector {
+  background-color: #f5f5f7;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-input-number {
+  display: block;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-input-number-input-wrap {
+  height: 100%;
+  padding: 0;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-input-number-input {
+  height: 100%;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-input,
+.admin-investor-modal .admin-modal-grid .ant-picker {
+  height: 40px;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-picker .ant-picker-input > input {
+  height: 38px;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-select-single .ant-select-selector {
+  height: 40px !important;
+  align-items: center;
+}
+
+.admin-investor-modal .admin-modal-grid .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.admin-modal-divider {
+  margin: 12px 0 10px !important;
+}
+
+.admin-modal-section-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.admin-modal-section-sub {
+  display: block;
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+/* Uppercase, brand-purple section dividers used in the trimmed create-project style modals. */
+.admin-modal-section-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 22px 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.admin-modal-section-heading-row--first {
+  margin-top: 2px;
+}
+
+.admin-modal-section-heading {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5c3592;
+}
+
+.admin-modal-section-heading-row--collapsible {
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-modal-section-chevron {
+  color: #5c3592;
+  font-size: 12px;
+  transition: transform 0.15s ease;
+}
+
+.admin-modal-section-chevron--collapsed {
+  transform: rotate(-90deg);
+}
+
+.admin-modal-link-action.ant-btn-link {
+  padding: 0;
+  height: auto;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: #5c3592;
+  text-decoration: underline;
+}
+
+.admin-modal-link-action.ant-btn-link:hover {
+  color: #4c1d95;
+}
+
+.admin-modal-label-hint {
+  margin-left: 4px;
+  color: rgba(0, 0, 0, 0.45);
+  font-weight: 400;
+}
+
+.admin-modal-required-mark {
+  margin-left: 4px;
+  color: #ff4d4f;
+}
+
+.admin-modal-cost-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-modal-cost-item-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-modal-cost-item-row .ant-form-item {
+  margin-bottom: 0;
+}
+
+.admin-modal-cost-item-fields {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-modal-cost-item-fields .ant-form-item {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.admin-modal-cost-item-category {
+  flex: 0 0 150px !important;
+}
+
+.admin-modal-cost-item-amount {
+  flex: 0 0 150px !important;
+}
+
+.admin-modal-cost-item-fields .ant-input,
+.admin-modal-cost-item-fields .ant-input-number,
+.admin-modal-cost-item-fields .ant-select {
+  width: 100%;
+}
+
+.admin-modal-cost-item-fields .ant-input-number {
+  display: block;
+  height: 40px;
+  box-sizing: border-box;
+}
+
+.admin-modal-cost-item-fields .ant-input-number-input-wrap {
+  height: 100%;
+  padding: 0;
+}
+
+.admin-modal-cost-item-fields .ant-input-number-input {
+  height: 100%;
+}
+
+.admin-modal-cost-item-fields .ant-input {
+  height: 40px;
+}
+
+.admin-modal-cost-item-fields .ant-select-single .ant-select-selector {
+  height: 40px !important;
+  align-items: center;
+}
+
+.admin-modal-cost-item-row .ant-input {
+  height: 40px;
+}
+
+.admin-modal-cost-item-fields .ant-input,
+.admin-modal-cost-item-fields .ant-input-number,
+.admin-modal-cost-item-fields .ant-select-selector,
+.admin-modal-cost-item-row .ant-input {
+  background-color: #f5f5f7;
+}
+
+.admin-modal-cost-item-remove {
+  flex: 0 0 auto;
+  color: #ff4d4f;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.admin-modal-add-item-btn.ant-btn-dashed {
+  color: #5c3592;
+  font-weight: 600;
+  border-color: rgba(92, 53, 146, 0.35);
+}
+
+.admin-modal-add-item-btn.ant-btn-dashed:hover {
+  color: #4c1d95;
+  border-color: #5c3592;
+}
+
+.admin-payment-line-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-payment-line-item-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr) minmax(0, 0.85fr) 24px;
+  gap: 8px 12px;
+  align-items: center;
+}
+
+.admin-investor-modal .admin-payment-line-item-row > .ant-form-item {
+  margin-bottom: 0;
+  min-width: 0;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-form-item-control-input,
+.admin-investor-modal .admin-payment-line-item-row .ant-form-item-control-input-content {
+  min-width: 0;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-input-number,
+.admin-investor-modal .admin-payment-line-item-row .ant-picker,
+.admin-investor-modal .admin-payment-line-item-row .ant-select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-input-number {
+  display: block;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-input-number-input-wrap {
+  padding: 0;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-input-number-input,
+.admin-investor-modal .admin-payment-line-item-row .ant-picker {
+  height: 40px;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-picker .ant-picker-input > input {
+  height: 38px;
+}
+
+.admin-investor-modal .admin-payment-line-item-row .ant-select-single .ant-select-selector {
+  height: 40px !important;
+  align-items: center;
+}
+
+.admin-payment-line-item-remove {
+  color: #ff4d4f;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.admin-payment-line-item-remove-spacer {
+  display: block;
+  width: 24px;
+}
+
+@media (max-width: 820px) {
+  .admin-modal-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-payment-line-item-row {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-payment-line-item-remove,
+  .admin-payment-line-item-remove-spacer {
+    justify-self: end;
+  }
+}
+
+@media (max-width: 1400px) {
+  .admin-investor-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-investor-page {
+    padding: 14px 12px 18px;
+  }
+  .admin-investor-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.investor-card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.investor-segmented {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Give the Financed/Open toggle a clearer pressed-button look instead of the flat default track. */
+.investor-segmented.ant-segmented {
+  background-color: #f1eef8;
+  padding: 3px;
+  border-radius: 10px;
+}
+
+.investor-segmented .ant-segmented-item-label {
+  padding: 5px 16px;
+  border-radius: 8px;
+  color: #5c3592;
+}
+
+.investor-segmented .ant-segmented-item:hover:not(.ant-segmented-item-selected) .ant-segmented-item-label {
+  color: #3f1c6b;
+}
+
+.investor-segmented .ant-segmented-item-selected {
+  background-color: #5c3592;
+  border-radius: 8px;
+  box-shadow: none;
+}
+
+.investor-segmented .ant-segmented-item-selected .ant-segmented-item-label {
+  color: #ffffff;
+}
+
+.investor-segmented .ant-segmented-thumb {
+  background-color: #5c3592;
+  border-radius: 8px;
+}
+
+.investor-tag-muted {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+.investor-project-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.investor-project-name {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.35;
+  color: #141414;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.investor-project-branch {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.investor-table-wrap {
+  margin-bottom: 0;
+  /* auto, not hidden: percentage columns are sized to fit, but a stray px of Tag/text
+     overflow should scroll into view rather than silently clip real content. */
+  overflow-x: auto;
+  overflow-y: visible;
+  max-width: 100%;
+}
+
+.investor-table-wrap .ant-table,
+.investor-table-wrap .ant-table-container {
+  min-width: 0;
+}
+
+.investor-table-wrap--financed {
+  overflow-x: auto;
+}
+
+.investor-financed-table .ant-table-content,
+.investor-financed-table .ant-table-body {
+  overflow-x: auto !important;
+}
+
+.investor-financed-table table {
+  width: 100% !important;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.investor-financed-table .ant-table-thead > tr > th {
+  white-space: normal !important;
+  line-height: 1.3;
+  vertical-align: bottom;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+}
+
+.investor-financed-table .ant-table-thead > tr > th.investor-financed-col-numeric,
+.investor-financed-table .ant-table-tbody > tr > td.investor-financed-col-numeric {
+  text-align: right !important;
+}
+
+.investor-financed-table .ant-table-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.investor-table-nowrap {
+  white-space: nowrap;
+}
+
+.investor-ledger-table .ant-table-content,
+.investor-ledger-table .ant-table-body {
+  overflow-x: auto !important;
+}
+
+.investor-ledger-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.investor-ledger-table .ant-table-thead > tr > th,
+.investor-ledger-table .ant-table-tbody > tr > td {
+  white-space: nowrap;
+  padding: 10px 8px !important;
+}
+
+.investor-ledger-table .ant-table-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.investor-schedule-table .ant-table-content,
+.investor-schedule-table .ant-table-body {
+  overflow-x: auto !important;
+}
+
+.investor-schedule-table table {
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.investor-schedule-table .ant-table-thead > tr > th,
+.investor-schedule-table .ant-table-tbody > tr > td {
+  white-space: nowrap;
+  /* The base .investor-table padding (16px sides) is too generous for this table's
+     narrower columns — at small viewports it left the Status tag with less room than
+     it needs to render on one line. */
+  padding: 10px 8px !important;
+}
+
+.investor-schedule-table .ant-table-cell-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.investor-schedule-status-cell {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.investor-schedule-status-tag {
+  white-space: nowrap !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+
+.investor-payout-history-table .ant-table-thead {
+  display: none;
+}
+
+.investor-payout-history-table .ant-table-tbody > tr > td {
+  padding-top: 10px !important;
+  padding-bottom: 10px !important;
+  vertical-align: middle;
+}
+
+.investor-payout-history-line {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .investor-table-wrap--financed {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .investor-financed-table .ant-table-content,
+  .investor-financed-table .ant-table-body {
+    overflow-x: auto !important;
+  }
+
+  .investor-financed-table table {
+    min-width: 820px;
+  }
+}
+
+@media (max-width: 768px) {
+  .investor-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x pan-y;
+  }
+
+  .investor-table-wrap .ant-table,
+  .investor-table-wrap .ant-table-container {
+    min-width: 0;
+  }
+
+  .investor-financed-table table {
+    min-width: 760px;
+  }
+
+  .investor-financed-table .ant-table-thead > tr > th,
+  .investor-financed-table .ant-table-tbody > tr > td {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .investor-financed-legend {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
+
+.investor-table .ant-table {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+}
+
+.investor-table .ant-table-thead > tr > th {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45) !important;
+  background: rgba(0, 0, 0, 0.02) !important;
+  padding: 12px 16px !important;
+  white-space: nowrap;
+}
+
+.investor-table .ant-table-tbody > tr > td {
+  font-weight: 500;
+  padding: 14px 16px !important;
+  vertical-align: top;
+}
+
+.investor-financed-table .ant-table-thead > tr > th {
+  padding: 10px 8px !important;
+  font-size: 11px !important;
+  white-space: normal !important;
+  line-height: 1.3;
+  vertical-align: bottom;
+}
+
+.investor-financed-table .ant-table-tbody > tr > td {
+  padding: 10px 8px !important;
+}
+
+.investor-financed-table .ant-table-thead > tr > th.investor-financed-col-numeric,
+.investor-financed-table .ant-table-tbody > tr > td.investor-financed-col-numeric {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+.investor-table .ant-table-tbody > tr > td:not(:first-child) {
+  font-size: 13px;
+}
+
+.investor-table .ant-tag {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  margin: 0;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+
+.investor-right {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.investor-chart-wrap {
+  width: 100%;
+  height: 240px;
+  min-height: 200px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.investor-chart-wrap .recharts-responsive-container {
+  min-width: 320px;
+}
+
+.investor-chart-wrap .recharts-cartesian-axis-tick-value,
+.investor-chart-wrap .recharts-legend-item-text {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.investor-chart-footnote {
+  display: block;
+  margin-top: 12px !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: 1.5 !important;
+}
+
+.investor-activity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-activity-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.investor-activity-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.investor-activity-date {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.investor-activity-label {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #141414;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 240px;
+}
+
+.investor-activity-amount {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.35;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.investor-activity-amount.is-good {
+  color: #237804;
+}
+
+.investor-activity-amount.is-bad {
+  color: #cf1322;
+}
+
+.investor-support-card {
+  border-radius: 18px;
+  background: linear-gradient(90deg, rgba(92, 18, 167, 0.08), rgba(92, 18, 167, 0.02));
+}
+
+.investor-support-card .ant-card-body {
+  padding: 20px 22px;
+}
+
+.investor-support-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.investor-support-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.35;
+  color: #141414;
+}
+
+.investor-support-sub {
+  margin-top: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgba(0, 0, 0, 0.52);
+  max-width: 640px;
+}
+
+.investor-support-cta {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 10px;
+}
+
+.investor-placeholder-page .investor-placeholder-header {
+  margin-bottom: 0;
+}
+
+.investor-placeholder-text {
+  font-family: "Montserrat", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+}
+
+@media (max-width: 1200px) {
+  .investor-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .investor-page-title {
+    font-size: 24px !important;
+  }
+
+  .investor-metric-value {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 768px) {
+  .PageContent.investor-shell {
+    margin: 12px 10px 16px;
+    max-height: calc(100vh - 88px);
+    max-height: calc(100dvh - 88px);
+    border-radius: 22px 22px 0 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+  }
+
+  .investor-page {
+    padding: 14px 12px 18px;
+    gap: 12px;
+  }
+
+  .investor-page-title {
+    font-size: 22px !important;
+    letter-spacing: -0.015em;
+  }
+
+  .investor-page-subtitle {
+    font-size: 13px !important;
+    max-width: none;
+  }
+
+  .investor-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .investor-header-left {
+    flex: 0 1 auto;
+    gap: 4px;
+  }
+
+  .investor-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    width: 100%;
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  .investor-range {
+    width: 100%;
+  }
+
+  .investor-range .ant-picker {
+    width: 100%;
+  }
+
+  .investor-header-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .investor-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    min-width: 0;
+  }
+
+  .investor-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .investor-right {
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .investor-metric-card .ant-card-body {
+    padding: 14px 12px 12px;
+  }
+
+  .investor-metric-value {
+    font-size: 17px;
+  }
+
+  .investor-metric-label {
+    font-size: 10px;
+  }
+
+  .investor-card .ant-card-head {
+    padding: 0 14px;
+    min-height: auto;
+  }
+
+  .investor-card .ant-card-body {
+    padding: 12px 14px 16px;
+  }
+
+  .investor-card-title {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .investor-segmented {
+    width: 100%;
+  }
+
+  .investor-segmented.ant-segmented {
+    display: flex;
+  }
+
+  .investor-segmented .ant-segmented-group {
+    flex: 1;
+    display: flex;
+  }
+
+  .investor-segmented .ant-segmented-item {
+    flex: 1;
+    justify-content: center;
+    min-width: 0;
+    font-size: 11px;
+    padding: 0 6px;
+  }
+
+  .investor-chart-wrap {
+    height: 220px;
+  }
+
+  .investor-activity-label {
+    white-space: normal;
+    max-width: none;
+  }
+
+  .investor-support-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .investor-support-cta {
+    width: 100%;
+  }
+
+  .investor-table .ant-table-thead > tr > th,
+  .investor-table .ant-table-tbody > tr > td {
+    padding: 10px 12px !important;
+    font-size: 12px;
+  }
+
+  .investor-project-name {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .investor-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .investor-metric-value {
+    font-size: 18px;
+  }
+
+  .investor-page-title {
+    font-size: 20px !important;
+  }
+}
+
+/* ===== Investor: Projects / Payments / Account & KYC ===== */
+
+.investor-metrics--four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.investor-metrics--five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.investor-mock-banner {
+  border-radius: 12px;
+  margin-bottom: 0;
+}
+
+.investor-mock-banner + .investor-header {
+  margin-top: 4px;
+}
+
+.investor-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.investor-section-title {
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+}
+
+.investor-project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  align-items: stretch;
+}
+
+.investor-project-tile {
+  height: 100%;
+}
+
+.investor-project-tile.ant-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.investor-project-tile .ant-card-body {
+  padding: 16px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+}
+
+.investor-project-tile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.investor-project-tile-name {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  color: #141414;
+}
+
+.investor-project-tile-meta {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.investor-project-tile-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-tile-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.investor-mini-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.investor-mini-value {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #141414;
+}
+
+.investor-project-tile-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-tile-savings {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.investor-project-tile-link {
+  font-family: "Montserrat", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: #5c12a7;
+}
+
+.investor-projects-spin {
+  width: 100%;
+}
+
+.investor-projects-spin > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.investor-projects-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+.investor-projects-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.investor-projects-page .investor-tickets-card,
+.investor-projects-page .investor-projects-support {
+  width: 100%;
+  margin-top: 0;
+}
+
+.investor-projects-support {
+  margin-top: 0;
+}
+
+.investor-projects-instruction {
+  display: block;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
+  margin-top: 4px;
+  max-width: 920px;
+}
+
+.investor-projects-section-head {
+  margin-top: 8px;
+}
+
+.investor-open-project-tile .investor-open-project-grid {
+  grid-template-columns: 1fr 1fr;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-open-project-tile .investor-project-tile-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.investor-open-project-tile .investor-project-tile-meta {
+  margin-top: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.investor-open-pill {
+  border-radius: 999px;
+  font-weight: 600;
+  font-family: "Montserrat", sans-serif;
+}
+
+.investor-open-metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+  margin-top: 12px;
+}
+
+.investor-open-metric {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(92, 18, 167, 0.05);
+  border: 1px solid rgba(92, 18, 167, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.investor-open-metric-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.investor-open-metric-value {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #141414;
+}
+
+.investor-open-metric--highlight {
+  background: rgba(91, 181, 111, 0.1);
+  border-color: rgba(91, 181, 111, 0.22);
+}
+
+.investor-open-metric--highlight .investor-open-metric-value {
+  color: #237804;
+}
+
+.investor-project-detail-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.investor-project-detail-modal .ant-modal-body {
+  padding: 20px 24px 8px;
+}
+
+.investor-project-detail-modal .ant-modal-footer {
+  padding: 12px 24px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.investor-project-detail-title {
+  margin: 0 0 4px !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 700 !important;
+}
+
+.investor-project-detail-location {
+  display: block;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.investor-project-detail-progress {
+  margin-bottom: 16px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-detail-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.investor-project-detail-metrics {
+  margin-top: 0;
+}
+
+.investor-project-detail-breakdown {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-project-detail-breakdown-title {
+  margin: 0 0 12px !important;
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 600 !important;
+}
+
+.investor-project-detail-breakdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.investor-project-detail-breakdown-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.investor-project-detail-breakdown-main {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.investor-project-detail-breakdown-label {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #141414;
+}
+
+.investor-project-detail-breakdown-tag {
+  margin: 0;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.investor-project-detail-breakdown-amount {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #141414;
+}
+
+.investor-project-detail-breakdown-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(92, 18, 167, 0.06);
+  border: 1px solid rgba(92, 18, 167, 0.12);
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.investor-project-detail-breakdown-empty {
+  display: block;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.investor-open-project-actions {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.investor-open-cta {
+  display: flex;
+  width: 100%;
+  margin-top: 0;
+}
+
+.investor-open-project-foot {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.investor-open-contact-btn {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  border-radius: 10px;
+  height: 38px;
+  padding: 0 18px;
+  width: 100%;
+}
+
+.investor-tickets-card {
+  margin-top: 0;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  width: 100%;
+}
+
+.investor-tickets-card .ant-card-body {
+  padding: 18px 20px 20px;
+}
+
+.investor-tickets-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.investor-tickets-title {
+  font-family: "Montserrat", sans-serif !important;
+  font-weight: 600 !important;
+}
+
+.investor-tickets-tag {
+  font-family: "Montserrat", sans-serif;
+  font-size: 11px;
+  margin: 0;
+}
+
+.investor-tickets-empty {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+}
+
+.investor-ticket-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.investor-ticket-title {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+}
+
+.investor-ticket-pill {
+  border-radius: 999px;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  text-transform: lowercase;
+}
+
+.investor-ticket-meta {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.investor-ticket-msg {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.investor-modal-remaining {
+  display: block;
+  margin-bottom: 16px;
+  font-size: 12px;
+}
+
+.investor-modal-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px 14px;
+  margin-bottom: 6px;
+  align-items: start;
+}
+
+.investor-modal-item {
+  margin-bottom: 0 !important;
+  min-width: 0;
+}
+
+.investor-modal-grid .ant-form-item-control-input,
+.investor-modal-grid .ant-form-item-control-input-content {
+  min-width: 0;
+}
+
+.investor-modal-grid .ant-input,
+.investor-modal-grid .ant-input-number,
+.investor-modal-grid .ant-picker,
+.investor-modal-grid .ant-select {
+  width: 100%;
+  max-width: 100%;
+}
+
+.investor-modal-grid .ant-input-number {
+  display: block;
+}
+
+.investor-modal-grid .ant-input-number-input-wrap {
+  padding: 0;
+}
+
+.investor-modal-grid .ant-input-number-input,
+.investor-modal-grid .ant-input,
+.investor-modal-grid .ant-picker {
+  height: 40px;
+}
+
+.investor-modal-grid .ant-select-single .ant-select-selector {
+  height: 40px !important;
+  align-items: center;
+}
+
+.investor-modal-grid .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.investor-modal-remaining-pill {
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.investor-modal-remaining-note {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+}
+
+@media (max-width: 520px) {
+  .investor-modal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.investor-support-card--peach {
+  background: linear-gradient(90deg, rgba(250, 140, 22, 0.12), rgba(92, 18, 167, 0.06));
+  border: 1px solid rgba(250, 140, 22, 0.22);
+}
+
+.investor-support-page .investor-support-tickets-card {
+  margin-bottom: 20px;
+}
+
+.investor-support-tickets-head {
+  margin-bottom: 16px;
+}
+
+.investor-support-tickets-table .ant-table {
+  background: transparent;
+}
+
+.investor-support-detail-meta {
+  display: block;
+  margin-bottom: 16px;
+}
+
+.investor-support-detail-body {
+  margin-top: 8px;
+  background: #fafafa;
+}
+
+.investor-payments-spin {
+  width: 100%;
+}
+
+.investor-payments-spin > .ant-spin-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.investor-payments-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+.investor-payments-note {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  margin-top: -4px;
+}
+
+.investor-payments-upcoming-card {
+  width: 100%;
+}
+
+.investor-payments-bottom-split {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(240px, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.investor-card--payout-history {
+  min-width: 0;
+}
+
+.investor-card--receivable-health {
+  min-width: 0;
+}
+
+.investor-payout-history-body {
+  min-width: 0;
+}
+
+.investor-health-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.investor-health-lines > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.investor-payments-schedule-card .ant-card-head {
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.investor-payments-schedule-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-bottom: 16px;
+}
+
+.investor-payments-schedule-meta {
+  display: block;
+  margin-bottom: 0;
+  color: #000;
+}
+
+.investor-payments-schedule-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 32px;
+  margin-bottom: 0;
+  margin-left: auto;
+  justify-content: flex-end;
+}
+
+.investor-payments-schedule-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.investor-pay-neg {
+  color: #cf1322;
+}
+
+.investor-health-disclaimer {
+  display: block;
+  margin-top: 12px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.investor-metric-card--alert .investor-metric-value {
+  color: #cf1322;
+}
+
+.investor-pay-pos {
+  color: #237804;
+  font-weight: 700;
+}
+
+.investor-ledger-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+}
+
+.investor-ledger-head .ant-tabs-nav {
+  margin-bottom: 0;
+}
+
+.investor-tax-bar {
+  background: linear-gradient(90deg, rgba(92, 18, 167, 0.06), rgba(255, 159, 28, 0.06));
+  border-radius: 16px;
+}
+
+.investor-tax-bar-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.investor-account-summary-card .ant-card-body {
+  padding: 24px 28px;
+}
+
+.investor-account-summary-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.investor-account-avatar {
+  background: #5c3592;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.investor-account-summary-headings {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.investor-account-summary-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.investor-account-summary-tags .ant-tag {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  border-radius: 999px;
+  margin-inline-end: 0;
+}
+
+.investor-account-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 24px;
+}
+
+.investor-account-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.investor-account-detail-value {
+  font-family: "Montserrat", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: #141414;
+}
+
+@media (max-width: 576px) {
+  .investor-account-detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.investor-shell .ant-upload-drag-icon {
+  display: none;
+}
+
+@media (max-width: 1200px) {
+  .investor-metrics--four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .investor-metrics--five {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 992px) {
+  .investor-payments-bottom-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== System Constants page ===== */
+
+.sys-const-page {
+  gap: 16px;
+}
+
+.sys-const-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 16px;
+  background: #fff;
+}
+
+.sys-const-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sys-const-update-btn {
+  padding: 8px 12px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.sys-const-update-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sys-const-diesel-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sys-const-input {
+  flex: 1;
+  min-width: 120px;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.sys-const-other-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.sys-const-other-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sys-const-other-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* ===== Mobile overrides ===== */
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: 16px 12px;
+    gap: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .page-header--wrap {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .page-header-left {
+    flex-wrap: wrap;
+  }
+
+  .page-filter-search {
+    width: 100%;
+  }
+
+  .page-filter-select {
+    width: 100%;
+  }
+
+  .page-filters {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .sys-const-diesel-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sys-const-other-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sys-const-card {
+    padding: 12px;
+  }
+
+  .page-card {
+    margin-bottom: 12px;
+  }
+
+  .page-card .ant-card-body {
+    padding: 12px;
+  }
+}
+
+/* ── Installations Checklist Page ── */
+
+.ic-page {
+  padding: 24px 32px;
+  margin: 0 auto;
+}
+
+.ic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.ic-title {
+  margin: 0 !important;
+}
+
+.ic-search-input {
+  width: 280px;
+  max-width: 100%;
+}
+
+.installations-table .ant-table-thead > tr > th,
+.installations-table .ant-table-tbody > tr > td {
+  padding-left: 20px !important;
+  padding-right: 20px !important;
+}
+
+.ic-clickable-row {
+  cursor: pointer;
+}
+
+.ic-row-eye-icon {
+  color: #5c3592;
+  font-size: 16px;
+}
+
+/* ── Detail Modal ── */
+
+.ic-detail-modal {
+  top: 30px;
+}
+
+.ic-detail-modal .ant-modal-body {
+  padding: 24px 28px;
+  max-height: 75vh;
+  overflow-y: auto;
+}
+
+.ic-modal-title {
+  font-size: 18px;
+}
+
+.ic-modal-spinner {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.ic-info-card {
+  margin-bottom: 20px;
+  background: #fafafa;
+}
+
+.ic-detail-field {
+  margin-bottom: 16px;
+}
+
+.ic-detail-label {
+  font-size: 12px;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.ic-status-tags {
+  margin-bottom: 12px;
+}
+
+.ic-status-tag {
+  font-size: 13px;
+  padding: 4px 12px;
+}
+
+.ic-status-tag--secondary {
+  margin-left: 6px;
+}
+
+.ic-section-divider {
+  margin: 16px 0 12px !important;
+}
+
+.ic-timestamps-divider {
+  margin: 12px 0 !important;
 }

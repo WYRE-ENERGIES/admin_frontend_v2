@@ -1,7 +1,7 @@
-import { Button, Form, Image, Input, InputNumber, Popconfirm, Space, Spin, Typography, notification } from "antd";
+import { Button, Form, Input, InputNumber, Popconfirm, Spin, notification } from "antd";
 import { useEffect, useState } from "react";
-import { connect, useSelector } from "react-redux";
-import { PercentageOutlined, ClockCircleOutlined, ProjectOutlined, FundOutlined, FundProjectionScreenOutlined, FieldTimeOutlined, MoneyCollectOutlined, MoneyCollectFilled } from "@ant-design/icons";
+import { connect } from "react-redux";
+import { PercentageOutlined, ClockCircleOutlined, ProjectOutlined, FundOutlined } from "@ant-design/icons";
 import { getTargetData, resetTargetData, updateTargetData } from "../../redux/actions/target/target.action";
 
 const successNotificationPopUp = (type, formName) => {
@@ -28,41 +28,22 @@ const resetErrorNotification = (type, formName) => {
     description: `Your Target values can not be reset at the moment, please try again later`,
   });
 };
-const NotAllowedNotification = () => {
-  notification.error({
-    message: 'Request Error',
-    description: 'NOT ALLOWED',
-    duration: 5
-  })
-}
 
 const SubmitButton = ({ form }) => {
   const [submittable, setSubmittable] = useState(false);
 
-  // Watch all values
   const values = Form.useWatch([], form);
   useEffect(() => {
     form
-      .validateFields({
-        validateOnly: true,
-      })
+      .validateFields({ validateOnly: true })
       .then(
-        () => {
-          setSubmittable(true);
-        },
-        () => {
-          setSubmittable(false);
-        },
+        () => setSubmittable(true),
+        () => setSubmittable(false),
       );
   }, [values]);
   return (
     <Button
-      style={{
-        backgroundColor: "#5C12A7",
-        color: "white",        
-        width: "100%",
-        height: "52px",
-      }}
+      className="set-target-submit-btn"
       type="primary"
       htmlType="submit"
       disabled={!submittable}
@@ -127,9 +108,6 @@ function EditTarget(props) {
     })
   }, [props.targetPage])
 
-  const onChange = (value) => {
-  };
-
   const formatTotalMonthlyCost = (value) =>
     value != null && value !== "" ? Number(value).toLocaleString("en-US", { maximumFractionDigits: 0 }) : "";
   const parseTotalMonthlyCost = (value) =>
@@ -138,257 +116,154 @@ function EditTarget(props) {
   const maxLengthCheck = (object) => {
     let showString = 'Digit can not be more than 1'
     if (object > 1) {
-      return (
-        alert(showString)
-        // <InputNumber disabled={true} />
-      )
+      return alert(showString)
     }
   }
 
-  return (
-    <>
-      <div className="set_target_page">
-        <Spin spinning={props.targetPage.updateTargetLoading}>
-          <Form
-            form={form}
-            // name="validateOnly"
-            name="basic"
-            layout="vertical"
-            autoComplete="off"
-            onFinish={submitEditTargetInfo}
-          >
-            <div
-              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
-            >
-              <div
-                style={{ width: "100%", height: "82px", marginRight: "16px" }}
-              >
-                       <Form.Item
-                  name="total_monthly_cost"
-                  label="Total monthly cost"
-                >
-                  <InputNumber
-                    style={{ height: "52px", width: "100%" }}
-                    placeholder="enter total monthly cost"
-                    prefix={<FundOutlined />}
-                    formatter={formatTotalMonthlyCost}
-                    parser={parseTotalMonthlyCost}
-                    min={0}
-                  />
-                </Form.Item>
-              </div>
-              <div
-                style={{ width: "100%", height: "82px" }}
-              >
-                    <Form.Item
-                  name="blended_cost_of_energy"
-                  label="Blended cost of energy"
-                >
-                  <Input
-                    type="number"
-                    style={{ height: "52px" }}
-                    height="52px"
-                    placeholder="enter cost"
-                    prefix={<FundOutlined />}
-                  />
-                </Form.Item>
-              </div>
-            </div>
-            <div
-              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
-            >
-              <div
-                style={{ width: "100%", height: "82px", marginRight: "16px" }}
-              >
-                  <Form.Item
-                  name="diesel_usage_accuracy"
-                  label="Usage accuracy diesel"
-                >
-                  <Input
-                    type="number"
-                    style={{ height: "52px" }}
-                    placeholder="enter percentage"
-                    prefix={<PercentageOutlined />}
-                  />
-                </Form.Item>
-              </div>
-              <div
-                style={{ width: "100%", height: "82px" }}
-              >
-                 <Form.Item
-                  name="utility_usage_accuracy"
-                  label="Usage accuracy utility"
-                >
-                  <Input
-                    type="number"
-                    style={{ height: "52px" }}
-                    placeholder="enter percentage"
-                    prefix={<PercentageOutlined />}
-                  />
-                </Form.Item>
-              </div>
-            </div>
-            <div
-              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
-            >
-              <div
-                style={{ width: "100%", height: "82px", marginRight: "16px" }}
-              >
-             <Form.Item
-                  name="maximum_monthly_deviation_hours"
-                  label="Maximum Deviation hours (Month)"
-                >
-                  <Input
-                    type="number"
-                    style={{ height: "52px" }}
-                    placeholder="enter time"
-                    prefix={<ClockCircleOutlined />}
-                  />
-                </Form.Item>
-              </div>
-              <div
-                style={{ width: "100%", height: "82px" }}
-              >
-                <Form.Item
-                  name="papr"
-                  label="PAPR"
-                  // rules={[
-                  //   {
-                  //     pattern: /^[\d]{0, 1}$/,
-                  //     message: 'PAPR value can not be more than 1'
-                  //   }
-                  // ]}
-                >
-                  <InputNumber
-                    type="number"
-                    style={{ height: "52px", width: "100%"}}
-                    // defaultValue="1"
-                    min="0"
-                    max="1"
-                    step="0.01"
-                    onInput={maxLengthCheck}
-                    onKeyDown={(evt) => evt.key === 'e' && evt.preventDefault()}
-                    // oninput="validity.valid||(value='')"
-                    onChange={onChange}
-                    stringMode
-                    placeholder="enter PAPR"
-                    prefix={<ProjectOutlined />}
-                  />
-                </Form.Item>
-              </div>
-            </div>
-            <div
-              style={{ width: "100%", display: "flex", marginBottom: "24px" }}
-            >
-              <div
-                style={{ width: "100%", height: "82px", marginRight: "16px" }}
-              >
-                <Form.Item name="fuel_efficiency" label="Fuel efficiency kWh/L">
-                  <Input
-                    type="number"
-                    style={{ height: "52px" }}
-                    placeholder="enter fuel efficiency"
-                    prefix={<ProjectOutlined />}
-                  />
-                </Form.Item>
-              </div>
-              <div style={{ width: "100%", height: "82px" }} />
-            </div>
-            <div>
-              <p>Generator Size Efficiency</p>
-            </div>
-            <div
-              style={{ width: "100%", display: "flex", marginBottom: "40px" }}
-            >
-              <div
-                style={{ width: "100%", height: "82px", marginRight: "8px" }}
-              >
-                <Form.Item
-                  name="generator_size_efficiency_1"
-                  label="Generator 1"
-                >
-                  <Input
-                    style={{ height: "52px" }}
-                    placeholder="Enter efficiency"
-                    count={{
-                      show: true,
-                      max: 10,
-                    }}
-                  />
-                </Form.Item>
-              </div>
-              <div
-                style={{
-                  width: "100%",
-                  height: "82px",
-                  marginRight: "8px",
-                  marginLeft: "8px",
-                }}
-              >
-                <Form.Item
-                  name="generator_size_efficiency_2"
-                  label="Generator 2"
-                >
-                  <Input
-                    style={{ height: "52px" }}
-                    placeholder="Enter efficiency"
-                  />
-                </Form.Item>
-              </div>
-              <div
-                style={{ width: "100%", height: "82px", marginLeft: "8px" }}
-              >
-                <Form.Item
-                  name="generator_size_efficiency_3"
-                  label="Generator 3"
-                >
-                  <Input
-                    style={{ height: "52px" }}
-                    placeholder="Enter efficiency"
-                  />
-                </Form.Item>
-              </div>
-            </div>
-            <Form.Item>
-              <div style={{width: "100%", display: "grid", gridTemplateColumns: "1fr 1fr", justifyContent: "space-between", alignItems: "center", gap: "16px"}}>
-                <SubmitButton form={form} />
+  const onChange = (value) => {};
 
-              {/* // disabled={!submittable} */}
+  return (
+    <div className="set_target_page">
+      <Spin spinning={props.targetPage.updateTargetLoading}>
+        <Form
+          form={form}
+          name="basic"
+          layout="vertical"
+          autoComplete="off"
+          onFinish={submitEditTargetInfo}
+        >
+          <div className="set-target-row">
+            <div className="set-target-field">
+              <Form.Item name="total_monthly_cost" label="Total monthly cost">
+                <InputNumber
+                  className="set-target-input"
+                  placeholder="enter total monthly cost"
+                  prefix={<FundOutlined />}
+                  formatter={formatTotalMonthlyCost}
+                  parser={parseTotalMonthlyCost}
+                  min={0}
+                />
+              </Form.Item>
+            </div>
+            <div className="set-target-field">
+              <Form.Item name="blended_cost_of_energy" label="Blended cost of energy">
+                <Input
+                  type="number"
+                  className="set-target-input"
+                  placeholder="enter cost"
+                  prefix={<FundOutlined />}
+                />
+              </Form.Item>
+            </div>
+          </div>
+
+          <div className="set-target-row">
+            <div className="set-target-field">
+              <Form.Item name="diesel_usage_accuracy" label="Usage accuracy diesel">
+                <Input
+                  type="number"
+                  className="set-target-input"
+                  placeholder="enter percentage"
+                  prefix={<PercentageOutlined />}
+                />
+              </Form.Item>
+            </div>
+            <div className="set-target-field">
+              <Form.Item name="utility_usage_accuracy" label="Usage accuracy utility">
+                <Input
+                  type="number"
+                  className="set-target-input"
+                  placeholder="enter percentage"
+                  prefix={<PercentageOutlined />}
+                />
+              </Form.Item>
+            </div>
+          </div>
+
+          <div className="set-target-row">
+            <div className="set-target-field">
+              <Form.Item name="maximum_monthly_deviation_hours" label="Maximum Deviation hours (Month)">
+                <Input
+                  type="number"
+                  className="set-target-input"
+                  placeholder="enter time"
+                  prefix={<ClockCircleOutlined />}
+                />
+              </Form.Item>
+            </div>
+            <div className="set-target-field">
+              <Form.Item name="papr" label="PAPR">
+                <InputNumber
+                  type="number"
+                  className="set-target-input"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  onInput={maxLengthCheck}
+                  onKeyDown={(evt) => evt.key === 'e' && evt.preventDefault()}
+                  onChange={onChange}
+                  stringMode
+                  placeholder="enter PAPR"
+                  prefix={<ProjectOutlined />}
+                />
+              </Form.Item>
+            </div>
+          </div>
+
+          <div className="set-target-row">
+            <div className="set-target-field">
+              <Form.Item name="fuel_efficiency" label="Fuel efficiency kWh/L">
+                <Input
+                  type="number"
+                  className="set-target-input"
+                  placeholder="enter fuel efficiency"
+                  prefix={<ProjectOutlined />}
+                />
+              </Form.Item>
+            </div>
+            <div className="set-target-field set-target-field--empty" />
+          </div>
+
+          <p className="set-target-section-label">Generator Size Efficiency</p>
+
+          <div className="set-target-row set-target-row--generators">
+            <div className="set-target-field">
+              <Form.Item name="generator_size_efficiency_1" label="Generator 1">
+                <Input
+                  className="set-target-input"
+                  placeholder="Enter efficiency"
+                  count={{ show: true, max: 10 }}
+                />
+              </Form.Item>
+            </div>
+            <div className="set-target-field">
+              <Form.Item name="generator_size_efficiency_2" label="Generator 2">
+                <Input className="set-target-input" placeholder="Enter efficiency" />
+              </Form.Item>
+            </div>
+            <div className="set-target-field">
+              <Form.Item name="generator_size_efficiency_3" label="Generator 3">
+                <Input className="set-target-input" placeholder="Enter efficiency" />
+              </Form.Item>
+            </div>
+          </div>
+
+          <Form.Item>
+            <div className="set-target-actions">
+              <SubmitButton form={form} />
               <Popconfirm
                 title="Are you sure you want to reset your target?"
                 onConfirm={() => submitResetTargetInfo()}
-                htmlType="submit"
-                form={form}
               >
-                <div
-                    style={{
-                      width: "100%",
-                      backgroundColor: "#FFFFFF",
-                      height: "52px",
-                      borderRadius: "5px",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      cursor: "pointer",
-                  }}
-                >
-                  <a
-                      style={{
-                      backgroundColor: "#FFFFFF",
-                      color: "red",
-                      borderRadius: "5px",
-                    }}
-                  >
-                    Reset
-                  </a>
-                </div>
+                <Button className="set-target-reset-btn">
+                  Reset
+                </Button>
               </Popconfirm>
-           </div>
-            </Form.Item>
-          </Form>
-        </Spin>
-      </div>
-    </>
+            </div>
+          </Form.Item>
+        </Form>
+      </Spin>
+    </div>
   );
 }
 

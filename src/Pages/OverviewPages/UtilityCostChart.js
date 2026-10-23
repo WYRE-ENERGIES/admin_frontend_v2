@@ -26,7 +26,6 @@ ChartJS.register(
   Legend
 );
 
-
 function UtilityCostChart(props) {
   const { downloading = false } = props;
   const [selectedDate, setSelectedDate] = useState()
@@ -46,7 +45,6 @@ function UtilityCostChart(props) {
     const clientId = props.auth.userData.client_id
     const useYear = (select);
     setSelectedDate(useYear)
-    
     props.getClientUtilityCostData(clientId, getYear(useYear))
   }
   
@@ -58,16 +56,10 @@ function UtilityCostChart(props) {
   
   useEffect(() => {
     if (costReducerStates) {
-      const labels = costReducerStates.cost_overview.map((reducer) => {
-        return reducer.month;
-      });
-      const clientCost = costReducerStates.cost_overview.map((reducer) => {
-        return reducer.phcn_cost;
-      });
-      const wyreCost = costReducerStates.cost_overview.map((reducer) => {
-        return reducer.wyre_cost;
-      });
-      const historicalAverage = Array.from({ length: 12 }, (_, i) => costReducerStates.historic_average)
+      const labels = costReducerStates.cost_overview.map((reducer) => reducer.month);
+      const clientCost = costReducerStates.cost_overview.map((reducer) => reducer.phcn_cost);
+      const wyreCost = costReducerStates.cost_overview.map((reducer) => reducer.wyre_cost);
+      const historicalAverage = Array.from({ length: 12 }, () => costReducerStates.historic_average)
 
       const costDataSource = {
         labels,
@@ -80,23 +72,20 @@ function UtilityCostChart(props) {
             borderColor: "#EF0000",
             borderWidth: 1,
             fill: false,
-            // xAxisID: "axis-bar",
           },
           {
             label: "Recorded Cost",
             data: clientCost,
             backgroundColor: "#43D540",
             borderRadius: 6,
-            barThickness: 30,
-            maxBarThickness: 30,
+            maxBarThickness: 60,
           },
           {
             label: "Wyre Calculated Cost",
             data: wyreCost,
             backgroundColor: "#5C12A7",
             borderRadius: 6,
-            barThickness: 30,
-            maxBarThickness: 30,
+            maxBarThickness: 60,
           },
         ],
       };
@@ -106,13 +95,12 @@ function UtilityCostChart(props) {
 
   const options2 = {
     responsive: true,
+    maintainAspectRatio: true,
     plugins: {
       legend: {
         position: "top",
         display: true,
-        labels: {
-          usePointStyle: true,
-        },
+        labels: { usePointStyle: true },
       },
       title: {
         display: true,
@@ -121,14 +109,9 @@ function UtilityCostChart(props) {
         position: "left",
       },
     },
-
     scales: {
       x: {
-        ticks: {
-          font: {
-            weight: "bold",
-          },
-        },
+        ticks: { font: { weight: "bold" } },
         title: {
           display: true,
           text: "Period (Month)",
@@ -136,79 +119,43 @@ function UtilityCostChart(props) {
           position: "left",
         },
         stacked: false,
-        grid: {
-          drawOnChartArea: false,
-        },
+        grid: { drawOnChartArea: false },
       },
       y: {
         stacked: false,
-        grid: {
-          drawOnChartArea: true,
-        },
+        grid: { drawOnChartArea: true },
       },
     },
   };
 
   return (
-    <>
-      <div className="##########">
-        {/* {showUtilityCostPage ? (
-        ) : (
-          setShowUtilityCostPage(false)
-      )} */}
-          <section className="total-energy-bar-chart">
-            <Card
-            style={{
-                overflow: "hidden",
-                borderRadius: 22,
-              }}
-              loading={props.overviewPage.fetchUtilityCostBarChartLoading}
-            >
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <div>
-                  <h1
-                    style={{
-                      fontSize: "17Px",
-                    }}
-                  >
-                    Utility Cost
-                  </h1>
-                </div>
-                {/* <div>
-                  <DatePicker
-                    defaultValue={selectedDate}
-                    picker="year"
-                    style={{ width: 120.65, height: 44 }}
-                    onChange={onDateChange}
-                  />
-                </div> */}
-                <div className="">
-                {/* <Button
-                  type="default"
-                  onClick={() => setSelectedIds([])}
-                  disabled={selectedIds.length === 0}
-                  style={{ marginTop: 16 }}
-                >
-                  Reset Selection
-                </Button> */}
-                <DatePicker
-                  defaultValue={selectedDate}
-                  picker="year"
-                  style={{}}
-                  onChange={onDateChange}
-                />
-              </div>
-              </div>
-              <Bar 
-              style={{ maxWidth: downloading ? "78vw" : "" }} 
-              options={options2} 
-              data={costChartData} 
-            />
-            </Card>
-          </section>
-        
-      </div>
-    </>
+    <div>
+      <section className="total-energy-bar-chart">
+        <Card className="chart-card" loading={props.overviewPage.fetchUtilityCostBarChartLoading}>
+          <div className="chart-header">
+            <h1 className="chart-header-title">Utility Cost</h1>
+            <div className="chart-filters">
+              <DatePicker
+                className="chart-filter-date"
+                defaultValue={selectedDate}
+                picker="year"
+                onChange={onDateChange}
+                placeholder="Select year"
+              />
+            </div>
+          </div>
+          <div className="chart-scroll-container">
+            <div className="chart-min-width-wrapper">
+              <Bar
+                style={{ maxWidth: downloading ? "78vw" : "" }}
+                options={options2}
+                data={costChartData}
+              />
+            </div>
+          </div>
+        </Card>
+      </section>
+    </div>
   );
 }
 
