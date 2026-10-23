@@ -1,17 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Table, Space, Tag, Spin, notification, Input, Dropdown } from 'antd';
-import { PlusOutlined, MoreOutlined } from '@ant-design/icons';
+import { Button, Table, Space, Spin, notification, Input, Dropdown } from 'antd';
+import { PlusOutlined, MoreOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { APIService } from '../../config/Api/apiServices';
+import OnboardClientModal from './OnboardClientModal';
 
 const { Search } = Input;
 
+const isSuperAdminUser = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    return (
+      user.role_text === 'SUPERADMIN' ||
+      user.roles === 1 ||
+      user.role === 1 ||
+      user.roles?.id === 1 ||
+      user.roles?.name === 'SUPERADMIN'
+    );
+  } catch {
+    return false;
+  }
+};
+
 const ClientOverview = () => {
+  const isSuperAdmin = isSuperAdminUser();
   const navigate = useNavigate();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
   const [filteredClients, setFilteredClients] = useState([]);
+  const [onboardModalOpen, setOnboardModalOpen] = useState(false);
+  const [onboardClientId, setOnboardClientId] = useState(undefined);
 
   useEffect(() => {
     const fetchClients = async () => {
@@ -144,6 +163,14 @@ const ClientOverview = () => {
                 label: 'View Client',
                 onClick: () => handleViewClient(record.key)
               },
+              ...(isSuperAdmin ? [{
+                key: 'onboard',
+                label: 'Send Onboarding Email',
+                onClick: () => {
+                  setOnboardClientId(record.key);
+                  setOnboardModalOpen(true);
+                }
+              }] : []),
               {
                 key: 'solar',
                 label: 'Create Solar',
@@ -173,14 +200,28 @@ const ClientOverview = () => {
     <div style={{ margin: '30px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2>Client</h2>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          style={{background: "#5C12A7"}}
-          onClick={handleCreateClient}
-        >
-          Create Client
-        </Button>
+        <Space>
+          {isSuperAdmin ? (
+            <Button
+              icon={<MailOutlined />}
+              style={{ color: '#5C12A7', borderColor: '#5C12A7' }}
+              onClick={() => {
+                setOnboardClientId(undefined);
+                setOnboardModalOpen(true);
+              }}
+            >
+              Send Onboarding Email
+            </Button>
+          ) : null}
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            style={{background: "#5C12A7"}}
+            onClick={handleCreateClient}
+          >
+            Create Client
+          </Button>
+        </Space>
       </div>
       <div style={{ marginBottom: '20px' }}>
         <Search
@@ -205,6 +246,15 @@ const ClientOverview = () => {
           }} 
         />
       </Spin>
+      <OnboardClientModal
+        open={onboardModalOpen}
+        clients={clients}
+        initialClientId={onboardClientId}
+        onClose={() => {
+          setOnboardModalOpen(false);
+          setOnboardClientId(undefined);
+        }}
+      />
     </div>
   );
 }
