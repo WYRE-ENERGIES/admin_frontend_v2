@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -13,7 +13,7 @@ import {
   Col,
   Table
 } from 'antd';
-import { EditOutlined, ArrowLeftOutlined, PlusOutlined } from '@ant-design/icons';
+import { EditOutlined, ArrowLeftOutlined, PlusOutlined, MailOutlined } from '@ant-design/icons';
 import { APIService } from '../../config/Api/apiServices';
 import { createMainUser, createBranches, createAdditionalUsers } from './CreateClient';
 import EnvData from '../../config/EnvData';
@@ -24,6 +24,28 @@ import AddAdditionalUsersModal from './AddAdditionalUsersModal';
 import AddBranchModal from './AddBranchModal';
 import EditMainUserModal from './EditMainUserModal';
 import EditAdditionalUsersModal from './EditAdditionalUsersModal';
+import OnboardClientModal from './OnboardClientModal';
+
+const isSuperAdminUser = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+    return (
+      user.role_text === 'SUPERADMIN' ||
+      user.roles === 1 ||
+      user.role === 1 ||
+      user.roles?.id === 1 ||
+      user.roles?.name === 'SUPERADMIN'
+    );
+  } catch {
+    return false;
+  }
+};
+
+const isSuperAdminAccount = (user) => {
+  const roleName = user?.roles?.name || user?.role_text;
+  const roleId = user?.roles?.id || user?.role;
+  return roleName === 'SUPERADMIN' || roleId === 1;
+};
 
 const { Title, Text } = Typography;
 
@@ -40,6 +62,14 @@ const ClientDetails = () => {
   const [additionalUsersLoading, setAdditionalUsersLoading] = useState(false);
   const [mainUser, setMainUser] = useState(null);
   const [mainUserLoading, setMainUserLoading] = useState(false);
+  const [onboardModalOpen, setOnboardModalOpen] = useState(false);
+  const isSuperAdmin = isSuperAdminUser();
+
+  const onboardUsers = useMemo(() => (
+    [mainUser, ...additionalUsers]
+      .filter(Boolean)
+      .filter((user) => !isSuperAdminAccount(user))
+  ), [mainUser, additionalUsers]);
 
   // Helper functions to check if sections have data
   const hasMainUserData = () => mainUser !== null;
@@ -359,7 +389,7 @@ const ClientDetails = () => {
     {
       title: 'Role',
       key: 'roles',
-      render: (_, record) => `${record.roles.name || ''}`, 
+      render: (_, record) => `${record.roles?.name || ''}`,
     },
   ];
 
@@ -390,6 +420,16 @@ const ClientDetails = () => {
           >
             Login as Client
           </Button>
+          {isSuperAdmin ? (
+            <Button
+              type="primary"
+              className="btn-primary-brand"
+              icon={<MailOutlined />}
+              onClick={() => setOnboardModalOpen(true)}
+            >
+              Send Onboarding Mail
+            </Button>
+          ) : null}
         </Space>
       </div>
 
@@ -604,6 +644,13 @@ const ClientDetails = () => {
         onCancel={() => setEditingBranch(null)}
         branch={editingBranch}
         onBranchUpdated={handleBranchUpdated}
+      />
+      <OnboardClientModal
+        open={onboardModalOpen}
+        client={client}
+        users={onboardUsers}
+        branches={branches}
+        onClose={() => setOnboardModalOpen(false)}
       />
     </div>
   );
