@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -41,12 +41,6 @@ const isSuperAdminUser = () => {
   }
 };
 
-const isSuperAdminAccount = (user) => {
-  const roleName = user?.roles?.name || user?.role_text;
-  const roleId = user?.roles?.id || user?.role;
-  return roleName === 'SUPERADMIN' || roleId === 1;
-};
-
 const { Title, Text } = Typography;
 
 const ClientDetails = () => {
@@ -64,12 +58,6 @@ const ClientDetails = () => {
   const [mainUserLoading, setMainUserLoading] = useState(false);
   const [onboardModalOpen, setOnboardModalOpen] = useState(false);
   const isSuperAdmin = isSuperAdminUser();
-
-  const onboardUsers = useMemo(() => (
-    [mainUser, ...additionalUsers]
-      .filter(Boolean)
-      .filter((user) => !isSuperAdminAccount(user))
-  ), [mainUser, additionalUsers]);
 
   // Helper functions to check if sections have data
   const hasMainUserData = () => mainUser !== null;
@@ -648,8 +636,6 @@ const ClientDetails = () => {
       <OnboardClientModal
         open={onboardModalOpen}
         client={client}
-        users={onboardUsers}
-        branches={branches}
         onClose={() => setOnboardModalOpen(false)}
       />
     </div>
