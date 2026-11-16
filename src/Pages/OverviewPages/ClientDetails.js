@@ -11,7 +11,8 @@ import {
   Divider,
   Row,
   Col,
-  Table
+  Table,
+  Modal
 } from 'antd';
 import { EditOutlined, ArrowLeftOutlined, PlusOutlined, MailOutlined } from '@ant-design/icons';
 import { APIService } from '../../config/Api/apiServices';
@@ -199,24 +200,38 @@ const ClientDetails = () => {
     fetchRegions();
   }, [clientId, fetchClientDetails, fetchBranches, fetchAdditionalUsers, fetchMainUser]);
 
-  const handleSuspendClient = async () => {
+  const handleSuspendClient = () => {
     if (!client) return;
-    setActionLoading(true);
-    try {
-      await APIService.patch(`/api/v2/suspend_client/${client.id}/`, { is_active: !client.is_active });
-      notification.success({
-        message: client.is_active ? 'Suspend Client' : 'Activate Client',
-        description: client.is_active ? 'Client has been suspended successfully.' : 'Client has been activated successfully.'
-      });
-      fetchClientDetails();
-    } catch (error) {
-      notification.error({
-        message: client.is_active ? 'Suspend Client' : 'Activate Client',
-        description: error?.response?.data?.message || error.message || 'Failed to update client status.'
-      });
-    } finally {
-      setActionLoading(false);
-    }
+    const suspending = Boolean(client.is_active);
+    const clientName = client.name || 'this client';
+    Modal.confirm({
+      title: suspending ? `Suspend ${clientName}?` : `Activate ${clientName}?`,
+      content: suspending
+        ? 'This client will lose access until you activate them again.'
+        : 'This client will be able to use the portal again.',
+      okText: suspending ? 'Suspend' : 'Activate',
+      okButtonProps: suspending ? { danger: true } : undefined,
+      cancelText: 'Cancel',
+      onOk: async () => {
+        setActionLoading(true);
+        try {
+          await APIService.patch(`/api/v2/suspend_client/${client.id}/`, { is_active: !suspending });
+          notification.success({
+            message: suspending ? 'Suspend Client' : 'Activate Client',
+            description: suspending ? 'Client has been suspended successfully.' : 'Client has been activated successfully.'
+          });
+          fetchClientDetails();
+        } catch (error) {
+          notification.error({
+            message: suspending ? 'Suspend Client' : 'Activate Client',
+            description: error?.response?.data?.message || error.message || 'Failed to update client status.'
+          });
+          return Promise.reject(error);
+        } finally {
+          setActionLoading(false);
+        }
+      },
+    });
   };
 
   const handleLoginAsClient = async () => {
@@ -265,23 +280,37 @@ const ClientDetails = () => {
     fetchBranches();
   };
 
-  const handleSuspendBranch = async (branchId, isActive) => {
-    setBranchLoading(true);
-    try {
-      await APIService.patch(`/api/v2/suspend_branch/${branchId}/`, { is_active: isActive });
-      notification.success({
-        message: isActive ? 'Activate Branch' : 'Suspend Branch',
-        description: isActive ? 'Branch has been activated successfully.' : 'Branch has been suspended successfully.'
-      });
-      fetchBranches();
-    } catch (error) {
-      notification.error({
-        message: isActive ? 'Activate Branch' : 'Suspend Branch',
-        description: error?.response?.data?.message || error.message || 'Failed to update branch status.'
-      });
-    } finally {
-      setBranchLoading(false);
-    }
+  const handleSuspendBranch = (branchId, isActive, branchName) => {
+    const suspending = !isActive;
+    const name = branchName || 'this branch';
+    Modal.confirm({
+      title: suspending ? `Suspend ${name}?` : `Activate ${name}?`,
+      content: suspending
+        ? 'This branch will be suspended until you activate it again.'
+        : 'This branch will be active again.',
+      okText: suspending ? 'Suspend' : 'Activate',
+      okButtonProps: suspending ? { danger: true } : undefined,
+      cancelText: 'Cancel',
+      onOk: async () => {
+        setBranchLoading(true);
+        try {
+          await APIService.patch(`/api/v2/suspend_branch/${branchId}/`, { is_active: isActive });
+          notification.success({
+            message: isActive ? 'Activate Branch' : 'Suspend Branch',
+            description: isActive ? 'Branch has been activated successfully.' : 'Branch has been suspended successfully.'
+          });
+          fetchBranches();
+        } catch (error) {
+          notification.error({
+            message: isActive ? 'Activate Branch' : 'Suspend Branch',
+            description: error?.response?.data?.message || error.message || 'Failed to update branch status.'
+          });
+          return Promise.reject(error);
+        } finally {
+          setBranchLoading(false);
+        }
+      },
+    });
   };
 
   if (loading) {
@@ -340,7 +369,7 @@ const ClientDetails = () => {
             type="primary"
             danger={record.Is_active}
             size="small"
-            onClick={() => handleSuspendBranch(record.branch_id, !record.Is_active)}
+            onClick={() => handleSuspendBranch(record.branch_id, !record.Is_active, record.name)}
           >
             {record.Is_active ? 'Suspend' : 'Activate'}
           </Button>

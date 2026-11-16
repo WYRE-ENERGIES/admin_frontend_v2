@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Table, Space, Tag, Spin, notification, Input, Dropdown } from 'antd';
+import { Button, Table, Space, Tag, Spin, notification, Input, Dropdown, Modal } from 'antd';
 import { PlusOutlined, MoreOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { APIService } from '../../config/Api/apiServices';
@@ -59,36 +59,61 @@ const ClientOverview = () => {
     navigate('/solar-onboarding');
   };
 
-  const handleSuspendClient = async (clientId, isActive) => {
-    setLoading(true);
-    try {
-      await APIService.patch(`/api/v2/suspend_client/${clientId}/`, { is_active: isActive });
-      notification.success({
-        message: isActive ? 'Activate Client' : 'Suspend Client',
-        description: isActive ? 'Client has been activated successfully.' : 'Client has been suspended successfully.'
-      });
-      // Refresh the client list
-      const response = await APIService.get('/cadmin/clients');
-      const data = response.data.results || response.data || [];
-      const formattedClients = data.map((client, idx) => ({
-        key: client.id || idx,
-        name: client.name || client.client_name || client.username || '---',
-        branches: client.number_of_branches || '---',
-        clientType: client.client_type || '---',
-        phone: client.phone_number || '---',
-        email: client.email || '---',
-        is_active: client.is_active,
-      }));
-      setClients(formattedClients);
+  const refreshClients = async () => {
+    const response = await APIService.get('/cadmin/clients');
+    const data = response.data.results || response.data || [];
+    const formattedClients = data.map((client, idx) => ({
+      key: client.id || idx,
+      name: client.name || client.client_name || client.username || '---',
+      branches: client.number_of_branches || '---',
+      clientType: client.client_type || '---',
+      phone: client.phone_number || '---',
+      email: client.email || '---',
+      is_active: client.is_active,
+    }));
+    setClients(formattedClients);
+    if (!searchText) {
       setFilteredClients(formattedClients);
-    } catch (error) {
-      notification.error({
-        message: isActive ? 'Activate Client' : 'Suspend Client',
-        description: error?.response?.data?.message || error.message || 'Failed to update client status.'
-      });
-    } finally {
-      setLoading(false);
+      return;
     }
+    const searchLower = searchText.toLowerCase();
+    setFilteredClients(formattedClients.filter((item) =>
+      item.name.toLowerCase().includes(searchLower) ||
+      item.email.toLowerCase().includes(searchLower)
+    ));
+  };
+
+  const handleSuspendClient = (clientId, isActive, clientName) => {
+    const suspending = !isActive;
+    const name = clientName || 'this client';
+    Modal.confirm({
+      title: suspending ? `Suspend ${name}?` : `Activate ${name}?`,
+      content: suspending
+        ? 'This client will lose access until you activate them again.'
+        : 'This client will be able to use the portal again.',
+      okText: suspending ? 'Suspend' : 'Activate',
+      okButtonProps: suspending ? { danger: true } : undefined,
+      cancelText: 'Cancel',
+      onOk: async () => {
+        setLoading(true);
+        try {
+          await APIService.patch(`/api/v2/suspend_client/${clientId}/`, { is_active: isActive });
+          notification.success({
+            message: isActive ? 'Activate Client' : 'Suspend Client',
+            description: isActive ? 'Client has been activated successfully.' : 'Client has been suspended successfully.'
+          });
+          await refreshClients();
+        } catch (error) {
+          notification.error({
+            message: isActive ? 'Activate Client' : 'Suspend Client',
+            description: error?.response?.data?.message || error.message || 'Failed to update client status.'
+          });
+          return Promise.reject(error);
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   const columns = [
@@ -153,7 +178,7 @@ const ClientOverview = () => {
                 key: record.is_active ? 'suspend' : 'activate',
                 label: record.is_active ? 'Suspend' : 'Activate',
                 danger: record.is_active ? true : false,
-                onClick: () => handleSuspendClient(record.key, !record.is_active)
+                onClick: () => handleSuspendClient(record.key, !record.is_active, record.name)
               }
             ]
           }}
