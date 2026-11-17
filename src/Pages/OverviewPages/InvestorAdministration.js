@@ -21,6 +21,7 @@ import {
   Input,
   message,
 } from "antd";
+import { confirmRestrictiveAction } from "../../helpers/confirmRestrictiveAction";
 import {
   PlusOutlined,
   MinusCircleOutlined,
@@ -336,7 +337,6 @@ function InvestorAdministration() {
   const createLoading = useSelector((s) => s.adminInvestorUsersPage?.createLoading);
   const investorUserDetail = useSelector((s) => s.adminInvestorUsersPage?.detail);
   const detailLoading = useSelector((s) => s.adminInvestorUsersPage?.detailLoading);
-  const deleteLoading = useSelector((s) => s.adminInvestorUsersPage?.deleteLoading);
   const financeByInvestorList = useSelector((s) => s.adminInvestorDirectoryPage?.financeByInvestor);
   const financeByInvestorLoading = useSelector((s) => s.adminInvestorDirectoryPage?.financeByInvestorLoading);
 
@@ -345,7 +345,6 @@ function InvestorAdministration() {
   const projectCreateLoading = useSelector((s) => s.adminInvestorProjectsPage?.createLoading);
   const projectDetail = useSelector((s) => s.adminInvestorProjectsPage?.detail);
   const projectDetailLoading = useSelector((s) => s.adminInvestorProjectsPage?.detailLoading);
-  const projectDeleteLoading = useSelector((s) => s.adminInvestorProjectsPage?.deleteLoading);
   const projectUpdateLoading = useSelector((s) => s.adminInvestorProjectsPage?.updateLoading);
   const projectsPerformance = useSelector((s) => s.adminInvestorProjectsPage?.performance);
   const projectsPerformanceLoading = useSelector((s) => s.adminInvestorProjectsPage?.performanceLoading);
@@ -355,7 +354,6 @@ function InvestorAdministration() {
   const investmentCreateLoading = useSelector((s) => s.adminInvestorInvestmentsPage?.createLoading);
   const investmentDetail = useSelector((s) => s.adminInvestorInvestmentsPage?.detail);
   const investmentDetailLoading = useSelector((s) => s.adminInvestorInvestmentsPage?.detailLoading);
-  const investmentDeleteLoading = useSelector((s) => s.adminInvestorInvestmentsPage?.deleteLoading);
   const investmentUpdateLoading = useSelector((s) => s.adminInvestorInvestmentsPage?.updateLoading);
 
   const adminCustomerPaymentsList = useSelector((s) => s.adminCustomerPaymentsPage?.list);
@@ -363,7 +361,6 @@ function InvestorAdministration() {
   const customerPaymentCreateLoading = useSelector((s) => s.adminCustomerPaymentsPage?.createLoading);
   const customerPaymentDetail = useSelector((s) => s.adminCustomerPaymentsPage?.detail);
   const customerPaymentDetailLoading = useSelector((s) => s.adminCustomerPaymentsPage?.detailLoading);
-  const customerPaymentDeleteLoading = useSelector((s) => s.adminCustomerPaymentsPage?.deleteLoading);
   const customerPaymentUpdateLoading = useSelector((s) => s.adminCustomerPaymentsPage?.updateLoading);
   const customerSchedules = useSelector((s) => s.adminCustomerPaymentsPage?.customerSchedules);
   const customerSchedulesLoading = useSelector((s) => s.adminCustomerPaymentsPage?.customerSchedulesLoading);
@@ -603,12 +600,9 @@ function InvestorAdministration() {
 
   const handleDeactivateInvestor = useCallback(
     (record) => {
-      Modal.confirm({
-        title: "Deactivate this investor user?",
-        content: `${record.name} (${record.ref}) — the linked user account will be deactivated.`,
-        okText: "Deactivate",
-        okType: "danger",
-        confirmLoading: deleteLoading,
+      confirmRestrictiveAction({
+        action: "Deactivate",
+        name: record.name ? `${record.name} (${record.ref})` : "this investor user",
         onOk: async () => {
           const res = await dispatch(deleteAdminInvestorUser(record.id));
           if (res.fulfilled)
@@ -623,7 +617,7 @@ function InvestorAdministration() {
         },
       });
     },
-    [dispatch, deleteLoading, refreshInvestorUsers]
+    [dispatch, refreshInvestorUsers]
   );
 
   const handleViewInvestor = useCallback(
@@ -701,12 +695,9 @@ function InvestorAdministration() {
 
   const handleDeactivateProject = useCallback(
     (record) => {
-      Modal.confirm({
-        title: "Deactivate this project?",
-        content: `${record.name} — it will be marked deactivated in the system.`,
-        okText: "Deactivate",
-        okType: "danger",
-        confirmLoading: projectDeleteLoading,
+      confirmRestrictiveAction({
+        action: "Deactivate",
+        name: record.name || "this project",
         onOk: async () => {
           const res = await dispatch(deleteAdminInvestorProject(record.id));
           if (res.fulfilled)
@@ -721,7 +712,7 @@ function InvestorAdministration() {
         },
       });
     },
-    [dispatch, projectDeleteLoading, refreshAdminProjects]
+    [dispatch, refreshAdminProjects]
   );
 
   const handleViewProject = useCallback(
@@ -909,12 +900,11 @@ function InvestorAdministration() {
 
   const handleDeactivateInvestment = useCallback(
     (record) => {
-      Modal.confirm({
-        title: "Deactivate this investment?",
-        content: `ID ${record.id} — ${record.investorName} → ${record.projectName}`,
-        okText: "Deactivate",
-        okType: "danger",
-        confirmLoading: investmentDeleteLoading,
+      confirmRestrictiveAction({
+        action: "Deactivate",
+        name: record.investorName
+          ? `${record.investorName} → ${record.projectName}`
+          : "this investment",
         onOk: async () => {
           const res = await dispatch(deleteAdminInvestorInvestment(record.id));
           if (res.fulfilled)
@@ -929,7 +919,7 @@ function InvestorAdministration() {
         },
       });
     },
-    [dispatch, investmentDeleteLoading, refreshAdminInvestments]
+    [dispatch, refreshAdminInvestments]
   );
 
   const handleViewInvestment = useCallback(
@@ -1098,12 +1088,11 @@ function InvestorAdministration() {
 
   const handleDeactivateCustomerPayment = useCallback(
     (record) => {
-      Modal.confirm({
-        title: "Deactivate this customer payment record?",
-        content: `Payment #${record.id} — ${record.projectName || "Project"}`,
-        okText: "Deactivate",
-        okType: "danger",
-        confirmLoading: customerPaymentDeleteLoading,
+      confirmRestrictiveAction({
+        action: "Deactivate",
+        name: record.projectName
+          ? `payment #${record.id} for ${record.projectName}`
+          : `payment #${record.id}`,
         onOk: async () => {
           const res = await dispatch(deleteAdminCustomerPayment(record.id));
           if (res.fulfilled)
@@ -1119,7 +1108,7 @@ function InvestorAdministration() {
         },
       });
     },
-    [dispatch, customerPaymentDeleteLoading, refreshCustomerPayments, refreshPaymentSchedules]
+    [dispatch, refreshCustomerPayments, refreshPaymentSchedules]
   );
 
   const handleViewCustomerPayment = useCallback(

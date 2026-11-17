@@ -24,6 +24,7 @@ import {
   saveSolarStation,
   toggleSolarStationStatus,
 } from '../../redux/actions/solar/solar.action';
+import { confirmRestrictiveAction } from '../../helpers/confirmRestrictiveAction';
 
 const { Title } = Typography;
 
@@ -180,14 +181,14 @@ const SolarOnboarding = ({
     }
   };
 
-  const handleToggleStationStatus = async (station) => {
+  const applyStationStatus = async (station) => {
     const branchIdentifier = station?.branch ?? station?.branch_id;
     if (!branchIdentifier) {
       notification.error({
         message: 'Error',
         description: 'Branch ID is missing for this station.',
       });
-      return;
+      throw new Error('Branch ID is missing for this station.');
     }
 
     const result = await toggleStationStatusAction(station);
@@ -197,12 +198,26 @@ const SolarOnboarding = ({
         description: result?.message || 'Station status updated successfully.',
       });
       fetchStationsAction();
-    } else {
-      notification.error({
-        message: 'Error',
-        description: result?.message || 'Failed to toggle station status. Please try again.',
-      });
+      return;
     }
+
+    notification.error({
+      message: 'Error',
+      description: result?.message || 'Failed to toggle station status. Please try again.',
+    });
+    throw new Error(result?.message || 'Failed to toggle station status.');
+  };
+
+  const handleToggleStationStatus = (station) => {
+    if (!station?.is_active) {
+      applyStationStatus(station).catch(() => {});
+      return;
+    }
+    confirmRestrictiveAction({
+      action: 'Deactivate',
+      name: station.name || 'this station',
+      onOk: () => applyStationStatus(station),
+    });
   };
 
   const handleBack = () => {

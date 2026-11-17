@@ -25,6 +25,7 @@ import AddBranchModal from './AddBranchModal';
 import EditMainUserModal from './EditMainUserModal';
 import EditAdditionalUsersModal from './EditAdditionalUsersModal';
 import OnboardClientModal from './OnboardClientModal';
+import { confirmRestrictiveAction } from '../../helpers/confirmRestrictiveAction';
 
 const isSuperAdminUser = () => {
   try {
@@ -199,24 +200,39 @@ const ClientDetails = () => {
     fetchRegions();
   }, [clientId, fetchClientDetails, fetchBranches, fetchAdditionalUsers, fetchMainUser]);
 
-  const handleSuspendClient = async () => {
-    if (!client) return;
+  const updateClientStatus = async (nextActive) => {
+    const suspending = !nextActive;
     setActionLoading(true);
     try {
-      await APIService.patch(`/api/v2/suspend_client/${client.id}/`, { is_active: !client.is_active });
+      await APIService.patch(`/api/v2/suspend_client/${client.id}/`, { is_active: nextActive });
       notification.success({
-        message: client.is_active ? 'Suspend Client' : 'Activate Client',
-        description: client.is_active ? 'Client has been suspended successfully.' : 'Client has been activated successfully.'
+        message: suspending ? 'Suspend Client' : 'Activate Client',
+        description: suspending ? 'Client has been suspended successfully.' : 'Client has been activated successfully.'
       });
       fetchClientDetails();
     } catch (error) {
       notification.error({
-        message: client.is_active ? 'Suspend Client' : 'Activate Client',
+        message: suspending ? 'Suspend Client' : 'Activate Client',
         description: error?.response?.data?.message || error.message || 'Failed to update client status.'
       });
+      throw error;
     } finally {
       setActionLoading(false);
     }
+  };
+
+  const handleSuspendClient = () => {
+    if (!client) return;
+    const nextActive = !client.is_active;
+    if (nextActive) {
+      updateClientStatus(true).catch(() => {});
+      return;
+    }
+    confirmRestrictiveAction({
+      action: 'Suspend',
+      name: client.name || 'this client',
+      onOk: () => updateClientStatus(false),
+    });
   };
 
   const handleLoginAsClient = async () => {
@@ -265,7 +281,7 @@ const ClientDetails = () => {
     fetchBranches();
   };
 
-  const handleSuspendBranch = async (branchId, isActive) => {
+  const updateBranchStatus = async (branchId, isActive) => {
     setBranchLoading(true);
     try {
       await APIService.patch(`/api/v2/suspend_branch/${branchId}/`, { is_active: isActive });
@@ -279,9 +295,22 @@ const ClientDetails = () => {
         message: isActive ? 'Activate Branch' : 'Suspend Branch',
         description: error?.response?.data?.message || error.message || 'Failed to update branch status.'
       });
+      throw error;
     } finally {
       setBranchLoading(false);
     }
+  };
+
+  const handleSuspendBranch = (branchId, isActive, branchName) => {
+    if (isActive) {
+      updateBranchStatus(branchId, true).catch(() => {});
+      return;
+    }
+    confirmRestrictiveAction({
+      action: 'Suspend',
+      name: branchName || 'this branch',
+      onOk: () => updateBranchStatus(branchId, false),
+    });
   };
 
   if (loading) {
@@ -340,7 +369,7 @@ const ClientDetails = () => {
             type="primary"
             danger={record.Is_active}
             size="small"
-            onClick={() => handleSuspendBranch(record.branch_id, !record.Is_active)}
+            onClick={() => handleSuspendBranch(record.branch_id, !record.Is_active, record.name)}
           >
             {record.Is_active ? 'Suspend' : 'Activate'}
           </Button>
