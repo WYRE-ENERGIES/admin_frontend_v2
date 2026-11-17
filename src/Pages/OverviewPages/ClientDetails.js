@@ -11,9 +11,10 @@ import {
   Divider,
   Row,
   Col,
-  Table
+  Table,
+  Dropdown
 } from 'antd';
-import { EditOutlined, ArrowLeftOutlined, PlusOutlined, MailOutlined } from '@ant-design/icons';
+import { EditOutlined, ArrowLeftOutlined, PlusOutlined, MailOutlined, MoreOutlined } from '@ant-design/icons';
 import { APIService } from '../../config/Api/apiServices';
 import { createMainUser, createBranches, createAdditionalUsers } from './CreateClient';
 import EnvData from '../../config/EnvData';
@@ -25,6 +26,7 @@ import AddBranchModal from './AddBranchModal';
 import EditMainUserModal from './EditMainUserModal';
 import EditAdditionalUsersModal from './EditAdditionalUsersModal';
 import OnboardClientModal from './OnboardClientModal';
+import { canManageDemandWindows } from './DemandWindows';
 
 const isSuperAdminUser = () => {
   try {
@@ -58,6 +60,7 @@ const ClientDetails = () => {
   const [mainUserLoading, setMainUserLoading] = useState(false);
   const [onboardModalOpen, setOnboardModalOpen] = useState(false);
   const isSuperAdmin = isSuperAdminUser();
+  const canOpenDemandWindows = canManageDemandWindows();
 
   // Helper functions to check if sections have data
   const hasMainUserData = () => mainUser !== null;
@@ -334,21 +337,50 @@ const ClientDetails = () => {
     {
       title: 'Action',
       key: 'action',
-      render: (_, record) => (
-        <Space>
-          <Button
-            type="primary"
-            danger={record.Is_active}
-            size="small"
-            onClick={() => handleSuspendBranch(record.branch_id, !record.Is_active)}
-          >
-            {record.Is_active ? 'Suspend' : 'Activate'}
-          </Button>
-          <Button size="small" onClick={() => setEditingBranch(record)}>
-            Edit
-          </Button>
-        </Space>
-      ),
+      align: 'center',
+      render: (_, record) => {
+        const openDemandWindows = () => navigate(
+          `/client/${clientId}/branch/${record.branch_id}/demand-windows`,
+          { state: { branchName: record.name, devices: record.devices || [] } },
+        );
+        const items = [
+          canOpenDemandWindows ? {
+            key: 'demand',
+            label: 'Demand windows',
+            onClick: ({ domEvent }) => {
+              domEvent.stopPropagation();
+              openDemandWindows();
+            },
+          } : null,
+          {
+            key: 'edit',
+            label: 'Edit',
+            onClick: ({ domEvent }) => {
+              domEvent.stopPropagation();
+              setEditingBranch(record);
+            },
+          },
+          {
+            key: 'status',
+            label: record.Is_active ? 'Suspend' : 'Activate',
+            danger: Boolean(record.Is_active),
+            onClick: ({ domEvent }) => {
+              domEvent.stopPropagation();
+              handleSuspendBranch(record.branch_id, !record.Is_active);
+            },
+          },
+        ].filter(Boolean);
+
+        return (
+          <Dropdown menu={{ items }} trigger={['click']}>
+            <Button
+              type="text"
+              icon={<MoreOutlined />}
+              onClick={(event) => event.stopPropagation()}
+            />
+          </Dropdown>
+        );
+      },
     },
   ];
 
@@ -549,6 +581,19 @@ const ClientDetails = () => {
             pagination={false}
             loading={branchLoading}
             scroll={{ x: true }}
+            onRow={(record) => ({
+              className: 'clickable-row',
+              onClick: () => {
+                if (!canOpenDemandWindows) {
+                  setEditingBranch(record);
+                  return;
+                }
+                navigate(
+                  `/client/${clientId}/branch/${record.branch_id}/demand-windows`,
+                  { state: { branchName: record.name, devices: record.devices || [] } },
+                );
+              },
+            })}
           />
         </div>
       </Card>

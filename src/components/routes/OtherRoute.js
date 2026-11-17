@@ -14,6 +14,7 @@ import SolarStationDetails from "../../Pages/OverviewPages/SolarStationDetails";
 import SolarManagement from "../../Pages/OverviewPages/SolarMgt";
 import InstallationsChecklist from "../../Pages/OverviewPages/InstallationsChecklist";
 import InvestorAdministration from "../../Pages/OverviewPages/InvestorAdministration";
+import DemandWindows from "../../Pages/OverviewPages/DemandWindows";
 
 function OtherRoute() {
   return (
@@ -28,6 +29,7 @@ function OtherRoute() {
           <Route path="/create-client" element={<CreateClient />}></Route>
           <Route path="/system-constants" element={<SystemConstants />}></Route>
           <Route path="/client/:clientId" element={<ClientDetails />} />
+          <Route path="/client/:clientId/branch/:branchId/demand-windows" element={<DemandWindows />} />
           <Route path="/solar-onboarding" element={<SolarOnboarding />} />
           <Route path="/solar-onboarding/stations/:branchId" element={<SolarStationDetails />} />
           <Route path="/solar-management" element={<SolarManagement />} />
