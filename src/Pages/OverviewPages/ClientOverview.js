@@ -159,7 +159,11 @@ const ClientOverview = () => {
           }}
           trigger={['click']}
         >
-          <Button type="text" icon={<MoreOutlined />} />
+          <Button
+            type="text"
+            icon={<MoreOutlined />}
+            onClick={(event) => event.stopPropagation()}
+          />
         </Dropdown>
       ),
     },
@@ -198,7 +202,11 @@ const ClientOverview = () => {
         tip="Loading clients...">
         <Table 
           dataSource={filteredClients}
-          columns={columns} 
+          columns={columns}
+          onRow={(record) => ({
+            onClick: () => handleViewClient(record.key),
+            className: 'clickable-row',
+          })}
           pagination={{ 
             pageSize: 10,
             showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} clients`
