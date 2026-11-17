@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Table, Space, Tag, Spin, notification, Input, Dropdown, Modal } from 'antd';
+import { Button, Table, Space, Tag, Spin, notification, Input, Dropdown } from 'antd';
 import { PlusOutlined, MoreOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { APIService } from '../../config/Api/apiServices';
+import { confirmRestrictiveAction } from '../../helpers/confirmRestrictiveAction';
 
 const { Search } = Input;
 
@@ -83,36 +84,35 @@ const ClientOverview = () => {
     ));
   };
 
+  const applyClientStatus = async (clientId, isActive) => {
+    setLoading(true);
+    try {
+      await APIService.patch(`/api/v2/suspend_client/${clientId}/`, { is_active: isActive });
+      notification.success({
+        message: isActive ? 'Activate Client' : 'Suspend Client',
+        description: isActive ? 'Client has been activated successfully.' : 'Client has been suspended successfully.'
+      });
+      await refreshClients();
+    } catch (error) {
+      notification.error({
+        message: isActive ? 'Activate Client' : 'Suspend Client',
+        description: error?.response?.data?.message || error.message || 'Failed to update client status.'
+      });
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSuspendClient = (clientId, isActive, clientName) => {
-    const suspending = !isActive;
-    const name = clientName || 'this client';
-    Modal.confirm({
-      title: suspending ? `Suspend ${name}?` : `Activate ${name}?`,
-      content: suspending
-        ? 'This client will lose access until you activate them again.'
-        : 'This client will be able to use the portal again.',
-      okText: suspending ? 'Suspend' : 'Activate',
-      okButtonProps: suspending ? { danger: true } : undefined,
-      cancelText: 'Cancel',
-      onOk: async () => {
-        setLoading(true);
-        try {
-          await APIService.patch(`/api/v2/suspend_client/${clientId}/`, { is_active: isActive });
-          notification.success({
-            message: isActive ? 'Activate Client' : 'Suspend Client',
-            description: isActive ? 'Client has been activated successfully.' : 'Client has been suspended successfully.'
-          });
-          await refreshClients();
-        } catch (error) {
-          notification.error({
-            message: isActive ? 'Activate Client' : 'Suspend Client',
-            description: error?.response?.data?.message || error.message || 'Failed to update client status.'
-          });
-          return Promise.reject(error);
-        } finally {
-          setLoading(false);
-        }
-      },
+    if (isActive) {
+      applyClientStatus(clientId, true).catch(() => {});
+      return;
+    }
+    confirmRestrictiveAction({
+      action: 'Suspend',
+      name: clientName || 'this client',
+      onOk: () => applyClientStatus(clientId, false),
     });
   };
 
