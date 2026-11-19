@@ -15,6 +15,10 @@ import {
 } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { APIService } from '../../config/Api/apiServices';
+import BranchSolarSection, {
+  buildSolarPayload,
+  notifySolarResult,
+} from './BranchSolarSection';
 
 const { Text } = Typography;
 const { Option } = Select;
@@ -39,12 +43,22 @@ const AddBranchModal = ({ visible, clientId, onCancel, onBranchAdded }) => {
   const [loading, setLoading] = useState(false);
   const [regionsLoading, setRegionsLoading] = useState(false);
   const [clientRegions, setClientRegions] = useState([]);
+  const [solarEnabled, setSolarEnabled] = useState(false);
+  const [solarPreview, setSolarPreview] = useState(null);
 
   useEffect(() => {
     if (clientId) {
       loadClientRegions();
     }
   }, [clientId]);
+
+  useEffect(() => {
+    if (!visible) {
+      form.resetFields();
+      setSolarEnabled(false);
+      setSolarPreview(null);
+    }
+  }, [visible, form]);
 
   const loadClientRegions = async () => {
     if (!clientId) {
@@ -87,7 +101,7 @@ const AddBranchModal = ({ visible, clientId, onCancel, onBranchAdded }) => {
 
     setLoading(true);
     try {
-      const response = await APIService.post(`/api/v1/accounts/client/${clientId}/branches/`, {
+      const payload = {
         name: values.name,
         address: values.address,
         email: values.email,
@@ -105,25 +119,45 @@ const AddBranchModal = ({ visible, clientId, onCancel, onBranchAdded }) => {
             gen_size: device.genSize,
             fuel_type: device.fuelType,
           } : {})
-        })) || []
-      });
+        })) || [],
+      };
 
-      message.success('Branch created successfully!');
-      
+      if (solarEnabled) {
+        const solar = buildSolarPayload(values.solar, solarPreview);
+        if (!solar) {
+          message.error('Solar is enabled but Station ID is missing.');
+          setLoading(false);
+          return { success: false, error: 'Missing solar station_id' };
+        }
+        payload.solar = solar;
+      }
+
+      const response = await APIService.post(
+        `/api/v1/accounts/client/${clientId}/branches/`,
+        payload
+      );
+
+      message.success(response?.data?.message || 'Branch created successfully!');
+      // 201 alone does not prove solar succeeded — check response.solar[].status
+      notifySolarResult(response?.data?.solar);
+
       onCancel();
       onBranchAdded();
-      
+
       return { success: true, data: response.data };
     } catch (error) {
       console.error('Branch creation error:', error);
       let errorMessage = 'Failed to create branch. Please check your connection and try again.';
-      
-      if (error.response?.data?.message) {
+
+      if (error.response?.data?.errors?.solar) {
+        const solarErrors = error.response.data.errors.solar;
+        errorMessage = Array.isArray(solarErrors) ? solarErrors.join(' ') : String(solarErrors);
+      } else if (error.response?.data?.message) {
         errorMessage = error.response.data.message;
       } else if (error.response?.data?.detail) {
         errorMessage = error.response.data.detail;
       }
-      
+
       message.error(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
@@ -138,8 +172,8 @@ const AddBranchModal = ({ visible, clientId, onCancel, onBranchAdded }) => {
       onCancel={onCancel}
       width={800}
       footer={[
-        <Button key="back" onClick={onCancel}>Cancel</Button>,
-        <Button key="submit" type="primary" onClick={() => form.submit()}>Add Branch</Button>,
+        <Button key="back" onClick={onCancel} disabled={loading}>Cancel</Button>,
+        <Button key="submit" type="primary" loading={loading} onClick={() => form.submit()}>Add Branch</Button>,
       ]}
     >
       <Form
@@ -332,6 +366,13 @@ const AddBranchModal = ({ visible, clientId, onCancel, onBranchAdded }) => {
             </div>
           )}
         </Form.List>
+
+        <BranchSolarSection
+          form={form}
+          enabled={solarEnabled}
+          onEnabledChange={setSolarEnabled}
+          onPreviewChange={setSolarPreview}
+        />
       </Form>
     </Modal>
   );
