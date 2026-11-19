@@ -78,6 +78,7 @@ const SolarStationDetails = ({
       station: {
         ...station,
         installed_battery_capacity: station.installed_battery_capacity ?? stationInfo.installed_battery_capacity,
+        installed_inverter_capacity: station.installed_inverter_capacity ?? stationInfo.installed_inverter_capacity,
         installed_capacity: station.installed_capacity ?? stationInfo.installed_capacity,
         installed_capacity_kwp: station.installed_capacity_kwp ?? stationInfo.installed_capacity_kwp ?? station.installed_capacity ?? stationInfo.installed_capacity,
       },
@@ -277,7 +278,8 @@ const SolarStationDetails = ({
               <Descriptions column={1} bordered={false} size="small">
                 <Descriptions.Item label="Station ID">{stationSummary.station?.deye_station_id || stationSummary.station?.id || '—'}</Descriptions.Item>
                 <Descriptions.Item label="Address">{stationSummary.station?.address || '—'}</Descriptions.Item>
-                <Descriptions.Item label="Installed Battery Capacity (kWh)">{stationSummary.station?.installed_battery_capacity || '—'}</Descriptions.Item>
+                <Descriptions.Item label="Installed Battery Capacity (kWh)">{stationSummary.station?.installed_battery_capacity ?? '—'}</Descriptions.Item>
+                <Descriptions.Item label="Installed Inverter Capacity (kVA)">{stationSummary.station?.installed_inverter_capacity ?? '—'}</Descriptions.Item>
                 <Descriptions.Item label="Installed Capacity (kWp)">
                   {stationSummary.station?.installed_capacity_kwp ?? stationSummary.station?.installed_capacity ?? '—'}
                 </Descriptions.Item>
