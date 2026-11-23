@@ -5,7 +5,6 @@ import {
   Button,
   Card,
   Col,
-  DatePicker,
   Descriptions,
   Drawer,
   Empty,
@@ -165,7 +164,6 @@ const ruleToForm = (rule) => ({
   threshold_kw: rule?.threshold_kw ?? null,
   demand_source: rule?.demand_source || undefined,
   is_enabled: rule?.is_enabled !== false,
-  at: null,
 });
 
 const buildPayload = (values) => ({
@@ -474,12 +472,10 @@ const DemandWindows = () => {
     setPreviewing(kind);
     setPreviewError('');
     try {
-      const atValue = form.getFieldValue('at');
-      const at = atValue ? dayjs(atValue).format('YYYY-MM-DDTHH:mm:ss') : undefined;
       const useSaved = Boolean(editing?.id) && !dirty;
       let body;
       if (useSaved) {
-        body = { rule_id: editing.id, kind, ...(at ? { at } : {}) };
+        body = { rule_id: editing.id, kind };
       } else {
         const values = await form.validateFields([
           'label',
@@ -494,7 +490,6 @@ const DemandWindows = () => {
           branch: Number(branchId),
           branch_id: Number(branchId),
           kind,
-          ...(at ? { at } : {}),
         };
       }
       const response = await APIService.post('/api/v1/admin/demand-windows/preview/', body);
@@ -520,12 +515,9 @@ const DemandWindows = () => {
       onOk: async () => {
         setSendingKind(kind);
         try {
-          const atValue = form.getFieldValue('at');
-          const at = atValue ? dayjs(atValue).format('YYYY-MM-DDTHH:mm:ss') : undefined;
           const response = await APIService.post('/api/v1/admin/demand-windows/send-test/', {
             rule_id: editing.id,
             kind,
-            ...(at ? { at } : {}),
           });
           const result = response.data?.result || {};
           notification.success({
@@ -758,11 +750,7 @@ const DemandWindows = () => {
           form={form}
           layout="vertical"
           onFinish={onSave}
-          onValuesChange={(changed) => {
-            const keys = Object.keys(changed || {});
-            if (keys.length === 1 && keys[0] === 'at') return;
-            setDirty(true);
-          }}
+          onValuesChange={() => setDirty(true)}
           initialValues={ruleToForm(null)}
         >
           <Row gutter={[24, 8]}>
@@ -870,13 +858,6 @@ const DemandWindows = () => {
                   Last fired {formatFiredDate(editing.last_fired_window_date)}
                 </Paragraph>
               ) : null}
-              <Form.Item
-                name="at"
-                label="Preview as of (Lagos)"
-                extra="Optional. Leave empty to use the current time. Weekly uses the previous Monday–Sunday relative to this moment."
-              >
-                <DatePicker showTime format="YYYY-MM-DD HH:mm" style={{ width: '100%' }} />
-              </Form.Item>
               <div className="demand-actions">
                 <Button type="primary" className="btn-primary-brand" htmlType="submit" loading={saving} disabled={noSource}>
                   Save
