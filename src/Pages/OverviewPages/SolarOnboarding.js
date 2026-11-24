@@ -139,15 +139,27 @@ const SolarOnboarding = ({
     try {
       const selectedBranch = branches.find((b) => String(b.id) === String(values.branch_id));
       const branch_name = selectedBranch?.name || values.branch_name || '';
+      const batteryCapacity = values.installed_battery_capacity ?? 0;
+      // Leave inverter null when blank so load-utilisation alerts stay off on create.
+      const inverterCapacity =
+        values.installed_inverter_capacity === undefined ||
+        values.installed_inverter_capacity === null ||
+        values.installed_inverter_capacity === ''
+          ? null
+          : values.installed_inverter_capacity;
+
       const payload = {
         branch_id: values.branch_id,
         branch_name,
         product_name: values.product_name,
         station_id: values.station_id,
-        installed_battery_capacity: values.installed_battery_capacity || 0,
+        installed_battery_capacity: batteryCapacity,
+        installed_inverter_capacity: inverterCapacity,
         station_info: {
           name: values.name || '',
           installed_capacity: values.installed_capacity || 0,
+          installed_battery_capacity: batteryCapacity,
+          installed_inverter_capacity: inverterCapacity,
           latitude: values.latitude ?? null,
           longitude: values.longitude ?? null,
           address: values.address || '',
@@ -392,7 +404,8 @@ const SolarOnboarding = ({
                 { title: 'Station ID', dataIndex: 'deye_station_id', key: 'deye_station_id' },
                 { title: 'Name', dataIndex: 'name', key: 'name' },
                 { title: 'Branch', dataIndex: 'branch_name', key: 'branch_name' },
-                { title: 'Installed Battery Capacity', dataIndex: 'installed_battery_capacity', key: 'installed_battery_capacity' },
+                { title: 'Installed Battery (kWh)', dataIndex: 'installed_battery_capacity', key: 'installed_battery_capacity' },
+                { title: 'Installed Inverter (kVA)', dataIndex: 'installed_inverter_capacity', key: 'installed_inverter_capacity' },
                 { title: 'Installed Capacity (kWp)', dataIndex: 'installed_capacity', key: 'installed_capacity' },
                 {
                   title: 'Active',
@@ -526,11 +539,26 @@ const SolarOnboarding = ({
               </Col>
               <Col xs={24} sm={12} md={8}>
                 <Form.Item
-                  label="Installed Battery Capacity"
+                  label="Installed Battery Capacity (kWh)"
                   name="installed_battery_capacity"
+                  extra="Not provided by Deye — enter manually. Used for SOC / capacity alerts."
                 >
                   <InputNumber
-                    placeholder="Enter Installed Battery Capacity"
+                    placeholder="e.g. 120"
+                    style={{ width: '100%' }}
+                    min={0}
+                    step={0.1}
+                  />
+                </Form.Item>
+              </Col>
+              <Col xs={24} sm={12} md={8}>
+                <Form.Item
+                  label="Installed Inverter Capacity (kVA)"
+                  name="installed_inverter_capacity"
+                  extra="Not provided by Deye — enter manually. Used for load-utilisation alerts. Leave blank to keep those alerts off."
+                >
+                  <InputNumber
+                    placeholder="e.g. 100"
                     style={{ width: '100%' }}
                     min={0}
                     step={0.1}

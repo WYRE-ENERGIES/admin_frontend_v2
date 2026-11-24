@@ -84,7 +84,12 @@ const buildStationFromSearch = (data, fallback = {}) => {
     name: stationInfo.name || '',
     installed_capacity: stationInfo.installed_capacity || stationInfo.installed_capacity_kwp || 0,
     installed_capacity_kwp: stationInfo.installed_capacity_kwp || stationInfo.installed_capacity || 0,
-    installed_battery_capacity: stationInfo.installed_battery_capacity ?? fallback.installed_battery_capacity ?? 0,
+    // Battery (kWh) and inverter (kVA) are user-entered — not from Deye.
+    // Prefill from fetch when already saved; leave null so the form stays empty for new plants.
+    installed_battery_capacity:
+      stationInfo.installed_battery_capacity ?? fallback.installed_battery_capacity ?? null,
+    installed_inverter_capacity:
+      stationInfo.installed_inverter_capacity ?? fallback.installed_inverter_capacity ?? null,
     latitude: stationInfo.latitude ?? null,
     longitude: stationInfo.longitude ?? null,
     address: stationInfo.address || '',

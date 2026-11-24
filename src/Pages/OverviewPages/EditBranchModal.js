@@ -7,8 +7,6 @@ import {
   Select,
   Row,
   Col,
-  Divider,
-  Checkbox,
   Modal,
   message,
   Typography,
@@ -16,8 +14,11 @@ import {
 } from 'antd';
 import { PlusOutlined, MinusCircleOutlined } from '@ant-design/icons';
 import { APIService } from '../../config/Api/apiServices';
+import BranchSolarSection, {
+  buildSolarPayload,
+  notifySolarResult,
+} from './BranchSolarSection';
 
-const { Text } = Typography;
 const { Option } = Select;
 
 const DEVICE_TYPES = [
@@ -39,6 +40,8 @@ const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated 
   const [regionsLoading, setRegionsLoading] = useState(false);
   const [clientRegions, setClientRegions] = useState([]);
   const [devices, setDevices] = useState([]);
+  const [solarEnabled, setSolarEnabled] = useState(false);
+  const [solarPreview, setSolarPreview] = useState(null);
 
   useEffect(() => {
     if (branch) {
@@ -50,6 +53,10 @@ const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated 
         region: branch.region || branch.regions?.[0]?.id || null,
       });
       setDevices(branch.devices || []);
+      setSolarEnabled(Boolean(branch.solar?.station_id));
+    } else {
+      setSolarEnabled(false);
+      setSolarPreview(null);
     }
   }, [branch, form]);
 
@@ -133,7 +140,7 @@ const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated 
     setLoading(true);
     try {
       const newDevices = devices.filter(device => !device.id || device.id.toString().startsWith('new_'));
-      
+
       const payload = {
         name: values.name,
         address: values.address,
@@ -142,26 +149,49 @@ const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated 
         copy_email: values.copy_email,
         devices: newDevices.map(device => ({
           name: device.device_name,
-          type: device.device_type, 
+          type: device.device_type,
           is_load: device.is_load,
           provider: device.provider || 'ACREL',
           device_id: device.device_id,
           is_source: device.is_source
         }))
       };
-      
-      await APIService.put(`/api/v1/accounts/update-branch/${branch.branch_id}/`, payload);
+
+      if (solarEnabled) {
+        const solar = buildSolarPayload(values.solar, solarPreview);
+        if (!solar) {
+          notification.error({
+            message: 'Solar incomplete',
+            description: 'Solar is enabled but Station ID is missing.',
+          });
+          setLoading(false);
+          return;
+        }
+        payload.solar = solar;
+      }
+
+      const response = await APIService.put(
+        `/api/v1/accounts/update-branch/${branch.branch_id}/`,
+        payload
+      );
       notification.success({
         message: 'Branch updated successfully',
-        description: 'Branch has been updated successfully.'
+        description: response?.data?.message || 'Branch has been updated successfully.'
       });
+      // Update returns solar as a single object (not an array)
+      notifySolarResult(response?.data?.solar);
       onBranchUpdated();
       onCancel();
     } catch (error) {
       console.error('Failed to update branch:', error);
+      const solarErrors = error?.response?.data?.errors?.solar;
       notification.error({
         message: 'Failed to update branch',
-        description: error?.response?.data?.message || error.message || 'Failed to update branch'
+        description:
+          (Array.isArray(solarErrors) ? solarErrors.join(' ') : solarErrors) ||
+          error?.response?.data?.message ||
+          error.message ||
+          'Failed to update branch'
       });
     } finally {
       setLoading(false);
@@ -170,6 +200,8 @@ const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated 
 
   const handleCancel = () => {
     form.resetFields();
+    setSolarEnabled(false);
+    setSolarPreview(null);
     onCancel();
   };
 
@@ -340,8 +372,16 @@ const EditBranchModal = ({ visible, clientId, onCancel, branch, onBranchUpdated 
           </Button>
         </Card>
 
+        <BranchSolarSection
+          form={form}
+          enabled={solarEnabled}
+          onEnabledChange={setSolarEnabled}
+          initialSolar={branch?.solar || null}
+          onPreviewChange={setSolarPreview}
+        />
+
         <div style={{ textAlign: 'right', marginTop: 16 }}>
-          <Button onClick={handleCancel} style={{ marginRight: 8 }}>
+          <Button onClick={handleCancel} style={{ marginRight: 8 }} disabled={loading}>
             Cancel
           </Button>
           <Button type="primary" htmlType="submit" loading={loading}>
