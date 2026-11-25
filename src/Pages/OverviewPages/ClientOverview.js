@@ -3,6 +3,7 @@ import { Button, Table, Space, Tag, Spin, notification, Input, Dropdown } from '
 import { PlusOutlined, MoreOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { APIService } from '../../config/Api/apiServices';
+import { confirmRestrictiveAction } from '../../helpers/confirmRestrictiveAction';
 
 const { Search } = Input;
 
@@ -59,7 +60,31 @@ const ClientOverview = () => {
     navigate('/solar-onboarding');
   };
 
-  const handleSuspendClient = async (clientId, isActive) => {
+  const refreshClients = async () => {
+    const response = await APIService.get('/cadmin/clients');
+    const data = response.data.results || response.data || [];
+    const formattedClients = data.map((client, idx) => ({
+      key: client.id || idx,
+      name: client.name || client.client_name || client.username || '---',
+      branches: client.number_of_branches || '---',
+      clientType: client.client_type || '---',
+      phone: client.phone_number || '---',
+      email: client.email || '---',
+      is_active: client.is_active,
+    }));
+    setClients(formattedClients);
+    if (!searchText) {
+      setFilteredClients(formattedClients);
+      return;
+    }
+    const searchLower = searchText.toLowerCase();
+    setFilteredClients(formattedClients.filter((item) =>
+      item.name.toLowerCase().includes(searchLower) ||
+      item.email.toLowerCase().includes(searchLower)
+    ));
+  };
+
+  const applyClientStatus = async (clientId, isActive) => {
     setLoading(true);
     try {
       await APIService.patch(`/api/v2/suspend_client/${clientId}/`, { is_active: isActive });
@@ -67,28 +92,28 @@ const ClientOverview = () => {
         message: isActive ? 'Activate Client' : 'Suspend Client',
         description: isActive ? 'Client has been activated successfully.' : 'Client has been suspended successfully.'
       });
-      // Refresh the client list
-      const response = await APIService.get('/cadmin/clients');
-      const data = response.data.results || response.data || [];
-      const formattedClients = data.map((client, idx) => ({
-        key: client.id || idx,
-        name: client.name || client.client_name || client.username || '---',
-        branches: client.number_of_branches || '---',
-        clientType: client.client_type || '---',
-        phone: client.phone_number || '---',
-        email: client.email || '---',
-        is_active: client.is_active,
-      }));
-      setClients(formattedClients);
-      setFilteredClients(formattedClients);
+      await refreshClients();
     } catch (error) {
       notification.error({
         message: isActive ? 'Activate Client' : 'Suspend Client',
         description: error?.response?.data?.message || error.message || 'Failed to update client status.'
       });
+      throw error;
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSuspendClient = (clientId, isActive, clientName) => {
+    if (isActive) {
+      applyClientStatus(clientId, true).catch(() => {});
+      return;
+    }
+    confirmRestrictiveAction({
+      action: 'Suspend',
+      name: clientName || 'this client',
+      onOk: () => applyClientStatus(clientId, false),
+    });
   };
 
   const columns = [
@@ -153,7 +178,7 @@ const ClientOverview = () => {
                 key: record.is_active ? 'suspend' : 'activate',
                 label: record.is_active ? 'Suspend' : 'Activate',
                 danger: record.is_active ? true : false,
-                onClick: () => handleSuspendClient(record.key, !record.is_active)
+                onClick: () => handleSuspendClient(record.key, !record.is_active, record.name)
               }
             ]
           }}
