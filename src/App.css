@@ -6788,6 +6788,7 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   padding-right: 20px !important;
 }
 
+.clickable-row,
 .ic-clickable-row {
   cursor: pointer;
 }
@@ -6872,4 +6873,113 @@ li.ant-menu-item.ant-menu-item-active.ant-menu-item-selected {
   .admin-investor-metrics {
     grid-template-columns: 1fr;
   }
+}
+
+/* Demand windows — keep this drawer off the purple sidebar drawer style */
+.demand-window-drawer.ant-drawer .ant-drawer-content,
+.demand-window-drawer.ant-drawer .ant-drawer-header,
+.demand-window-drawer.ant-drawer .ant-drawer-body {
+  background: #ffffff;
+  color: #1a1a1a;
+}
+
+.demand-window-drawer .ant-drawer-title {
+  color: #1a1a1a;
+  font-weight: 600;
+}
+
+.demand-window-drawer .ant-drawer-close {
+  color: #3d3454;
+}
+
+.demand-window-drawer .ant-form-item-label > label {
+  color: #1f1f1f;
+  font-weight: 600;
+}
+
+.demand-window-drawer .ant-form-item-extra,
+.demand-window-drawer .ant-typography-secondary {
+  color: #6b6280;
+}
+
+.demand-windows-page .page-header-left h2 {
+  font-size: 22px;
+  line-height: 1.3;
+}
+
+.demand-day-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.demand-day-chip {
+  border: 1px solid #d9d4e8;
+  background: #f7f5fb;
+  color: #3d3454;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.demand-day-chip.is-on {
+  background: #5c12a7;
+  border-color: #5c12a7;
+  color: #ffffff;
+}
+
+.demand-enabled-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid #ece8f4;
+  border-radius: 12px;
+  background: #faf9fc;
+}
+
+.demand-enabled-row > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.demand-enabled-title {
+  font-weight: 600;
+  color: #1a1a1a;
+  line-height: 1.3;
+}
+
+.demand-enabled-copy {
+  margin-top: 2px;
+  color: #6b6280;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.demand-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.demand-actions--test {
+  margin-top: 10px;
+}
+
+.demand-preview-card {
+  background: #f7f6fb;
+  border: 1px solid #ece8f4;
+  border-radius: 12px;
+  padding: 16px;
+  position: sticky;
+  top: 0;
+}
+
+.demand-preview-card__title {
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 12px;
 }
